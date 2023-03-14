@@ -704,379 +704,379 @@ def create_ui():
             ui_extra_networks.setup_ui(extra_networks_ui, txt2img_gallery)
 
     # ----------block img2img
-    # modules.scripts.scripts_current = modules.scripts.scripts_img2img
-    # modules.scripts.scripts_img2img.initialize_scripts(is_img2img=True)
-    #
-    # with gr.Blocks(analytics_enabled=False) as img2img_interface:
-    #     img2img_prompt, img2img_prompt_styles, img2img_negative_prompt, submit, img2img_interrogate, img2img_deepbooru, img2img_prompt_style_apply, img2img_save_style, img2img_paste, extra_networks_button, token_counter, token_button, negative_token_counter, negative_token_button = create_toprow(
-    #         is_img2img=True)
-    #
-    #     img2img_prompt_img = gr.File(label="", elem_id="img2img_prompt_image", file_count="single", type="binary",
-    #                                  visible=False)
-    #
-    #     with FormRow(variant='compact', elem_id="img2img_extra_networks", visible=False) as extra_networks:
-    #         from modules import ui_extra_networks
-    #         extra_networks_ui_img2img = ui_extra_networks.create_ui(extra_networks, extra_networks_button, 'img2img')
-    #
-    #     with FormRow().style(equal_height=False):
-    #         with gr.Column(variant='compact', elem_id="img2img_settings"):
-    #             copy_image_buttons = []
-    #             copy_image_destinations = {}
-    #
-    #             def add_copy_image_controls(tab_name, elem):
-    #                 with gr.Row(variant="compact", elem_id=f"img2img_copy_to_{tab_name}"):
-    #                     gr.HTML("Copy image to: ", elem_id=f"img2img_label_copy_to_{tab_name}")
-    #
-    #                     for title, name in zip(['img2img', 'sketch', 'inpaint', 'inpaint sketch'],
-    #                                            ['img2img', 'sketch', 'inpaint', 'inpaint_sketch']):
-    #                         if name == tab_name:
-    #                             gr.Button(title, interactive=False)
-    #                             copy_image_destinations[name] = elem
-    #                             continue
-    #
-    #                         button = gr.Button(title)
-    #                         copy_image_buttons.append((button, name, elem))
-    #
-    #             with gr.Tabs(elem_id="mode_img2img"):
-    #                 with gr.TabItem('img2img', id='img2img', elem_id="img2img_img2img_tab") as tab_img2img:
-    #                     init_img = gr.Image(label="Image for img2img", elem_id="img2img_image", show_label=False,
-    #                                         source="upload", interactive=True, type="pil", tool="editor",
-    #                                         image_mode="RGBA").style(height=480)
-    #                     add_copy_image_controls('img2img', init_img)
-    #
-    #                 with gr.TabItem('Sketch', id='img2img_sketch', elem_id="img2img_img2img_sketch_tab") as tab_sketch:
-    #                     sketch = gr.Image(label="Image for img2img", elem_id="img2img_sketch", show_label=False,
-    #                                       source="upload", interactive=True, type="pil", tool="color-sketch",
-    #                                       image_mode="RGBA").style(height=480)
-    #                     add_copy_image_controls('sketch', sketch)
-    #
-    #                 with gr.TabItem('Inpaint', id='inpaint', elem_id="img2img_inpaint_tab") as tab_inpaint:
-    #                     init_img_with_mask = gr.Image(label="Image for inpainting with mask", show_label=False,
-    #                                                   elem_id="img2maskimg", source="upload", interactive=True,
-    #                                                   type="pil", tool="sketch", image_mode="RGBA").style(height=480)
-    #                     add_copy_image_controls('inpaint', init_img_with_mask)
-    #
-    #                 with gr.TabItem('Inpaint sketch', id='inpaint_sketch',
-    #                                 elem_id="img2img_inpaint_sketch_tab") as tab_inpaint_color:
-    #                     inpaint_color_sketch = gr.Image(label="Color sketch inpainting", show_label=False,
-    #                                                     elem_id="inpaint_sketch", source="upload", interactive=True,
-    #                                                     type="pil", tool="color-sketch", image_mode="RGBA").style(
-    #                         height=480)
-    #                     inpaint_color_sketch_orig = gr.State(None)
-    #                     add_copy_image_controls('inpaint_sketch', inpaint_color_sketch)
-    #
-    #                     def update_orig(image, state):
-    #                         if image is not None:
-    #                             same_size = state is not None and state.size == image.size
-    #                             has_exact_match = np.any(np.all(np.array(image) == np.array(state), axis=-1))
-    #                             edited = same_size and has_exact_match
-    #                             return image if not edited or state is None else state
-    #
-    #                     inpaint_color_sketch.change(update_orig, [inpaint_color_sketch, inpaint_color_sketch_orig],
-    #                                                 inpaint_color_sketch_orig)
-    #
-    #                 with gr.TabItem('Inpaint upload', id='inpaint_upload',
-    #                                 elem_id="img2img_inpaint_upload_tab") as tab_inpaint_upload:
-    #                     init_img_inpaint = gr.Image(label="Image for img2img", show_label=False, source="upload",
-    #                                                 interactive=True, type="pil", elem_id="img_inpaint_base")
-    #                     init_mask_inpaint = gr.Image(label="Mask", source="upload", interactive=True, type="pil",
-    #                                                  elem_id="img_inpaint_mask")
-    #
-    #                 with gr.TabItem('Batch', id='batch', elem_id="img2img_batch_tab") as tab_batch:
-    #                     hidden = '<br>Disabled when launched with --hide-ui-dir-config.' if shared.cmd_opts.hide_ui_dir_config else ''
-    #                     gr.HTML(
-    #                         f"<p style='padding-bottom: 1em;' class=\"text-gray-500\">Process images in a directory on the same machine where the server is running." +
-    #                         f"<br>Use an empty output directory to save pictures normally instead of writing to the output directory." +
-    #                         f"<br>Add inpaint batch mask directory to enable inpaint batch processing."
-    #                         f"{hidden}</p>"
-    #                     )
-    #                     img2img_batch_input_dir = gr.Textbox(label="Input directory", **shared.hide_dirs,
-    #                                                          elem_id="img2img_batch_input_dir")
-    #                     img2img_batch_output_dir = gr.Textbox(label="Output directory", **shared.hide_dirs,
-    #                                                           elem_id="img2img_batch_output_dir")
-    #                     img2img_batch_inpaint_mask_dir = gr.Textbox(
-    #                         label="Inpaint batch mask directory (required for inpaint batch processing only)",
-    #                         **shared.hide_dirs, elem_id="img2img_batch_inpaint_mask_dir")
-    #
-    #             def copy_image(img):
-    #                 if isinstance(img, dict) and 'image' in img:
-    #                     return img['image']
-    #
-    #                 return img
-    #
-    #             for button, name, elem in copy_image_buttons:
-    #                 button.click(
-    #                     fn=copy_image,
-    #                     inputs=[elem],
-    #                     outputs=[copy_image_destinations[name]],
-    #                 )
-    #                 button.click(
-    #                     fn=lambda: None,
-    #                     _js="switch_to_" + name.replace(" ", "_"),
-    #                     inputs=[],
-    #                     outputs=[],
-    #                 )
-    #
-    #             with FormRow():
-    #                 resize_mode = gr.Radio(label="Resize mode", elem_id="resize_mode",
-    #                                        choices=["Just resize", "Crop and resize", "Resize and fill",
-    #                                                 "Just resize (latent upscale)"], type="index", value="Just resize")
-    #
-    #             for category in ordered_ui_categories():
-    #                 if category == "sampler":
-    #                     steps, sampler_index = create_sampler_and_steps_selection(samplers_for_img2img, "img2img")
-    #
-    #                 elif category == "dimensions":
-    #                     with FormRow():
-    #                         with gr.Column(elem_id="img2img_column_size", scale=4):
-    #                             width = gr.Slider(minimum=64, maximum=2048, step=8, label="Width", value=512,
-    #                                               elem_id="img2img_width")
-    #                             height = gr.Slider(minimum=64, maximum=2048, step=8, label="Height", value=512,
-    #                                                elem_id="img2img_height")
-    #
-    #                         res_switch_btn = ToolButton(value=switch_values_symbol, elem_id="img2img_res_switch_btn")
-    #                         if opts.dimensions_and_batch_together:
-    #                             with gr.Column(elem_id="img2img_column_batch"):
-    #                                 batch_count = gr.Slider(minimum=1, step=1, label='Batch count', value=1,
-    #                                                         elem_id="img2img_batch_count")
-    #                                 batch_size = gr.Slider(minimum=1, maximum=8, step=1, label='Batch size', value=1,
-    #                                                        elem_id="img2img_batch_size")
-    #
-    #                 elif category == "cfg":
-    #                     with FormGroup():
-    #                         with FormRow():
-    #                             cfg_scale = gr.Slider(minimum=1.0, maximum=30.0, step=0.5, label='CFG Scale', value=7.0,
-    #                                                   elem_id="img2img_cfg_scale")
-    #                             image_cfg_scale = gr.Slider(minimum=0, maximum=3.0, step=0.05, label='Image CFG Scale',
-    #                                                         value=1.5, elem_id="img2img_image_cfg_scale",
-    #                                                         visible=shared.sd_model and shared.sd_model.cond_stage_key == "edit")
-    #                         denoising_strength = gr.Slider(minimum=0.0, maximum=1.0, step=0.01,
-    #                                                        label='Denoising strength', value=0.75,
-    #                                                        elem_id="img2img_denoising_strength")
-    #
-    #                 elif category == "seed":
-    #                     seed, reuse_seed, subseed, reuse_subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w, seed_checkbox = create_seed_inputs(
-    #                         'img2img')
-    #
-    #                 elif category == "checkboxes":
-    #                     with FormRow(elem_id="img2img_checkboxes", variant="compact"):
-    #                         restore_faces = gr.Checkbox(label='Restore faces', value=False,
-    #                                                     visible=len(shared.face_restorers) > 1,
-    #                                                     elem_id="img2img_restore_faces")
-    #                         tiling = gr.Checkbox(label='Tiling', value=False, elem_id="img2img_tiling")
-    #
-    #                 elif category == "batch":
-    #                     if not opts.dimensions_and_batch_together:
-    #                         with FormRow(elem_id="img2img_column_batch"):
-    #                             batch_count = gr.Slider(minimum=1, step=1, label='Batch count', value=1,
-    #                                                     elem_id="img2img_batch_count")
-    #                             batch_size = gr.Slider(minimum=1, maximum=8, step=1, label='Batch size', value=1,
-    #                                                    elem_id="img2img_batch_size")
-    #
-    #                 elif category == "override_settings":
-    #                     with FormRow(elem_id="img2img_override_settings_row") as row:
-    #                         override_settings = create_override_settings_dropdown('img2img', row)
-    #
-    #                 elif category == "scripts":
-    #                     with FormGroup(elem_id="img2img_script_container"):
-    #                         custom_inputs = modules.scripts.scripts_img2img.setup_ui()
-    #
-    #                 elif category == "inpaint":
-    #                     with FormGroup(elem_id="inpaint_controls", visible=False) as inpaint_controls:
-    #                         with FormRow():
-    #                             mask_blur = gr.Slider(label='Mask blur', minimum=0, maximum=64, step=1, value=4,
-    #                                                   elem_id="img2img_mask_blur")
-    #                             mask_alpha = gr.Slider(label="Mask transparency", visible=False,
-    #                                                    elem_id="img2img_mask_alpha")
-    #
-    #                         with FormRow():
-    #                             inpainting_mask_invert = gr.Radio(label='Mask mode',
-    #                                                               choices=['Inpaint masked', 'Inpaint not masked'],
-    #                                                               value='Inpaint masked', type="index",
-    #                                                               elem_id="img2img_mask_mode")
-    #
-    #                         with FormRow():
-    #                             inpainting_fill = gr.Radio(label='Masked content',
-    #                                                        choices=['fill', 'original', 'latent noise',
-    #                                                                 'latent nothing'], value='original', type="index",
-    #                                                        elem_id="img2img_inpainting_fill")
-    #
-    #                         with FormRow():
-    #                             with gr.Column():
-    #                                 inpaint_full_res = gr.Radio(label="Inpaint area",
-    #                                                             choices=["Whole picture", "Only masked"], type="index",
-    #                                                             value="Whole picture",
-    #                                                             elem_id="img2img_inpaint_full_res")
-    #
-    #                             with gr.Column(scale=4):
-    #                                 inpaint_full_res_padding = gr.Slider(label='Only masked padding, pixels', minimum=0,
-    #                                                                      maximum=256, step=4, value=32,
-    #                                                                      elem_id="img2img_inpaint_full_res_padding")
-    #
-    #                         def select_img2img_tab(tab):
-    #                             return gr.update(visible=tab in [2, 3, 4]), gr.update(visible=tab == 3),
-    #
-    #                         for i, elem in enumerate(
-    #                                 [tab_img2img, tab_sketch, tab_inpaint, tab_inpaint_color, tab_inpaint_upload,
-    #                                  tab_batch]):
-    #                             elem.select(
-    #                                 fn=lambda tab=i: select_img2img_tab(tab),
-    #                                 inputs=[],
-    #                                 outputs=[inpaint_controls, mask_alpha],
-    #                             )
-    #
-    #         img2img_gallery, generation_info, html_info, html_log = create_output_panel("img2img",
-    #                                                                                     opts.outdir_img2img_samples)
-    #
-    #         connect_reuse_seed(seed, reuse_seed, generation_info, dummy_component, is_subseed=False)
-    #         connect_reuse_seed(subseed, reuse_subseed, generation_info, dummy_component, is_subseed=True)
-    #
-    #         img2img_prompt_img.change(
-    #             fn=modules.images.image_data,
-    #             inputs=[
-    #                 img2img_prompt_img
-    #             ],
-    #             outputs=[
-    #                 img2img_prompt,
-    #                 img2img_prompt_img
-    #             ]
-    #         )
-    #
-    #         img2img_args = dict(
-    #             fn=wrap_gradio_gpu_call(modules.img2img.img2img, extra_outputs=[None, '', '']),
-    #             _js="submit_img2img",
-    #             inputs=[
-    #                        dummy_component,
-    #                        dummy_component,
-    #                        img2img_prompt,
-    #                        img2img_negative_prompt,
-    #                        img2img_prompt_styles,
-    #                        init_img,
-    #                        sketch,
-    #                        init_img_with_mask,
-    #                        inpaint_color_sketch,
-    #                        inpaint_color_sketch_orig,
-    #                        init_img_inpaint,
-    #                        init_mask_inpaint,
-    #                        steps,
-    #                        sampler_index,
-    #                        mask_blur,
-    #                        mask_alpha,
-    #                        inpainting_fill,
-    #                        restore_faces,
-    #                        tiling,
-    #                        batch_count,
-    #                        batch_size,
-    #                        cfg_scale,
-    #                        image_cfg_scale,
-    #                        denoising_strength,
-    #                        seed,
-    #                        subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w, seed_checkbox,
-    #                        height,
-    #                        width,
-    #                        resize_mode,
-    #                        inpaint_full_res,
-    #                        inpaint_full_res_padding,
-    #                        inpainting_mask_invert,
-    #                        img2img_batch_input_dir,
-    #                        img2img_batch_output_dir,
-    #                        img2img_batch_inpaint_mask_dir,
-    #                        override_settings,
-    #                    ] + custom_inputs,
-    #             outputs=[
-    #                 img2img_gallery,
-    #                 generation_info,
-    #                 html_info,
-    #                 html_log,
-    #             ],
-    #             show_progress=False,
-    #         )
-    #
-    #         interrogate_args = dict(
-    #             _js="get_img2img_tab_index",
-    #             inputs=[
-    #                 dummy_component,
-    #                 img2img_batch_input_dir,
-    #                 img2img_batch_output_dir,
-    #                 init_img,
-    #                 sketch,
-    #                 init_img_with_mask,
-    #                 inpaint_color_sketch,
-    #                 init_img_inpaint,
-    #             ],
-    #             outputs=[img2img_prompt, dummy_component],
-    #         )
-    #
-    #         img2img_prompt.submit(**img2img_args)
-    #         submit.click(**img2img_args)
-    #         res_switch_btn.click(lambda w, h: (h, w), inputs=[width, height], outputs=[width, height])
-    #
-    #         img2img_interrogate.click(
-    #             fn=lambda *args: process_interrogate(interrogate, *args),
-    #             **interrogate_args,
-    #         )
-    #
-    #         img2img_deepbooru.click(
-    #             fn=lambda *args: process_interrogate(interrogate_deepbooru, *args),
-    #             **interrogate_args,
-    #         )
-    #
-    #         prompts = [(txt2img_prompt, txt2img_negative_prompt), (img2img_prompt, img2img_negative_prompt)]
-    #         style_dropdowns = [txt2img_prompt_styles, img2img_prompt_styles]
-    #         style_js_funcs = ["update_txt2img_tokens", "update_img2img_tokens"]
-    #
-    #         for button, (prompt, negative_prompt) in zip([txt2img_save_style, img2img_save_style], prompts):
-    #             button.click(
-    #                 fn=add_style,
-    #                 _js="ask_for_style_name",
-    #                 # Have to pass empty dummy component here, because the JavaScript and Python function have to accept
-    #                 # the same number of parameters, but we only know the style-name after the JavaScript prompt
-    #                 inputs=[dummy_component, prompt, negative_prompt],
-    #                 outputs=[txt2img_prompt_styles, img2img_prompt_styles],
-    #             )
-    #
-    #         for button, (prompt, negative_prompt), styles, js_func in zip(
-    #                 [txt2img_prompt_style_apply, img2img_prompt_style_apply], prompts, style_dropdowns, style_js_funcs):
-    #             button.click(
-    #                 fn=apply_styles,
-    #                 _js=js_func,
-    #                 inputs=[prompt, negative_prompt, styles],
-    #                 outputs=[prompt, negative_prompt, styles],
-    #             )
-    #
-    #         token_button.click(fn=update_token_counter, inputs=[img2img_prompt, steps], outputs=[token_counter])
-    #         negative_token_button.click(fn=wrap_queued_call(update_token_counter),
-    #                                     inputs=[txt2img_negative_prompt, steps], outputs=[negative_token_counter])
-    #
-    #         ui_extra_networks.setup_ui(extra_networks_ui_img2img, img2img_gallery)
-    #
-    #         img2img_paste_fields = [
-    #             (img2img_prompt, "Prompt"),
-    #             (img2img_negative_prompt, "Negative prompt"),
-    #             (steps, "Steps"),
-    #             (sampler_index, "Sampler"),
-    #             (restore_faces, "Face restoration"),
-    #             (cfg_scale, "CFG scale"),
-    #             (image_cfg_scale, "Image CFG scale"),
-    #             (seed, "Seed"),
-    #             (width, "Size-1"),
-    #             (height, "Size-2"),
-    #             (batch_size, "Batch size"),
-    #             (subseed, "Variation seed"),
-    #             (subseed_strength, "Variation seed strength"),
-    #             (seed_resize_from_w, "Seed resize from-1"),
-    #             (seed_resize_from_h, "Seed resize from-2"),
-    #             (denoising_strength, "Denoising strength"),
-    #             (mask_blur, "Mask blur"),
-    #             *modules.scripts.scripts_img2img.infotext_fields
-    #         ]
-    #         parameters_copypaste.add_paste_fields("img2img", init_img, img2img_paste_fields, override_settings)
-    #         parameters_copypaste.add_paste_fields("inpaint", init_img_with_mask, img2img_paste_fields,
-    #                                               override_settings)
-    #         parameters_copypaste.register_paste_params_button(parameters_copypaste.ParamBinding(
-    #             paste_button=img2img_paste, tabname="img2img", source_text_component=img2img_prompt,
-    #             source_image_component=None,
-    #         ))
+    modules.scripts.scripts_current = modules.scripts.scripts_img2img
+    modules.scripts.scripts_img2img.initialize_scripts(is_img2img=True)
+
+    with gr.Blocks(analytics_enabled=False) as img2img_interface:
+        img2img_prompt, img2img_prompt_styles, img2img_negative_prompt, submit, img2img_interrogate, img2img_deepbooru, img2img_prompt_style_apply, img2img_save_style, img2img_paste, extra_networks_button, token_counter, token_button, negative_token_counter, negative_token_button = create_toprow(
+            is_img2img=True)
+
+        img2img_prompt_img = gr.File(label="", elem_id="img2img_prompt_image", file_count="single", type="binary",
+                                     visible=False)
+
+        with FormRow(variant='compact', elem_id="img2img_extra_networks", visible=False) as extra_networks:
+            from modules import ui_extra_networks
+            extra_networks_ui_img2img = ui_extra_networks.create_ui(extra_networks, extra_networks_button, 'img2img')
+
+        with FormRow().style(equal_height=False):
+            with gr.Column(variant='compact', elem_id="img2img_settings"):
+                copy_image_buttons = []
+                copy_image_destinations = {}
+
+                def add_copy_image_controls(tab_name, elem):
+                    with gr.Row(variant="compact", elem_id=f"img2img_copy_to_{tab_name}"):
+                        gr.HTML("Copy image to: ", elem_id=f"img2img_label_copy_to_{tab_name}")
+
+                        for title, name in zip(['img2img', 'sketch', 'inpaint', 'inpaint sketch'],
+                                               ['img2img', 'sketch', 'inpaint', 'inpaint_sketch']):
+                            if name == tab_name:
+                                gr.Button(title, interactive=False)
+                                copy_image_destinations[name] = elem
+                                continue
+
+                            button = gr.Button(title)
+                            copy_image_buttons.append((button, name, elem))
+
+                with gr.Tabs(elem_id="mode_img2img"):
+                    with gr.TabItem('img2img', id='img2img', elem_id="img2img_img2img_tab") as tab_img2img:
+                        init_img = gr.Image(label="Image for img2img", elem_id="img2img_image", show_label=False,
+                                            source="upload", interactive=True, type="pil", tool="editor",
+                                            image_mode="RGBA").style(height=480)
+                        add_copy_image_controls('img2img', init_img)
+
+                    with gr.TabItem('Sketch', id='img2img_sketch', elem_id="img2img_img2img_sketch_tab") as tab_sketch:
+                        sketch = gr.Image(label="Image for img2img", elem_id="img2img_sketch", show_label=False,
+                                          source="upload", interactive=True, type="pil", tool="color-sketch",
+                                          image_mode="RGBA").style(height=480)
+                        add_copy_image_controls('sketch', sketch)
+
+                    with gr.TabItem('Inpaint', id='inpaint', elem_id="img2img_inpaint_tab") as tab_inpaint:
+                        init_img_with_mask = gr.Image(label="Image for inpainting with mask", show_label=False,
+                                                      elem_id="img2maskimg", source="upload", interactive=True,
+                                                      type="pil", tool="sketch", image_mode="RGBA").style(height=480)
+                        add_copy_image_controls('inpaint', init_img_with_mask)
+
+                    with gr.TabItem('Inpaint sketch', id='inpaint_sketch',
+                                    elem_id="img2img_inpaint_sketch_tab") as tab_inpaint_color:
+                        inpaint_color_sketch = gr.Image(label="Color sketch inpainting", show_label=False,
+                                                        elem_id="inpaint_sketch", source="upload", interactive=True,
+                                                        type="pil", tool="color-sketch", image_mode="RGBA").style(
+                            height=480)
+                        inpaint_color_sketch_orig = gr.State(None)
+                        add_copy_image_controls('inpaint_sketch', inpaint_color_sketch)
+
+                        def update_orig(image, state):
+                            if image is not None:
+                                same_size = state is not None and state.size == image.size
+                                has_exact_match = np.any(np.all(np.array(image) == np.array(state), axis=-1))
+                                edited = same_size and has_exact_match
+                                return image if not edited or state is None else state
+
+                        inpaint_color_sketch.change(update_orig, [inpaint_color_sketch, inpaint_color_sketch_orig],
+                                                    inpaint_color_sketch_orig)
+
+                    with gr.TabItem('Inpaint upload', id='inpaint_upload',
+                                    elem_id="img2img_inpaint_upload_tab") as tab_inpaint_upload:
+                        init_img_inpaint = gr.Image(label="Image for img2img", show_label=False, source="upload",
+                                                    interactive=True, type="pil", elem_id="img_inpaint_base")
+                        init_mask_inpaint = gr.Image(label="Mask", source="upload", interactive=True, type="pil",
+                                                     elem_id="img_inpaint_mask")
+
+                    with gr.TabItem('Batch', id='batch', elem_id="img2img_batch_tab") as tab_batch:
+                        hidden = '<br>Disabled when launched with --hide-ui-dir-config.' if shared.cmd_opts.hide_ui_dir_config else ''
+                        gr.HTML(
+                            f"<p style='padding-bottom: 1em;' class=\"text-gray-500\">Process images in a directory on the same machine where the server is running." +
+                            f"<br>Use an empty output directory to save pictures normally instead of writing to the output directory." +
+                            f"<br>Add inpaint batch mask directory to enable inpaint batch processing."
+                            f"{hidden}</p>"
+                        )
+                        img2img_batch_input_dir = gr.Textbox(label="Input directory", **shared.hide_dirs,
+                                                             elem_id="img2img_batch_input_dir")
+                        img2img_batch_output_dir = gr.Textbox(label="Output directory", **shared.hide_dirs,
+                                                              elem_id="img2img_batch_output_dir")
+                        img2img_batch_inpaint_mask_dir = gr.Textbox(
+                            label="Inpaint batch mask directory (required for inpaint batch processing only)",
+                            **shared.hide_dirs, elem_id="img2img_batch_inpaint_mask_dir")
+
+                def copy_image(img):
+                    if isinstance(img, dict) and 'image' in img:
+                        return img['image']
+
+                    return img
+
+                for button, name, elem in copy_image_buttons:
+                    button.click(
+                        fn=copy_image,
+                        inputs=[elem],
+                        outputs=[copy_image_destinations[name]],
+                    )
+                    button.click(
+                        fn=lambda: None,
+                        _js="switch_to_" + name.replace(" ", "_"),
+                        inputs=[],
+                        outputs=[],
+                    )
+
+                with FormRow():
+                    resize_mode = gr.Radio(label="Resize mode", elem_id="resize_mode",
+                                           choices=["Just resize", "Crop and resize", "Resize and fill",
+                                                    "Just resize (latent upscale)"], type="index", value="Just resize")
+
+                for category in ordered_ui_categories():
+                    if category == "sampler":
+                        steps, sampler_index = create_sampler_and_steps_selection(samplers_for_img2img, "img2img")
+
+                    elif category == "dimensions":
+                        with FormRow():
+                            with gr.Column(elem_id="img2img_column_size", scale=4):
+                                width = gr.Slider(minimum=64, maximum=2048, step=8, label="Width", value=512,
+                                                  elem_id="img2img_width")
+                                height = gr.Slider(minimum=64, maximum=2048, step=8, label="Height", value=512,
+                                                   elem_id="img2img_height")
+
+                            res_switch_btn = ToolButton(value=switch_values_symbol, elem_id="img2img_res_switch_btn")
+                            if opts.dimensions_and_batch_together:
+                                with gr.Column(elem_id="img2img_column_batch"):
+                                    batch_count = gr.Slider(minimum=1, step=1, label='Batch count', value=1,
+                                                            elem_id="img2img_batch_count")
+                                    batch_size = gr.Slider(minimum=1, maximum=8, step=1, label='Batch size', value=1,
+                                                           elem_id="img2img_batch_size")
+
+                    elif category == "cfg":
+                        with FormGroup():
+                            with FormRow():
+                                cfg_scale = gr.Slider(minimum=1.0, maximum=30.0, step=0.5, label='CFG Scale', value=7.0,
+                                                      elem_id="img2img_cfg_scale")
+                                image_cfg_scale = gr.Slider(minimum=0, maximum=3.0, step=0.05, label='Image CFG Scale',
+                                                            value=1.5, elem_id="img2img_image_cfg_scale",
+                                                            visible=shared.sd_model and shared.sd_model.cond_stage_key == "edit")
+                            denoising_strength = gr.Slider(minimum=0.0, maximum=1.0, step=0.01,
+                                                           label='Denoising strength', value=0.75,
+                                                           elem_id="img2img_denoising_strength")
+
+                    elif category == "seed":
+                        seed, reuse_seed, subseed, reuse_subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w, seed_checkbox = create_seed_inputs(
+                            'img2img')
+
+                    elif category == "checkboxes":
+                        with FormRow(elem_id="img2img_checkboxes", variant="compact"):
+                            restore_faces = gr.Checkbox(label='Restore faces', value=False,
+                                                        visible=len(shared.face_restorers) > 1,
+                                                        elem_id="img2img_restore_faces")
+                            tiling = gr.Checkbox(label='Tiling', value=False, elem_id="img2img_tiling")
+
+                    elif category == "batch":
+                        if not opts.dimensions_and_batch_together:
+                            with FormRow(elem_id="img2img_column_batch"):
+                                batch_count = gr.Slider(minimum=1, step=1, label='Batch count', value=1,
+                                                        elem_id="img2img_batch_count")
+                                batch_size = gr.Slider(minimum=1, maximum=8, step=1, label='Batch size', value=1,
+                                                       elem_id="img2img_batch_size")
+
+                    elif category == "override_settings":
+                        with FormRow(elem_id="img2img_override_settings_row") as row:
+                            override_settings = create_override_settings_dropdown('img2img', row)
+
+                    elif category == "scripts":
+                        with FormGroup(elem_id="img2img_script_container"):
+                            custom_inputs = modules.scripts.scripts_img2img.setup_ui()
+
+                    elif category == "inpaint":
+                        with FormGroup(elem_id="inpaint_controls", visible=False) as inpaint_controls:
+                            with FormRow():
+                                mask_blur = gr.Slider(label='Mask blur', minimum=0, maximum=64, step=1, value=4,
+                                                      elem_id="img2img_mask_blur")
+                                mask_alpha = gr.Slider(label="Mask transparency", visible=False,
+                                                       elem_id="img2img_mask_alpha")
+
+                            with FormRow():
+                                inpainting_mask_invert = gr.Radio(label='Mask mode',
+                                                                  choices=['Inpaint masked', 'Inpaint not masked'],
+                                                                  value='Inpaint masked', type="index",
+                                                                  elem_id="img2img_mask_mode")
+
+                            with FormRow():
+                                inpainting_fill = gr.Radio(label='Masked content',
+                                                           choices=['fill', 'original', 'latent noise',
+                                                                    'latent nothing'], value='original', type="index",
+                                                           elem_id="img2img_inpainting_fill")
+
+                            with FormRow():
+                                with gr.Column():
+                                    inpaint_full_res = gr.Radio(label="Inpaint area",
+                                                                choices=["Whole picture", "Only masked"], type="index",
+                                                                value="Whole picture",
+                                                                elem_id="img2img_inpaint_full_res")
+
+                                with gr.Column(scale=4):
+                                    inpaint_full_res_padding = gr.Slider(label='Only masked padding, pixels', minimum=0,
+                                                                         maximum=256, step=4, value=32,
+                                                                         elem_id="img2img_inpaint_full_res_padding")
+
+                            def select_img2img_tab(tab):
+                                return gr.update(visible=tab in [2, 3, 4]), gr.update(visible=tab == 3),
+
+                            for i, elem in enumerate(
+                                    [tab_img2img, tab_sketch, tab_inpaint, tab_inpaint_color, tab_inpaint_upload,
+                                     tab_batch]):
+                                elem.select(
+                                    fn=lambda tab=i: select_img2img_tab(tab),
+                                    inputs=[],
+                                    outputs=[inpaint_controls, mask_alpha],
+                                )
+
+            img2img_gallery, generation_info, html_info, html_log = create_output_panel("img2img",
+                                                                                        opts.outdir_img2img_samples)
+
+            connect_reuse_seed(seed, reuse_seed, generation_info, dummy_component, is_subseed=False)
+            connect_reuse_seed(subseed, reuse_subseed, generation_info, dummy_component, is_subseed=True)
+
+            img2img_prompt_img.change(
+                fn=modules.images.image_data,
+                inputs=[
+                    img2img_prompt_img
+                ],
+                outputs=[
+                    img2img_prompt,
+                    img2img_prompt_img
+                ]
+            )
+
+            img2img_args = dict(
+                fn=wrap_gradio_gpu_call(modules.img2img.img2img, extra_outputs=[None, '', '']),
+                _js="submit_img2img",
+                inputs=[
+                           dummy_component,
+                           dummy_component,
+                           img2img_prompt,
+                           img2img_negative_prompt,
+                           img2img_prompt_styles,
+                           init_img,
+                           sketch,
+                           init_img_with_mask,
+                           inpaint_color_sketch,
+                           inpaint_color_sketch_orig,
+                           init_img_inpaint,
+                           init_mask_inpaint,
+                           steps,
+                           sampler_index,
+                           mask_blur,
+                           mask_alpha,
+                           inpainting_fill,
+                           restore_faces,
+                           tiling,
+                           batch_count,
+                           batch_size,
+                           cfg_scale,
+                           image_cfg_scale,
+                           denoising_strength,
+                           seed,
+                           subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w, seed_checkbox,
+                           height,
+                           width,
+                           resize_mode,
+                           inpaint_full_res,
+                           inpaint_full_res_padding,
+                           inpainting_mask_invert,
+                           img2img_batch_input_dir,
+                           img2img_batch_output_dir,
+                           img2img_batch_inpaint_mask_dir,
+                           override_settings,
+                       ] + custom_inputs,
+                outputs=[
+                    img2img_gallery,
+                    generation_info,
+                    html_info,
+                    html_log,
+                ],
+                show_progress=False,
+            )
+
+            interrogate_args = dict(
+                _js="get_img2img_tab_index",
+                inputs=[
+                    dummy_component,
+                    img2img_batch_input_dir,
+                    img2img_batch_output_dir,
+                    init_img,
+                    sketch,
+                    init_img_with_mask,
+                    inpaint_color_sketch,
+                    init_img_inpaint,
+                ],
+                outputs=[img2img_prompt, dummy_component],
+            )
+
+            img2img_prompt.submit(**img2img_args)
+            submit.click(**img2img_args)
+            res_switch_btn.click(lambda w, h: (h, w), inputs=[width, height], outputs=[width, height])
+
+            img2img_interrogate.click(
+                fn=lambda *args: process_interrogate(interrogate, *args),
+                **interrogate_args,
+            )
+
+            img2img_deepbooru.click(
+                fn=lambda *args: process_interrogate(interrogate_deepbooru, *args),
+                **interrogate_args,
+            )
+
+            prompts = [(txt2img_prompt, txt2img_negative_prompt), (img2img_prompt, img2img_negative_prompt)]
+            style_dropdowns = [txt2img_prompt_styles, img2img_prompt_styles]
+            style_js_funcs = ["update_txt2img_tokens", "update_img2img_tokens"]
+
+            for button, (prompt, negative_prompt) in zip([txt2img_save_style, img2img_save_style], prompts):
+                button.click(
+                    fn=add_style,
+                    _js="ask_for_style_name",
+                    # Have to pass empty dummy component here, because the JavaScript and Python function have to accept
+                    # the same number of parameters, but we only know the style-name after the JavaScript prompt
+                    inputs=[dummy_component, prompt, negative_prompt],
+                    outputs=[txt2img_prompt_styles, img2img_prompt_styles],
+                )
+
+            for button, (prompt, negative_prompt), styles, js_func in zip(
+                    [txt2img_prompt_style_apply, img2img_prompt_style_apply], prompts, style_dropdowns, style_js_funcs):
+                button.click(
+                    fn=apply_styles,
+                    _js=js_func,
+                    inputs=[prompt, negative_prompt, styles],
+                    outputs=[prompt, negative_prompt, styles],
+                )
+
+            token_button.click(fn=update_token_counter, inputs=[img2img_prompt, steps], outputs=[token_counter])
+            negative_token_button.click(fn=wrap_queued_call(update_token_counter),
+                                        inputs=[txt2img_negative_prompt, steps], outputs=[negative_token_counter])
+
+            ui_extra_networks.setup_ui(extra_networks_ui_img2img, img2img_gallery)
+
+            img2img_paste_fields = [
+                (img2img_prompt, "Prompt"),
+                (img2img_negative_prompt, "Negative prompt"),
+                (steps, "Steps"),
+                (sampler_index, "Sampler"),
+                (restore_faces, "Face restoration"),
+                (cfg_scale, "CFG scale"),
+                (image_cfg_scale, "Image CFG scale"),
+                (seed, "Seed"),
+                (width, "Size-1"),
+                (height, "Size-2"),
+                (batch_size, "Batch size"),
+                (subseed, "Variation seed"),
+                (subseed_strength, "Variation seed strength"),
+                (seed_resize_from_w, "Seed resize from-1"),
+                (seed_resize_from_h, "Seed resize from-2"),
+                (denoising_strength, "Denoising strength"),
+                (mask_blur, "Mask blur"),
+                *modules.scripts.scripts_img2img.infotext_fields
+            ]
+            parameters_copypaste.add_paste_fields("img2img", init_img, img2img_paste_fields, override_settings)
+            parameters_copypaste.add_paste_fields("inpaint", init_img_with_mask, img2img_paste_fields,
+                                                  override_settings)
+            parameters_copypaste.register_paste_params_button(parameters_copypaste.ParamBinding(
+                paste_button=img2img_paste, tabname="img2img", source_text_component=img2img_prompt,
+                source_image_component=None,
+            ))
 
     modules.scripts.scripts_current = None
 
