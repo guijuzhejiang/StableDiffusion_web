@@ -113,7 +113,7 @@ case "$gpu_info" in
         printf "Experimental support for Renoir: make sure to have at least 4GB of VRAM and 10GB of RAM or enable cpu mode: --use-cpu all --no-half"
         printf "\n%s\n" "${delimiter}"
     ;;
-    *) 
+    *)
     ;;
 esac
 if echo "$gpu_info" | grep -q "AMD" && [[ -z "${TORCH_COMMAND}" ]]
@@ -177,10 +177,10 @@ then
     printf "\n%s\n" "${delimiter}"
     printf "Accelerating launch.py..."
     printf "\n%s\n" "${delimiter}"
-    exec accelerate launch --num_cpu_threads_per_process=6 --num_processes=4 "${LAUNCH_SCRIPT}" "$@"
+    exec accelerate launch --num_cpu_threads_per_process=6 "${LAUNCH_SCRIPT}" "$@"
 else
     printf "\n%s\n" "${delimiter}"
     printf "Launching launch.py..."
-    printf "\n%s\n" "${delimiter}"      
+    printf "\n%s\n" "${delimiter}"
     exec "${python_cmd}" "${LAUNCH_SCRIPT}" "$@"
 fi

@@ -6,12 +6,13 @@ import os
 
 
 if __name__ == "__main__":
-    # os.environ['HTTPS_PROXY'] = 'http://127.0.0.1:7890'
+    os.environ['HTTPS_PROXY'] = 'http://127.0.0.1:7890'
     os.environ['ACCELERATE'] = 'False'
     from modules.shared import cmd_opts
     cmd_opts.listen = True
     cmd_opts.enable_insecure_extension_access = True
     cmd_opts.xformers = True
+    cmd_opts.hide_ui_dir_config = True
     # nowebui = True
     nowebui = False
     import webui
