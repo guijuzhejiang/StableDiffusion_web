@@ -125,7 +125,7 @@ Requested path was: {f}
 
     with gr.Column(variant='panel', elem_id=f"{tabname}_results"):
         with gr.Group(elem_id=f"{tabname}_gallery_container"):
-            result_gallery = gr.Gallery(label='Output', show_label=False, elem_id=f"{tabname}_gallery").style(grid=4)
+            result_gallery = gr.Gallery(label='Output', show_label=False, elem_id=f"{tabname}_gallery").style(columns=4)
 
         generation_info = None
         with gr.Column():
@@ -149,8 +149,8 @@ Requested path was: {f}
                 download_files = gr.File(None, file_count="multiple", interactive=False, show_label=False, visible=False, elem_id=f'download_files_{tabname}')
 
                 with gr.Group():
-                    html_info = gr.HTML(elem_id=f'html_info_{tabname}', elem_classes="infotext")
-                    html_log = gr.HTML(elem_id=f'html_log_{tabname}')
+                    html_info = gr.HTML(elem_id=f'html_info_{tabname}', elem_classes="infotext", visible=False)
+                    html_log = gr.HTML(elem_id=f'html_log_{tabname}', visible=False)
 
                     generation_info = gr.Textbox(visible=False, elem_id=f'generation_info_{tabname}')
                     if tabname == 'txt2img' or tabname == 'img2img':
@@ -195,9 +195,9 @@ Requested path was: {f}
                     )
 
             else:
-                html_info_x = gr.HTML(elem_id=f'html_info_x_{tabname}')
-                html_info = gr.HTML(elem_id=f'html_info_{tabname}', elem_classes="infotext")
-                html_log = gr.HTML(elem_id=f'html_log_{tabname}')
+                html_info_x = gr.HTML(elem_id=f'html_info_x_{tabname}', visible=False)
+                html_info = gr.HTML(elem_id=f'html_info_{tabname}', elem_classes="infotext", visible=False)
+                html_log = gr.HTML(elem_id=f'html_log_{tabname}', visible=False)
 
             paste_field_names = []
             if tabname == "txt2img":

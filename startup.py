@@ -12,6 +12,7 @@ if __name__ == "__main__":
     cmd_opts.listen = True
     cmd_opts.enable_insecure_extension_access = True
     cmd_opts.xformers = True
+    cmd_opts.disable_tls_verify = True
     cmd_opts.hide_ui_dir_config = True
     # nowebui = True
     nowebui = False

@@ -239,6 +239,7 @@ button.custom-button{
 
 #txt2img_generate, #img2img_generate {
     min-height: 4.5em;
+    height: 100%;
 }
 
 @media screen and (min-width: 2500px) {

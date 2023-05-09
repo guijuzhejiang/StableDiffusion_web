@@ -1,3 +1,12 @@
 accelerate
 
 stable-diffusion-webui/modules/import_hook.py
+
+
+
+StableDiffusion_web/modules/shared.py:
+"sd_model_checkpoint": OptionInfo(None, "Stable Diffusion checkpoint", gr.Dropdown, lambda: {"choices": ['人物写真', '自然风景', '艺术作品']}, refresh=refresh_checkpoints),
+
+
+StableDiffusion_web/modules/sd_models.py":
+def list_models(): change to aliases model

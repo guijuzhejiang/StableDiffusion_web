@@ -26,7 +26,7 @@ checkpoints_loaded = collections.OrderedDict()
 
 
 class CheckpointInfo:
-    def __init__(self, filename):
+    def __init__(self, filename, alias_name=None):
         self.filename = filename
         abspath = os.path.abspath(filename)
 
@@ -48,9 +48,13 @@ class CheckpointInfo:
         self.sha256 = hashes.sha256_from_cache(self.filename, "checkpoint/" + name)
         self.shorthash = self.sha256[0:10] if self.sha256 else None
 
-        self.title = name if self.shorthash is None else f'{name} [{self.shorthash}]'
+        if alias_name:
+            self.title = alias_name
+        else:
+            self.title = name if self.shorthash is None else f'{name} [{self.shorthash}]'
 
-        self.ids = [self.hash, self.model_name, self.title, name, f'{name} [{self.hash}]'] + ([self.shorthash, self.sha256, f'{self.name} [{self.shorthash}]'] if self.shorthash else [])
+        # self.ids = [self.hash, self.model_name, self.title, name, f'{name} [{self.hash}]'] + ([self.shorthash, self.sha256, f'{self.name} [{self.shorthash}]'] if self.shorthash else [])
+        self.ids = [self.title]
 
     def register(self):
         checkpoints_list[self.title] = self
@@ -68,7 +72,7 @@ class CheckpointInfo:
             self.ids += [self.shorthash, self.sha256, f'{self.name} [{self.shorthash}]']
 
         checkpoints_list.pop(self.title)
-        self.title = f'{self.name} [{self.shorthash}]'
+        # self.title = f'{self.name} [{self.shorthash}]'
         self.register()
 
         return self.shorthash
@@ -122,8 +126,11 @@ def list_models():
     elif cmd_ckpt is not None and cmd_ckpt != shared.default_sd_model_file:
         print(f"Checkpoint in --ckpt argument not found (Possible it was moved to {model_path}: {cmd_ckpt}", file=sys.stderr)
 
-    for filename in sorted(model_list, key=str.lower):
-        checkpoint_info = CheckpointInfo(filename)
+    # for filename in sorted(model_list, key=str.lower):
+    #     checkpoint_info = CheckpointInfo(filename)
+    #     checkpoint_info.register()
+    for alias_name in sorted(['人物写真', '自然风景', '艺术作品']):
+        checkpoint_info = CheckpointInfo(model_list[0], alias_name)
         checkpoint_info.register()
 
 

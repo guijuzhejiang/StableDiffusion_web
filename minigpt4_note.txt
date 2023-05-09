@@ -1,0 +1,22 @@
+1. env:
+curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
+sudo apt install git-lfs
+git lfs install
+git clone https://github.com/Vision-CAIR/MiniGPT-4.git
+cd MiniGPT-4
+conda env create -f environment.yml
+conda activate minigpt4
+pip install -U transformers tokenizers protobuf==3.20.3
+pip install git+https://github.com/lm-sys/FastChat.git@v0.1.10
+
+2.convert_llama_weights_to_hf:
+mkdir /media/zzg/GJ_disk01/pretrained_model/MiniGPT/LLaMA_hf_7b
+python -m transformers.models.llama.convert_llama_weights_to_hf  --input_dir /media/zzg/GJ_disk01/pretrained_model/MiniGPT/LLaMA --model_size 7B --output_dir /media/zzg/GJ_disk01/pretrained_model/MiniGPT/LLaMA_hf_7b
+
+3.Prepare the pretrained Vicuna weights
+python -m fastchat.model.apply_delta --base /media/zzg/GJ_disk01/pretrained_model/MiniGPT/LLaMA_hf_7b  --target /media/zzg/GJ_disk01/pretrained_model/MiniGPT/vicuna_7b/weight/  --delta /media/zzg/GJ_disk01/pretrained_model/MiniGPT/vicuna-7b-delta-v0
+
+4.demo
+vi minigpt4/configs/models/minigpt4.yaml  Line 16 change to: /media/zzg/GJ_disk01/pretrained_model/MiniGPT/vicuna_7b/weight/
+vi eval_configs/minigpt4_eval.yaml   Line 11 change to: /media/zzg/GJ_disk01/pretrained_model/prerained_minigpt4_7b.pth
+python demo.py --cfg-path eval_configs/minigpt4_eval.yaml  --gpu-id 0
