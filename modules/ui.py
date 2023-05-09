@@ -504,7 +504,7 @@ def create_ui():
                                                   shared.prompt_styles.styles.items()]},
                                   f"refresh_{id_part}_styles")
         with gr.Row():
-            with gr.Column(scale=4, min_width=600) as left_block:
+            with gr.Column(scale=4) as left_block:
                 with gr.Row():
                     txt2img_gallery, generation_info, html_info, html_log = create_output_panel("txt2img",
                                                                                                 opts.outdir_txt2img_samples)
@@ -2016,6 +2016,11 @@ def create_ui():
                 if label in shared.opts.hidden_tabs:
                     continue
                 with gr.TabItem(label, id=ifid, elem_id='tab_' + ifid):
+                    interface.render()
+                    # interface.update(visible=False if label in shared.opts.hidden_tabs else True)
+        with gr.Tabs(elem_id="tabs_invisible", visible=False) as tabs2:
+            for interface, label, ifid in interfaces:
+                if label in shared.opts.hidden_tabs:
                     interface.render()
 
         if os.path.exists(os.path.join(script_path, "notification.mp3")):

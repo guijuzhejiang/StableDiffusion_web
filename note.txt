@@ -10,3 +10,7 @@ StableDiffusion_web/modules/shared.py:
 
 StableDiffusion_web/modules/sd_models.py":
 def list_models(): change to aliases model
+
+
+StableDiffusion_web/modules/ui.py:
+line 2006 with gr.Blocks(theme=shared.gradio_theme  渲染但隐藏tabitem
