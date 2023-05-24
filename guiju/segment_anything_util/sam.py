@@ -11,14 +11,16 @@ import gradio as gr
 import torch
 from segment_anything import SamPredictor, sam_model_registry
 
+from guiju.segment_anything_util.dino import show_boxes, dino_predict_internal, dino_install_issue_text
 from modules.devices import torch_gc, device
 from modules.safe import unsafe_torch_load, load
-from segment_anything_util.dino import show_boxes, dino_predict_internal, dino_install_issue_text
+
+sam = None
 
 refresh_symbol = '\U0001f504'       # 🔄
 sam_model_cache = OrderedDict()
-scripts_sam_model_dir = '/home/ray/Workspace/project/stable_diffusion/stable-diffusion-webui/extensions/sd-webui-segment-anything/models/sam'
-sd_sam_model_dir = '/home/ray/Workspace/project/stable_diffusion/stable-diffusion-webui/extensions/sd-webui-segment-anything/models/sam'
+scripts_sam_model_dir = 'extensions/sd-webui-segment-anything/models/sam'
+sd_sam_model_dir = 'extensions/sd-webui-segment-anything/models/sam'
 sam_model_dir = sd_sam_model_dir if os.path.exists(sd_sam_model_dir) else scripts_sam_model_dir
 sam_model_list = [f for f in os.listdir(sam_model_dir) if os.path.isfile(os.path.join(sam_model_dir, f)) and f.split('.')[-1] != 'txt']
 
@@ -87,14 +89,11 @@ def create_mask_output(image_np, masks, boxes_filt):
     return mask_images + masks_gallery + matted_images
 
 
-def sam_predict(sam_model_name, dino_model_name, text_prompt, box_threshold, input_image):
+def sam_predict(dino_model_name, text_prompt, box_threshold, input_image):
     positive_points = []
     negative_points = []
     dino_preview_boxes_selection = []
-
     print("Start SAM Processing")
-    if sam_model_name is None:
-        return [], "SAM model not found. Please download SAM model from extension README."
     if input_image is None:
         return [], "SAM requires an input image. Please upload an image first."
     image_np = np.array(input_image)
@@ -111,7 +110,6 @@ def sam_predict(sam_model_name, dino_model_name, text_prompt, box_threshold, inp
                 return [], f"GroundingDINO installment has failed. Check your terminal for more detail and {dino_install_issue_text}. "
             else:
                 sam_predict_result += f" However, GroundingDINO installment has failed. Your process automatically fall back to point prompt only. Check your terminal for more detail and {dino_install_issue_text}. "
-    sam = init_sam_model(sam_model_name)
     print(f"Running SAM Inference {image_np_rgb.shape}")
     predictor = SamPredictor(sam)
     predictor.set_image(image_np_rgb)

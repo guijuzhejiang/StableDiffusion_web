@@ -882,3 +882,7 @@ footer {
 #tabs .tab-nav{
     display: none;
 }
+
+#result_gallery {
+    height: 100%;
+}

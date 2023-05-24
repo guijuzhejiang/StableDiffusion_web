@@ -30,7 +30,7 @@ class Script:
 
     infotext_fields = None
     """if set in ui(), this is a list of pairs of gradio component + text; the text will be used when
-    parsing infotext to set the value for the component; see ui.py's txt2img_paste_fields for an example
+    parsing infotext to set the value for the component; see webui.py's txt2img_paste_fields for an example
     """
 
     paste_field_names = None

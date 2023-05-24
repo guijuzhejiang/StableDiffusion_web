@@ -421,7 +421,7 @@ class Api:
         return PNGInfoResponse(info=geninfo, items=items)
 
     def progressapi(self, req: ProgressRequest = Depends()):
-        # copy from check_progress_call of ui.py
+        # copy from check_progress_call of webui.py
 
         if shared.state.job_count == 0:
             return ProgressResponse(progress=0, eta_relative=0, state=shared.state.dict(), textinfo=shared.state.textinfo)

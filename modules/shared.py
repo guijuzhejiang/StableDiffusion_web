@@ -641,7 +641,7 @@ sd_model: LatentDiffusion = None  # this var is here just for IDE's type checkin
 sys.modules[__name__].__class__ = Shared
 
 settings_components = None
-"""assinged from ui.py, a mapping on setting names to gradio components repsponsible for those settings"""
+"""assinged from webui.py, a mapping on setting names to gradio components repsponsible for those settings"""
 
 latent_upscale_default_mode = "Latent"
 latent_upscale_modes = {
