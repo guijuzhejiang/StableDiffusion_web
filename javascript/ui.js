@@ -173,7 +173,7 @@ function submit(){
     var id = randomId()
     localStorage.setItem("txt2img_task_id", id);
 
-    requestProgress(id, gradioApp().getElementById('txt2img_gallery_container'), gradioApp().getElementById('txt2img_gallery'), function(){
+    requestProgress(id, gradioApp().getElementById('gallery_container'), gradioApp().getElementById('txt2img_gallery'), function(){
         showSubmitButtons('txt2img', true)
         localStorage.removeItem("txt2img_task_id")
         showRestoreProgressButton('txt2img', false)
@@ -438,4 +438,27 @@ function updateImg2imgResizeToTextAfterChangingImage(){
     }, 500);
 
     return []
+}
+
+function guiju_submit(){
+    var id = randomId()
+    gradioApp().getElementById('interrupt').style.display = "block";
+    gradioApp().getElementById('re_generate').style.display = "none";
+
+    // requestProgress(id, gradioApp().getElementById('gallery_container'), gradioApp().getElementById('result_gallery'), function(){
+    //     gradioApp().getElementById('interrupt').style.display = "none";
+    //     gradioApp().getElementById('re_generate').style.display = "block";
+    // })
+    var checkProgress = setInterval(function () {
+        var not_done = gradioApp().getElementById('gallery_container').innerHTML.indexOf('processing') >= 0;
+        if (!not_done) {
+            gradioApp().getElementById('interrupt').style.display = "none";
+            gradioApp().getElementById('re_generate').style.display = "block";
+            clearInterval(checkProgress);
+        }
+    }, 1000);
+
+    var res = create_submit_args(arguments);
+
+    return res;
 }

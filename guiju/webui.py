@@ -1,17 +1,43 @@
 # coding=utf-8
 # @Time : 2023/5/23 下午3:12
 # @File : webui.py
+import os
 import random
 import string
 
+import gradio
 import gradio as gr
 import modules.scripts
 from guiju.segment_anything_util.dino import dino_model_list
 from guiju.segment_anything_util.sam import sam_model_list, sam_predict
 import modules.img2img
+from modules import shared, script_callbacks
+from modules.paths import script_path, data_path
 
 
-def proceed_cloth_inpaint(_batch_size, _gender, _input_image):
+def get_prompt(_gender, _age):
+    if _gender == 'female':
+        sd_positive_prompt = f'(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, an extremely delicate and beautiful, extremely detailed, 2k wallpaper, extremely detailed CG unity 8k wallpaper, ultra-detailed, highres, light on face, 1girl, cute, {_age}, realistic body, (simple background:1.3), (white background:1.3), (full body:1.3)'
+        if _age not in ['middlescent', 'elder']:
+            sd_positive_prompt += ',<lora:shojovibe_v11:0.4> ,<lora:koreanDollLikeness:0.4>'
+    else:
+        sd_positive_prompt = f'(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, an extremely delicate, extremely detailed, CG, unity , 2k wallpaper, Amazing, finely detail, extremely detailed CG unity 8k wallpaper, ultra-detailed, highres, {_gender}, realistic body, (simple background:1.3), (white background:1.3), {_age}, (full body:1.3)'
+
+    sd_negative_prompt = '(extra clothes:1.5),(clothes:1.5),(NSFW:1.3),paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, worst quality, jpeg artifacts, signature, watermark, username, bad feet, Multiple people, blurry, poorly drawn hands, poorly drawn face, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, fused fingers, too many fingers, long neck, cross-eyed, mutated hands, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, fused fingers, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers, long neck, cross-eyed, mutated hands, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, fused fingers, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8)'
+
+    return sd_positive_prompt, sd_negative_prompt
+
+
+def show_prompt(_gender, _age):
+    _sd_positive_prompt, _sd_negative_prompt = get_prompt(_gender, _age)
+    return f'sd_positive_prompt: {_sd_positive_prompt}\n\nsd_negative_prompt: {_sd_negative_prompt}'
+
+
+def proceed_cloth_inpaint(_batch_size, _gender, _age, _input_image):
+    shared.state.interrupted = False
+    if _input_image is None:
+        return None, None
+
     _sam_model_name = sam_model_list[0]
     _dino_model_name = dino_model_list[1]
     _dino_text_prompt = 'clothing'
@@ -29,16 +55,7 @@ def proceed_cloth_inpaint(_batch_size, _gender, _input_image):
 
     task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
 
-    if _gender == 'female':
-        sd_positive_prompt = '(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, an extremely delicate and beautiful, extremely detailed, 2k wallpaper, light smile, extremely detailed CG unity 8k wallpaper, ultra-detailed, highres, beautiful detailed girl, detailed fingers, light on face, 1girl, cute, young, realistic face, realistic body, girl posing for a photo,   good hand,looking at viewer, (simple background:1.3), (white background:1.3)'
-        lora_positive_prompt = ',<lora:shojovibe_v11:0.4> ,<lora:koreanDollLikeness:0.4>'
-        lora_positive_prompt += lora_positive_prompt
-        sd_negative_prompt = 'NSFW,paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, worst quality, jpeg artifacts, signature, watermark, username, bad feet, Multiple people, blurry, poorly drawn hands, poorly drawn face, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, fused fingers, too many'
-    else:
-        sd_positive_prompt = '(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, an extremely delicate and beautiful, extremely detailed, CG, unity , 2k wallpaper, Amazing, finely detail, light smile, extremely detailed CG unity 8k wallpaper, ultra-detailed, highres, detailed fingers, 1boy, young, realistic face, realistic body, good hand,(simple background:1.3), (white background:1.3),'
-        lora_positive_prompt = ',<lora:shojovibe_v11:0.4> ,<lora:koreanDollLikeness:0.4>'
-        lora_positive_prompt += lora_positive_prompt
-        sd_negative_prompt = 'NSFW,paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, worst quality, jpeg artifacts, signature, watermark, username, bad feet, Multiple people, blurry, poorly drawn hands, poorly drawn face, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, fused fingers, too many'
+    sd_positive_prompt, sd_negative_prompt = get_prompt(_gender, _age)
 
     prompt_styles = None
     init_img = None
@@ -48,18 +65,18 @@ def proceed_cloth_inpaint(_batch_size, _gender, _input_image):
     inpaint_color_sketch_orig = None
     init_img_inpaint = None
     init_mask_inpaint = None
-    steps = 40
-    sampler_index = 0 # sampling method modules/sd_samplers_kdiffusion.py
+    steps = 20
+    sampler_index = 0  # sampling method modules/sd_samplers_kdiffusion.py
     mask_blur = 4
     mask_alpha = 0
     inpainting_fill = 1
     restore_faces = True
     tiling = False
     n_iter = 1
-    batch_size = 1
+    batch_size = _batch_size
     cfg_scale = 7
     image_cfg_scale = 1.5
-    denoising_strength = 0.90
+    denoising_strength = 0.80
     seed = -1.0
     subseed = -1.0
     subseed_strength = 0
@@ -71,8 +88,8 @@ def proceed_cloth_inpaint(_batch_size, _gender, _input_image):
     width = 512
     scale_by = 1
     resize_mode = 2
-    inpaint_full_res = 0
-    inpaint_full_res_padding = 32
+    inpaint_full_res = 0 # choices=["Whole picture", "Only masked"]
+    inpaint_full_res_padding = 0
     inpainting_mask_invert = 1
     img2img_batch_input_dir = ''
     img2img_batch_output_dir = ''
@@ -81,7 +98,8 @@ def proceed_cloth_inpaint(_batch_size, _gender, _input_image):
 
     sam_args = [0, True, False, 0, _input_image,
                 sam_result_tmp_png_fp,
-                2, False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                0, # sam_output_chosen_mask
+                False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                 '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
                 True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
                 '<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: 0.8</p>',
@@ -110,8 +128,8 @@ def proceed_cloth_inpaint(_batch_size, _gender, _input_image):
 
 
 def create_ui():
+    reload_javascript()
     # init sam
-
     modules.scripts.scripts_current = modules.scripts.scripts_img2img
     modules.scripts.scripts_img2img.initialize_scripts(is_img2img=True)
     modules.scripts.scripts_img2img.alwayson_scripts[0].args_from = 1
@@ -119,36 +137,132 @@ def create_ui():
 
     # web ui
     with gr.Blocks(analytics_enabled=False, title="cloths_inpaint", css='style.css') as demo:
-        with gr.Row():
+        with gr.Row(elem_id=f"image_row"):
             with gr.Column(scale=1):
                 input_image = gr.Image(label="Image for Segment Anything", elem_id=f"input_image", source="upload",
                                        type="pil", image_mode="RGBA").style(height=640)
 
             with gr.Column(scale=1):
-                result_gallery = gr.Gallery(label='Output', show_label=False, elem_id=f"result_gallery").style(grid=3, height='100%', container=True)
+                with gr.Group(elem_id=f"gallery_container"):
+                    result_gallery = gr.Gallery(label='Output', show_label=False, elem_id=f"result_gallery").style(columns=3,
+                                                                                                               preview=True)
                 # .style(grid=3)
 
         # img2img input args
-        with gr.Row():
+        with gr.Row(elem_id=f"control_row"):
+            # batch_size = gr.Dropdown(choices=[1, 2, 3], value=1, label='Batch size',
+            #                          elem_id="img2img_batch_size")
             with gr.Column(scale=1):
-                # batch_size = gr.Dropdown(choices=[1, 2, 3], value=1, label='Batch size',
-                #                          elem_id="img2img_batch_size")
                 batch_size = gr.Slider(minimum=1, maximum=3, step=1, label='Batch size', value=1, elem_id="batch_size")
 
             with gr.Column(scale=1):
-                gender = gr.Radio(label='Output gender', choices=['male', 'female'], value='male',
-                                  type="index", elem_id="gender")
-            with gr.Column(scale=4):
-                sam_result = gr.Text(value="", label="Status")
+                gender = gr.Radio(label='Output gender', choices=['male', 'female'], value='female',
+                                  type="value", elem_id="gender")
+            with gr.Column(scale=1):
+                # , 'elder'
+                age = gr.Radio(label='Output age', choices=['child', 'youth', 'middlescent'], value='youth',
+                               type="value", elem_id="age")
+            with gr.Column(scale=1):
+                regenerate = gr.Button('Generate', elem_id=f"re_generate", variant='primary')
+                interrupt = gr.Button('Interrupt', elem_id=f"interrupt", visible=False)
+                prompt = gr.Button('prompt', elem_id=f"show_prompt")
 
-        input_image.change(
+        with gr.Row(visible=True):
+            sam_result = gr.Text(value="", label="Status")
+
+        regenerate.click(
             fn=proceed_cloth_inpaint,
+            _js='guiju_submit',
             inputs=[batch_size,
                     gender,
+                    age,
                     input_image],
             outputs=[result_gallery, sam_result]
         )
 
-    modules.scripts.scripts_current = None
+        # input_image.change(
+        #     fn=proceed_cloth_inpaint,
+        #     inputs=[batch_size,
+        #             gender,
+        #             age,
+        #             input_image],
+        #     outputs=[result_gallery, sam_result]
+        # )
 
+        interrupt.click(
+            fn=lambda: shared.state.interrupt(),
+            inputs=[],
+            outputs=[],
+        )
+
+        prompt.click(
+            fn=show_prompt,
+            inputs=[gender,age],
+            outputs=[sam_result],
+        )
+
+
+    modules.scripts.scripts_current = None
+    script_callbacks.ui_settings_callback()
     return demo
+
+
+def webpath(fn):
+    if fn.startswith(script_path):
+        web_path = os.path.relpath(fn, script_path).replace('\\', '/')
+    else:
+        web_path = os.path.abspath(fn)
+
+    return f'file={web_path}?{os.path.getmtime(fn)}'
+
+
+def javascript_html():
+    # Ensure localization is in `window` before scripts
+    # head = f'<script type="text/javascript">{localization.localization_js(shared.opts.localization)}</script>\n'
+    head = ''
+    script_js = os.path.join(script_path, "script.js")
+    head += f'<script type="text/javascript" src="{webpath(script_js)}"></script>\n'
+
+    for script in modules.scripts.list_scripts("javascript", ".js"):
+        head += f'<script type="text/javascript" src="{webpath(script.path)}"></script>\n'
+
+    for script in modules.scripts.list_scripts("javascript", ".mjs"):
+        head += f'<script type="module" src="{webpath(script.path)}"></script>\n'
+
+    return head
+
+
+def css_html():
+    head = ""
+
+    def stylesheet(fn):
+        return f'<link rel="stylesheet" property="stylesheet" href="{webpath(fn)}">'
+
+    for cssfile in modules.scripts.list_files_with_name("style.css"):
+        if not os.path.isfile(cssfile):
+            continue
+
+        head += stylesheet(cssfile)
+
+    if os.path.exists(os.path.join(data_path, "user.css")):
+        head += stylesheet(os.path.join(data_path, "user.css"))
+
+    return head
+
+
+def reload_javascript():
+    js = javascript_html()
+    css = css_html()
+
+    def template_response(*args, **kwargs):
+        res = shared.GradioTemplateResponseOriginal(*args, **kwargs)
+        res.body = res.body.replace(b'</head>', f'{js}</head>'.encode("utf8"))
+        res.body = res.body.replace(b'</body>', f'{css}</body>'.encode("utf8"))
+        res.init_headers()
+        return res
+
+    gradio.routes.templates.TemplateResponse = template_response
+
+
+if not hasattr(shared, 'GradioTemplateResponseOriginal'):
+    shared.GradioTemplateResponseOriginal = gradio.routes.templates.TemplateResponse

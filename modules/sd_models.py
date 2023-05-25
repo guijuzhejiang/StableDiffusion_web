@@ -17,7 +17,9 @@ from ldm.util import instantiate_from_config
 from modules import paths, shared, modelloader, devices, script_callbacks, sd_vae, sd_disable_initialization, errors, hashes, sd_models_config
 from modules.paths import models_path
 from modules.sd_hijack_inpainting import do_inpainting_hijack
+from modules.shared import cmd_opts
 from modules.timer import Timer
+import tomesd
 
 model_dir = "Stable-diffusion"
 model_path = os.path.abspath(os.path.join(paths.models_path, model_dir))
@@ -492,6 +494,13 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
     timer.record("hijack")
 
     sd_model.eval()
+
+    # However, if you want to tinker around with the settings, we expose several options.
+    # See docstring and paper for details. Note: you can patch the same model multiple times.
+    # , sx = 4, sy = 4, max_downsample = 2
+    if not cmd_opts.disable_tome:
+        tomesd.apply_patch(sd_model, ratio=0.6)  # Extreme merging, expect diminishing returns
+
     model_data.sd_model = sd_model
 
     sd_hijack.model_hijack.embedding_db.load_textual_inversion_embeddings(force_reload=True)  # Reload embeddings after model load as they may or may not fit the model

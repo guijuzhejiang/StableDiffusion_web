@@ -14,10 +14,9 @@ function showModal(event) {
     lb.style.display = "flex";
     lb.focus()
 
-    const tabTxt2Img = gradioApp().getElementById("tab_txt2img")
-    const tabImg2Img = gradioApp().getElementById("tab_img2img")
+    const tabImg2Img = gradioApp().getElementById("result_gallery")
     // show the save button in modal only on txt2img or img2img tabs
-    if (tabTxt2Img.style.display != "none" || tabImg2Img.style.display != "none") {
+    if (tabImg2Img.style.display != "none") {
         gradioApp().getElementById("modal_save").style.display = "inline"
     } else {
         gradioApp().getElementById("modal_save").style.display = "none"
@@ -72,15 +71,30 @@ function modalImageSwitch(offset) {
     }
 }
 
+
+function downloadImageFromUrl(url) {
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = 'blob';
+    xhr.onload = function () {
+        var a = document.createElement('a');
+        a.href = window.URL.createObjectURL(xhr.response);
+        a.download = 'image.jpg';
+        a.style.display == 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    };
+    xhr.open('GET', url);
+    xhr.send();
+}
+
+
 function saveImage(){
-    const tabTxt2Img = gradioApp().getElementById("tab_txt2img")
-    const tabImg2Img = gradioApp().getElementById("tab_img2img")
+    const tabImg2Img = gradioApp().getElementById("result_gallery")
     const saveTxt2Img = "save_txt2img"
     const saveImg2Img = "save_img2img"
-    if (tabTxt2Img.style.display != "none") {
-        gradioApp().getElementById(saveTxt2Img).click()
-    } else if (tabImg2Img.style.display != "none") {
-        gradioApp().getElementById(saveImg2Img).click()
+    if (tabImg2Img.style.display != "none") {
+        downloadImageFromUrl(gradioApp().getElementById('modalImage').src);
     } else {
         console.error("missing implementation for saving modal of this type")
     }
@@ -119,8 +133,9 @@ function modalKeyHandler(event) {
 }
 
 function setupImageForLightbox(e) {
-	if (e.dataset.modded)
-		return;
+    // alert('asdasd');
+	// if (e.dataset.modded)
+	// 	return;
 
 	e.dataset.modded = true;
 	e.style.cursor='pointer'
@@ -134,9 +149,7 @@ function setupImageForLightbox(e) {
 	var event = isFirefox ? 'mousedown' : 'click'
 
 	e.addEventListener(event, function (evt) {
-		if(!opts.js_modal_lightbox || evt.button != 0) return;
-
-		modalZoomSet(gradioApp().getElementById('modalImage'), opts.js_modal_lightbox_initially_zoomed)
+		modalZoomSet(gradioApp().getElementById('modalImage'), true)
 		evt.preventDefault()
 		showModal(evt)
 	}, true);
@@ -211,7 +224,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const modalSave = document.createElement("span")
     modalSave.className = "modalSave cursor"
     modalSave.id = "modal_save"
-    modalSave.innerHTML = "&#x1F5AB;"
+    modalSave.innerHTML = "save"
     modalSave.addEventListener("click", modalSaveImage, true)
     modalSave.title = "Save Image(s)"
     modalControls.appendChild(modalSave)
@@ -254,5 +267,8 @@ document.addEventListener("DOMContentLoaded", function() {
 	}
 
     document.body.appendChild(modal);
-
+    var fullImg_preview = gradioApp().querySelectorAll('.gradio-gallery > div > img')
+    if (fullImg_preview != null) {
+        fullImg_preview.forEach(setupImageForLightbox);
+    }
 });

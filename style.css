@@ -883,6 +883,19 @@ footer {
     display: none;
 }
 
-#result_gallery {
+#image_row {
+    height: 80%;
+}
+
+#control_row {
+    height: 20%;
+}
+
+#component-0 {
+    height: 100% !important;
+}
+
+#result_gallery, #gallery_container {
     height: 100%;
 }
+

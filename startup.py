@@ -23,23 +23,26 @@ from guiju.webui import create_ui
 import guiju.segment_anything_util.sam
 
 logging.getLogger("xformers").addFilter(lambda record: 'A matching Triton is not available' not in record.getMessage())
-
+import modules.ui
 from modules import paths, timer, import_hook, errors
 
 startup_timer = timer.Timer()
 
 import torch
-import pytorch_lightning # pytorch_lightning should be imported after torch, but it re-enables warnings on import so import once to disable them
+import \
+    pytorch_lightning  # pytorch_lightning should be imported after torch, but it re-enables warnings on import so import once to disable them
+
 warnings.filterwarnings(action="ignore", category=DeprecationWarning, module="pytorch_lightning")
 warnings.filterwarnings(action="ignore", category=UserWarning, module="torchvision")
-
 
 startup_timer.record("import torch")
 
 import gradio
+
 startup_timer.record("import gradio")
 
 import ldm.modules.encoders.modules
+
 startup_timer.record("import ldm")
 
 from modules import extra_networks, ui_extra_networks_checkpoints
@@ -51,7 +54,8 @@ if ".dev" in torch.__version__ or "+git" in torch.__version__:
     torch.__long_version__ = torch.__version__
     torch.__version__ = re.search(r'[\d.]+[\d]', torch.__version__).group(0)
 
-from modules import shared, devices, sd_samplers, upscaler, extensions, localization, ui_tempdir, ui_extra_networks, config_states
+from modules import shared, devices, sd_samplers, upscaler, extensions, localization, ui_tempdir, ui_extra_networks, \
+    config_states
 import modules.codeformer_model as codeformer
 import modules.face_restoration
 import modules.gfpgan_model as gfpgan
@@ -74,11 +78,8 @@ import modules.hypernetworks.hypernetwork
 
 startup_timer.record("other imports")
 
-
-if cmd_opts.server_name:
-    server_name = cmd_opts.server_name
-else:
-    server_name = "0.0.0.0" if cmd_opts.listen else None
+server_name = "0.0.0.0"
+server_port = 7860
 
 
 def fix_asyncio_event_loop_policy():
@@ -193,7 +194,7 @@ def initialize():
     startup_timer.record("load scripts")
 
     modelloader.load_upscalers()
-    startup_timer.record("load upscalers") #Is this necessary? I don't know.
+    startup_timer.record("load upscalers")  # Is this necessary? I don't know.
 
     modules.sd_vae.refresh_vae_list()
     startup_timer.record("refresh VAE")
@@ -204,7 +205,8 @@ def initialize():
     # load model in parallel to other startup stuff
     Thread(target=lambda: shared.sd_model).start()
 
-    shared.opts.onchange("sd_model_checkpoint", wrap_queued_call(lambda: modules.sd_models.reload_model_weights()), call=False)
+    shared.opts.onchange("sd_model_checkpoint", wrap_queued_call(lambda: modules.sd_models.reload_model_weights()),
+                         call=False)
     shared.opts.onchange("sd_vae", wrap_queued_call(lambda: modules.sd_vae.reload_vae_weights()), call=False)
     shared.opts.onchange("sd_vae_as_default", wrap_queued_call(lambda: modules.sd_vae.reload_vae_weights()), call=False)
     shared.opts.onchange("temp_dir", ui_tempdir.on_tmpdir_changed)
@@ -246,15 +248,19 @@ def initialize():
 
 
 def setup_middleware(app):
-    app.middleware_stack = None # reset current middleware to allow modifying user provided list
+    app.middleware_stack = None  # reset current middleware to allow modifying user provided list
     app.add_middleware(GZipMiddleware, minimum_size=1000)
     if cmd_opts.cors_allow_origins and cmd_opts.cors_allow_origins_regex:
-        app.add_middleware(CORSMiddleware, allow_origins=cmd_opts.cors_allow_origins.split(','), allow_origin_regex=cmd_opts.cors_allow_origins_regex, allow_methods=['*'], allow_credentials=True, allow_headers=['*'])
+        app.add_middleware(CORSMiddleware, allow_origins=cmd_opts.cors_allow_origins.split(','),
+                           allow_origin_regex=cmd_opts.cors_allow_origins_regex, allow_methods=['*'],
+                           allow_credentials=True, allow_headers=['*'])
     elif cmd_opts.cors_allow_origins:
-        app.add_middleware(CORSMiddleware, allow_origins=cmd_opts.cors_allow_origins.split(','), allow_methods=['*'], allow_credentials=True, allow_headers=['*'])
+        app.add_middleware(CORSMiddleware, allow_origins=cmd_opts.cors_allow_origins.split(','), allow_methods=['*'],
+                           allow_credentials=True, allow_headers=['*'])
     elif cmd_opts.cors_allow_origins_regex:
-        app.add_middleware(CORSMiddleware, allow_origin_regex=cmd_opts.cors_allow_origins_regex, allow_methods=['*'], allow_credentials=True, allow_headers=['*'])
-    app.build_middleware_stack() # rebuild middleware stack on-the-fly
+        app.add_middleware(CORSMiddleware, allow_origin_regex=cmd_opts.cors_allow_origins_regex, allow_methods=['*'],
+                           allow_credentials=True, allow_headers=['*'])
+    app.build_middleware_stack()  # rebuild middleware stack on-the-fly
 
 
 def create_api(app):
@@ -296,7 +302,8 @@ def webui():
 
         gradio_auth_creds = []
         if cmd_opts.gradio_auth:
-            gradio_auth_creds += [x.strip() for x in cmd_opts.gradio_auth.strip('"').replace('\n', '').split(',') if x.strip()]
+            gradio_auth_creds += [x.strip() for x in cmd_opts.gradio_auth.strip('"').replace('\n', '').split(',') if
+                                  x.strip()]
         if cmd_opts.gradio_auth_path:
             with open(cmd_opts.gradio_auth_path, 'r', encoding="utf8") as file:
                 for line in file.readlines():
@@ -305,7 +312,7 @@ def webui():
         app, local_url, share_url = shared.demo.launch(
             share=cmd_opts.share,
             server_name=server_name,
-            server_port=cmd_opts.port,
+            server_port=server_port,
             ssl_keyfile=cmd_opts.tls_keyfile,
             ssl_certfile=cmd_opts.tls_certfile,
             ssl_verify=cmd_opts.disable_tls_verify,
@@ -401,10 +408,12 @@ if __name__ == "__main__":
     os.environ['HTTPS_PROXY'] = 'http://127.0.0.1:7890'
     os.environ['ACCELERATE'] = 'False'
     from modules.shared import cmd_opts
+
     cmd_opts.listen = True
     cmd_opts.enable_insecure_extension_access = True
     cmd_opts.xformers = True
     cmd_opts.disable_tls_verify = True
     cmd_opts.hide_ui_dir_config = True
+    cmd_opts.disable_tome = False
 
     webui()
