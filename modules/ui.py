@@ -474,8 +474,7 @@ def create_ui():
 
     modules.scripts.scripts_current = modules.scripts.scripts_img2img
     modules.scripts.scripts_img2img.initialize_scripts(is_img2img=True)
-    modules.scripts.scripts_img2img.alwayson_scripts[0].args_from = 1
-    modules.scripts.scripts_img2img.alwayson_scripts[0].args_to = 21
+
 
     with gr.Blocks(analytics_enabled=False, title="cloths_inpaint") as demo:
         with gr.Row():

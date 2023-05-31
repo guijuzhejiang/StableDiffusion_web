@@ -10,18 +10,18 @@ import gradio as gr
 import modules.scripts
 from guiju.segment_anything_util.dino import dino_model_list
 from guiju.segment_anything_util.sam import sam_model_list, sam_predict
-import modules.img2img
 from modules import shared, script_callbacks
 from modules.paths import script_path, data_path
+import modules.img2img
 
 
 def get_prompt(_gender, _age):
     if _gender == 'female':
-        sd_positive_prompt = f'(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, an extremely delicate and beautiful, extremely detailed, 2k wallpaper, extremely detailed CG unity 8k wallpaper, ultra-detailed, highres, light on face, 1girl, cute, {_age}, realistic body, (simple background:1.3), (white background:1.3), (full body:1.3)'
+        sd_positive_prompt = f'(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, an extremely delicate and beautiful, extremely detailed, 2k wallpaper, extremely detailed CG unity 8k wallpaper, ultra-detailed, highres, light on face, 1girl, {_gender}, cute, {_age}, realistic body, (simple background:1.3), (white background:1.3), (full body:1.3)'
         if _age not in ['middlescent', 'elder']:
             sd_positive_prompt += ',<lora:shojovibe_v11:0.4> ,<lora:koreanDollLikeness:0.4>'
     else:
-        sd_positive_prompt = f'(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, an extremely delicate, extremely detailed, CG, unity , 2k wallpaper, Amazing, finely detail, extremely detailed CG unity 8k wallpaper, ultra-detailed, highres, {_gender}, realistic body, (simple background:1.3), (white background:1.3), {_age}, (full body:1.3)'
+        sd_positive_prompt = f'(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, an extremely delicate, extremely detailed, CG, unity , 2k wallpaper, Amazing, finely detail, extremely detailed CG unity 8k wallpaper, ultra-detailed, highres,1boy, {_gender}, realistic body, (simple background:1.3), (white background:1.3), {_age}, (full body:1.3)'
 
     sd_negative_prompt = '(extra clothes:1.5),(clothes:1.5),(NSFW:1.3),paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, worst quality, jpeg artifacts, signature, watermark, username, bad feet, Multiple people, blurry, poorly drawn hands, poorly drawn face, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, fused fingers, too many fingers, long neck, cross-eyed, mutated hands, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, fused fingers, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers, long neck, cross-eyed, mutated hands, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, fused fingers, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8)'
 
@@ -33,7 +33,7 @@ def show_prompt(_gender, _age):
     return f'sd_positive_prompt: {_sd_positive_prompt}\n\nsd_negative_prompt: {_sd_negative_prompt}'
 
 
-def proceed_cloth_inpaint(_batch_size, _gender, _age, _input_image):
+def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _controlnet_mode):
     shared.state.interrupted = False
     if _input_image is None:
         return None, None
@@ -58,7 +58,7 @@ def proceed_cloth_inpaint(_batch_size, _gender, _age, _input_image):
     sd_positive_prompt, sd_negative_prompt = get_prompt(_gender, _age)
 
     prompt_styles = None
-    init_img = None
+    init_img = _input_image
     sketch = None
     init_img_with_mask = None
     inpaint_color_sketch = None
@@ -76,7 +76,7 @@ def proceed_cloth_inpaint(_batch_size, _gender, _age, _input_image):
     batch_size = _batch_size
     cfg_scale = 7
     image_cfg_scale = 1.5
-    denoising_strength = 0.80
+    denoising_strength = 0.8
     seed = -1.0
     subseed = -1.0
     subseed_strength = 0
@@ -88,7 +88,7 @@ def proceed_cloth_inpaint(_batch_size, _gender, _age, _input_image):
     width = 512
     scale_by = 1
     resize_mode = 2
-    inpaint_full_res = 0 # choices=["Whole picture", "Only masked"]
+    inpaint_full_res = 0  # choices=["Whole picture", "Only masked"]
     inpaint_full_res_padding = 0
     inpainting_mask_invert = 1
     img2img_batch_input_dir = ''
@@ -96,13 +96,36 @@ def proceed_cloth_inpaint(_batch_size, _gender, _age, _input_image):
     img2img_batch_inpaint_mask_dir = ''
     override_settings_texts = []
 
-    sam_args = [0, True, False, 0, _input_image,
+    # controlnet args
+    cnet_idx = 1
+    controlnet_args = modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx].get_default_ui_unit()
+    controlnet_args.batch_images = ''
+    controlnet_args.control_mode = 'My prompt is more important'
+    controlnet_args.enabled = True if _controlnet_mode > 0 else False
+    controlnet_args.guidance_end = 1
+    controlnet_args.guidance_start = 0
+    controlnet_args.image = None
+    # controlnet_args.input_mode = batch_hijack.InputMode.SIMPLE
+    controlnet_args.low_vram = False
+    controlnet_args.model = 'control_v11p_sd15_normalbae'
+    controlnet_args.module = 'normal_bae'
+    controlnet_args.pixel_perfect = True
+    controlnet_args.resize_mode = 'Resize and Fill'
+    controlnet_args.processor_res = 512
+    controlnet_args.threshold_a = 64
+    controlnet_args.threshold_b = 64
+    controlnet_args.weight = 0.4 if _controlnet_mode == 1 else 1
+
+    # sam
+    sam_args = [0,
+                controlnet_args,  # controlnet args
+                True, False, 0, _input_image,
                 sam_result_tmp_png_fp,
-                0, # sam_output_chosen_mask
+                0-2,  # sam_output_chosen_mask
                 False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                 '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
                 True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                '<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: 0.8</p>',
+                f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
                 128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0, ['left', 'right', 'up', 'down'],
                 False, False, 'positive', 'comma', 0, False, False, '',
                 '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
@@ -132,8 +155,20 @@ def create_ui():
     # init sam
     modules.scripts.scripts_current = modules.scripts.scripts_img2img
     modules.scripts.scripts_img2img.initialize_scripts(is_img2img=True)
-    modules.scripts.scripts_img2img.alwayson_scripts[0].args_from = 1
-    modules.scripts.scripts_img2img.alwayson_scripts[0].args_to = 21
+
+    cnet_idx = 0
+    sam_idx = 1
+    modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx], modules.scripts.scripts_img2img.alwayson_scripts[
+        sam_idx] = modules.scripts.scripts_img2img.alwayson_scripts[sam_idx], \
+                   modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx]
+
+    # sam
+    modules.scripts.scripts_img2img.alwayson_scripts[0].args_from = 2
+    modules.scripts.scripts_img2img.alwayson_scripts[0].args_to = 22
+
+    # controlnet
+    modules.scripts.scripts_img2img.alwayson_scripts[1].args_from = 1
+    modules.scripts.scripts_img2img.alwayson_scripts[1].args_to = 2
 
     # web ui
     with gr.Blocks(analytics_enabled=False, title="cloths_inpaint", css='style.css') as demo:
@@ -144,8 +179,10 @@ def create_ui():
 
             with gr.Column(scale=1):
                 with gr.Group(elem_id=f"gallery_container"):
-                    result_gallery = gr.Gallery(label='Output', show_label=False, elem_id=f"result_gallery").style(columns=3,
-                                                                                                               preview=True)
+                    result_gallery = gr.Gallery(label='Output', show_label=False, elem_id=f"result_gallery").style(
+                        columns=3,
+                        rows=1,
+                        preview=True)
                 # .style(grid=3)
 
         # img2img input args
@@ -155,13 +192,15 @@ def create_ui():
             with gr.Column(scale=1):
                 batch_size = gr.Slider(minimum=1, maximum=3, step=1, label='Batch size', value=1, elem_id="batch_size")
 
-            with gr.Column(scale=1):
+            with gr.Column(scale=6):
                 gender = gr.Radio(label='Output gender', choices=['male', 'female'], value='female',
                                   type="value", elem_id="gender")
-            with gr.Column(scale=1):
-                # , 'elder'
+            with gr.Column(scale=6):
                 age = gr.Radio(label='Output age', choices=['child', 'youth', 'middlescent'], value='youth',
                                type="value", elem_id="age")
+            with gr.Column(scale=6):
+                controlnet_mode = gr.Radio(label='Output mode', choices=[0, 1, 2], value=2,
+                                type="value", elem_id="controlnet_mode")
             with gr.Column(scale=1):
                 regenerate = gr.Button('Generate', elem_id=f"re_generate", variant='primary')
                 interrupt = gr.Button('Interrupt', elem_id=f"interrupt", visible=False)
@@ -174,9 +213,11 @@ def create_ui():
             fn=proceed_cloth_inpaint,
             _js='guiju_submit',
             inputs=[batch_size,
+                    input_image,
                     gender,
                     age,
-                    input_image],
+                    controlnet_mode,
+                    ],
             outputs=[result_gallery, sam_result]
         )
 
@@ -197,10 +238,9 @@ def create_ui():
 
         prompt.click(
             fn=show_prompt,
-            inputs=[gender,age],
+            inputs=[gender, age],
             outputs=[sam_result],
         )
-
 
     modules.scripts.scripts_current = None
     script_callbacks.ui_settings_callback()

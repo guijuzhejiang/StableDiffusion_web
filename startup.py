@@ -17,8 +17,9 @@ from fastapi.middleware.gzip import GZipMiddleware
 from packaging import version
 
 import logging
-
+from modules import shared
 from guiju.segment_anything_util.sam import init_sam_model, sam_model_list
+shared.cmd_opts.xformers = True
 from guiju.webui import create_ui
 import guiju.segment_anything_util.sam
 
@@ -54,7 +55,7 @@ if ".dev" in torch.__version__ or "+git" in torch.__version__:
     torch.__long_version__ = torch.__version__
     torch.__version__ = re.search(r'[\d.]+[\d]', torch.__version__).group(0)
 
-from modules import shared, devices, sd_samplers, upscaler, extensions, localization, ui_tempdir, ui_extra_networks, \
+from modules import devices, sd_samplers, upscaler, extensions, localization, ui_tempdir, ui_extra_networks, \
     config_states
 import modules.codeformer_model as codeformer
 import modules.face_restoration
