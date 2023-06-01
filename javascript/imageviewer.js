@@ -188,7 +188,7 @@ function galleryImageHandler(e) {
 }
 
 onUiUpdate(function() {
-    var fullImg_preview = gradioApp().querySelectorAll('.gradio-gallery > div > img')
+    var fullImg_preview = gradioApp().querySelectorAll('.gradio-gallery > div > img, #input_image > div > div > img')
     if (fullImg_preview != null) {
         fullImg_preview.forEach(setupImageForLightbox);
     }
@@ -267,7 +267,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	}
 
     document.body.appendChild(modal);
-    var fullImg_preview = gradioApp().querySelectorAll('.gradio-gallery > div > img')
+    var fullImg_preview = gradioApp().querySelectorAll('.gradio-gallery > div > img, #input_image > div > div > img')
     if (fullImg_preview != null) {
         fullImg_preview.forEach(setupImageForLightbox);
     }

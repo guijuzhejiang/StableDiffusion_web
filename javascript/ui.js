@@ -409,6 +409,22 @@ function restart_reload(){
     return []
 }
 
+function restart_reload2(lang){
+    document.body.innerHTML='<h1 style="font-family:monospace;margin-top:20%;color:lightgray;text-align:center;">Reloading...</h1>';
+
+    var requestPing = function(){
+        requestGet("./internal/ping", {}, function(data){
+            location.reload();
+        }, function(){
+            setTimeout(requestPing, 500);
+        })
+    }
+
+    setTimeout(requestPing, 2000);
+
+    return [lang]
+}
+
 // Simulate an `input` DOM event for Gradio Textbox component. Needed after you edit its contents in javascript, otherwise your edits
 // will only visible on web page and not sent to python.
 function updateInput(target){

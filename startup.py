@@ -416,5 +416,6 @@ if __name__ == "__main__":
     cmd_opts.disable_tls_verify = True
     cmd_opts.hide_ui_dir_config = True
     cmd_opts.disable_tome = False
+    cmd_opts.lang = 'ch'
 
     webui()
