@@ -1,10 +1,12 @@
 # coding=utf-8
 # @Time : 2023/5/23 下午3:12
 # @File : webui.py
+import datetime
 import os
 import random
 import string
-
+from PIL import Image
+from io import BytesIO
 import gradio
 import gradio as gr
 import modules.scripts
@@ -41,10 +43,47 @@ def show_prompt(_gender, _age, _viewpoint):
     return f'sd_positive_prompt: {_sd_positive_prompt}\n\nsd_negative_prompt: {_sd_negative_prompt}'
 
 
+def pad_and_compress_rgba_image(original_image, target_ratio=0.5, fill_color=(0, 0, 0, 0), quality=80):
+    original_width, original_height = original_image.size
+
+    # 计算原始图像的长宽比
+    original_ratio = original_width / original_height
+
+    # 计算应该添加的填充量
+    if original_ratio > target_ratio:
+        # 需要添加垂直填充
+        target_height = original_width / target_ratio
+        pad_height = int((target_height - original_height) / 2)
+        pad_width = 0
+    else:
+        # 需要添加水平填充
+        target_width = original_height * target_ratio
+        pad_width = int((target_width - original_width) / 2)
+        pad_height = 0
+
+    # 创建新的空白图像并粘贴原始图像
+    padded_image = Image.new('RGBA', (original_width + 2 * pad_width, original_height + 2 * pad_height), fill_color)
+    padded_image.paste(original_image, (pad_width, pad_height), mask=original_image)
+
+    # 压缩图像质量并返回图像数据
+    output_buffer = BytesIO()
+    padded_image.save(output_buffer, format='PNG', quality=quality)
+    output_buffer.seek(0)
+
+    # 使用 PIL 的 Image.open() 函数加载图像数据
+    compressed_image = Image.open(output_buffer)
+
+    # 返回填充和压缩后的图像
+    return compressed_image
+
+
 def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_mode):
     shared.state.interrupted = False
     if _input_image is None:
         return None, None
+    else:
+        _input_image.save(f'tmp/origin_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
+        _input_image = pad_and_compress_rgba_image(_input_image)
 
     _sam_model_name = sam_model_list[0]
     _dino_model_name = dino_model_list[1]
@@ -199,7 +238,7 @@ def create_ui():
     with gr.Blocks(analytics_enabled=False, title="cloths_inpaint", css='style.css') as demo:
         # with gr.Row(elem_id='1st_row'):
         #     gr.Label(visible=False)
-        with gr.Row(elem_id='2nd_row'):
+        with gr.Row(elem_id='2nd_row', visible=False):
             lang_vals = list(html_label['lang_selection'].values())
             lang_sel_list = gr.Dropdown(label="language", elem_id="lang_list", choices=lang_vals, type="value",
                                         value=html_label['lang_selection'][shared.lang])
