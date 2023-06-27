@@ -61,8 +61,11 @@ def pad_and_compress_rgba_image(original_image, target_ratio=0.5, fill_color=(0,
         pad_width = int((target_width - original_width) / 2)
         pad_height = 0
 
+    # 获取原图的边缘颜色
+    edge_color = original_image.getpixel((0, 0))
+
     # 创建新的空白图像并粘贴原始图像
-    padded_image = Image.new('RGBA', (original_width + 2 * pad_width, original_height + 2 * pad_height), fill_color)
+    padded_image = Image.new('RGBA', (original_width + 2 * pad_width, original_height + 2 * pad_height), edge_color)
     padded_image.paste(original_image, (pad_width, pad_height), mask=original_image)
 
     # 压缩图像质量并返回图像数据
