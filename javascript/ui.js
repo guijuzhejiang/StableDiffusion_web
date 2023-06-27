@@ -8,7 +8,7 @@ function set_theme(theme){
 }
 
 function all_gallery_buttons() {
-    var allGalleryButtons = gradioApp().querySelectorAll('[style="display: block;"].tabitem div[id$=_gallery].gradio-gallery .thumbnails > .thumbnail-item.thumbnail-small');
+    var allGalleryButtons = gradioApp().querySelectorAll('div[id$=_gallery].gradio-gallery .thumbnails > .thumbnail-item.thumbnail-small');
     var visibleGalleryButtons = [];
     allGalleryButtons.forEach(function(elem) {
         if (elem.parentElement.offsetParent) {
@@ -19,7 +19,7 @@ function all_gallery_buttons() {
 }
 
 function selected_gallery_button() {
-    var allCurrentButtons = gradioApp().querySelectorAll('[style="display: block;"].tabitem div[id$=_gallery].gradio-gallery .thumbnail-item.thumbnail-small.selected');
+    var allCurrentButtons = gradioApp().querySelectorAll('div[id$=_gallery].gradio-gallery .thumbnail-item.thumbnail-small.selected');
     var visibleCurrentButton = null;
     allCurrentButtons.forEach(function(elem) {
         if (elem.parentElement.offsetParent) {
