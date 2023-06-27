@@ -33,7 +33,7 @@ if os.environ.get('IGNORE_CMD_ARGS_ERRORS', None) is None:
 else:
     cmd_opts, _ = parser.parse_known_args()
 
-lang = 'ch'
+lang = 'jp'
 
 restricted_opts = {
     "samples_filename_pattern",

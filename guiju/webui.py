@@ -249,6 +249,9 @@ def create_ui():
                                       visible=False)
                 prompt = gr.Button('prompt', elem_id=f"show_prompt", visible=False)
 
+        with gr.Row():
+            hint1 = gr.Label(value=html_label['hint1'][shared.lang], elem_id="hint1", label=None, color='#FFFAF0')
+            hint2 = gr.Label(value=html_label['hint2'][shared.lang], elem_id="hint2", label=None, color='#FFFAF0')
         with gr.Row(visible=False):
             sam_result = gr.Text(value="", label="Status")
 
