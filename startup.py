@@ -403,7 +403,7 @@ def webui():
 
 
 if __name__ == "__main__":
-    # os.environ['HTTPS_PROXY'] = 'http://127.0.0.1:7890'
+    os.environ['HTTPS_PROXY'] = 'http://127.0.0.1:1095'
     os.environ['ACCELERATE'] = 'True'
     from modules.shared import cmd_opts
 
