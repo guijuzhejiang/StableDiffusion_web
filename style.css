@@ -899,3 +899,6 @@ footer {
     height: 100%;
 }
 
+.hint textarea {
+    background-color: #FFFAF0;
+}
