@@ -16,16 +16,17 @@ from guiju.segment_anything_util.sam import sam_model_list, sam_predict
 from modules import shared, script_callbacks
 from modules.paths import script_path, data_path
 import modules.img2img
+from modules.shared import cmd_opts
 
 
 def get_prompt(_gender, _age, _viewpoint):
     age_prompts = ['child', 'youth', 'middlescent']
     if _gender == 0:
-        sd_positive_prompt = f"(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, an extremely delicate and beautiful, extremely detailed, CG, unity , 2k wallpaper, Amazing, finely detail, extremely detailed CG unity 8k wallpaper, ultra-detailed, highres, beautiful detailed girl, {_gender}, {age_prompts[_age]}, detailed fingers, 1girl, young, realistic body, fluffy black hair, girl posing for a photo, good hand, (simple background:1.3), (white background:1.3),(full body:1.5)"
+        sd_positive_prompt = f"(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, an extremely delicate and beautiful, extremely detailed, CG, unity , 2k wallpaper, Amazing, finely detail, extremely detailed CG unity 8k wallpaper, ultra-detailed, highres, beautiful detailed girl, {age_prompts[_age]}, detailed fingers, 1girl, young, realistic body, fluffy black hair, girl posing for a photo, good hand, (simple background:1.3), (white background:1.3),(full body:1.5)"
         if _age != 2:
             sd_positive_prompt += ',<lora:shojovibe_v11:0.4> ,<lora:koreanDollLikeness:0.4>'
     else:
-        sd_positive_prompt = f'(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, an extremely delicate, extremely detailed, CG, unity , 2k wallpaper, Amazing, finely detail, extremely detailed CG unity 8k wallpaper, ultra-detailed, highres,1boy, {_gender}, realistic body, (simple background:1.3), (white background:1.3), {age_prompts[_age]}, (full body:1.3)'
+        sd_positive_prompt = f'(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, an extremely delicate, extremely detailed, CG, unity , 2k wallpaper, Amazing, finely detail, extremely detailed CG unity 8k wallpaper, ultra-detailed, highres,1boy, realistic body, (simple background:1.3), (white background:1.3), {age_prompts[_age]}, (full body:1.3)'
 
     if _viewpoint == 0:
         sd_positive_prompt += ',light smile, beautiful detailed nose, beautiful detailed eyes, long eyelashes, realistic face, extremely detailed eyes and face, light on face, looking at viewer'
@@ -289,14 +290,14 @@ def create_ui():
                                        variant='primary')
                 interrupt = gr.Button(html_label['interrupt_btn_label'][shared.lang], elem_id=f"interrupt",
                                       visible=False)
-                prompt = gr.Button('prompt', elem_id=f"show_prompt", visible=False)
+                prompt = gr.Button('prompt', elem_id=f"show_prompt", visible=True if cmd_opts.debug_mode else False)
 
         with gr.Row():
             with gr.Column(scale=1):
                 hint1 = gr.Text(value=html_label['hint1'][shared.lang], elem_id="hint1", label='', elem_classes='hint')
             with gr.Column(scale=1):
                 hint2 = gr.Text(value=html_label['hint2'][shared.lang], elem_id="hint2", label='', elem_classes='hint')
-        with gr.Row(visible=False):
+        with gr.Row(visible=True if cmd_opts.debug_mode else False):
             sam_result = gr.Text(value="", label="Status")
 
         regenerate.click(

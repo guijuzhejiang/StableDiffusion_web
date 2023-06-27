@@ -410,6 +410,7 @@ if __name__ == "__main__":
     cmd_opts.server_name = "127.0.0.1"
     cmd_opts.server_port = 7863
     cmd_opts.listen = True
+    cmd_opts.debug_mode = True
     cmd_opts.enable_insecure_extension_access = True
     cmd_opts.xformers = True
     cmd_opts.disable_tls_verify = True
