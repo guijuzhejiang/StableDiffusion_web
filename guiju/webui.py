@@ -28,6 +28,7 @@ def get_prompt(_gender, _age, _viewpoint):
     else:
         sd_positive_prompt = f'(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, an extremely delicate, extremely detailed, CG, unity , 2k wallpaper, Amazing, finely detail, extremely detailed CG unity 8k wallpaper, ultra-detailed, highres, (1boy:1.3), realistic body, (simple background:1.3), (white background:1.3), {age_prompts[_age]}, (full body:1.3), detailed nose, detailed eyes'
 
+
     if _viewpoint == 0:
         sd_positive_prompt += ', realistic face, extremely detailed eyes and face, light on face, looking at viewer'
     elif _viewpoint == 1:
