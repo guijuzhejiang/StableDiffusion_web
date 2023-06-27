@@ -241,15 +241,15 @@ def create_ui():
                 viewpoint_mode = gr.Radio(label=html_label['output_viewpoint_label'][shared.lang],
                                           choices=html_label['output_viewpoint_list'][shared.lang],
                                           value=html_label['output_viewpoint_list'][shared.lang][0],
-                                          type="index", elem_id="viewpoint_mode", interactive=False)
+                                          type="index", elem_id="viewpoint_mode", interactive=False, visible=False)
             with gr.Column(scale=1):
                 regenerate = gr.Button(html_label['generate_btn_label'][shared.lang], elem_id=f"re_generate",
                                        variant='primary')
                 interrupt = gr.Button(html_label['interrupt_btn_label'][shared.lang], elem_id=f"interrupt",
                                       visible=False)
-                prompt = gr.Button('prompt', elem_id=f"show_prompt")
+                prompt = gr.Button('prompt', elem_id=f"show_prompt", visible=False)
 
-        with gr.Row(visible=True):
+        with gr.Row(visible=False):
             sam_result = gr.Text(value="", label="Status")
 
         regenerate.click(

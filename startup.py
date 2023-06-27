@@ -79,9 +79,6 @@ import modules.hypernetworks.hypernetwork
 
 startup_timer.record("other imports")
 
-server_name = "0.0.0.0"
-server_port = 7860
-
 
 def fix_asyncio_event_loop_policy():
     """
@@ -312,8 +309,8 @@ def webui():
 
         app, local_url, share_url = shared.demo.launch(
             share=cmd_opts.share,
-            server_name=server_name,
-            server_port=server_port,
+            server_name=cmd_opts.server_name,
+            server_port=cmd_opts.server_port,
             ssl_keyfile=cmd_opts.tls_keyfile,
             ssl_certfile=cmd_opts.tls_certfile,
             ssl_verify=cmd_opts.disable_tls_verify,
@@ -407,9 +404,11 @@ def webui():
 
 if __name__ == "__main__":
     # os.environ['HTTPS_PROXY'] = 'http://127.0.0.1:7890'
-    os.environ['ACCELERATE'] = 'False'
+    os.environ['ACCELERATE'] = 'True'
     from modules.shared import cmd_opts
 
+    cmd_opts.server_name = "127.0.0.1"
+    cmd_opts.server_port = 7863
     cmd_opts.listen = True
     cmd_opts.enable_insecure_extension_access = True
     cmd_opts.xformers = True
