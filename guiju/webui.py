@@ -124,7 +124,8 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     else:
         _input_image.save(f'tmp/origin_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
         _input_image = resize_rgba_image_pil_to_cv(_input_image)
-        # _input_image.save(f'tmp/dddd_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
+        if cmd_opts.debug_mode:
+            _input_image.save(f'tmp/dddd_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
 
     _sam_model_name = sam_model_list[0]
     _dino_model_name = dino_model_list[1]
