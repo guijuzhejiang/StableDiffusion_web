@@ -112,8 +112,10 @@ def get_grounding_output(model, image, caption, box_threshold):
     if not caption.endswith("."):
         caption = caption + "."
     image = image.to(device)
+    print("device done.")
     with torch.no_grad():
         outputs = model(image[None], captions=[caption])
+    print("outputs done.")
     logits = outputs["pred_logits"].sigmoid()[0]  # (nq, 256)
     boxes = outputs["pred_boxes"][0]  # (nq, 4)
 
@@ -123,7 +125,7 @@ def get_grounding_output(model, image, caption, box_threshold):
     filt_mask = logits_filt.max(dim=1)[0] > box_threshold
     logits_filt = logits_filt[filt_mask]  # num_filt, 256
     boxes_filt = boxes_filt[filt_mask]  # num_filt, 4
-
+    print("outputs2 done.")
     return boxes_filt.cpu()
 
 
@@ -139,7 +141,7 @@ def dino_predict_internal(input_image, dino_model_name, text_prompt, box_thresho
     boxes_filt = get_grounding_output(
         dino_model, dino_image, text_prompt, box_threshold
     )
-
+    print("get_grounding_output done.")
     H, W = input_image.size[1], input_image.size[0]
     for i in range(boxes_filt.size(0)):
         boxes_filt[i] = boxes_filt[i] * torch.Tensor([W, H, W, H])
