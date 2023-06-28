@@ -403,14 +403,15 @@ def webui():
 
 
 if __name__ == "__main__":
-    os.environ['HTTPS_PROXY'] = 'http://127.0.0.1:1095'
+    # os.environ['HTTPS_PROXY'] = 'http://127.0.0.1:1095'
     os.environ['ACCELERATE'] = 'True'
     from modules.shared import cmd_opts
 
+    cmd_opts.no_gradio_queue = True
     cmd_opts.server_name = "127.0.0.1"
     cmd_opts.server_port = 7863
     cmd_opts.listen = True
-    cmd_opts.debug_mode = False
+    cmd_opts.debug_mode = True
     cmd_opts.enable_insecure_extension_access = True
     cmd_opts.xformers = True
     cmd_opts.disable_tls_verify = True
