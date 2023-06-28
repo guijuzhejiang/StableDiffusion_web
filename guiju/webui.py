@@ -26,11 +26,11 @@ from modules.shared import cmd_opts
 def get_prompt(_gender, _age, _viewpoint):
     age_prompts = ['child', 'youth', 'middlescent']
     if _gender == 0:
-        sd_positive_prompt = f"(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, an extremely delicate and beautiful, extremely detailed, CG, unity , 2k wallpaper, Amazing, finely detail, extremely detailed CG unity 8k wallpaper, ultra-detailed, highres, beautiful detailed girl, {age_prompts[_age]}, detailed fingers, 1girl, young, realistic body, fluffy black hair, girl posing for a photo, good hand, (simple background:1.3), (white background:1.3),(full body:1.5), light smile, beautiful detailed nose, beautiful detailed eyes, long eyelashes"
+        sd_positive_prompt = f"(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, an extremely delicate and beautiful, extremely detailed, CG, unity , 2k wallpaper, Amazing, finely detail, extremely detailed CG unity 8k wallpaper, ultra-detailed, highres, beautiful detailed girl, ({age_prompts[_age]}:1.3), detailed fingers, 1girl, young, realistic body, fluffy black hair, girl posing for a photo, good hand, (simple background:1.3), (white background:1.3),(full body:1.5), light smile, beautiful detailed nose, beautiful detailed eyes, long eyelashes"
         if _age != 2:
             sd_positive_prompt += ',<lora:shojovibe_v11:0.4> ,<lora:koreanDollLikeness:0.4>'
     else:
-        sd_positive_prompt = f'(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, an extremely delicate, extremely detailed, CG, unity , 2k wallpaper, Amazing, finely detail, extremely detailed CG unity 8k wallpaper, ultra-detailed, highres, (1boy:1.3), realistic body, (simple background:1.3), (white background:1.3), {age_prompts[_age]}, (full body:1.3), detailed nose, detailed eyes'
+        sd_positive_prompt = f'(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, an extremely delicate, extremely detailed, CG, unity , 2k wallpaper, Amazing, finely detail, extremely detailed CG unity 8k wallpaper, ultra-detailed, highres, (1boy:1.3), realistic body, (simple background:1.3), (white background:1.3), ({age_prompts[_age]}:1.3), (full body:1.3), detailed nose, detailed eyes'
 
     if _viewpoint == 0:
         sd_positive_prompt += ', realistic face, extremely detailed eyes and face, light on face, looking at viewer'
@@ -62,9 +62,10 @@ def resize_rgba_image_pil_to_cv(image, target_ratio=0.5, quality=80):
     if original_ratio > target_ratio:
         # 需要添加垂直填充
         target_height = int(original_width / target_ratio)
-        top = int((target_height - original_height) / 2)
-        bottom = target_height - original_height - top
-        padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_REPLICATE)
+        # top = int((target_height - original_height) / 2)
+        # bottom = target_height - original_height - top
+        # padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_REPLICATE)
+        padded_image = cv2.copyMakeBorder(cv_image, int(target_height - original_height), 0, 0, 0, cv2.BORDER_REPLICATE)
     else:
         # 需要添加水平填充
         target_width = int(original_height * target_ratio)
