@@ -13,7 +13,7 @@ from modules.devices import torch_gc, device
 
 dino_install_issue_text = "submit an issue to https://github.com/IDEA-Research/Grounded-Segment-Anything/issues."
 dino_model_cache = OrderedDict()
-dino_model_dir = '/home/ray/Workspace/project/stable_diffusion/stable-diffusion-webui/extensions/sd-webui-segment-anything/models/grounding-dino'
+dino_model_dir = 'extensions/sd-webui-segment-anything/models/grounding-dino'
 dino_model_list = ["GroundingDINO_SwinT_OGC (694MB)", "GroundingDINO_SwinB (938MB)"]
 dino_model_info = {
     "GroundingDINO_SwinT_OGC (694MB)": {
@@ -112,10 +112,8 @@ def get_grounding_output(model, image, caption, box_threshold):
     if not caption.endswith("."):
         caption = caption + "."
     image = image.to(device)
-    print("device done.")
     with torch.no_grad():
         outputs = model(image[None], captions=[caption])
-    print("outputs done.")
     logits = outputs["pred_logits"].sigmoid()[0]  # (nq, 256)
     boxes = outputs["pred_boxes"][0]  # (nq, 4)
 
@@ -125,7 +123,6 @@ def get_grounding_output(model, image, caption, box_threshold):
     filt_mask = logits_filt.max(dim=1)[0] > box_threshold
     logits_filt = logits_filt[filt_mask]  # num_filt, 256
     boxes_filt = boxes_filt[filt_mask]  # num_filt, 4
-    print("outputs2 done.")
     return boxes_filt.cpu()
 
 
