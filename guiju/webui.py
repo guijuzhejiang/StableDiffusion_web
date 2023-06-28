@@ -2,9 +2,13 @@
 # @Time : 2023/5/23 下午3:12
 # @File : webui.py
 import datetime
+import io
 import os
 import random
 import string
+
+import cv2
+import numpy as np
 from PIL import Image
 from io import BytesIO
 import gradio
@@ -28,7 +32,6 @@ def get_prompt(_gender, _age, _viewpoint):
     else:
         sd_positive_prompt = f'(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, an extremely delicate, extremely detailed, CG, unity , 2k wallpaper, Amazing, finely detail, extremely detailed CG unity 8k wallpaper, ultra-detailed, highres, (1boy:1.3), realistic body, (simple background:1.3), (white background:1.3), {age_prompts[_age]}, (full body:1.3), detailed nose, detailed eyes'
 
-
     if _viewpoint == 0:
         sd_positive_prompt += ', realistic face, extremely detailed eyes and face, light on face, looking at viewer'
     elif _viewpoint == 1:
@@ -45,8 +48,12 @@ def show_prompt(_gender, _age, _viewpoint):
     return f'sd_positive_prompt: {_sd_positive_prompt}\n\nsd_negative_prompt: {_sd_negative_prompt}'
 
 
-def pad_and_compress_rgba_image(original_image, target_ratio=0.5, fill_color=(0, 0, 0, 0), quality=80):
-    original_width, original_height = original_image.size
+def resize_rgba_image_pil_to_cv(image, target_ratio=0.5, quality=80):
+    # 将PIL RGBA图像转换为BGR图像
+    cv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGBA2BGRA)
+
+    # 获取原始图像的尺寸
+    original_height, original_width = cv_image.shape[:2]
 
     # 计算原始图像的长宽比
     original_ratio = original_width / original_height
@@ -54,32 +61,60 @@ def pad_and_compress_rgba_image(original_image, target_ratio=0.5, fill_color=(0,
     # 计算应该添加的填充量
     if original_ratio > target_ratio:
         # 需要添加垂直填充
-        target_height = original_width / target_ratio
-        pad_height = int((target_height - original_height) / 2)
-        pad_width = 0
+        target_height = int(original_width / target_ratio)
+        top = int((target_height - original_height) / 2)
+        bottom = target_height - original_height - top
+        padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_REPLICATE)
     else:
         # 需要添加水平填充
-        target_width = original_height * target_ratio
-        pad_width = int((target_width - original_width) / 2)
-        pad_height = 0
+        target_width = int(original_height * target_ratio)
+        left = int((target_width - original_width) / 2)
+        right = target_width - original_width - left
+        padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, right, cv2.BORDER_REPLICATE)
 
-    # 获取原图的边缘颜色
-    edge_color = original_image.getpixel((0, 0))
+    # 压缩图像质量
+    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
+    _, jpeg_data = cv2.imencode('.jpg', padded_image, encode_param)
 
-    # 创建新的空白图像并粘贴原始图像
-    padded_image = Image.new('RGBA', (original_width + 2 * pad_width, original_height + 2 * pad_height), edge_color)
-    padded_image.paste(original_image, (pad_width, pad_height), mask=original_image)
+    # 将压缩后的图像转换为PIL图像
+    pil_image = Image.open(io.BytesIO(jpeg_data)).convert('RGBA')
 
-    # 压缩图像质量并返回图像数据
-    output_buffer = BytesIO()
-    padded_image.save(output_buffer, format='PNG', quality=quality)
-    output_buffer.seek(0)
-
-    # 使用 PIL 的 Image.open() 函数加载图像数据
-    compressed_image = Image.open(output_buffer)
-
-    # 返回填充和压缩后的图像
-    return compressed_image
+    return pil_image
+# def pad_and_compress_rgba_image(original_image, target_ratio=0.5, fill_color=(0, 0, 0, 0), quality=80):
+#     original_width, original_height = original_image.size
+#
+#     # 计算原始图像的长宽比
+#     original_ratio = original_width / original_height
+#
+#     # 计算应该添加的填充量
+#     if original_ratio > target_ratio:
+#         # 需要添加垂直填充
+#         target_height = original_width / target_ratio
+#         pad_height = int((target_height - original_height) / 2)
+#         pad_width = 0
+#     else:
+#         # 需要添加水平填充
+#         target_width = original_height * target_ratio
+#         pad_width = int((target_width - original_width) / 2)
+#         pad_height = 0
+#
+#     # 获取原图的边缘颜色
+#     edge_color = original_image.getpixel((0, 0))
+#
+#     # 创建新的空白图像并粘贴原始图像
+#     padded_image = Image.new('RGBA', (original_width + 2 * pad_width, original_height + 2 * pad_height), edge_color)
+#     padded_image.paste(original_image, (pad_width, pad_height), mask=original_image)
+#
+#     # 压缩图像质量并返回图像数据
+#     output_buffer = BytesIO()
+#     padded_image.save(output_buffer, format='PNG', quality=quality)
+#     output_buffer.seek(0)
+#
+#     # 使用 PIL 的 Image.open() 函数加载图像数据
+#     compressed_image = Image.open(output_buffer)
+#
+#     # 返回填充和压缩后的图像
+#     return compressed_image
 
 
 def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_mode):
@@ -88,7 +123,8 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
         return None, None
     else:
         _input_image.save(f'tmp/origin_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
-        _input_image = pad_and_compress_rgba_image(_input_image)
+        _input_image = resize_rgba_image_pil_to_cv(_input_image)
+        _input_image.save(f'tmp/dddd_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
 
     _sam_model_name = sam_model_list[0]
     _dino_model_name = dino_model_list[1]
