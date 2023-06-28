@@ -66,10 +66,12 @@ def clear_dino_cache():
 
 
 def load_dino_model(dino_checkpoint):
-    print(f"Initializing GroundingDINO {dino_checkpoint}")
+    # print(f"Initializing GroundingDINO {dino_checkpoint}")
     if dino_checkpoint in dino_model_cache:
         dino = dino_model_cache[dino_checkpoint]
+        print(f"GroundingDINO is loaded {dino_checkpoint}")
     else:
+        print(f"loading GroundingDINO {dino_checkpoint}")
         clear_dino_cache()
         from groundingdino.models import build_model
         from groundingdino.util.slconfig import SLConfig
@@ -82,7 +84,8 @@ def load_dino_model(dino_checkpoint):
             checkpoint['model']), strict=False)
         dino.to(device=device)
         dino_model_cache[dino_checkpoint] = dino
-    dino.eval()
+        dino.eval()
+        print(f"GroundingDINO is loaded {dino_checkpoint}")
     return dino
 
 
