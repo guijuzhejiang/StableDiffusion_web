@@ -59,6 +59,7 @@ def resize_rgba_image_pil_to_cv(image, target_ratio=0.5, quality=80):
     original_ratio = original_width / original_height
 
     # 计算应该添加的填充量
+    padded_image = cv_image
     if original_ratio > target_ratio:
         if original_width <= original_height:
             # 需要添加垂直填充
