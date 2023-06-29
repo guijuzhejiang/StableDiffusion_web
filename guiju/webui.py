@@ -60,18 +60,20 @@ def resize_rgba_image_pil_to_cv(image, target_ratio=0.5, quality=80):
 
     # 计算应该添加的填充量
     if original_ratio > target_ratio:
-        # 需要添加垂直填充
-        target_height = int(original_width / target_ratio)
-        # top = int((target_height - original_height) / 2)
-        # bottom = target_height - original_height - top
-        # padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_REPLICATE)
-        padded_image = cv2.copyMakeBorder(cv_image, int(target_height - original_height), 0, 0, 0, cv2.BORDER_REPLICATE)
+        if original_width <= original_height:
+            # 需要添加垂直填充
+            target_height = int(original_width / target_ratio)
+            # top = int((target_height - original_height) / 2)
+            # bottom = target_height - original_height - top
+            # padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_REPLICATE)
+            padded_image = cv2.copyMakeBorder(cv_image, int(target_height - original_height), 0, 0, 0, cv2.BORDER_REPLICATE)
     else:
-        # 需要添加水平填充
-        target_width = int(original_height * target_ratio)
-        left = int((target_width - original_width) / 2)
-        right = target_width - original_width - left
-        padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, right, cv2.BORDER_REPLICATE)
+        if original_width >= original_height:
+            # 需要添加水平填充
+            target_width = int(original_height * target_ratio)
+            left = int((target_width - original_width) / 2)
+            right = target_width - original_width - left
+            padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, right, cv2.BORDER_REPLICATE)
 
     # 压缩图像质量
     encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]

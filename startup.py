@@ -309,6 +309,7 @@ def webui():
 
         app, local_url, share_url = shared.demo.launch(
             share=cmd_opts.share,
+            show_error=cmd_opts.gradio_debug,
             server_name=cmd_opts.server_name,
             server_port=cmd_opts.server_port,
             ssl_keyfile=cmd_opts.tls_keyfile,
@@ -317,7 +318,7 @@ def webui():
             debug=cmd_opts.gradio_debug,
             auth=[tuple(cred.split(':')) for cred in gradio_auth_creds] if gradio_auth_creds else None,
             inbrowser=cmd_opts.autolaunch,
-            prevent_thread_lock=True
+            prevent_thread_lock=True,
         )
         # after initial launch, disable --autolaunch for subsequent restarts
         cmd_opts.autolaunch = False
@@ -408,6 +409,7 @@ if __name__ == "__main__":
     from modules.shared import cmd_opts
 
     cmd_opts.no_gradio_queue = False
+    cmd_opts.gradio_debug = True
     cmd_opts.server_name = "127.0.0.1"
     cmd_opts.server_port = 7863
     cmd_opts.listen = True
