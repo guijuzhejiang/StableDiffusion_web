@@ -134,7 +134,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
         # # 使用 PIL 的 Image.open() 函数加载图像数据
         # _input_image = Image.open(output_buffer)
         if cmd_opts.debug_mode:
-            _input_image.save(f'tmp/dddd_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
+            _input_image.save(f'tmp/resized_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
 
     _sam_model_name = sam_model_list[0]
     _dino_model_name = dino_model_list[1]
