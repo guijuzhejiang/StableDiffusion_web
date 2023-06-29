@@ -1,1 +1,4 @@
 multimask_output=False
+
+extensions/sd-webui-segment-anything/scripts/process_params.py:
+ mask = Image.open(self.output_mask_gallery[self.output_chosen_mask + 1]['name']).convert('L')

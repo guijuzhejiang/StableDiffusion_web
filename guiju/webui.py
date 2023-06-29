@@ -126,8 +126,13 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     if _input_image is None:
         return None, None
     else:
-        _input_image.save(f'tmp/origin_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
         _input_image = resize_rgba_image_pil_to_cv(_input_image)
+        _input_image_width, _input_image_height = _input_image.size
+        # output_buffer = BytesIO()
+        # _input_image.save(output_buffer, format='PNG', quality=80)
+        # output_buffer.seek(0)
+        # # 使用 PIL 的 Image.open() 函数加载图像数据
+        # _input_image = Image.open(output_buffer)
         if cmd_opts.debug_mode:
             _input_image.save(f'tmp/dddd_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
 
@@ -180,7 +185,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     height = 1024
     width = 512
     scale_by = 1
-    resize_mode = 2
+    resize_mode = 1
     inpaint_full_res = 0  # choices=["Whole picture", "Only masked"]
     inpaint_full_res_padding = 0
     inpainting_mask_invert = 1
