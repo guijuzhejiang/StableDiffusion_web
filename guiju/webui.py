@@ -68,7 +68,7 @@ def resize_rgba_image_pil_to_cv(image, target_ratio=0.5, quality=80):
         # padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_REPLICATE)
         padded_image = cv2.copyMakeBorder(cv_image, int(target_height - original_height), 0, 0, 0, cv2.BORDER_REPLICATE)
     else:
-        if original_width >= original_height:
+        if original_width <= original_height:
             # 需要添加水平填充
             target_width = int(original_height * target_ratio)
             left = int((target_width - original_width) / 2)
