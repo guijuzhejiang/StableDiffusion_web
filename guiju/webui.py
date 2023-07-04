@@ -120,7 +120,7 @@ def resize_rgba_image_pil_to_cv(image, target_ratio=0.5, quality=80):
 #     return compressed_image
 
 
-def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_mode):
+def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_mode, _cloth_part):
     shared.state.interrupted = False
     if _input_image is None:
         return None, None
@@ -137,7 +137,8 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
 
     _sam_model_name = sam_model_list[0]
     _dino_model_name = dino_model_list[1]
-    _dino_text_prompt = 'clothing'
+    _input_part_prompt = [['upper clothing'], ['pants', 'skirts'], ['shoes']]
+    _dino_text_prompt = ','.join([y for x in _cloth_part for y in _input_part_prompt[x]])
     _box_threshold = 0.3
     sam_result_tmp_png_fp = []
 
@@ -331,6 +332,11 @@ def create_ui():
                                           choices=html_label['output_viewpoint_list'][shared.lang],
                                           value=html_label['output_viewpoint_list'][shared.lang][0],
                                           type="index", elem_id="viewpoint_mode", interactive=False, visible=False)
+                cloth_part = gr.CheckboxGroup(html_label['input_part_list'][shared.lang],
+                                              label=html_label['input_part_label'][shared.lang],
+                                              elem_id="input_part",
+                                              type="index",
+                                              visible=True)
             with gr.Column(scale=1):
                 regenerate = gr.Button(html_label['generate_btn_label'][shared.lang], elem_id=f"re_generate",
                                        variant='primary')
@@ -346,6 +352,15 @@ def create_ui():
         with gr.Row(visible=True if cmd_opts.debug_mode else False):
             sam_result = gr.Text(value="", label="Status")
 
+        def cloth_partchange(_c):
+            if 0 in _c:
+                return [html_label['input_part_list'][shared.lang][0]]
+            else:
+                return [html_label['input_part_list'][shared.lang][x] for x in _c]
+        cloth_part.change(fn=cloth_partchange,
+                          inputs=[cloth_part],
+                          outputs=[cloth_part])
+
         regenerate.click(
             fn=proceed_cloth_inpaint,
             _js='guiju_submit',
@@ -354,6 +369,7 @@ def create_ui():
                     gender,
                     age,
                     viewpoint_mode,
+                    cloth_part,
                     ],
             outputs=[result_gallery, sam_result]
         )

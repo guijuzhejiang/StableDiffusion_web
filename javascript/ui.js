@@ -138,6 +138,7 @@ function get_img2img_tab_index() {
 }
 
 function create_submit_args(args){
+    // console.log(args);
     var res = []
     for(var i=0;i<args.length;i++){
         res.push(args[i])
@@ -147,9 +148,9 @@ function create_submit_args(args){
     // This can lead to uploading a huge gallery of previously generated images, which leads to an unnecessary delay between submitting and beginning to generate.
     // I don't know why gradio is sending outputs along with inputs, but we can prevent sending the image gallery here, which seems to be an issue for some.
     // If gradio at some point stops sending outputs, this may break something
-    if(Array.isArray(res[res.length - 3])){
-        res[res.length - 3] = null
-    }
+    // if(Array.isArray(res[res.length - 3])){
+    //     res[res.length - 3] = null
+    // }
 
     return res
 }
