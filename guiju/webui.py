@@ -137,8 +137,11 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
 
     _sam_model_name = sam_model_list[0]
     _dino_model_name = dino_model_list[1]
-    _input_part_prompt = [['upper clothing'], ['pants', 'skirts'], ['shoes']]
-    _dino_text_prompt = ','.join([y for x in _cloth_part for y in _input_part_prompt[x]])
+    _input_part_prompt = [['shirts', 'coat', 'jacket'], ['pants', 'skirts'], ['shoes']]
+    if 0 in _cloth_part and 1 in _cloth_part:
+        _dino_text_prompt = ','.join(['clothing']+[y for x in _cloth_part[2:] for y in _input_part_prompt[x]])
+    else:
+        _dino_text_prompt = ','.join([y for x in _cloth_part for y in _input_part_prompt[x]])
     _box_threshold = 0.3
     sam_result_tmp_png_fp = []
 
@@ -332,7 +335,8 @@ def create_ui():
                                           choices=html_label['output_viewpoint_list'][shared.lang],
                                           value=html_label['output_viewpoint_list'][shared.lang][0],
                                           type="index", elem_id="viewpoint_mode", interactive=False, visible=False)
-                cloth_part = gr.CheckboxGroup(html_label['input_part_list'][shared.lang],
+                cloth_part = gr.CheckboxGroup(choices=html_label['input_part_list'][shared.lang],
+                                              value=html_label['input_part_list'][shared.lang][:2],
                                               label=html_label['input_part_label'][shared.lang],
                                               elem_id="input_part",
                                               type="index",
@@ -352,14 +356,18 @@ def create_ui():
         with gr.Row(visible=True if cmd_opts.debug_mode else False):
             sam_result = gr.Text(value="", label="Status")
 
-        def cloth_partchange(_c):
-            if 0 in _c:
-                return [html_label['input_part_list'][shared.lang][0]]
-            else:
-                return [html_label['input_part_list'][shared.lang][x] for x in _c]
-        cloth_part.change(fn=cloth_partchange,
-                          inputs=[cloth_part],
-                          outputs=[cloth_part])
+        # def cloth_partchange(_c):
+        #     if 0 in _c:
+        #         if len(_c) > 1:
+        #             return [html_label['input_part_list'][shared.lang][x] for x in _c if x != 0]
+        #         else:
+        #             return [html_label['input_part_list'][shared.lang][0]]
+        #     else:
+        #         return [html_label['input_part_list'][shared.lang][x] for x in _c if x != 0]
+
+        # cloth_part.change(fn=cloth_partchange,
+        #                   inputs=[cloth_part],
+        #                   outputs=[cloth_part])
 
         regenerate.click(
             fn=proceed_cloth_inpaint,

@@ -11,7 +11,7 @@ html_label = {
     'output_viewpoint_label': {'ch': '输出视角', 'jp': 'viewpoint'},
     'output_viewpoint_list': {'ch': ['正面', '侧面', '背面'], 'jp': ['正', '侧', '背']},
     'output_age_label': {'ch': '输出年纪', 'jp': '年齢'},
-    'input_part_list': {'ch': ['全身', '上衣', '下衣', '鞋子'], 'jp': ['全身', '上半身', '下半身', 'シューズ']},
+    'input_part_list': {'ch': ['上衣', '下衣', '鞋子'], 'jp': ['上半身', '下半身', 'シューズ']},
     'input_part_label': {'ch': '输入列表', 'jp': '入力リスト'},
     'output_age_list': {'ch': ['儿童', '青年', '中年'], 'jp': ['子ども', '青年', '中年']},
     'generate_btn_label': {'ch': '生成', 'jp': '生成'},
