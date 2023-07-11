@@ -137,9 +137,9 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
 
     _sam_model_name = sam_model_list[0]
     _dino_model_name = dino_model_list[1]
-    _input_part_prompt = [['upper cloth'], ['pants', 'skirts'], ['shoes']]
-    _dino_text_prompt = ' . '.join([y for x in _cloth_part for y in _input_part_prompt[x]])
-
+    # _input_part_prompt = [['upper cloth'], ['pants', 'skirts'], ['shoes']]
+    # _dino_text_prompt = ' . '.join([y for x in _cloth_part for y in _input_part_prompt[x]])
+    _dino_text_prompt = 'clothing'
     print(_dino_text_prompt)
     _box_threshold = 0.3
     sam_result_tmp_png_fp = []
@@ -339,7 +339,7 @@ def create_ui():
                                               label=html_label['input_part_label'][shared.lang],
                                               elem_id="input_part",
                                               type="index",
-                                              visible=True)
+                                              visible=False)
             with gr.Column(scale=1):
                 regenerate = gr.Button(html_label['generate_btn_label'][shared.lang], elem_id=f"re_generate",
                                        variant='primary')
