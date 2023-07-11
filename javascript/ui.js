@@ -467,7 +467,7 @@ function guiju_submit(){
     //     gradioApp().getElementById('re_generate').style.display = "block";
     // })
     var checkProgress = setInterval(function () {
-        var not_done = gradioApp().getElementById('gallery_container').innerHTML.indexOf('processing') >= 0;
+        var not_done = gradioApp().getElementById('gallery_container').innerHTML.indexOf('svelte-j1gjts meta-text') >= 0;
         if (!not_done) {
             gradioApp().getElementById('interrupt').style.display = "none";
             gradioApp().getElementById('re_generate').style.display = "block";
