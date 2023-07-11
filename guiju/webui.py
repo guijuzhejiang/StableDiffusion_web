@@ -138,10 +138,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     _sam_model_name = sam_model_list[0]
     _dino_model_name = dino_model_list[1]
     _input_part_prompt = [['upper cloth'], ['pants', 'skirts'], ['shoes']]
-    if 0 in _cloth_part and 1 in _cloth_part:
-        _dino_text_prompt = ' . '.join(['clothing']+[y for x in _cloth_part[2:] for y in _input_part_prompt[x]])
-    else:
-        _dino_text_prompt = ' . '.join([y for x in _cloth_part for y in _input_part_prompt[x]])
+    _dino_text_prompt = ' . '.join([y for x in _cloth_part for y in _input_part_prompt[x]])
 
     print(_dino_text_prompt)
     _box_threshold = 0.3
