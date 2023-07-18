@@ -10,7 +10,7 @@ import string
 import cv2
 import numpy as np
 from PIL import Image
-from io import BytesIO
+from collections import OrderedDict
 import gradio
 import gradio as gr
 import modules.scripts
@@ -24,20 +24,63 @@ from modules.shared import cmd_opts
 
 
 def get_prompt(_gender, _age, _viewpoint):
-    age_prompts = ['child', 'youth', 'middlescent']
-    if _gender == 0:
-        sd_positive_prompt = f"(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, an extremely delicate and beautiful, extremely detailed, CG, unity , 2k wallpaper, Amazing, finely detail, extremely detailed CG unity 8k wallpaper, ultra-detailed, highres, beautiful detailed girl, ({age_prompts[_age]}:1.3), detailed fingers, 1girl, young, realistic body, fluffy black hair, girl posing for a photo, good hand, (simple background:1.3), (white background:1.3),(full body:1.5), light smile, beautiful detailed nose, beautiful detailed eyes, long eyelashes, light on face"
-        if _age != 2:
-            sd_positive_prompt += ',<lora:shojovibe_v11:0.4> ,<lora:koreanDollLikeness:0.4>'
-    else:
-        sd_positive_prompt = f'(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, an extremely delicate, extremely detailed, CG, unity , 2k wallpaper, Amazing, finely detail, extremely detailed CG unity 8k wallpaper, ultra-detailed, highres, (1boy:1.3), realistic body, (simple background:1.3), (white background:1.3), ({age_prompts[_age]}:1.3), (full body:1.5), detailed nose, detailed eyes'
+    sd_positive_prompts_dict = OrderedDict({
+        'gender': [
+            # female
+            '1girl',
+            # male
+            '1boy',
+        ],
+        'age': [
+            # child
+            f'(child:1.3){"" if _gender else ", <lora:shojovibe_v11:0.4> ,<lora:koreanDollLikeness:0.4>"}',
+            # youth
+            f'(youth:1.3){"" if _gender else ", <lora:shojovibe_v11:0.4> ,<lora:koreanDollLikeness:0.4>"}',
+            # middlescent
+            '(middlescent:1.3)',
+        ],
+        'common': [
+            '(RAW photo, best quality)',
+            '(realistic, photo-realistic:1.3)',
+            'masterpiece',
+            f'an extremely delicate and {"handsome" if _gender else "beautiful"} {"male" if _gender else "female"}',
+            'extremely detailed',
+            'CG',
+            'unity',
+            'extremely detailed CG unity 8k wallpaper',
+            'highres',
+            'detailed fingers',
+            'beautiful detailed nose',
+            'beautiful detailed eyes',
+            'realistic body',
+            '' if _gender else 'fluffy hair',
+            '' if _viewpoint == 2 else 'posing for a photo, light on face, realistic face',
+            'good hand',
+            '(simple background:1.3)',
+            '(white background:1.3)',
+            '(full body:1.5)',
+        ],
+        'viewpoint': [
+            # 正面
+            'light smile',
+            # 侧面
+            'a side portrait photo of a people, (looking to the side:1.5)',
+            # 反面
+            '(a person with their back to the camera:1.5), (looking to the back:1.5), (looking straight ahead:1.5)'
+        ]
+    })
 
-    if _viewpoint == 0:
-        sd_positive_prompt += ', realistic face, extremely detailed eyes and face, looking at viewer'
-    elif _viewpoint == 1:
-        sd_positive_prompt += ',(side face:1.5), side view of face, lateral face, looking to the side'
-    else:
-        sd_positive_prompt += ',looking back'
+    sd_positive_prompts_dict['gender'] = [sd_positive_prompts_dict['gender'][_gender]]
+    sd_positive_prompts_dict['age'] = [sd_positive_prompts_dict['age'][_age]]
+    sd_positive_prompts_dict['viewpoint'] = [sd_positive_prompts_dict['viewpoint'][_viewpoint]]
+
+    # if _viewpoint == 2:
+    #     sd_positive_prompt = f"{sd_positive_prompts_dict['viewpoint'][-1]}"
+    #     sd_positive_prompt += ', (RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, CG, unity , 2k wallpaper, realistic body, (simple background:1.3), (white background:1.3), (from behind:1.3), good hand, detailed fingers'
+    #
+    # else:
+    sd_positive_prompt = ', '.join([i for x in sd_positive_prompts_dict.values() for i in x])
+
     sd_negative_prompt = '(extra clothes:1.5),(clothes:1.5),(NSFW:1.3),paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, worst quality, jpeg artifacts, signature, watermark, username, bad feet, Multiple people, blurry, poorly drawn hands, poorly drawn face, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, fused fingers, too many fingers, long neck, cross-eyed, mutated hands, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, fused fingers, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers, long neck, cross-eyed, mutated hands, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, fused fingers, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8)'
 
     return sd_positive_prompt, sd_negative_prompt
@@ -204,8 +247,8 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     # controlnet_args.control_mode = 'My prompt is more important'
     # # controlnet_args.enabled = True if _controlnet_mode > 0 else False
     # controlnet_args.enabled = False
-    # controlnet_args.guidance_end = 1
-    # controlnet_args.guidance_start = 0
+    # controlnet_args.guidance_end = 0.8
+    # controlnet_args.guidance_start = 0 #ending control step
     # controlnet_args.image = None
     # # controlnet_args.input_mode = batch_hijack.InputMode.SIMPLE
     # controlnet_args.low_vram = False
@@ -216,8 +259,9 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     # controlnet_args.processor_res = 512
     # controlnet_args.threshold_a = 64
     # controlnet_args.threshold_b = 64
-    # # controlnet_args.weight = 0.4 if _controlnet_mode == 1 else 1
+    # # controlnet_args.weight = 1
     # controlnet_args.weight = 0.4
+    # controlnet_args.guidance_end = 0.8
 
     # sam
     sam_args = [0, True, False, 0, _input_image,
@@ -334,7 +378,7 @@ def create_ui():
                 viewpoint_mode = gr.Radio(label=html_label['output_viewpoint_label'][shared.lang],
                                           choices=html_label['output_viewpoint_list'][shared.lang],
                                           value=html_label['output_viewpoint_list'][shared.lang][0],
-                                          type="index", elem_id="viewpoint_mode", interactive=False, visible=False)
+                                          type="index", elem_id="viewpoint_mode", interactive=True, visible=True)
                 cloth_part = gr.CheckboxGroup(choices=html_label['input_part_list'][shared.lang],
                                               value=html_label['input_part_list'][shared.lang][:2],
                                               label=html_label['input_part_label'][shared.lang],

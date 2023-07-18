@@ -8,7 +8,7 @@ html_label = {
     'batch_size_label': {'ch': 'Batch size', 'jp': '生成画像数'},
     'output_gender_label': {'ch': '输出性别', 'jp': '性別'},
     'output_gender_list': {'ch': ['女', '男'], 'jp': ['女', '男']},
-    'output_viewpoint_label': {'ch': '输出视角', 'jp': 'viewpoint'},
+    'output_viewpoint_label': {'ch': '输出视角', 'jp': '出力の視点'},
     'output_viewpoint_list': {'ch': ['正面', '侧面', '背面'], 'jp': ['正', '侧', '背']},
     'output_age_label': {'ch': '输出年纪', 'jp': '年齢'},
     'input_part_list': {'ch': ['上衣', '下衣'], 'jp': ['上半身', '下半身']}, # '鞋子' 'シューズ'
