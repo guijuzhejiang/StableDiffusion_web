@@ -122,6 +122,8 @@ def resize_rgba_image_pil_to_cv(image, target_ratio=0.5, quality=80):
     pil_image = Image.open(io.BytesIO(jpeg_data)).convert('RGBA')
 
     return pil_image
+
+
 # def pad_and_compress_rgba_image(original_image, target_ratio=0.5, fill_color=(0, 0, 0, 0), quality=80):
 #     original_width, original_height = original_image.size
 #
@@ -159,7 +161,7 @@ def resize_rgba_image_pil_to_cv(image, target_ratio=0.5, quality=80):
 #     return compressed_image
 
 
-def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_mode, _cloth_part):
+def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_mode, _cloth_part, _model_mode):
     shared.state.interrupted = False
     if _input_image is None:
         return None, None
@@ -237,46 +239,31 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     override_settings_texts = []
 
     # controlnet args
-    # cnet_idx = 1
-    # controlnet_args = modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx].get_default_ui_unit()
-    # controlnet_args.batch_images = ''
-    # controlnet_args.control_mode = 'My prompt is more important'
-    # # controlnet_args.enabled = True if _controlnet_mode > 0 else False
+    cnet_idx = 1
+    controlnet_args = modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx].get_default_ui_unit()
+    controlnet_args.batch_images = ''
+    controlnet_args.control_mode = 'Balanced'
+    controlnet_args.enabled = _model_mode > 0
     # controlnet_args.enabled = False
-    # controlnet_args.guidance_end = 0.8
-    # controlnet_args.guidance_start = 0 #ending control step
-    # controlnet_args.image = None
-    # # controlnet_args.input_mode = batch_hijack.InputMode.SIMPLE
-    # controlnet_args.low_vram = False
-    # controlnet_args.model = 'control_v11p_sd15_normalbae'
-    # controlnet_args.module = 'normal_bae'
-    # controlnet_args.pixel_perfect = True
-    # controlnet_args.resize_mode = 'Resize and Fill'
-    # controlnet_args.processor_res = 512
-    # controlnet_args.threshold_a = 64
-    # controlnet_args.threshold_b = 64
-    # # controlnet_args.weight = 1
+    controlnet_args.guidance_end = 0.8
+    controlnet_args.guidance_start = 0  # ending control step
+    controlnet_args.image = None
+    # controlnet_args.input_mode = batch_hijack.InputMode.SIMPLE
+    controlnet_args.low_vram = False
+    controlnet_args.model = 'control_v11p_sd15_normalbae'
+    controlnet_args.module = 'normal_bae'
+    controlnet_args.pixel_perfect = True
+    controlnet_args.resize_mode = 'Crop and Resize'
+    controlnet_args.processor_res = 512
+    controlnet_args.threshold_a = 64
+    controlnet_args.threshold_b = 64
+    controlnet_args.weight = 1
     # controlnet_args.weight = 0.4
-    # controlnet_args.guidance_end = 0.8
 
     # sam
-    sam_args = [0, True, False, 0, _input_image,
-                sam_result_tmp_png_fp,
-                0,  # sam_output_chosen_mask
-                False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
-                '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
-                128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0, ['left', 'right', 'up', 'down'],
-                False, False, 'positive', 'comma', 0, False, False, '',
-                '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0
-                ]
-    # sam_args = [0,
-    #             controlnet_args,  # controlnet args
-    #             True, False, 0, _input_image,
+    # sam_args = [0, True, False, 0, _input_image,
     #             sam_result_tmp_png_fp,
-    #             0 - 2,  # sam_output_chosen_mask
+    #             0,  # sam_output_chosen_mask
     #             False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
     #             '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
     #             True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
@@ -286,6 +273,20 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     #             '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
     #             64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0
     #             ]
+    sam_args = [0,
+                controlnet_args,  # controlnet args
+                True, False, 0, _input_image,
+                sam_result_tmp_png_fp,
+                0 - 2,  # sam_output_chosen_mask
+                False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
+                True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
+                f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
+                128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0, ['left', 'right', 'up', 'down'],
+                False, False, 'positive', 'comma', 0, False, False, '',
+                '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
+                64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0
+                ]
 
     res = modules.img2img.img2img(task_id, 4, sd_positive_prompt, sd_negative_prompt, prompt_styles, init_img,
                                   sketch,
@@ -311,22 +312,23 @@ def create_ui():
     # init sam
     modules.scripts.scripts_current = modules.scripts.scripts_img2img
     modules.scripts.scripts_img2img.initialize_scripts(is_img2img=True)
-    modules.scripts.scripts_img2img.alwayson_scripts[0].args_from = 1
-    modules.scripts.scripts_img2img.alwayson_scripts[0].args_to = 21
+    # modules.scripts.scripts_img2img.alwayson_scripts[0].args_from = 1
+    # modules.scripts.scripts_img2img.alwayson_scripts[0].args_to = 21
 
-    # cnet_idx = 0
-    # sam_idx = 1
-    # modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx], modules.scripts.scripts_img2img.alwayson_scripts[
-    #     sam_idx] = modules.scripts.scripts_img2img.alwayson_scripts[sam_idx], \
-    #                modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx]
+    cnet_idx = 0
+    sam_idx = 1
+    modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx], modules.scripts.scripts_img2img.alwayson_scripts[
+        sam_idx] \
+        = modules.scripts.scripts_img2img.alwayson_scripts[sam_idx], \
+          modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx]
 
     # sam
-    # modules.scripts.scripts_img2img.alwayson_scripts[0].args_from = 2
-    # modules.scripts.scripts_img2img.alwayson_scripts[0].args_to = 22
-    #
-    # # controlnet
-    # modules.scripts.scripts_img2img.alwayson_scripts[1].args_from = 1
-    # modules.scripts.scripts_img2img.alwayson_scripts[1].args_to = 2
+    modules.scripts.scripts_img2img.alwayson_scripts[0].args_from = 2
+    modules.scripts.scripts_img2img.alwayson_scripts[0].args_to = 22
+
+    # controlnet
+    modules.scripts.scripts_img2img.alwayson_scripts[1].args_from = 1
+    modules.scripts.scripts_img2img.alwayson_scripts[1].args_to = 2
 
     # web ui
     with gr.Blocks(analytics_enabled=False, title="cloths_inpaint", css='style.css') as demo:
@@ -370,6 +372,11 @@ def create_ui():
                                choices=html_label['output_age_list'][shared.lang],
                                value=html_label['output_age_list'][shared.lang][1],
                                type="index", elem_id="age")
+            with gr.Column(scale=6):
+                model_mode = gr.Radio(label=html_label['model_mode_label'][shared.lang],
+                                      choices=html_label['model_mode_list'][shared.lang],
+                                      value=html_label['model_mode_list'][shared.lang][1],
+                                      type="index", elem_id="model_mode", interactive=True, visible=True)
             with gr.Column(scale=6):
                 viewpoint_mode = gr.Radio(label=html_label['output_viewpoint_label'][shared.lang],
                                           choices=html_label['output_viewpoint_list'][shared.lang],
@@ -418,6 +425,7 @@ def create_ui():
                     age,
                     viewpoint_mode,
                     cloth_part,
+                    model_mode,
                     ],
             outputs=[result_gallery, sam_result]
         )
