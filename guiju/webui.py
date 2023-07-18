@@ -67,6 +67,7 @@ def get_prompt(_gender, _age, _viewpoint, _model_mode=0):
         ]
     })
 
+    sd_positive_prompts_dict['common'] = [x for x in sd_positive_prompts_dict['common'] if x]
     sd_positive_prompts_dict['gender'] = [sd_positive_prompts_dict['gender'][_gender]]
     sd_positive_prompts_dict['age'] = [sd_positive_prompts_dict['age'][_age]]
     sd_positive_prompts_dict['viewpoint'] = [sd_positive_prompts_dict['viewpoint'][_viewpoint]]
@@ -82,8 +83,8 @@ def get_prompt(_gender, _age, _viewpoint, _model_mode=0):
     return sd_positive_prompt, sd_negative_prompt
 
 
-def show_prompt(_gender, _age, _viewpoint):
-    _sd_positive_prompt, _sd_negative_prompt = get_prompt(_gender, _age, _viewpoint)
+def show_prompt(_gender, _age, _viewpoint, _model_mode):
+    _sd_positive_prompt, _sd_negative_prompt = get_prompt(_gender, _age, _viewpoint, _model_mode)
     return f'sd_positive_prompt: {_sd_positive_prompt}\n\nsd_negative_prompt: {_sd_negative_prompt}'
 
 
@@ -451,7 +452,7 @@ def create_ui():
 
         prompt.click(
             fn=show_prompt,
-            inputs=[gender, age, viewpoint_mode],
+            inputs=[gender, age, viewpoint_mode, model_mode],
             outputs=[sam_result],
         )
 
