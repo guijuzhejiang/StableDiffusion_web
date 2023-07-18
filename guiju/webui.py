@@ -330,6 +330,8 @@ def create_ui():
     # controlnet
     modules.scripts.scripts_img2img.alwayson_scripts[1].args_from = 1
     modules.scripts.scripts_img2img.alwayson_scripts[1].args_to = 2
+    # invisible detectmap
+    shared.opts.control_net_no_detectmap = True
 
     # web ui
     with gr.Blocks(analytics_enabled=False, title="cloths_inpaint", css='style.css') as demo:
