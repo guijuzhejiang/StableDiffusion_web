@@ -72,7 +72,7 @@ def get_prompt(_gender, _age, _viewpoint):
     sd_positive_prompts_dict['viewpoint'] = [sd_positive_prompts_dict['viewpoint'][_viewpoint]]
 
     if _viewpoint == 2:
-        sd_positive_prompt = f'(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, CG, unity , 2k wallpaper,realistic body, (simple background:1.3), (white background:1.3), (from behind:1.3){", 1boy" if _gender else ""}'
+        sd_positive_prompt = f'(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, 2k wallpaper,realistic body, (simple background:1.3), (white background:1.3), (from behind:1.3){", 1boy" if _gender else ""}'
 
     else:
         sd_positive_prompt = ', '.join([i for x in sd_positive_prompts_dict.values() for i in x])
