@@ -274,7 +274,30 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     #             '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
     #             64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0
     #             ]
+
+    # adetail
+    face_args = {'ad_model': 'face_yolov8m.pt', 'ad_prompt': '', 'ad_negative_prompt': '', 'ad_confidence': 0.3,
+                 'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
+                 'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4, 'ad_denoising_strength': 0.4,
+                 'ad_inpaint_only_masked': False, 'ad_inpaint_only_masked_padding': 32,
+                 'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512, 'ad_inpaint_height': 512,
+                 'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False, 'ad_cfg_scale': 7,
+                 'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1, 'ad_restore_face': False,
+                 'ad_controlnet_model': 'None', 'ad_controlnet_module': 'inpaint_global_harmonious',
+                 'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0, 'ad_controlnet_guidance_end': 1,
+                 'is_api': ()}
+    hand_args = {'ad_model': 'hand_yolov8s.pt', 'ad_prompt': '', 'ad_negative_prompt': '', 'ad_confidence': 0.3,
+                 'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
+                 'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4, 'ad_denoising_strength': 0.4,
+                 'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
+                 'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512, 'ad_inpaint_height': 512,
+                 'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False, 'ad_cfg_scale': 7,
+                 'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1, 'ad_restore_face': False,
+                 'ad_controlnet_model': 'None', 'ad_controlnet_module': 'inpaint_global_harmonious',
+                 'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0, 'ad_controlnet_guidance_end': 1,
+                 'is_api': ()}
     sam_args = [0,
+                True, face_args, hand_args, # adetail
                 controlnet_args,  # controlnet args
                 True, False, 0, _input_image,
                 sam_result_tmp_png_fp,
@@ -316,20 +339,28 @@ def create_ui():
     # modules.scripts.scripts_img2img.alwayson_scripts[0].args_from = 1
     # modules.scripts.scripts_img2img.alwayson_scripts[0].args_to = 21
 
-    cnet_idx = 0
-    sam_idx = 1
-    modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx], modules.scripts.scripts_img2img.alwayson_scripts[
-        sam_idx] \
+    cnet_idx = 1
+    sam_idx = 2
+    adetail_idx = 0
+    modules.scripts.scripts_img2img.alwayson_scripts[0], \
+    modules.scripts.scripts_img2img.alwayson_scripts[1], \
+    modules.scripts.scripts_img2img.alwayson_scripts[2] \
         = modules.scripts.scripts_img2img.alwayson_scripts[sam_idx], \
-          modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx]
+          modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx], \
+          modules.scripts.scripts_img2img.alwayson_scripts[adetail_idx]
 
     # sam
-    modules.scripts.scripts_img2img.alwayson_scripts[0].args_from = 2
-    modules.scripts.scripts_img2img.alwayson_scripts[0].args_to = 22
+    modules.scripts.scripts_img2img.alwayson_scripts[0].args_from = 5
+    modules.scripts.scripts_img2img.alwayson_scripts[0].args_to = 25
 
     # controlnet
-    modules.scripts.scripts_img2img.alwayson_scripts[1].args_from = 1
-    modules.scripts.scripts_img2img.alwayson_scripts[1].args_to = 2
+    modules.scripts.scripts_img2img.alwayson_scripts[1].args_from = 4
+    modules.scripts.scripts_img2img.alwayson_scripts[1].args_to = 5
+
+    # adetail
+    modules.scripts.scripts_img2img.alwayson_scripts[2].args_from = 1
+    modules.scripts.scripts_img2img.alwayson_scripts[2].args_to = 4
+
     # invisible detectmap
     shared.opts.control_net_no_detectmap = True
 
