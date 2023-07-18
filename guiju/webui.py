@@ -182,7 +182,8 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     _dino_model_name = dino_model_list[1]
     # _input_part_prompt = [['upper cloth'], ['pants', 'skirts'], ['shoes']]
     # _dino_text_prompt = ' . '.join([y for x in _cloth_part for y in _input_part_prompt[x]])
-    _dino_text_prompt = 'clothing . shorts'
+    _dino_text_prompt = 'dress'
+    # _dino_text_prompt = 'clothing . pants . shorts'
     print(_dino_text_prompt)
     _box_threshold = 0.3
     sam_result_tmp_png_fp = []
@@ -282,7 +283,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                  'ad_inpaint_only_masked': False, 'ad_inpaint_only_masked_padding': 32,
                  'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512, 'ad_inpaint_height': 512,
                  'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False, 'ad_cfg_scale': 7,
-                 'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1, 'ad_restore_face': False,
+                 'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1, 'ad_restore_face': True,
                  'ad_controlnet_model': 'None', 'ad_controlnet_module': 'inpaint_global_harmonious',
                  'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0, 'ad_controlnet_guidance_end': 1,
                  'is_api': ()}
