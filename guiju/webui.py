@@ -23,7 +23,7 @@ import modules.img2img
 from modules.shared import cmd_opts
 
 
-def get_prompt(_gender, _age, _viewpoint):
+def get_prompt(_gender, _age, _viewpoint, _model_mode=0):
     sd_positive_prompts_dict = OrderedDict({
         'gender': [
             # female
@@ -55,7 +55,7 @@ def get_prompt(_gender, _age, _viewpoint):
             'good hand',
             '(simple background:1.3)',
             '(white background:1.3)',
-            # '(full body:1.5)',
+            '' if _model_mode == 0 else '(full body:1.5)',
         ],
         'viewpoint': [
             # 正面
@@ -197,7 +197,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
 
     task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
 
-    sd_positive_prompt, sd_negative_prompt = get_prompt(_gender, _age, _viewpoint_mode)
+    sd_positive_prompt, sd_negative_prompt = get_prompt(_gender, _age, _viewpoint_mode, _model_mode)
 
     prompt_styles = None
     init_img = _input_image
@@ -230,7 +230,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     width = 512
     scale_by = 1
     resize_mode = 1
-    inpaint_full_res = 0  # choices=["Whole picture", "Only masked"]
+    inpaint_dy_res = 0  # choices=["Whole picture", "Only masked"]
     inpaint_full_res_padding = 0
     inpainting_mask_invert = 1
     img2img_batch_input_dir = ''
