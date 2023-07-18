@@ -44,9 +44,6 @@ def get_prompt(_gender, _age, _viewpoint):
             '(realistic, photo-realistic:1.3)',
             'masterpiece',
             f'an extremely delicate and {"handsome" if _gender else "beautiful"} {"male" if _gender else "female"}',
-            'extremely detailed',
-            'CG',
-            'unity',
             'extremely detailed CG unity 8k wallpaper',
             'highres',
             'detailed fingers',
@@ -64,7 +61,7 @@ def get_prompt(_gender, _age, _viewpoint):
             # 正面
             'light smile',
             # 侧面
-            'a side portrait photo of a people, (looking to the side:1.5)',
+            'light smile, a side portrait photo of a people, (looking to the side:1.5)',
             # 反面
             '(a person with their back to the camera:1.5)'
         ]
@@ -74,12 +71,11 @@ def get_prompt(_gender, _age, _viewpoint):
     sd_positive_prompts_dict['age'] = [sd_positive_prompts_dict['age'][_age]]
     sd_positive_prompts_dict['viewpoint'] = [sd_positive_prompts_dict['viewpoint'][_viewpoint]]
 
-    # if _viewpoint == 2:
-    #     sd_positive_prompt = f"{sd_positive_prompts_dict['viewpoint'][-1]}"
-    #     sd_positive_prompt += ', (RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, CG, unity , 2k wallpaper, realistic body, (simple background:1.3), (white background:1.3), (from behind:1.3), good hand, detailed fingers'
-    #
-    # else:
-    sd_positive_prompt = ', '.join([i for x in sd_positive_prompts_dict.values() for i in x])
+    if _viewpoint == 2:
+        sd_positive_prompt = f'(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, CG, unity , 2k wallpaper,realistic body, (simple background:1.3), (white background:1.3), (from behind:1.3){", 1boy" if _gender else ""}'
+
+    else:
+        sd_positive_prompt = ', '.join([i for x in sd_positive_prompts_dict.values() for i in x])
 
     sd_negative_prompt = '(extra clothes:1.5),(clothes:1.5),(NSFW:1.3),paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, worst quality, jpeg artifacts, signature, watermark, username, bad feet, Multiple people, blurry, poorly drawn hands, poorly drawn face, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, fused fingers, too many fingers, long neck, cross-eyed, mutated hands, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, fused fingers, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers, long neck, cross-eyed, mutated hands, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, fused fingers, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8)'
 
