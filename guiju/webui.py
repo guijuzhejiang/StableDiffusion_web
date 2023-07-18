@@ -230,7 +230,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     width = 512
     scale_by = 1
     resize_mode = 1
-    inpaint_dy_res = 0  # choices=["Whole picture", "Only masked"]
+    inpaint_full_res = 0  # choices=["Whole picture", "Only masked"]
     inpaint_full_res_padding = 0
     inpainting_mask_invert = 1
     img2img_batch_input_dir = ''
