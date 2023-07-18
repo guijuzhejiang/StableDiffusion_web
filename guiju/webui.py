@@ -58,7 +58,7 @@ def get_prompt(_gender, _age, _viewpoint):
             'good hand',
             '(simple background:1.3)',
             '(white background:1.3)',
-            '(full body:1.5)',
+            # '(full body:1.5)',
         ],
         'viewpoint': [
             # 正面
@@ -66,7 +66,7 @@ def get_prompt(_gender, _age, _viewpoint):
             # 侧面
             'a side portrait photo of a people, (looking to the side:1.5)',
             # 反面
-            '(a person with their back to the camera:1.5), (looking to the back:1.5), (looking straight ahead:1.5)'
+            '(a person with their back to the camera:1.5)'
         ]
     })
 
