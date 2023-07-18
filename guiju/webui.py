@@ -243,7 +243,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     controlnet_args = modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx].get_default_ui_unit()
     controlnet_args.batch_images = ''
     controlnet_args.control_mode = 'Balanced'
-    controlnet_args.enabled = _model_mode > 0
+    controlnet_args.enabled = _model_mode == 0
     # controlnet_args.enabled = False
     controlnet_args.guidance_end = 0.8
     controlnet_args.guidance_start = 0  # ending control step
@@ -375,7 +375,7 @@ def create_ui():
             with gr.Column(scale=6):
                 model_mode = gr.Radio(label=html_label['model_mode_label'][shared.lang],
                                       choices=html_label['model_mode_list'][shared.lang],
-                                      value=html_label['model_mode_list'][shared.lang][1],
+                                      value=html_label['model_mode_list'][shared.lang][0],
                                       type="index", elem_id="model_mode", interactive=True, visible=True)
             with gr.Column(scale=6):
                 viewpoint_mode = gr.Radio(label=html_label['output_viewpoint_label'][shared.lang],

@@ -11,7 +11,7 @@ html_label = {
     'output_viewpoint_label': {'ch': '衣服朝向', 'jp': '衣類の向き'},
     'output_viewpoint_list': {'ch': ['正面', '侧面', '背面'], 'jp': ['正', '侧', '背']},
     'model_mode_label': {'ch': '模式', 'jp': '模式'},
-    'model_mode_list': {'ch': ['普通模型', '真人模特'], 'jp': ['普通模型', '真人模特']},
+    'model_mode_list': {'ch': ['普通模型', '衣架'], 'jp': ['普通', '衣桁']},
     'output_age_label': {'ch': '输出年纪', 'jp': '年齢'},
     'input_part_list': {'ch': ['上衣', '下衣'], 'jp': ['上半身', '下半身']}, # '鞋子' 'シューズ'
     'input_part_label': {'ch': '输入列表', 'jp': '入力リスト'},
