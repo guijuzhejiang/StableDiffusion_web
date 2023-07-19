@@ -153,18 +153,20 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=80):
             top = int((target_height - original_height) / 2)
             bottom = target_height - original_height - top
             padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_REPLICATE)
+            padded_image = padded_image[:, person_pos[0]:person_pos[2]]
     else:
         # 需要添加水平box
         target_width = int(person_height * target_ratio)
         remainning_width = original_width - target_width
         if remainning_width >= 0:
-            left = int((target_width - person_width) / 2)
-            right = target_width - person_width - left
+            left = int((target_width - original_width) / 2)
+            right = target_width - original_width - left
             padded_image = cv_image[person_pos[1]:person_pos[3], person_pos[0]-left:person_pos[2]+right]
         else:
             left = int((target_width - person_width) / 2)
             right = target_width - person_width - left
             padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, right, cv2.BORDER_REPLICATE)
+            padded_image = padded_image[person_pos[1]:person_pos[3], :]
 
     # 压缩图像质量
     encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
@@ -248,7 +250,8 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                 padding_right = int(_input_image_width * 0.2 - (_input_image_width-int(person_boxes[0][2]))) if ((_input_image_width - int(person_boxes[0][2])) / _input_image_width) < 0.2 else 0
                 padding_bottom = int(_input_image_height * 0.2 - (_input_image_height-int(person_boxes[0][3]))) if ((_input_image_height - int(person_boxes[0][3])) / _input_image_height) < 0.2 else 0
                 _input_image = padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right, padding_top, padding_bottom)
-
+                _input_image.save(f'tmp/test_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
+                                  format='PNG')
                 _input_image = configure_image(_input_image, [int(padding_left)+int(person_boxes[0][0]), int(padding_top)+int(person_boxes[0][1]), int(padding_left)+int(person_boxes[0][2]), int(padding_top)+int(person_boxes[0][3])], target_ratio=output_width / output_height)
         except Exception:
             print(traceback.format_exc())
