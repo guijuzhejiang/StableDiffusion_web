@@ -233,32 +233,26 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
         _input_image.save(f'tmp/origin_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
 
         try:
+            person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "person",
+                                                    _box_threshold)
             # real people
             if _model_mode == 0:
-                person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "person",
-                                                        _box_threshold)
-                _input_image = _input_image.crop(
-                    (
-                    int(person_boxes[0][0]), int(person_boxes[0][1]), int(person_boxes[0][2]), int(person_boxes[0][3])))
-
                 _input_image = configure_image(_input_image, person_boxes[0], target_ratio=output_width / output_height)
-                _input_image_width, _input_image_height = _input_image.size
-
                 if cmd_opts.debug_mode:
                     _input_image.save(f'tmp/resized_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
                                       format='PNG')
 
             # artificial model
             else:
-                dress_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "dress",
-                                                        _box_threshold)
                 _input_image_width, _input_image_height = _input_image.size
                 # padding_left = padding_right = padding_top = padding_bottom = 0
-                padding_left = int(_input_image_width * 0.2 - int(dress_boxes[0][0])) if (int(dress_boxes[0][0]) / _input_image_width) < 0.2 else 0
-                padding_top = int(_input_image_height * 0.2 - int(dress_boxes[0][1])) if (int(dress_boxes[0][1]) / _input_image_height) < 0.2 else 0
-                padding_right = int(_input_image_width * 0.2 - (_input_image_width-int(dress_boxes[0][2]))) if ((_input_image_width - int(dress_boxes[0][2])) / _input_image_width) < 0.2 else 0
-                padding_bottom = int(_input_image_height * 0.2 - (_input_image_height-int(dress_boxes[0][3]))) if ((_input_image_height - int(dress_boxes[0][3])) / _input_image_height) < 0.2 else 0
+                padding_left = int(_input_image_width * 0.2 - int(person_boxes[0][0])) if (int(person_boxes[0][0]) / _input_image_width) < 0.2 else 0
+                padding_top = int(_input_image_height * 0.2 - int(person_boxes[0][1])) if (int(person_boxes[0][1]) / _input_image_height) < 0.2 else 0
+                padding_right = int(_input_image_width * 0.2 - (_input_image_width-int(person_boxes[0][2]))) if ((_input_image_width - int(person_boxes[0][2])) / _input_image_width) < 0.2 else 0
+                padding_bottom = int(_input_image_height * 0.2 - (_input_image_height-int(person_boxes[0][3]))) if ((_input_image_height - int(person_boxes[0][3])) / _input_image_height) < 0.2 else 0
                 _input_image = padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right, padding_top, padding_bottom)
+
+                _input_image = configure_image(_input_image, [int(padding_left)+int(person_boxes[0][0]), int(padding_top)+int(person_boxes[0][1]), int(padding_left)+int(person_boxes[0][2]), int(padding_top)+int(person_boxes[0][3])], target_ratio=output_width / output_height)
         except Exception:
             print(traceback.format_exc())
             print('preprocess img error')
