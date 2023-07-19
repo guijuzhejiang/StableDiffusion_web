@@ -214,12 +214,12 @@ document.addEventListener("DOMContentLoaded", function() {
     modalZoom.title = "Toggle zoomed view";
     modalControls.appendChild(modalZoom)
 
-    const modalTileImage = document.createElement('span')
-    modalTileImage.className = 'modalTileImage cursor';
-    modalTileImage.innerHTML = '&#8862;'
-    modalTileImage.addEventListener('click', modalTileImageToggle, true)
-    modalTileImage.title = "Preview tiling";
-    modalControls.appendChild(modalTileImage)
+    // const modalTileImage = document.createElement('span')
+    // modalTileImage.className = 'modalTileImage cursor';
+    // modalTileImage.innerHTML = '&#8862;'
+    // modalTileImage.addEventListener('click', modalTileImageToggle, true)
+    // modalTileImage.title = "Preview tiling";
+    // modalControls.appendChild(modalTileImage)
 
     const modalSave = document.createElement("span")
     modalSave.className = "modalSave cursor"
