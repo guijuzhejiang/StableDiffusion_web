@@ -302,7 +302,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     batch_size = _batch_size
     cfg_scale = 7
     image_cfg_scale = 1.5
-    denoising_strength = 0.7 if _model_mode == 0 else 0.6
+    denoising_strength = 0.7
     seed = -1.0
     subseed = -1.0
     subseed_strength = 0
