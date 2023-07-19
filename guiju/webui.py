@@ -178,7 +178,7 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=80):
     return pil_image
 
 
-def padding_rgba_image_pil_to_cv(original_image, pl, pt, pr, pb):
+def padding_rgba_image_pil_to_cv(original_image, pl, pr, pt, pb):
     original_width, original_height = original_image.size
 #
 #     # 计算原始图像的长宽比
@@ -237,22 +237,30 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
         try:
             person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "person",
                                                     _box_threshold)
+            _input_image = configure_image(_input_image, person_boxes[0], target_ratio=output_width / output_height)
             # real people
             if _model_mode == 0:
-                _input_image = configure_image(_input_image, person_boxes[0], target_ratio=output_width / output_height)
+                # _input_image = configure_image(_input_image, person_boxes[0], target_ratio=output_width / output_height)
+                pass
 
             # artificial model
             else:
                 _input_image_width, _input_image_height = _input_image.size
-                # padding_left = padding_right = padding_top = padding_bottom = 0
-                padding_left = int(_input_image_width * 0.2 - int(person_boxes[0][0])) if (int(person_boxes[0][0]) / _input_image_width) < 0.2 else 0
-                padding_top = int(_input_image_height * 0.2 - int(person_boxes[0][1])) if (int(person_boxes[0][1]) / _input_image_height) < 0.2 else 0
-                padding_right = int(_input_image_width * 0.2 - (_input_image_width-int(person_boxes[0][2]))) if ((_input_image_width - int(person_boxes[0][2])) / _input_image_width) < 0.2 else 0
-                padding_bottom = int(_input_image_height * 0.2 - (_input_image_height-int(person_boxes[0][3]))) if ((_input_image_height - int(person_boxes[0][3])) / _input_image_height) < 0.2 else 0
+                left_ratio = _input_image_width * 0.1
+                right_ratio = _input_image_width * 0.1
+                top_ratio = _input_image_height * 0.2
+                bottom_ratio = _input_image_height * 0.1
+                person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "person",
+                                                        _box_threshold)
+                padding_left = int(_input_image_width*left_ratio - int(person_boxes[0][0])) if (int(person_boxes[0][0]) / _input_image_width) <left_ratio else 0
+                padding_right = int(_input_image_width*right_ratio - (_input_image_width-int(person_boxes[0][2]))) if ((_input_image_width - int(person_boxes[0][2])) / _input_image_width) < right_ratio else 0
+                padding_top = int(_input_image_width*top_ratio - int(person_boxes[0][1])) if (int(person_boxes[0][1]) / _input_image_height) < top_ratio else 0
+                padding_bottom = int(_input_image_width*bottom_ratio - (_input_image_height-int(person_boxes[0][3]))) if ((_input_image_height - int(person_boxes[0][3])) / _input_image_height) < bottom_ratio else 0
+                #
                 _input_image = padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right, padding_top, padding_bottom)
+                _input_image = configure_image(_input_image, [0, 0, padding_left+_input_image_width+padding_right, padding_top+_input_image_height+padding_bottom], target_ratio=output_width / output_height)
                 _input_image.save(f'tmp/test_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
                                   format='PNG')
-                _input_image = configure_image(_input_image, [int(padding_left)+int(person_boxes[0][0]), int(padding_top)+int(person_boxes[0][1]), int(padding_left)+int(person_boxes[0][2]), int(padding_top)+int(person_boxes[0][3])], target_ratio=output_width / output_height)
         except Exception:
             print(traceback.format_exc())
             print('preprocess img error')
