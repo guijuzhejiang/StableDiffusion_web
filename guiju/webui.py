@@ -250,7 +250,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                 right_ratio = 0.1
                 top_ratio = 0.2
                 bottom_ratio = 0.25
-                person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "person",
+                person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "clothing",
                                                         _box_threshold)
                 padding_left = int(_input_image_width*left_ratio - int(person_boxes[0][0])) if (int(person_boxes[0][0]) / _input_image_width) <left_ratio else 0
                 padding_right = int(_input_image_width*right_ratio - (_input_image_width-int(person_boxes[0][2]))) if ((_input_image_width - int(person_boxes[0][2])) / _input_image_width) < right_ratio else 0
@@ -302,7 +302,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     batch_size = _batch_size
     cfg_scale = 7
     image_cfg_scale = 1.5
-    denoising_strength = 0.7
+    denoising_strength = 0.7 if _model_mode == 0 else 0.6
     seed = -1.0
     subseed = -1.0
     subseed_strength = 0
