@@ -69,7 +69,7 @@ def load_dino_model(dino_checkpoint):
     # print(f"Initializing GroundingDINO {dino_checkpoint}")
     if dino_checkpoint in dino_model_cache:
         dino = dino_model_cache[dino_checkpoint]
-        print(f"GroundingDINO is loaded {dino_checkpoint}")
+        print(f"GroundingDINO is loaded in model cache {dino_checkpoint}")
     else:
         print(f"loading GroundingDINO {dino_checkpoint}")
         clear_dino_cache()
