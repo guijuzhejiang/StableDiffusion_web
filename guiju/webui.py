@@ -159,12 +159,12 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=80):
         target_width = int(person_height * target_ratio)
         remainning_width = original_width - target_width
         if remainning_width >= 0:
-            left = int((target_width - original_width) / 2)
-            right = target_width - original_width - left
-            padded_image = cv_image[person_pos[1]:person_pos[3], person_pos[0]-left:person_pos[2]+right]
-        else:
             left = int((target_width - person_width) / 2)
             right = target_width - person_width - left
+            padded_image = cv_image[person_pos[1]:person_pos[3], person_pos[0]-left:person_pos[2]+right]
+        else:
+            left = int((target_width - original_width) / 2)
+            right = target_width - original_width - left
             padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, right, cv2.BORDER_REPLICATE)
             padded_image = padded_image[person_pos[1]:person_pos[3], :]
 
