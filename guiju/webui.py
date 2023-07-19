@@ -238,9 +238,6 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
             # real people
             if _model_mode == 0:
                 _input_image = configure_image(_input_image, person_boxes[0], target_ratio=output_width / output_height)
-                if cmd_opts.debug_mode:
-                    _input_image.save(f'tmp/resized_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
-                                      format='PNG')
 
             # artificial model
             else:
@@ -256,6 +253,10 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
         except Exception:
             print(traceback.format_exc())
             print('preprocess img error')
+
+        if cmd_opts.debug_mode:
+            _input_image.save(f'tmp/resized_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
+                              format='PNG')
 
     sam_result_tmp_png_fp = []
 
