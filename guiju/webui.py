@@ -249,7 +249,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                 left_ratio = 0.1
                 right_ratio = 0.1
                 top_ratio = 0.2
-                bottom_ratio = 0.1
+                bottom_ratio = 0.25
                 person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "person",
                                                         _box_threshold)
                 padding_left = int(_input_image_width*left_ratio - int(person_boxes[0][0])) if (int(person_boxes[0][0]) / _input_image_width) <left_ratio else 0
