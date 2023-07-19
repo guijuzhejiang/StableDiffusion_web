@@ -126,6 +126,56 @@ def resize_rgba_image_pil_to_cv(image, target_ratio=0.5, quality=80):
     return pil_image
 
 
+def configure_image(image, person_pos, target_ratio=0.5, quality=80):
+    person_pos = [int(x) for x in person_pos]
+    # 将PIL RGBA图像转换为BGR图像
+    cv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGBA2BGRA)
+
+    # 获取原始图像的尺寸
+    original_height, original_width = cv_image.shape[:2]
+
+    # 计算模特图像的长宽比
+    person_height = person_pos[3] - person_pos[1]
+    person_width = person_pos[2] - person_pos[0]
+    person_ratio = person_width / person_height
+
+    # 计算应该添加的填充量
+    padded_image = cv_image
+    if person_ratio > target_ratio:
+        # 需要添加垂直box
+        target_height = int(person_width / target_ratio)
+        remainning_height = original_height - target_height
+        if remainning_height >= 0:
+            top = int((target_height - person_height) / 2)
+            bottom = target_height - person_height - top
+            padded_image = cv_image[person_pos[1]-top:person_pos[3]+bottom, person_pos[0]:person_pos[2]]
+        else:
+            top = int((target_height - original_height) / 2)
+            bottom = target_height - original_height - top
+            padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_REPLICATE)
+    else:
+        # 需要添加水平box
+        target_width = int(person_height * target_ratio)
+        remainning_width = original_width - target_width
+        if remainning_width >= 0:
+            left = int((target_width - person_width) / 2)
+            right = target_width - person_width - left
+            padded_image = cv_image[person_pos[1]:person_pos[3], person_pos[0]-left:person_pos[2]+right]
+        else:
+            left = int((target_width - person_width) / 2)
+            right = target_width - person_width - left
+            padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, right, cv2.BORDER_REPLICATE)
+
+    # 压缩图像质量
+    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
+    _, jpeg_data = cv2.imencode('.jpg', padded_image, encode_param)
+
+    # 将压缩后的图像转换为PIL图像
+    pil_image = Image.open(io.BytesIO(jpeg_data)).convert('RGBA')
+
+    return pil_image
+
+
 def padding_rgba_image_pil_to_cv(original_image, pl, pt, pr, pb):
     original_width, original_height = original_image.size
 #
@@ -165,12 +215,16 @@ def padding_rgba_image_pil_to_cv(original_image, pl, pt, pr, pb):
 
 def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_mode, _cloth_part, _model_mode):
     shared.state.interrupted = False
+
+    output_height = 1024
+    output_width = 512
+
     _sam_model_name = sam_model_list[0]
     _dino_model_name = dino_model_list[1]
     # _input_part_prompt = [['upper cloth'], ['pants', 'skirts'], ['shoes']]
     # _dino_text_prompt = ' . '.join([y for x in _cloth_part for y in _input_part_prompt[x]])
-    _dino_text_prompt = 'dress'
-    # _dino_text_prompt = 'clothing . pants . shorts'
+    # _dino_text_prompt = 'dress'
+    _dino_text_prompt = 'clothing . pants . shorts . t-shirt'
     _box_threshold = 0.3
 
     if _input_image is None:
@@ -187,6 +241,13 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                     (
                     int(person_boxes[0][0]), int(person_boxes[0][1]), int(person_boxes[0][2]), int(person_boxes[0][3])))
 
+                _input_image = configure_image(_input_image, person_boxes[0], target_ratio=output_width / output_height)
+                _input_image_width, _input_image_height = _input_image.size
+
+                if cmd_opts.debug_mode:
+                    _input_image.save(f'tmp/resized_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
+                                      format='PNG')
+
             # artificial model
             else:
                 dress_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "dress",
@@ -201,12 +262,6 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
         except Exception:
             print(traceback.format_exc())
             print('preprocess img error')
-
-        _input_image = resize_rgba_image_pil_to_cv(_input_image)
-        _input_image_width, _input_image_height = _input_image.size
-
-        if cmd_opts.debug_mode:
-            _input_image.save(f'tmp/resized_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
 
     sam_result_tmp_png_fp = []
 
@@ -249,8 +304,8 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     seed_resize_from_w = 0
     seed_enable_extras = False
     selected_scale_tab = 0
-    height = 1024
-    width = 512
+    height = output_height
+    width = output_width
     scale_by = 1
     resize_mode = 1
     inpaint_full_res = 0  # choices=["Whole picture", "Only masked"]
