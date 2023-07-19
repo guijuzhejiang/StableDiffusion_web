@@ -6,6 +6,7 @@ import io
 import os
 import random
 import string
+import traceback
 
 import cv2
 import numpy as np
@@ -15,7 +16,7 @@ import gradio
 import gradio as gr
 import modules.scripts
 from guiju.global_var import html_label
-from guiju.segment_anything_util.dino import dino_model_list
+from guiju.segment_anything_util.dino import dino_model_list, dino_predict_internal
 from guiju.segment_anything_util.sam import sam_model_list, sam_predict
 from modules import shared, script_callbacks
 from modules.paths import script_path, data_path
@@ -125,8 +126,8 @@ def resize_rgba_image_pil_to_cv(image, target_ratio=0.5, quality=80):
     return pil_image
 
 
-# def pad_and_compress_rgba_image(original_image, target_ratio=0.5, fill_color=(0, 0, 0, 0), quality=80):
-#     original_width, original_height = original_image.size
+def padding_rgba_image_pil_to_cv(original_image, pl, pt, pr, pb):
+    original_width, original_height = original_image.size
 #
 #     # 计算原始图像的长宽比
 #     original_ratio = original_width / original_height
@@ -144,11 +145,11 @@ def resize_rgba_image_pil_to_cv(image, target_ratio=0.5, quality=80):
 #         pad_height = 0
 #
 #     # 获取原图的边缘颜色
-#     edge_color = original_image.getpixel((0, 0))
+    edge_color = original_image.getpixel((0, 0))
 #
 #     # 创建新的空白图像并粘贴原始图像
-#     padded_image = Image.new('RGBA', (original_width + 2 * pad_width, original_height + 2 * pad_height), edge_color)
-#     padded_image.paste(original_image, (pad_width, pad_height), mask=original_image)
+    padded_image = Image.new('RGBA', (original_width + pl + pr, original_height + pt + pb), edge_color)
+    padded_image.paste(original_image, (pl, pt), mask=original_image)
 #
 #     # 压缩图像质量并返回图像数据
 #     output_buffer = BytesIO()
@@ -159,39 +160,59 @@ def resize_rgba_image_pil_to_cv(image, target_ratio=0.5, quality=80):
 #     compressed_image = Image.open(output_buffer)
 #
 #     # 返回填充和压缩后的图像
-#     return compressed_image
+    return padded_image
 
 
 def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_mode, _cloth_part, _model_mode):
     shared.state.interrupted = False
-    if _input_image is None:
-        return None, None
-    else:
-        _input_image.save(f'tmp/origin_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
-        _input_image = resize_rgba_image_pil_to_cv(_input_image)
-        _input_image_width, _input_image_height = _input_image.size
-        # output_buffer = BytesIO()
-        # _input_image.save(output_buffer, format='PNG', quality=80)
-        # output_buffer.seek(0)
-        # # 使用 PIL 的 Image.open() 函数加载图像数据
-        # _input_image = Image.open(output_buffer)
-        if cmd_opts.debug_mode:
-            _input_image.save(f'tmp/resized_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
-
     _sam_model_name = sam_model_list[0]
     _dino_model_name = dino_model_list[1]
     # _input_part_prompt = [['upper cloth'], ['pants', 'skirts'], ['shoes']]
     # _dino_text_prompt = ' . '.join([y for x in _cloth_part for y in _input_part_prompt[x]])
     _dino_text_prompt = 'dress'
     # _dino_text_prompt = 'clothing . pants . shorts'
-    print(_dino_text_prompt)
     _box_threshold = 0.3
+
+    if _input_image is None:
+        return None, None
+    else:
+        _input_image.save(f'tmp/origin_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
+
+        try:
+            # real people
+            if _model_mode == 0:
+                person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "person",
+                                                        _box_threshold)
+                _input_image = _input_image.crop(
+                    (
+                    int(person_boxes[0][0]), int(person_boxes[0][1]), int(person_boxes[0][2]), int(person_boxes[0][3])))
+
+            # artificial model
+            else:
+                dress_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "dress",
+                                                        _box_threshold)
+                _input_image_width, _input_image_height = _input_image.size
+                # padding_left = padding_right = padding_top = padding_bottom = 0
+                padding_left = int(_input_image_width * 0.2 - int(dress_boxes[0][0])) if (int(dress_boxes[0][0]) / _input_image_width) < 0.2 else 0
+                padding_top = int(_input_image_height * 0.2 - int(dress_boxes[0][1])) if (int(dress_boxes[0][1]) / _input_image_height) < 0.2 else 0
+                padding_right = int(_input_image_width * 0.2 - (_input_image_width-int(dress_boxes[0][2]))) if ((_input_image_width - int(dress_boxes[0][2])) / _input_image_width) < 0.2 else 0
+                padding_bottom = int(_input_image_height * 0.2 - (_input_image_height-int(dress_boxes[0][3]))) if ((_input_image_height - int(dress_boxes[0][3])) / _input_image_height) < 0.2 else 0
+                _input_image = padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right, padding_top, padding_bottom)
+        except Exception:
+            print(traceback.format_exc())
+            print('preprocess img error')
+
+        _input_image = resize_rgba_image_pil_to_cv(_input_image)
+        _input_image_width, _input_image_height = _input_image.size
+
+        if cmd_opts.debug_mode:
+            _input_image.save(f'tmp/resized_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
+
     sam_result_tmp_png_fp = []
 
     sam_result_gallery, sam_result = sam_predict(_dino_model_name, _dino_text_prompt,
                                                  _box_threshold,
                                                  _input_image)
-
     for sam_mask_img in sam_result_gallery:
         cache_fp = f"tmp/{''.join([random.choice(string.ascii_letters) for c in range(15)])}.png"
         sam_mask_img.save(cache_fp)
@@ -299,7 +320,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                  'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0, 'ad_controlnet_guidance_end': 1,
                  'is_api': ()}
     sam_args = [0,
-                adetail_enabled, face_args, hand_args, # adetail
+                adetail_enabled, face_args, hand_args, # adetail args
                 controlnet_args,  # controlnet args
                 True, False, 0, _input_image,
                 sam_result_tmp_png_fp,
