@@ -57,7 +57,7 @@ def get_prompt(_gender, _age, _viewpoint, _model_mode=0):
             'good hand',
             '(simple background:1.3)',
             '(white background:1.3)',
-            '' if _model_mode == 0 else '(full body:1.5)',
+            'full body' if _model_mode == 0 else '(full body:1.8)',
         ],
         'viewpoint': [
             # 正面
@@ -141,7 +141,6 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=80):
     person_ratio = person_width / person_height
 
     # 计算应该添加的填充量
-    padded_image = cv_image
     if person_ratio > target_ratio:
         # 需要添加垂直box
         target_height = int(person_width / target_ratio)
@@ -149,7 +148,13 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=80):
         if remainning_height >= 0:
             top = int((target_height - person_height) / 2)
             bottom = target_height - person_height - top
-            padded_image = cv_image[person_pos[1]-top:person_pos[3]+bottom, person_pos[0]:person_pos[2]]
+
+            if person_pos[1]-top < 0:
+                padded_image = cv_image[:person_pos[3] + bottom - person_pos[1] + top, person_pos[0]:person_pos[2]]
+
+            else:
+                padded_image = cv_image[person_pos[1] - top:person_pos[3] + bottom, person_pos[0]:person_pos[2]]
+
         else:
             top = int((target_height - original_height) / 2)
             bottom = target_height - original_height - top
@@ -162,7 +167,12 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=80):
         if remainning_width >= 0:
             left = int((target_width - person_width) / 2)
             right = target_width - person_width - left
-            padded_image = cv_image[person_pos[1]:person_pos[3], person_pos[0]-left:person_pos[2]+right]
+
+            if person_pos[0]-left < 0:
+                padded_image = cv_image[person_pos[1]:person_pos[3], :person_pos[2]+right-person_pos[0]+left]
+
+            else:
+                padded_image = cv_image[person_pos[1]:person_pos[3], person_pos[0]-left:person_pos[2]+right]
         else:
             left = int((target_width - original_width) / 2)
             right = target_width - original_width - left
@@ -249,7 +259,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                 _input_image_width, _input_image_height = _input_image.size
                 left_ratio = 0.1
                 right_ratio = 0.1
-                top_ratio = 0.3
+                top_ratio = 0.25
                 bottom_ratio = 0.35
                 person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "clothing", _box_threshold)
 
