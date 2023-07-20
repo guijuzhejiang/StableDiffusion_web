@@ -296,8 +296,8 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     sd_positive_prompt, sd_negative_prompt = get_prompt(_gender, _age, _viewpoint_mode, _model_mode)
 
     prompt_styles = None
-    init_img = sam_result_gallery[2]
-    # init_img = _input_image
+    # init_img = sam_result_gallery[2]
+    init_img = _input_image
     sketch = None
     init_img_with_mask = None
     inpaint_color_sketch = None
@@ -400,7 +400,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     sam_args = [0,
                 adetail_enabled, face_args, hand_args, # adetail args
                 controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3, # controlnet args
-                True, False, 0, _input_image,
+                True, False, 0, sam_result_gallery[2],
                 sam_result_tmp_png_fp,
                 0,  # sam_output_chosen_mask
                 False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
