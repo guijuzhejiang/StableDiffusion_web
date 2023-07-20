@@ -121,7 +121,7 @@ def sam_predict(dino_model_name, text_prompt, box_threshold, input_image):
             point_coords=None,
             point_labels=None,
             boxes=transformed_boxes.to(device),
-            multimask_output=True)
+            multimask_output=False)
         masks = masks.permute(1, 0, 2, 3).cpu().numpy()
     else:
         num_box = 0 if boxes_filt is None else boxes_filt.shape[0]
@@ -140,7 +140,7 @@ def sam_predict(dino_model_name, text_prompt, box_threshold, input_image):
             point_coords=point_coords if len(point_coords) > 0 else None,
             point_labels=point_labels if len(point_coords) > 0 else None,
             box=box,
-            multimask_output=True)
+            multimask_output=False)
         masks = masks[:, None, ...]
     garbage_collect(sam)
     return create_mask_output(image_np, masks, boxes_filt), sam_predict_status + sam_predict_result
