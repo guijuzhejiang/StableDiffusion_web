@@ -57,7 +57,7 @@ def get_prompt(_gender, _age, _viewpoint, _model_mode=0):
             'good hand',
             '(simple background:1.3)',
             '(white background:1.3)',
-            'full body' if _model_mode == 0 else '(full body:1.5)',
+            'full body' if _model_mode == 0 else '(full body:1.8)',
         ],
         'viewpoint': [
             # 正面
@@ -400,7 +400,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     sam_args = [0,
                 adetail_enabled, face_args, hand_args, # adetail args
                 controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3, # controlnet args
-                True, False, 0, sam_result_gallery[2],
+                True, False, 0, _input_image,
                 sam_result_tmp_png_fp,
                 0,  # sam_output_chosen_mask
                 False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
