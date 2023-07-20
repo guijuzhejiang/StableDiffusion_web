@@ -292,7 +292,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     init_img_inpaint = None
     init_mask_inpaint = None
     steps = 20
-    sampler_index = 0  # sampling method modules/sd_samplers_kdiffusion.py
+    sampler_index = 18  # sampling method modules/sd_samplers_kdiffusion.py
     mask_blur = 4
     mask_alpha = 0
     inpainting_fill = 1
@@ -326,7 +326,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     cnet_idx = 1
     controlnet_args = modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx].get_default_ui_unit()
     controlnet_args.batch_images = ''
-    controlnet_args.control_mode = 'Balanced'
+    controlnet_args.control_mode = 'Balanced' if _model_mode == 0 else 'My prompt is more important'
     controlnet_args.enabled = _model_mode == 0
     # controlnet_args.enabled = False
     controlnet_args.guidance_end = 1
