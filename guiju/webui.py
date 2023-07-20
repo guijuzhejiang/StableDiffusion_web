@@ -246,11 +246,11 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
         _input_image.save(f'tmp/origin_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
 
         try:
-            person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "person",
-                                                    _box_threshold)
-            _input_image = configure_image(_input_image, person_boxes[0], target_ratio=output_width / output_height)
             # real people
             if _model_mode == 0:
+                person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "person",
+                                                        _box_threshold)
+                _input_image = configure_image(_input_image, person_boxes[0], target_ratio=output_width / output_height)
                 # _input_image = configure_image(_input_image, person_boxes[0], target_ratio=output_width / output_height)
                 pass
 
