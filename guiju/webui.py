@@ -390,7 +390,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                 controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3, # controlnet args
                 True, False, 0, _input_image,
                 sam_result_tmp_png_fp,
-                0 - 2,  # sam_output_chosen_mask
+                0,  # sam_output_chosen_mask
                 False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                 '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
                 True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
@@ -438,15 +438,15 @@ def create_ui():
           modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx], \
           modules.scripts.scripts_img2img.alwayson_scripts[adetail_idx]
 
-    # sam
+    # sam 20 args
     modules.scripts.scripts_img2img.alwayson_scripts[0].args_from = 7
     modules.scripts.scripts_img2img.alwayson_scripts[0].args_to = 27
 
-    # controlnet
+    # controlnet 3 args
     modules.scripts.scripts_img2img.alwayson_scripts[1].args_from = 4
     modules.scripts.scripts_img2img.alwayson_scripts[1].args_to = 7
 
-    # adetail
+    # adetail 3 args
     modules.scripts.scripts_img2img.alwayson_scripts[2].args_from = 1
     modules.scripts.scripts_img2img.alwayson_scripts[2].args_to = 4
 
