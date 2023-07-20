@@ -57,7 +57,7 @@ def get_prompt(_gender, _age, _viewpoint, _model_mode=0):
             'good hand',
             '(simple background:1.3)',
             '(white background:1.3)',
-            'full body' if _model_mode == 0 else '(full body:1.8)',
+            'full body' if _model_mode == 0 else '(full body:1.5)',
         ],
         'viewpoint': [
             # 正面
@@ -270,7 +270,6 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
 
                 _input_image = padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right, padding_top, padding_bottom)
                 _input_image = configure_image(_input_image, [0, 0, padding_left+_input_image_width+padding_right, padding_top+_input_image_height+padding_bottom], target_ratio=output_width / output_height)
-                _input_image.save(f'tmp/test_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
 
         except Exception:
             print(traceback.format_exc())
@@ -285,8 +284,10 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     sam_result_gallery, sam_result = sam_predict(_dino_model_name, _dino_text_prompt,
                                                  _box_threshold,
                                                  _input_image)
-    for sam_mask_img in sam_result_gallery:
-        cache_fp = f"tmp/{''.join([random.choice(string.ascii_letters) for c in range(15)])}.png"
+
+    pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
+    for idx, sam_mask_img in enumerate(sam_result_gallery):
+        cache_fp = f"tmp/{idx}_{pic_name}.png"
         sam_mask_img.save(cache_fp)
         sam_result_tmp_png_fp.append({'name': cache_fp})
 
@@ -295,7 +296,8 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     sd_positive_prompt, sd_negative_prompt = get_prompt(_gender, _age, _viewpoint_mode, _model_mode)
 
     prompt_styles = None
-    init_img = _input_image
+    init_img = sam_result_gallery[2]
+    # init_img = _input_image
     sketch = None
     init_img_with_mask = None
     inpaint_color_sketch = None
