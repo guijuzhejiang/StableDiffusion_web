@@ -249,8 +249,8 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                 _input_image_width, _input_image_height = _input_image.size
                 left_ratio = 0.1
                 right_ratio = 0.1
-                top_ratio = 0.2
-                bottom_ratio = 0.25
+                top_ratio = 0.25
+                bottom_ratio = 0.3
                 person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "clothing",
                                                         _box_threshold)
                 padding_left = int(_input_image_width*left_ratio - int(person_boxes[0][0])) if (int(person_boxes[0][0]) / _input_image_width) <left_ratio else 0
@@ -364,7 +364,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     #             ]
 
     # adetail
-    adetail_enabled = False
+    adetail_enabled = not cmd_opts.disable_adetailer
     face_args = {'ad_model': 'face_yolov8m.pt', 'ad_prompt': '', 'ad_negative_prompt': '', 'ad_confidence': 0.3,
                  'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
                  'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4, 'ad_denoising_strength': 0.4,
