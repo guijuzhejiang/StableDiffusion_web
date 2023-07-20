@@ -221,13 +221,13 @@ document.addEventListener("DOMContentLoaded", function() {
     // modalTileImage.title = "Preview tiling";
     // modalControls.appendChild(modalTileImage)
 
-    const modalSave = document.createElement("span")
-    modalSave.className = "modalSave cursor"
-    modalSave.id = "modal_save"
-    modalSave.innerHTML = "save"
-    modalSave.addEventListener("click", modalSaveImage, true)
-    modalSave.title = "Save Image(s)"
-    modalControls.appendChild(modalSave)
+    const modalSave = document.createElement("span");
+    modalSave.className = "modalSave cursor";
+    modalSave.id = "modal_save";
+    modalSave.innerHTML = "&#x1F5AB;";
+    modalSave.addEventListener("click", modalSaveImage, true);
+    modalSave.title = "Save Image(s)";
+    modalControls.appendChild(modalSave);
 
     const modalClose = document.createElement('span')
     modalClose.className = 'modalClose cursor';

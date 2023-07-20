@@ -151,16 +151,11 @@ Use --skip-version-check commandline argument to disable this check.
             """.strip())
 
 
-def initialize():
-    fix_asyncio_event_loop_policy()
-
-    check_versions()
-
-    extensions.list_extensions()
-    localization.list_localizations(cmd_opts.localizations_dir)
-    startup_timer.record("list extensions")
-
+def restore_config_state_file():
     config_state_file = shared.opts.restore_config_state_file
+    if config_state_file == "":
+        return
+
     shared.opts.restore_config_state_file = ""
     shared.opts.save(shared.config_filename)
 
@@ -173,14 +168,46 @@ def initialize():
     elif config_state_file:
         print(f"!!! Config state backup not found: {config_state_file}")
 
-    if cmd_opts.ui_debug_mode:
-        shared.sd_upscalers = upscaler.UpscalerLanczos().scalers
-        modules.scripts.load_scripts()
+
+def configure_sigint_handler():
+    # make the program just exit at ctrl+c without waiting for anything
+    def sigint_handler(sig, frame):
+        print(f'Interrupted with signal {sig} in {frame}')
+        os._exit(0)
+
+    if not os.environ.get("COVERAGE_RUN"):
+        # Don't install the immediate-quit handler when running under coverage,
+        # as then the coverage report won't be generated.
+        signal.signal(signal.SIGINT, sigint_handler)
+
+
+def validate_tls_options():
+    if not (cmd_opts.tls_keyfile and cmd_opts.tls_certfile):
         return
 
+    try:
+        if not os.path.exists(cmd_opts.tls_keyfile):
+            print("Invalid path to TLS keyfile given")
+        if not os.path.exists(cmd_opts.tls_certfile):
+            print(f"Invalid path to TLS certfile: '{cmd_opts.tls_certfile}'")
+    except TypeError:
+        cmd_opts.tls_keyfile = cmd_opts.tls_certfile = None
+        print("TLS setup invalid, running webui without TLS")
+    else:
+        print("Running with TLS")
+    startup_timer.record("TLS")
+
+
+def initialize():
+    fix_asyncio_event_loop_policy()
+    validate_tls_options()
+    configure_sigint_handler()
+    check_versions()
     modelloader.cleanup_models()
+    # configure_opts_onchange()
+
     modules.sd_models.setup_model()
-    startup_timer.record("list SD models")
+    startup_timer.record("setup SD model")
 
     codeformer.setup_model(cmd_opts.codeformer_models_path)
     startup_timer.record("setup codeformer")
@@ -188,61 +215,78 @@ def initialize():
     gfpgan.setup_model(cmd_opts.gfpgan_models_path)
     startup_timer.record("setup gfpgan")
 
-    modules.scripts.load_scripts()
-    startup_timer.record("load scripts")
+    initialize_rest(reload_script_modules=False)
+
+
+def initialize_rest(*, reload_script_modules=False):
+    """
+    Called both from initialize() and when reloading the webui.
+    """
+    sd_samplers.set_samplers()
+    extensions.list_extensions()
+    startup_timer.record("list extensions")
+
+    restore_config_state_file()
+
+    if cmd_opts.ui_debug_mode:
+        shared.sd_upscalers = upscaler.UpscalerLanczos().scalers
+        modules.scripts.load_scripts()
+        return
+
+    modules.sd_models.list_models()
+    startup_timer.record("list SD models")
+
+    localization.list_localizations(cmd_opts.localizations_dir)
+
+    with startup_timer.subcategory("load scripts"):
+        modules.scripts.load_scripts()
+
+    if reload_script_modules:
+        for module in [module for name, module in sys.modules.items() if name.startswith("modules.ui")]:
+            importlib.reload(module)
+        startup_timer.record("reload script modules")
 
     modelloader.load_upscalers()
-    startup_timer.record("load upscalers")  # Is this necessary? I don't know.
+    startup_timer.record("load upscalers")
 
     modules.sd_vae.refresh_vae_list()
     startup_timer.record("refresh VAE")
-
     modules.textual_inversion.textual_inversion.list_textual_inversion_templates()
     startup_timer.record("refresh textual inversion templates")
 
-    # load model in parallel to other startup stuff
-    Thread(target=lambda: shared.sd_model).start()
+    modules.script_callbacks.on_list_optimizers(modules.sd_hijack_optimizations.list_optimizers)
+    modules.sd_hijack.list_optimizers()
+    startup_timer.record("scripts list_optimizers")
 
-    shared.opts.onchange("sd_model_checkpoint", wrap_queued_call(lambda: modules.sd_models.reload_model_weights()),
-                         call=False)
-    shared.opts.onchange("sd_vae", wrap_queued_call(lambda: modules.sd_vae.reload_vae_weights()), call=False)
-    shared.opts.onchange("sd_vae_as_default", wrap_queued_call(lambda: modules.sd_vae.reload_vae_weights()), call=False)
-    shared.opts.onchange("temp_dir", ui_tempdir.on_tmpdir_changed)
-    shared.opts.onchange("gradio_theme", shared.reload_gradio_theme)
-    startup_timer.record("opts onchange")
+    modules.sd_unet.list_unets()
+    startup_timer.record("scripts list_unets")
+
+    def load_model():
+        """
+        Accesses shared.sd_model property to load model.
+        After it's available, if it has been loaded before this access by some extension,
+        its optimization may be None because the list of optimizaers has neet been filled
+        by that time, so we apply optimization again.
+        """
+
+        shared.sd_model  # noqa: B018
+
+        if modules.sd_hijack.current_optimizer is None:
+            modules.sd_hijack.apply_optimizations()
+
+    Thread(target=load_model).start()
+
+    Thread(target=devices.first_time_calculation).start()
 
     shared.reload_hypernetworks()
-    startup_timer.record("reload hypernets")
+    startup_timer.record("reload hypernetworks")
 
-    ui_extra_networks.intialize()
-    ui_extra_networks.register_page(ui_extra_networks_textual_inversion.ExtraNetworksPageTextualInversion())
-    ui_extra_networks.register_page(ui_extra_networks_hypernets.ExtraNetworksPageHypernetworks())
-    ui_extra_networks.register_page(ui_extra_networks_checkpoints.ExtraNetworksPageCheckpoints())
+    ui_extra_networks.initialize()
+    ui_extra_networks.register_default_pages()
 
     extra_networks.initialize()
-    extra_networks.register_extra_network(extra_networks_hypernet.ExtraNetworkHypernet())
-    startup_timer.record("extra networks")
-
-    if cmd_opts.tls_keyfile is not None and cmd_opts.tls_keyfile is not None:
-
-        try:
-            if not os.path.exists(cmd_opts.tls_keyfile):
-                print("Invalid path to TLS keyfile given")
-            if not os.path.exists(cmd_opts.tls_certfile):
-                print(f"Invalid path to TLS certfile: '{cmd_opts.tls_certfile}'")
-        except TypeError:
-            cmd_opts.tls_keyfile = cmd_opts.tls_certfile = None
-            print("TLS setup invalid, running webui without TLS")
-        else:
-            print("Running with TLS")
-        startup_timer.record("TLS")
-
-    # make the program just exit at ctrl+c without waiting for anything
-    def sigint_handler(sig, frame):
-        print(f'Interrupted with signal {sig} in {frame}')
-        os._exit(0)
-
-    signal.signal(signal.SIGINT, sigint_handler)
+    extra_networks.register_default_extra_networks()
+    startup_timer.record("initialize extra networks")
 
 
 def setup_middleware(app):

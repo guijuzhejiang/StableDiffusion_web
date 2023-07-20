@@ -175,5 +175,17 @@
     "disabled_extensions": [],
     "disable_all_extensions": "none",
     "restore_config_state_file": "",
-    "sd_checkpoint_hash": "5269b1fa598028f8c2ee1615397fbabc20989c06687df55814db7a62d45a180e"
+    "sd_checkpoint_hash": "5269b1fa598028f8c2ee1615397fbabc20989c06687df55814db7a62d45a180e",
+    "ui_reorder_list": [
+        "inpaint",
+        "sampler",
+        "checkboxes",
+        "hires_fix",
+        "dimensions",
+        "cfg",
+        "seed",
+        "batch",
+        "override_settings",
+        "scripts"
+    ]
 }

@@ -1,6 +1,7 @@
 # coding=utf-8
 # @Time : 2023/5/23 下午3:12
 # @File : webui.py
+import copy
 import datetime
 import io
 import os
@@ -324,25 +325,29 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
 
     # controlnet args
     cnet_idx = 1
-    controlnet_args = modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx].get_default_ui_unit()
-    controlnet_args.batch_images = ''
-    controlnet_args.control_mode = 'Balanced' if _model_mode == 0 else 'My prompt is more important'
-    controlnet_args.enabled = _model_mode == 0
-    # controlnet_args.enabled = False
-    controlnet_args.guidance_end = 1
-    controlnet_args.guidance_start = 0  # ending control step
-    controlnet_args.image = None
-    # controlnet_args.input_mode = batch_hijack.InputMode.SIMPLE
-    controlnet_args.low_vram = False
-    controlnet_args.model = 'control_v11p_sd15_normalbae'
-    controlnet_args.module = 'normal_bae'
-    controlnet_args.pixel_perfect = True
-    controlnet_args.resize_mode = 'Crop and Resize'
-    controlnet_args.processor_res = 512
-    controlnet_args.threshold_a = 64
-    controlnet_args.threshold_b = 64
-    controlnet_args.weight = 1
-    # controlnet_args.weight = 0.4
+    controlnet_args_unit1 = modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx].get_default_ui_unit()
+    controlnet_args_unit1.batch_images = ''
+    controlnet_args_unit1.control_mode = 'Balanced' if _model_mode == 0 else 'My prompt is more important'
+    controlnet_args_unit1.enabled = _model_mode == 0
+    # controlnet_args_unit1.enabled = False
+    controlnet_args_unit1.guidance_end = 1
+    controlnet_args_unit1.guidance_start = 0  # ending control step
+    controlnet_args_unit1.image = None
+    # controlnet_args_unit1.input_mode = batch_hijack.InputMode.SIMPLE
+    controlnet_args_unit1.low_vram = False
+    controlnet_args_unit1.model = 'control_v11p_sd15_normalbae'
+    controlnet_args_unit1.module = 'normal_bae'
+    controlnet_args_unit1.pixel_perfect = True
+    controlnet_args_unit1.resize_mode = 'Crop and Resize'
+    controlnet_args_unit1.processor_res = 512
+    controlnet_args_unit1.threshold_a = 64
+    controlnet_args_unit1.threshold_b = 64
+    controlnet_args_unit1.weight = 1
+    # controlnet_args_unit1.weight = 0.4
+    controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
+    controlnet_args_unit2.enabled = False
+    controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
+    controlnet_args_unit3.enabled = False
 
     # sam
     # sam_args = [0, True, False, 0, _input_image,
@@ -382,7 +387,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                  'is_api': ()}
     sam_args = [0,
                 adetail_enabled, face_args, hand_args, # adetail args
-                controlnet_args,  # controlnet args
+                controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3, # controlnet args
                 True, False, 0, _input_image,
                 sam_result_tmp_png_fp,
                 0 - 2,  # sam_output_chosen_mask
@@ -393,7 +398,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                 128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0, ['left', 'right', 'up', 'down'],
                 False, False, 'positive', 'comma', 0, False, False, '',
                 '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0
+                64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None, None, False, None, None, False, None, None, False, 50
                 ]
 
     res = modules.img2img.img2img(task_id, 4, sd_positive_prompt, sd_negative_prompt, prompt_styles, init_img,
@@ -434,12 +439,12 @@ def create_ui():
           modules.scripts.scripts_img2img.alwayson_scripts[adetail_idx]
 
     # sam
-    modules.scripts.scripts_img2img.alwayson_scripts[0].args_from = 5
-    modules.scripts.scripts_img2img.alwayson_scripts[0].args_to = 25
+    modules.scripts.scripts_img2img.alwayson_scripts[0].args_from = 7
+    modules.scripts.scripts_img2img.alwayson_scripts[0].args_to = 27
 
     # controlnet
     modules.scripts.scripts_img2img.alwayson_scripts[1].args_from = 4
-    modules.scripts.scripts_img2img.alwayson_scripts[1].args_to = 5
+    modules.scripts.scripts_img2img.alwayson_scripts[1].args_to = 7
 
     # adetail
     modules.scripts.scripts_img2img.alwayson_scripts[2].args_from = 1
