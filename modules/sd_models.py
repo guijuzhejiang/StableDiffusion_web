@@ -513,7 +513,7 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
         print('Applying ToMe patch...')
         try:
             tomesd.apply_patch(sd_model,
-                               ratio=0.5,
+                               ratio=0.6,
                                max_downsample=1,
                                sx=2,
                                sy=2,
