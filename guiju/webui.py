@@ -226,7 +226,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     # _input_part_prompt = [['upper cloth'], ['pants', 'skirts'], ['shoes']]
     # _dino_text_prompt = ' . '.join([y for x in _cloth_part for y in _input_part_prompt[x]])
     # _dino_text_prompt = 'dress'
-    _dino_text_prompt = 'clothing . pants . shorts . t-shirt'
+    _dino_text_prompt = 'clothing . pants . shorts . t-shirt . dress'
     _box_threshold = 0.3
 
     if _input_image is None:
@@ -313,7 +313,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     height = output_height
     width = output_width
     scale_by = 1
-    resize_mode = 1
+    resize_mode = 2
     inpaint_full_res = 0  # choices=["Whole picture", "Only masked"]
     inpaint_full_res_padding = 0
     inpainting_mask_invert = 1
@@ -329,7 +329,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     controlnet_args.control_mode = 'Balanced'
     controlnet_args.enabled = _model_mode == 0
     # controlnet_args.enabled = False
-    controlnet_args.guidance_end = 0.8
+    controlnet_args.guidance_end = 1
     controlnet_args.guidance_start = 0  # ending control step
     controlnet_args.image = None
     # controlnet_args.input_mode = batch_hijack.InputMode.SIMPLE
