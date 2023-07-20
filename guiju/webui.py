@@ -251,17 +251,17 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                 right_ratio = 0.1
                 top_ratio = 0.3
                 bottom_ratio = 0.35
-                person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "clothing",
-                                                        _box_threshold)
+                person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "clothing", _box_threshold)
+
                 padding_left = int(_input_image_width*left_ratio - int(person_boxes[0][0])) if (int(person_boxes[0][0]) / _input_image_width) <left_ratio else 0
                 padding_right = int(_input_image_width*right_ratio - (_input_image_width-int(person_boxes[0][2]))) if ((_input_image_width - int(person_boxes[0][2])) / _input_image_width) < right_ratio else 0
-                padding_top = int(_input_image_width*top_ratio - int(person_boxes[0][1])) if (int(person_boxes[0][1]) / _input_image_height) < top_ratio else 0
-                padding_bottom = int(_input_image_width*bottom_ratio - (_input_image_height-int(person_boxes[0][3]))) if ((_input_image_height - int(person_boxes[0][3])) / _input_image_height) < bottom_ratio else 0
-                #
+                padding_top = int(_input_image_height*top_ratio - int(person_boxes[0][1])) if (int(person_boxes[0][1]) / _input_image_height) < top_ratio else 0
+                padding_bottom = int(_input_image_height*bottom_ratio - (_input_image_height-int(person_boxes[0][3]))) if ((_input_image_height - int(person_boxes[0][3])) / _input_image_height) < bottom_ratio else 0
+
                 _input_image = padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right, padding_top, padding_bottom)
                 _input_image = configure_image(_input_image, [0, 0, padding_left+_input_image_width+padding_right, padding_top+_input_image_height+padding_bottom], target_ratio=output_width / output_height)
-                _input_image.save(f'tmp/test_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
-                                  format='PNG')
+                _input_image.save(f'tmp/test_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
+
         except Exception:
             print(traceback.format_exc())
             print('preprocess img error')
