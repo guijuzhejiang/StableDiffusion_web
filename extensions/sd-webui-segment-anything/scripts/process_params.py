@@ -42,7 +42,8 @@ class SAMInpaintUnit:
             if self.dilation_checkbox and self.dilation_output_gallery is not None:
                 mask = Image.open(self.dilation_output_gallery[1]['name']).convert('L')
             elif self.output_mask_gallery is not None:
-                mask = Image.open(self.output_mask_gallery[self.output_chosen_mask]['name']).convert('L')
+                mask = Image.open(self.output_mask_gallery[self.output_chosen_mask + 1]['name']).convert('L')
+                print('choosing ' + self.output_mask_gallery[self.output_chosen_mask + 1]['name'])
                 # mask = Image.open(self.output_mask_gallery[self.output_chosen_mask + 3]['name']).convert('L')
             if mask is not None and self.cnet_inpaint_invert:
                 mask = ImageOps.invert(mask)

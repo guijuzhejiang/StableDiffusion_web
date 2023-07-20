@@ -330,7 +330,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     controlnet_args_unit1.control_mode = 'Balanced' if _model_mode == 0 else 'My prompt is more important'
     controlnet_args_unit1.enabled = _model_mode == 0
     # controlnet_args_unit1.enabled = False
-    controlnet_args_unit1.guidance_end = 1
+    controlnet_args_unit1.guidance_end = 0.8
     controlnet_args_unit1.guidance_start = 0  # ending control step
     controlnet_args_unit1.image = None
     # controlnet_args_unit1.input_mode = batch_hijack.InputMode.SIMPLE
@@ -364,7 +364,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     #             ]
 
     # adetail
-    adetail_enabled = True
+    adetail_enabled = False
     face_args = {'ad_model': 'face_yolov8m.pt', 'ad_prompt': '', 'ad_negative_prompt': '', 'ad_confidence': 0.3,
                  'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
                  'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4, 'ad_denoising_strength': 0.4,

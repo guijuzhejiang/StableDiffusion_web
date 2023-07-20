@@ -146,8 +146,9 @@ def dino_predict_internal(input_image, dino_model_name, text_prompt, box_thresho
         boxes_filt[i][2:] += boxes_filt[i][:2]
 
     print("Running GroundingDINO clean")
-    gc.collect()
-    torch_gc()
+    # gc.collect()
+    # torch_gc()
+    clear_dino_cache()
     print('dino_predict_internal done.')
     return boxes_filt, True
 
