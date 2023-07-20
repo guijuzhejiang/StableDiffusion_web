@@ -234,36 +234,36 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     else:
         _input_image.save(f'tmp/origin_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
 
-        # try:
-        #     person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "person",
-        #                                             _box_threshold)
-        #     _input_image = configure_image(_input_image, person_boxes[0], target_ratio=output_width / output_height)
-        #     # real people
-        #     if _model_mode == 0:
-        #         # _input_image = configure_image(_input_image, person_boxes[0], target_ratio=output_width / output_height)
-        #         pass
-        #
-        #     # artificial model
-        #     else:
-        #         _input_image_width, _input_image_height = _input_image.size
-        #         left_ratio = 0.1
-        #         right_ratio = 0.1
-        #         top_ratio = 0.2
-        #         bottom_ratio = 0.25
-        #         person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "clothing",
-        #                                                 _box_threshold)
-        #         padding_left = int(_input_image_width*left_ratio - int(person_boxes[0][0])) if (int(person_boxes[0][0]) / _input_image_width) <left_ratio else 0
-        #         padding_right = int(_input_image_width*right_ratio - (_input_image_width-int(person_boxes[0][2]))) if ((_input_image_width - int(person_boxes[0][2])) / _input_image_width) < right_ratio else 0
-        #         padding_top = int(_input_image_width*top_ratio - int(person_boxes[0][1])) if (int(person_boxes[0][1]) / _input_image_height) < top_ratio else 0
-        #         padding_bottom = int(_input_image_width*bottom_ratio - (_input_image_height-int(person_boxes[0][3]))) if ((_input_image_height - int(person_boxes[0][3])) / _input_image_height) < bottom_ratio else 0
-        #         #
-        #         _input_image = padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right, padding_top, padding_bottom)
-        #         _input_image = configure_image(_input_image, [0, 0, padding_left+_input_image_width+padding_right, padding_top+_input_image_height+padding_bottom], target_ratio=output_width / output_height)
-        #         _input_image.save(f'tmp/test_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
-        #                           format='PNG')
-        # except Exception:
-        #     print(traceback.format_exc())
-        #     print('preprocess img error')
+        try:
+            person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "person",
+                                                    _box_threshold)
+            _input_image = configure_image(_input_image, person_boxes[0], target_ratio=output_width / output_height)
+            # real people
+            if _model_mode == 0:
+                # _input_image = configure_image(_input_image, person_boxes[0], target_ratio=output_width / output_height)
+                pass
+
+            # artificial model
+            else:
+                _input_image_width, _input_image_height = _input_image.size
+                left_ratio = 0.1
+                right_ratio = 0.1
+                top_ratio = 0.2
+                bottom_ratio = 0.25
+                person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "clothing",
+                                                        _box_threshold)
+                padding_left = int(_input_image_width*left_ratio - int(person_boxes[0][0])) if (int(person_boxes[0][0]) / _input_image_width) <left_ratio else 0
+                padding_right = int(_input_image_width*right_ratio - (_input_image_width-int(person_boxes[0][2]))) if ((_input_image_width - int(person_boxes[0][2])) / _input_image_width) < right_ratio else 0
+                padding_top = int(_input_image_width*top_ratio - int(person_boxes[0][1])) if (int(person_boxes[0][1]) / _input_image_height) < top_ratio else 0
+                padding_bottom = int(_input_image_width*bottom_ratio - (_input_image_height-int(person_boxes[0][3]))) if ((_input_image_height - int(person_boxes[0][3])) / _input_image_height) < bottom_ratio else 0
+                #
+                _input_image = padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right, padding_top, padding_bottom)
+                _input_image = configure_image(_input_image, [0, 0, padding_left+_input_image_width+padding_right, padding_top+_input_image_height+padding_bottom], target_ratio=output_width / output_height)
+                _input_image.save(f'tmp/test_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
+                                  format='PNG')
+        except Exception:
+            print(traceback.format_exc())
+            print('preprocess img error')
 
         if cmd_opts.debug_mode:
             _input_image.save(f'tmp/resized_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
@@ -359,7 +359,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     #             ]
 
     # adetail
-    adetail_enabled = False
+    adetail_enabled = True
     face_args = {'ad_model': 'face_yolov8m.pt', 'ad_prompt': '', 'ad_negative_prompt': '', 'ad_confidence': 0.3,
                  'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
                  'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4, 'ad_denoising_strength': 0.4,
