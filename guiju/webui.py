@@ -260,12 +260,13 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                 _input_image_width, _input_image_height = _input_image.size
                 person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "clothing", _box_threshold)
                 person_width = person_boxes[0][2]-person_boxes[0][0]
-                person_height = person_boxes[0][2]-person_boxes[0][0]
+                person_height = person_boxes[0][3]-person_boxes[0][1]
                 constant = 2.4
                 left_ratio = 0.1
                 right_ratio = 0.1
                 top_ratio = 0.25
                 bottom_ratio = min(0.37, math.pow(person_width/person_height, 5)*constant)
+                print(f"bottom_ratio: {bottom_ratio}")
                 print(f"boxes: {person_boxes}")
                 print(f"width: {person_boxes[0][2] - person_boxes[0][0]}")
                 print(f"height: {person_boxes[0][3] - person_boxes[0][1]}")
