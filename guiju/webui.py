@@ -265,29 +265,33 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
             else:
                 _input_image_width, _input_image_height = _input_image.size
                 person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "clothing", _box_threshold)
-                person_width = person_boxes[0][2] - person_boxes[0][0]
-                person_height = person_boxes[0][3] - person_boxes[0][1]
+                person0_box = [int(x) for x in person_boxes[0]]
+                person0_width = person0_box[2] - person0_box[0]
+                person0_height = person0_box[3] - person0_box[1]
                 constant = 2.4
                 left_ratio = 0.1
                 right_ratio = 0.1
                 top_ratio = 0.25
-                bottom_ratio = min(0.37, math.pow(person_width / person_height, 3) * constant)
+                bottom_ratio = min(0.42, math.pow(person0_width / person0_height, 3) * constant)
                 print(f"bottom_ratio: {bottom_ratio}")
                 print(f"boxes: {person_boxes}")
-                print(f"width: {person_boxes[0][2] - person_boxes[0][0]}")
-                print(f"height: {person_boxes[0][3] - person_boxes[0][1]}")
-                print(f"increase: {(person_boxes[0][3] - person_boxes[0][1]) * bottom_ratio}")
+                print(f"width: {person0_box[2] - person0_box[0]}")
+                print(f"height: {person0_box[3] - person0_box[1]}")
+                print(f"increase: {(person0_box[3] - person0_box[1]) * bottom_ratio}")
 
-                padding_left = int(person_width * left_ratio - int(person_boxes[0][0])) if (int(person_boxes[0][0]) / person_width) < left_ratio else 0
-                padding_right = int(person_width * right_ratio - (_input_image_width - int(person_boxes[0][2]))) if ((_input_image_width - int(person_boxes[0][2])) / person_width) < right_ratio else 0
-                padding_top = int(person_height * top_ratio - int(person_boxes[0][1])) if (int(person_boxes[0][1]) / person_height) < top_ratio else 0
-                padding_bottom = int(person_height * bottom_ratio - (_input_image_height - int(person_boxes[0][3]))) if ((_input_image_height - int(person_boxes[0][3])) / person_height) < bottom_ratio else 0
+                padding_left = int(person0_width * left_ratio - int(person0_box[0])) if (int(person0_box[0]) / person0_width) < left_ratio else 0
+                padding_right = int(person0_width * right_ratio - (_input_image_width - int(person0_box[2]))) if ((_input_image_width - int(person0_box[2])) / person0_width) < right_ratio else 0
+                padding_top = int(person0_height * top_ratio - int(person0_box[1])) if (int(person0_box[1]) / person0_height) < top_ratio else 0
+                padding_bottom = int(person0_height * bottom_ratio - (_input_image_height - int(person0_box[3]))) if ((_input_image_height - int(person0_box[3])) / person0_height) < bottom_ratio else 0
 
                 _input_image = padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right, padding_top, padding_bottom)
                 # _input_image = configure_image(_input_image, [0, 0, padding_left + _input_image_width + padding_right,
                 #                                               padding_top + _input_image_height + padding_bottom],
                 #                                target_ratio=output_width / output_height)
-                _input_image = configure_image(_input_image, [person_boxes[0][0]-padding_left, person_boxes[0][1]-padding_top, person_boxes[0][2]+padding_right, person_boxes[0][3]+padding_bottom],
+                _input_image = configure_image(_input_image, [0 if padding_left > 0 else person0_box[0] - int(person0_width * left_ratio),
+                                                              0 if padding_top > 0 else person0_box[1] - int(person0_height * top_ratio),
+                                                              padding_left + _input_image_width + padding_right if padding_right > 0 else person0_box[2] + int(person0_width * right_ratio),
+                                                              padding_top + _input_image_height + padding_bottom if padding_bottom > 0 else person0_box[3] + int(person0_height * bottom_ratio)],
                                                target_ratio=output_width / output_height)
 
         except Exception:
