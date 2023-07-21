@@ -895,7 +895,7 @@ footer {
 /*    height: 100% !important;*/
 /*}*/
 
-#result_gallery, #gallery_container {
+#result_gallery, #gallery_container, #hires_gallery_container {
     height: 100%;
 }
 

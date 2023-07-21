@@ -507,7 +507,6 @@ def create_ui():
                     with gr.Column(scale=1):
                         with gr.Group(elem_id=f"gallery_container"):
                             result_gallery = gr.Gallery(label=html_label['output_gallery_label'][shared.lang],
-                                                        show_label=False,
                                                         elem_id=f"result_gallery").style(
                                 columns=3,
                                 rows=1,
@@ -575,19 +574,35 @@ def create_ui():
                                             elem_classes='hint')
 
             with gr.TabItem(html_label['generate_hires_label'][shared.lang], elem_id="generate_hires_tab"):
-                output_resolution = gr.Dropdown(label=html_label['output_resolution_label'][shared.lang],
-                                                elem_id="lang_list",
-                                                choices=html_label['output_resolution_list'], type="value",
-                                                value=html_label['output_resolution_list'][0])
-                choosing_index_4_hires = gr.Radio(
-                    label=html_label['choosing_index_4_hires_label'][shared.lang],
-                    choices=[0, 1, 2],
-                    value=0,
-                    type="index", elem_id="choosing_index_4_hires",
-                    visible=True)
-                generate_hires = gr.Button(html_label['generate_hires_label'][shared.lang],
-                                           variant='primary',
-                                           elem_id=f"generate_hires")
+                with gr.Row(elem_id=f"hires_image_row"):
+                    with gr.Column(scale=1):
+                        with gr.Group(elem_id=f"hires_gallery_container"):
+                            hires_input_gallery = gr.Gallery(label=html_label['hires_input_gallery_label'][shared.lang],
+                                                             elem_id=f"result_gallery").style(
+                                columns=3,
+                                rows=1,
+                                preview=True,
+                                height=640)
+                    with gr.Column(scale=1):
+                        hires_result_image = gr.Image(label=html_label['hires_result_image_label'][shared.lang],
+                                                      elem_id=f"hires_input_image",
+                                                      type="pil", image_mode="RGBA").style(height=640)
+
+                with gr.Row(elem_id=f"hires_control_row"):
+                    output_resolution = gr.Dropdown(label=html_label['output_resolution_label'][shared.lang],
+                                                    elem_id="lang_list",
+                                                    choices=html_label['output_resolution_list'], type="value",
+                                                    value=html_label['output_resolution_list'][0])
+                    choosing_index_4_hires = gr.Radio(
+                        label=html_label['choosing_index_4_hires_label'][shared.lang],
+                        choices=[0, 1, 2],
+                        value=0,
+                        type="index", elem_id="choosing_index_4_hires",
+                        visible=True)
+                    generate_hires = gr.Button(html_label['generate_hires_label'][shared.lang],
+                                               variant='primary',
+                                               interactive=False,
+                                               elem_id=f"generate_hires")
 
         with gr.Row(visible=True if cmd_opts.debug_mode else False):
             sam_result = gr.Text(value="", label="Status")
@@ -622,11 +637,11 @@ def create_ui():
         generate_hires.click(
             fn=proceed_generate_hires,
             _js='guiju_hires_submit',
-            inputs=[result_gallery,
+            inputs=[hires_input_gallery,
                     choosing_index_4_hires,
                     output_resolution,
                     ],
-            outputs=[result_gallery]
+            outputs=[hires_result_image]
         )
 
         def reload_ui(lang):
