@@ -4,6 +4,7 @@
 import copy
 import datetime
 import io
+import math
 import os
 import random
 import string
@@ -257,11 +258,17 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
             # artificial model
             else:
                 _input_image_width, _input_image_height = _input_image.size
+                person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "clothing", _box_threshold)
+                person_width = person_boxes[0][2]-person_boxes[0][0]
+                person_height = person_boxes[0][2]-person_boxes[0][0]
+                constant = 2.4
                 left_ratio = 0.1
                 right_ratio = 0.1
                 top_ratio = 0.25
-                bottom_ratio = 0.35
-                person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "clothing", _box_threshold)
+                bottom_ratio = min(0.38, math.pow(person_width/person_height, 5)*constant)
+                print(f"boxes: {person_boxes}")
+                print(f"width: {person_boxes[0][2] - person_boxes[0][0]}")
+                print(f"height: {person_boxes[0][3] - person_boxes[0][1]}")
 
                 padding_left = int(_input_image_width*left_ratio - int(person_boxes[0][0])) if (int(person_boxes[0][0]) / _input_image_width) <left_ratio else 0
                 padding_right = int(_input_image_width*right_ratio - (_input_image_width-int(person_boxes[0][2]))) if ((_input_image_width - int(person_boxes[0][2])) / _input_image_width) < right_ratio else 0
