@@ -150,7 +150,7 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=80):
             top = int((target_height - person_height) / 2)
             bottom = target_height - person_height - top
 
-            if person_pos[1]-top < 0:
+            if person_pos[1] - top < 0:
                 padded_image = cv_image[:person_pos[3] + bottom - person_pos[1] + top, person_pos[0]:person_pos[2]]
 
             else:
@@ -169,11 +169,11 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=80):
             left = int((target_width - person_width) / 2)
             right = target_width - person_width - left
 
-            if person_pos[0]-left < 0:
-                padded_image = cv_image[person_pos[1]:person_pos[3], :person_pos[2]+right-person_pos[0]+left]
+            if person_pos[0] - left < 0:
+                padded_image = cv_image[person_pos[1]:person_pos[3], :person_pos[2] + right - person_pos[0] + left]
 
             else:
-                padded_image = cv_image[person_pos[1]:person_pos[3], person_pos[0]-left:person_pos[2]+right]
+                padded_image = cv_image[person_pos[1]:person_pos[3], person_pos[0] - left:person_pos[2] + right]
         else:
             left = int((target_width - original_width) / 2)
             right = target_width - original_width - left
@@ -192,42 +192,48 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=80):
 
 def padding_rgba_image_pil_to_cv(original_image, pl, pr, pt, pb):
     original_width, original_height = original_image.size
-#
-#     # 计算原始图像的长宽比
-#     original_ratio = original_width / original_height
-#
-#     # 计算应该添加的填充量
-#     if original_ratio > target_ratio:
-#         # 需要添加垂直填充
-#         target_height = original_width / target_ratio
-#         pad_height = int((target_height - original_height) / 2)
-#         pad_width = 0
-#     else:
-#         # 需要添加水平填充
-#         target_width = original_height * target_ratio
-#         pad_width = int((target_width - original_width) / 2)
-#         pad_height = 0
-#
-#     # 获取原图的边缘颜色
+    #
+    #     # 计算原始图像的长宽比
+    #     original_ratio = original_width / original_height
+    #
+    #     # 计算应该添加的填充量
+    #     if original_ratio > target_ratio:
+    #         # 需要添加垂直填充
+    #         target_height = original_width / target_ratio
+    #         pad_height = int((target_height - original_height) / 2)
+    #         pad_width = 0
+    #     else:
+    #         # 需要添加水平填充
+    #         target_width = original_height * target_ratio
+    #         pad_width = int((target_width - original_width) / 2)
+    #         pad_height = 0
+    #
+    #     # 获取原图的边缘颜色
     edge_color = original_image.getpixel((0, 0))
-#
-#     # 创建新的空白图像并粘贴原始图像
+    #
+    #     # 创建新的空白图像并粘贴原始图像
     padded_image = Image.new('RGBA', (original_width + pl + pr, original_height + pt + pb), edge_color)
     padded_image.paste(original_image, (pl, pt), mask=original_image)
-#
-#     # 压缩图像质量并返回图像数据
-#     output_buffer = BytesIO()
-#     padded_image.save(output_buffer, format='PNG', quality=quality)
-#     output_buffer.seek(0)
-#
-#     # 使用 PIL 的 Image.open() 函数加载图像数据
-#     compressed_image = Image.open(output_buffer)
-#
-#     # 返回填充和压缩后的图像
+    #
+    #     # 压缩图像质量并返回图像数据
+    #     output_buffer = BytesIO()
+    #     padded_image.save(output_buffer, format='PNG', quality=quality)
+    #     output_buffer.seek(0)
+    #
+    #     # 使用 PIL 的 Image.open() 函数加载图像数据
+    #     compressed_image = Image.open(output_buffer)
+    #
+    #     # 返回填充和压缩后的图像
     return padded_image
 
 
-def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_mode, _cloth_part, _model_mode):
+def proceed_generate_hires():
+    pass
+
+
+def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_mode, _cloth_part, _model_mode,
+                          _output_ratio):
+    _batch_size = int(_batch_size)
     shared.state.interrupted = False
 
     output_height = 1024
@@ -259,26 +265,28 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
             else:
                 _input_image_width, _input_image_height = _input_image.size
                 person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "clothing", _box_threshold)
-                person_width = person_boxes[0][2]-person_boxes[0][0]
-                person_height = person_boxes[0][3]-person_boxes[0][1]
+                person_width = person_boxes[0][2] - person_boxes[0][0]
+                person_height = person_boxes[0][3] - person_boxes[0][1]
                 constant = 2.4
                 left_ratio = 0.1
                 right_ratio = 0.1
                 top_ratio = 0.25
-                bottom_ratio = min(0.37, math.pow(person_width/person_height, 3)*constant)
+                bottom_ratio = min(0.37, math.pow(person_width / person_height, 3) * constant)
                 print(f"bottom_ratio: {bottom_ratio}")
                 print(f"boxes: {person_boxes}")
                 print(f"width: {person_boxes[0][2] - person_boxes[0][0]}")
                 print(f"height: {person_boxes[0][3] - person_boxes[0][1]}")
-                print(f"increase: {(person_boxes[0][3] - person_boxes[0][1])*bottom_ratio}")
+                print(f"increase: {(person_boxes[0][3] - person_boxes[0][1]) * bottom_ratio}")
 
-                padding_left = int(_input_image_width*left_ratio - int(person_boxes[0][0])) if (int(person_boxes[0][0]) / _input_image_width) <left_ratio else 0
-                padding_right = int(_input_image_width*right_ratio - (_input_image_width-int(person_boxes[0][2]))) if ((_input_image_width - int(person_boxes[0][2])) / _input_image_width) < right_ratio else 0
-                padding_top = int(_input_image_height*top_ratio - int(person_boxes[0][1])) if (int(person_boxes[0][1]) / _input_image_height) < top_ratio else 0
-                padding_bottom = int(_input_image_height*bottom_ratio - (_input_image_height-int(person_boxes[0][3]))) if ((_input_image_height - int(person_boxes[0][3])) / _input_image_height) < bottom_ratio else 0
+                padding_left = int(person_width * left_ratio - int(person_boxes[0][0])) if (int(person_boxes[0][0]) / person_width) < left_ratio else 0
+                padding_right = int(person_width * right_ratio - (person_width - int(person_boxes[0][2]))) if ((person_width - int(person_boxes[0][2])) / person_width) < right_ratio else 0
+                padding_top = int(person_height * top_ratio - int(person_boxes[0][1])) if (int(person_boxes[0][1]) / person_height) < top_ratio else 0
+                padding_bottom = int(person_height * bottom_ratio - (person_height - int(person_boxes[0][3]))) if ((person_height - int(person_boxes[0][3])) / person_height) < bottom_ratio else 0
 
                 _input_image = padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right, padding_top, padding_bottom)
-                _input_image = configure_image(_input_image, [0, 0, padding_left+_input_image_width+padding_right, padding_top+_input_image_height+padding_bottom], target_ratio=output_width / output_height)
+                _input_image = configure_image(_input_image, [0, 0, padding_left + _input_image_width + padding_right,
+                                                              padding_top + _input_image_height + padding_bottom],
+                                               target_ratio=output_width / output_height)
 
         except Exception:
             print(traceback.format_exc())
@@ -407,8 +415,8 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                  'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0, 'ad_controlnet_guidance_end': 1,
                  'is_api': ()}
     sam_args = [0,
-                adetail_enabled, face_args, hand_args, # adetail args
-                controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3, # controlnet args
+                adetail_enabled, face_args, hand_args,  # adetail args
+                controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,  # controlnet args
                 True, False, 0, _input_image,
                 sam_result_tmp_png_fp,
                 0,  # sam_output_chosen_mask
@@ -419,7 +427,8 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                 128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0, ['left', 'right', 'up', 'down'],
                 False, False, 'positive', 'comma', 0, False, False, '',
                 '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None, None, False, None, None, False, None, None, False, 50
+                64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None, None, False, None, None,
+                False, None, None, False, 50
                 ]
 
     res = modules.img2img.img2img(task_id, 4, sd_positive_prompt, sd_negative_prompt, prompt_styles, init_img,
@@ -436,6 +445,8 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                                   img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
                                   override_settings_texts,
                                   *sam_args)
+
+    # if _output_ratio != 1:
 
     return res[0], 'done.'
 
@@ -500,50 +511,80 @@ def create_ui():
 
         # img2img input args
         with gr.Row(elem_id=f"control_row"):
-            # batch_size = gr.Dropdown(choices=[1, 2, 3], value=1, label='Batch size',
-            #                          elem_id="img2img_batch_size")
             with gr.Column(scale=1):
-                batch_size = gr.Slider(minimum=1, maximum=3, step=1, label=html_label['batch_size_label'][shared.lang],
-                                       value=1, elem_id="batch_size")
+                with gr.Row():
+                    with gr.Column(scale=10):
+                        # batch_size = gr.Slider(minimum=1, maximum=3, step=1, label=html_label['batch_size_label'][shared.lang],
+                        #                        value=1, elem_id="batch_size")
+                        with gr.Row():
+                            with gr.Column(scale=1):
+                                batch_size = gr.Dropdown(label=html_label['batch_size_label'][shared.lang],
+                                                         choices=[1, 2, 3],
+                                                         type='value', value='1', elem_id="batch_size")
+                            with gr.Column(scale=1):
+                                model_mode = gr.Radio(label=html_label['model_mode_label'][shared.lang],
+                                                      choices=html_label['model_mode_list'][shared.lang],
+                                                      value=html_label['model_mode_list'][shared.lang][0],
+                                                      type="index", elem_id="model_mode", interactive=True,
+                                                      visible=True)
+                            with gr.Column(scale=1):
+                                gender = gr.Radio(label=html_label['output_gender_label'][shared.lang],
+                                                  choices=html_label['output_gender_list'][shared.lang],
+                                                  value=html_label['output_gender_list'][shared.lang][0],
+                                                  type="index", elem_id="gender")
+                            with gr.Column(scale=1):
+                                age = gr.Radio(label=html_label['output_age_label'][shared.lang],
+                                               choices=html_label['output_age_list'][shared.lang],
+                                               value=html_label['output_age_list'][shared.lang][1],
+                                               type="index", elem_id="age")
 
-            with gr.Column(scale=6):
-                gender = gr.Radio(label=html_label['output_gender_label'][shared.lang],
-                                  choices=html_label['output_gender_list'][shared.lang],
-                                  value=html_label['output_gender_list'][shared.lang][0],
-                                  type="index", elem_id="gender")
-            with gr.Column(scale=6):
-                age = gr.Radio(label=html_label['output_age_label'][shared.lang],
-                               choices=html_label['output_age_list'][shared.lang],
-                               value=html_label['output_age_list'][shared.lang][1],
-                               type="index", elem_id="age")
-            with gr.Column(scale=6):
-                model_mode = gr.Radio(label=html_label['model_mode_label'][shared.lang],
-                                      choices=html_label['model_mode_list'][shared.lang],
-                                      value=html_label['model_mode_list'][shared.lang][0],
-                                      type="index", elem_id="model_mode", interactive=True, visible=True)
-            with gr.Column(scale=6):
-                viewpoint_mode = gr.Radio(label=html_label['output_viewpoint_label'][shared.lang],
-                                          choices=html_label['output_viewpoint_list'][shared.lang],
-                                          value=html_label['output_viewpoint_list'][shared.lang][0],
-                                          type="index", elem_id="viewpoint_mode", interactive=True, visible=True)
-                cloth_part = gr.CheckboxGroup(choices=html_label['input_part_list'][shared.lang],
-                                              value=html_label['input_part_list'][shared.lang][:2],
-                                              label=html_label['input_part_label'][shared.lang],
-                                              elem_id="input_part",
-                                              type="index",
+                        with gr.Row():
+                            viewpoint_mode = gr.Radio(label=html_label['output_viewpoint_label'][shared.lang],
+                                                      choices=html_label['output_viewpoint_list'][shared.lang],
+                                                      value=html_label['output_viewpoint_list'][shared.lang][0],
+                                                      type="index", elem_id="viewpoint_mode", interactive=True,
+                                                      visible=True)
+                            cloth_part = gr.CheckboxGroup(choices=html_label['input_part_list'][shared.lang],
+                                                          value=html_label['input_part_list'][shared.lang][:2],
+                                                          label=html_label['input_part_label'][shared.lang],
+                                                          elem_id="input_part",
+                                                          type="index",
+                                                          visible=False)
+
+                            output_ratio = gr.Radio(label=html_label['output_ratio_label'][shared.lang],
+                                                    choices=html_label['output_ratio_list'][shared.lang],
+                                                    value=html_label['output_ratio_list'][shared.lang][0],
+                                                    type="index", elem_id="output_ratio", interactive=True,
+                                                    visible=True)
+
+                        with gr.Row():
+                            output_definition = gr.Radio(label=html_label['output_ratio_label'][shared.lang],
+                                                         choices=html_label['output_ratio_list'][shared.lang],
+                                                         value=html_label['output_ratio_list'][shared.lang][0],
+                                                         type="index", elem_id="output_definition", interactive=True,
+                                                         visible=True)
+                            choosing_index_4_hires = gr.Radio(
+                                label=html_label['choosing_index_4_hires_label'][shared.lang],
+                                choices=[0, 1, 2],
+                                type="index", elem_id="choosing_index_4_hires",
+                                visible=True)
+
+                    with gr.Column(scale=1):
+                        regenerate = gr.Button(html_label['generate_btn_label'][shared.lang], elem_id=f"re_generate",
+                                               variant='primary')
+                        interrupt = gr.Button(html_label['interrupt_btn_label'][shared.lang], elem_id=f"interrupt",
                                               visible=False)
+                        generate_hires = gr.Button(html_label['generate_hires_label'][shared.lang], variant='primary',
+                                                   elem_id=f"generate_hires")
+                        prompt = gr.Button('prompt', elem_id=f"show_prompt",
+                                           visible=True if cmd_opts.debug_mode else False)
             with gr.Column(scale=1):
-                regenerate = gr.Button(html_label['generate_btn_label'][shared.lang], elem_id=f"re_generate",
-                                       variant='primary')
-                interrupt = gr.Button(html_label['interrupt_btn_label'][shared.lang], elem_id=f"interrupt",
-                                      visible=False)
-                prompt = gr.Button('prompt', elem_id=f"show_prompt", visible=True if cmd_opts.debug_mode else False)
-
-        with gr.Row():
-            with gr.Column(scale=1):
-                hint1 = gr.Text(value=html_label['hint1'][shared.lang], elem_id="hint1", label='', elem_classes='hint')
-            with gr.Column(scale=1):
-                hint2 = gr.Text(value=html_label['hint2'][shared.lang], elem_id="hint2", label='', elem_classes='hint')
+                with gr.Row():
+                    hint1 = gr.Text(value=html_label['hint1'][shared.lang], elem_id="hint1", label='',
+                                    elem_classes='hint')
+                with gr.Row():
+                    hint2 = gr.Text(value=html_label['hint2'][shared.lang], elem_id="hint2", label='',
+                                    elem_classes='hint')
         with gr.Row(visible=True if cmd_opts.debug_mode else False):
             sam_result = gr.Text(value="", label="Status")
 
@@ -570,8 +611,19 @@ def create_ui():
                     viewpoint_mode,
                     cloth_part,
                     model_mode,
+                    output_ratio,
                     ],
             outputs=[result_gallery, sam_result]
+        )
+
+        generate_hires.click(
+            fn=proceed_generate_hires,
+            _js='guiju_hires_submit',
+            inputs=[result_gallery,
+                    choosing_index_4_hires,
+                    output_definition,
+                    ],
+            outputs=[result_gallery]
         )
 
         def reload_ui(lang):
