@@ -879,21 +879,21 @@ footer {
     color: red;
 }
 
-#tabs .tab-nav{
-    display: none;
-}
+/*#tabs .tab-nav{*/
+/*    display: none;*/
+/*}*/
 
-#image_row {
-    height: 80%;
-}
+/*#image_row {*/
+/*    height: 80%;*/
+/*}*/
 
-#control_row {
-    height: 20%;
-}
+/*#control_row {*/
+/*    height: 20%;*/
+/*}*/
 
-#component-0 {
-    height: 100% !important;
-}
+/*#component-0 {*/
+/*    height: 100% !important;*/
+/*}*/
 
 #result_gallery, #gallery_container {
     height: 100%;

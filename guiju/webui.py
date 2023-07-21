@@ -231,8 +231,7 @@ def proceed_generate_hires():
     pass
 
 
-def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_mode, _cloth_part, _model_mode,
-                          _output_ratio):
+def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_mode, _cloth_part, _model_mode):
     _batch_size = int(_batch_size)
     shared.state.interrupted = False
 
@@ -452,8 +451,6 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                                   override_settings_texts,
                                   *sam_args)
 
-    # if _output_ratio != 1:
-
     return res[0], 'done.'
 
 
@@ -493,104 +490,105 @@ def create_ui():
 
     # web ui
     with gr.Blocks(analytics_enabled=False, title="cloths_inpaint", css='style.css') as demo:
-        # with gr.Row(elem_id='1st_row'):
-        #     gr.Label(visible=False)
         with gr.Row(elem_id='2nd_row', visible=False):
             lang_vals = list(html_label['lang_selection'].values())
             lang_sel_list = gr.Dropdown(label="language", elem_id="lang_list", choices=lang_vals, type="value",
                                         value=html_label['lang_selection'][shared.lang])
-        with gr.Row(elem_id=f"image_row"):
-            with gr.Column(scale=1):
-                input_image = gr.Image(label=html_label['input_image_label'][shared.lang], elem_id=f"input_image",
-                                       source="upload",
-                                       type="pil", image_mode="RGBA").style(height=640)
 
-            with gr.Column(scale=1):
-                with gr.Group(elem_id=f"gallery_container"):
-                    result_gallery = gr.Gallery(label=html_label['output_gallery_label'][shared.lang], show_label=False,
-                                                elem_id=f"result_gallery").style(
-                        columns=3,
-                        rows=1,
-                        preview=True,
-                        height=640)
-                # .style(grid=3)
-
-        # img2img input args
-        with gr.Row(elem_id=f"control_row"):
-            with gr.Column(scale=1):
-                with gr.Row():
-                    with gr.Column(scale=10):
-                        # batch_size = gr.Slider(minimum=1, maximum=3, step=1, label=html_label['batch_size_label'][shared.lang],
-                        #                        value=1, elem_id="batch_size")
-                        with gr.Row():
-                            with gr.Column(scale=1):
-                                batch_size = gr.Dropdown(label=html_label['batch_size_label'][shared.lang],
-                                                         choices=[1, 2, 3],
-                                                         type='value', value='1', elem_id="batch_size")
-                            with gr.Column(scale=1):
-                                model_mode = gr.Radio(label=html_label['model_mode_label'][shared.lang],
-                                                      choices=html_label['model_mode_list'][shared.lang],
-                                                      value=html_label['model_mode_list'][shared.lang][0],
-                                                      type="index", elem_id="model_mode", interactive=True,
-                                                      visible=True)
-                            with gr.Column(scale=1):
-                                gender = gr.Radio(label=html_label['output_gender_label'][shared.lang],
-                                                  choices=html_label['output_gender_list'][shared.lang],
-                                                  value=html_label['output_gender_list'][shared.lang][0],
-                                                  type="index", elem_id="gender")
-                            with gr.Column(scale=1):
-                                age = gr.Radio(label=html_label['output_age_label'][shared.lang],
-                                               choices=html_label['output_age_list'][shared.lang],
-                                               value=html_label['output_age_list'][shared.lang][1],
-                                               type="index", elem_id="age")
-
-                        with gr.Row():
-                            viewpoint_mode = gr.Radio(label=html_label['output_viewpoint_label'][shared.lang],
-                                                      choices=html_label['output_viewpoint_list'][shared.lang],
-                                                      value=html_label['output_viewpoint_list'][shared.lang][0],
-                                                      type="index", elem_id="viewpoint_mode", interactive=True,
-                                                      visible=True)
-                            cloth_part = gr.CheckboxGroup(choices=html_label['input_part_list'][shared.lang],
-                                                          value=html_label['input_part_list'][shared.lang][:2],
-                                                          label=html_label['input_part_label'][shared.lang],
-                                                          elem_id="input_part",
-                                                          type="index",
-                                                          visible=False)
-
-                            output_ratio = gr.Radio(label=html_label['output_ratio_label'][shared.lang],
-                                                    choices=html_label['output_ratio_list'][shared.lang],
-                                                    value=html_label['output_ratio_list'][shared.lang][0],
-                                                    type="index", elem_id="output_ratio", interactive=True,
-                                                    visible=True)
-
-                        with gr.Row():
-                            output_definition = gr.Radio(label=html_label['output_ratio_label'][shared.lang],
-                                                         choices=html_label['output_ratio_list'][shared.lang],
-                                                         value=html_label['output_ratio_list'][shared.lang][0],
-                                                         type="index", elem_id="output_definition", interactive=True,
-                                                         visible=True)
-                            choosing_index_4_hires = gr.Radio(
-                                label=html_label['choosing_index_4_hires_label'][shared.lang],
-                                choices=[0, 1, 2],
-                                type="index", elem_id="choosing_index_4_hires",
-                                visible=True)
+        with gr.Tabs(elem_id="tabs") as tabs:
+            with gr.TabItem(html_label['ai_model_label'][shared.lang], elem_id="generate_ai_model_tab"):
+                with gr.Row(elem_id=f"image_row"):
+                    with gr.Column(scale=1):
+                        input_image = gr.Image(label=html_label['input_image_label'][shared.lang],
+                                               elem_id=f"input_image",
+                                               source="upload",
+                                               type="pil", image_mode="RGBA").style(height=640)
 
                     with gr.Column(scale=1):
-                        regenerate = gr.Button(html_label['generate_btn_label'][shared.lang], elem_id=f"re_generate",
-                                               variant='primary')
-                        interrupt = gr.Button(html_label['interrupt_btn_label'][shared.lang], elem_id=f"interrupt",
-                                              visible=False)
-                        generate_hires = gr.Button(html_label['generate_hires_label'][shared.lang], variant='primary',
-                                                   elem_id=f"generate_hires")
-                        prompt = gr.Button('prompt', elem_id=f"show_prompt",
-                                           visible=True if cmd_opts.debug_mode else False)
-            with gr.Column(scale=1):
-                with gr.Row():
-                    hint1 = gr.Text(value=html_label['hint1'][shared.lang], elem_id="hint1", label='',
-                                    elem_classes='hint')
-                with gr.Row():
-                    hint2 = gr.Text(value=html_label['hint2'][shared.lang], elem_id="hint2", label='',
-                                    elem_classes='hint')
+                        with gr.Group(elem_id=f"gallery_container"):
+                            result_gallery = gr.Gallery(label=html_label['output_gallery_label'][shared.lang],
+                                                        show_label=False,
+                                                        elem_id=f"result_gallery").style(
+                                columns=3,
+                                rows=1,
+                                preview=True,
+                                height=640)
+                        # .style(grid=3)
+
+                # img2img input args
+                with gr.Row(elem_id=f"control_row"):
+                    with gr.Column(scale=1):
+                        with gr.Row():
+                            with gr.Column(scale=10):
+                                # batch_size = gr.Slider(minimum=1, maximum=3, step=1, label=html_label['batch_size_label'][shared.lang],
+                                #                        value=1, elem_id="batch_size")
+                                with gr.Row():
+                                    with gr.Column(scale=1):
+                                        batch_size = gr.Dropdown(label=html_label['batch_size_label'][shared.lang],
+                                                                 choices=[1, 2, 3],
+                                                                 type='value', value='1', elem_id="batch_size")
+                                    with gr.Column(scale=1):
+                                        model_mode = gr.Radio(label=html_label['model_mode_label'][shared.lang],
+                                                              choices=html_label['model_mode_list'][shared.lang],
+                                                              value=html_label['model_mode_list'][shared.lang][0],
+                                                              type="index", elem_id="model_mode", interactive=True,
+                                                              visible=True)
+                                    with gr.Column(scale=1):
+                                        gender = gr.Radio(label=html_label['output_gender_label'][shared.lang],
+                                                          choices=html_label['output_gender_list'][shared.lang],
+                                                          value=html_label['output_gender_list'][shared.lang][0],
+                                                          type="index", elem_id="gender")
+                                    with gr.Column(scale=1):
+                                        age = gr.Radio(label=html_label['output_age_label'][shared.lang],
+                                                       choices=html_label['output_age_list'][shared.lang],
+                                                       value=html_label['output_age_list'][shared.lang][1],
+                                                       type="index", elem_id="age")
+
+                                with gr.Row():
+                                    viewpoint_mode = gr.Radio(label=html_label['output_viewpoint_label'][shared.lang],
+                                                              choices=html_label['output_viewpoint_list'][shared.lang],
+                                                              value=html_label['output_viewpoint_list'][shared.lang][0],
+                                                              type="index", elem_id="viewpoint_mode", interactive=True,
+                                                              visible=True)
+                                    cloth_part = gr.CheckboxGroup(choices=html_label['input_part_list'][shared.lang],
+                                                                  value=html_label['input_part_list'][shared.lang][:2],
+                                                                  label=html_label['input_part_label'][shared.lang],
+                                                                  elem_id="input_part",
+                                                                  type="index",
+                                                                  visible=False)
+
+                            with gr.Column(scale=1):
+                                regenerate = gr.Button(html_label['generate_btn_label'][shared.lang],
+                                                       elem_id=f"re_generate",
+                                                       variant='primary')
+                                interrupt = gr.Button(html_label['interrupt_btn_label'][shared.lang],
+                                                      elem_id=f"interrupt",
+                                                      visible=False)
+                                prompt = gr.Button('prompt', elem_id=f"show_prompt",
+                                                   visible=True if cmd_opts.debug_mode else False)
+                    with gr.Column(scale=1):
+                        with gr.Row():
+                            hint1 = gr.Text(value=html_label['hint1'][shared.lang], elem_id="hint1", label='',
+                                            elem_classes='hint')
+                        with gr.Row():
+                            hint2 = gr.Text(value=html_label['hint2'][shared.lang], elem_id="hint2", label='',
+                                            elem_classes='hint')
+
+            with gr.TabItem(html_label['generate_hires_label'][shared.lang], elem_id="generate_hires_tab"):
+                output_resolution = gr.Dropdown(label=html_label['output_resolution_label'][shared.lang],
+                                                elem_id="lang_list",
+                                                choices=html_label['output_resolution_list'], type="value",
+                                                value=html_label['output_resolution_list'][0])
+                choosing_index_4_hires = gr.Radio(
+                    label=html_label['choosing_index_4_hires_label'][shared.lang],
+                    choices=[0, 1, 2],
+                    value=0,
+                    type="index", elem_id="choosing_index_4_hires",
+                    visible=True)
+                generate_hires = gr.Button(html_label['generate_hires_label'][shared.lang],
+                                           variant='primary',
+                                           elem_id=f"generate_hires")
+
         with gr.Row(visible=True if cmd_opts.debug_mode else False):
             sam_result = gr.Text(value="", label="Status")
 
@@ -617,7 +615,6 @@ def create_ui():
                     viewpoint_mode,
                     cloth_part,
                     model_mode,
-                    output_ratio,
                     ],
             outputs=[result_gallery, sam_result]
         )
@@ -627,7 +624,7 @@ def create_ui():
             _js='guiju_hires_submit',
             inputs=[result_gallery,
                     choosing_index_4_hires,
-                    output_definition,
+                    output_resolution,
                     ],
             outputs=[result_gallery]
         )
@@ -659,6 +656,7 @@ def create_ui():
 
     modules.scripts.scripts_current = None
     script_callbacks.ui_settings_callback()
+
     return demo
 
 
