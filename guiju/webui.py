@@ -279,13 +279,15 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                 print(f"increase: {(person_boxes[0][3] - person_boxes[0][1]) * bottom_ratio}")
 
                 padding_left = int(person_width * left_ratio - int(person_boxes[0][0])) if (int(person_boxes[0][0]) / person_width) < left_ratio else 0
-                padding_right = int(person_width * right_ratio - (person_width - int(person_boxes[0][2]))) if ((person_width - int(person_boxes[0][2])) / person_width) < right_ratio else 0
+                padding_right = int(person_width * right_ratio - (_input_image_width - int(person_boxes[0][2]))) if ((_input_image_width - int(person_boxes[0][2])) / person_width) < right_ratio else 0
                 padding_top = int(person_height * top_ratio - int(person_boxes[0][1])) if (int(person_boxes[0][1]) / person_height) < top_ratio else 0
-                padding_bottom = int(person_height * bottom_ratio - (person_height - int(person_boxes[0][3]))) if ((person_height - int(person_boxes[0][3])) / person_height) < bottom_ratio else 0
+                padding_bottom = int(person_height * bottom_ratio - (_input_image_height - int(person_boxes[0][3]))) if ((_input_image_height - int(person_boxes[0][3])) / person_height) < bottom_ratio else 0
 
                 _input_image = padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right, padding_top, padding_bottom)
-                _input_image = configure_image(_input_image, [0, 0, padding_left + _input_image_width + padding_right,
-                                                              padding_top + _input_image_height + padding_bottom],
+                # _input_image = configure_image(_input_image, [0, 0, padding_left + _input_image_width + padding_right,
+                #                                               padding_top + _input_image_height + padding_bottom],
+                #                                target_ratio=output_width / output_height)
+                _input_image = configure_image(_input_image, [person_boxes[0][0]-padding_left, person_boxes[0][1]-padding_top, person_boxes[0][2]+padding_right, person_boxes[0][3]+padding_bottom],
                                                target_ratio=output_width / output_height)
 
         except Exception:
