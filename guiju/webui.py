@@ -21,7 +21,8 @@ import modules.scripts
 from guiju.global_var import html_label
 from guiju.segment_anything_util.dino import dino_model_list, dino_predict_internal
 from guiju.segment_anything_util.sam import sam_model_list, sam_predict
-from modules import shared, script_callbacks
+from modules import shared, script_callbacks, devices, scripts_postprocessing, scripts, generation_parameters_copypaste, \
+    images
 from modules.paths import script_path, data_path
 import modules.img2img
 from modules.shared import cmd_opts
@@ -552,21 +553,11 @@ def proceed_generate_hires(_hires_input_gallery, _choosing_index_4_hires, _outpu
         sam_args = [0,
                     adetail_enabled, fake_args, fake_args,  # adetail args
                     controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,  # controlnet args
-                    True, False, 0, _input_image,
-                    sam_result_tmp_png_fp,
-                    0,  # sam_output_chosen_mask
-                    False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
-                    '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                    True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                    f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
-                    128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0, ['left', 'right', 'up', 'down'],
-                    False, False, 'positive', 'comma', 0, False, False, '',
-                    '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                    64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None, None, False, None, None,
-                    False, None, None, False, 50
+                    False, False, 0, None, # sam args
+                    [], 0, False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [], False, 0, None, None, '<ul>\n<li><code>CFG Scale</code> should be 2 or lower.</li>\n</ul>\n', True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None', '<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: 0.8</p>', 128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0, ['left', 'right', 'up', 'down'], False, False, 'positive', 'comma', 0, False, False, '', '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>', 64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None, None, False, None, None, False, None, None, False, 50
                     ]
 
-        cnet_res = modules.img2img.img2img(task_id, 4, sd_positive_prompt, sd_negative_prompt, prompt_styles, init_img,
+        cnet_res = modules.img2img.img2img(task_id, 0, sd_positive_prompt, sd_negative_prompt, prompt_styles, init_img,
                                       sketch,
                                       init_img_with_mask, inpaint_color_sketch, inpaint_color_sketch_orig,
                                       init_img_inpaint, init_mask_inpaint,
@@ -581,10 +572,50 @@ def proceed_generate_hires(_hires_input_gallery, _choosing_index_4_hires, _outpu
                                       override_settings_texts,
                                       *sam_args)
 
+
     # extra upscaler
+    cnet_res_img = _input_image if _output_ratio == 0.5 else cnet_res[0][0]
+    args = (0, 3.3, 512, 512, True, 'R-ESRGAN 4x+ Anime6B', 'None', 0, 0, 0, 0)
+    assert cnet_res_img, 'image not selected'
 
+    devices.torch_gc()
+    image_data = []
+    image_names = []
+    outputs = []
+    image_data.append(cnet_res_img)
+    image_names.append(None)
+    outpath = shared.opts.outdir_samples or shared.opts.outdir_extras_samples
 
-    return None
+    for image, name in zip(image_data, image_names):
+        existing_pnginfo = image.info or {}
+
+        pp = scripts_postprocessing.PostprocessedImage(image.convert("RGB"))
+
+        scripts.scripts_postproc.run(pp, args)
+
+        if shared.opts.use_original_name_batch and name is not None:
+            basename = os.path.splitext(os.path.basename(name))[0]
+        else:
+            basename = ''
+
+        infotext = ", ".join(
+            [k if k == v else f'{k}: {generation_parameters_copypaste.quote(v)}' for k, v in pp.info.items() if
+             v is not None])
+
+        if shared.opts.enable_pnginfo:
+            pp.image.info = existing_pnginfo
+            pp.image.info["postprocessing"] = infotext
+
+        # if save_output:
+        images.save_image(pp.image, path=outpath, basename=basename, seed=None, prompt=None,
+                          extension=shared.opts.samples_format, info=infotext, short_filename=True, no_prompt=True,
+                          grid=False, pnginfo_section_name="extras", existing_info=existing_pnginfo,
+                          forced_filename=None)
+
+        outputs.append(pp.image)
+    devices.torch_gc()
+
+    return outputs[0]
 
 
 def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_mode, _cloth_part, _model_mode):
