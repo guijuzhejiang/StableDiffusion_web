@@ -5,7 +5,7 @@
 html_label = {
     'lang_selection': {'ch': '中文', 'jp': '日本語'},
     'input_image_label': {'ch': '上传图片', 'jp': '画像をアップロード'},
-    'batch_size_label': {'ch': 'Batch size', 'jp': '生成画像数'},
+    'batch_size_label': {'ch': '生成图像数量', 'jp': '生成画像数'},
     'output_gender_label': {'ch': '输出性别', 'jp': '性別'},
     'output_gender_list': {'ch': ['女', '男'], 'jp': ['女', '男']},
     'output_viewpoint_label': {'ch': '衣服朝向', 'jp': '衣類の向き'},
