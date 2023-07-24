@@ -453,7 +453,7 @@ def create_ui():
 
 
 def proceed_generate_hires(_hires_input_gallery, _choosing_index_4_hires, _output_resolution):
-    _input_image = Image.open(_hires_input_gallery[_choosing_index_4_hires]['name'])
+    _input_image = Image.open(_hires_input_gallery[_choosing_index_4_hires+1 if len(_hires_input_gallery) > 1 else _choosing_index_4_hires]['name'])
     if _input_image.mode != "RGBA":
         _input_image = _input_image.convert("RGBA")
     _input_image_width, _input_image_height = _input_image.size
