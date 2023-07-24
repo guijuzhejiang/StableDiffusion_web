@@ -22,7 +22,7 @@ from guiju.global_var import html_label
 from guiju.segment_anything_util.dino import dino_model_list, dino_predict_internal
 from guiju.segment_anything_util.sam import sam_model_list, sam_predict
 from modules import shared, script_callbacks, devices, scripts_postprocessing, scripts, generation_parameters_copypaste, \
-    images
+    images, ui_postprocessing
 from modules.paths import script_path, data_path
 import modules.img2img
 from modules.shared import cmd_opts
@@ -264,6 +264,8 @@ def create_ui():
     shared.opts.control_net_no_detectmap = True
 
     # web ui
+    with gr.Blocks(analytics_enabled=False, visible=False) as extras_interface:
+        ui_postprocessing.create_ui()
     with gr.Blocks(analytics_enabled=False, title="cloths_inpaint", css='style.css') as demo:
         with gr.Row(elem_id='2nd_row', visible=False):
             lang_vals = list(html_label['lang_selection'].values())
@@ -466,6 +468,8 @@ def proceed_generate_hires(_hires_input_gallery, _choosing_index_4_hires, _outpu
     if matches:
         # 匹配结果是一个元组列表，每个元组包含宽度和高度
         _output_width, _output_height = matches[0]
+        _output_width = int(_output_width)
+        _output_height = int(_output_height)
     else:
         raise Exception("未找到匹配的宽度和高度信息")
 
@@ -542,7 +546,8 @@ def proceed_generate_hires(_hires_input_gallery, _choosing_index_4_hires, _outpu
         adetail_enabled = False
         fake_args = {'ad_model': 'face_yolov8m.pt', 'ad_prompt': '', 'ad_negative_prompt': '', 'ad_confidence': 0.3,
                      'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
-                     'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4, 'ad_denoising_strength': 0.4,
+                     'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                     'ad_denoising_strength': 0.4,
                      'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
                      'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512, 'ad_inpaint_height': 512,
                      'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False, 'ad_cfg_scale': 7,
@@ -553,29 +558,41 @@ def proceed_generate_hires(_hires_input_gallery, _choosing_index_4_hires, _outpu
         sam_args = [0,
                     adetail_enabled, fake_args, fake_args,  # adetail args
                     controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,  # controlnet args
-                    False, False, 0, None, # sam args
-                    [], 0, False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [], False, 0, None, None, '<ul>\n<li><code>CFG Scale</code> should be 2 or lower.</li>\n</ul>\n', True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None', '<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: 0.8</p>', 128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0, ['left', 'right', 'up', 'down'], False, False, 'positive', 'comma', 0, False, False, '', '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>', 64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None, None, False, None, None, False, None, None, False, 50
+                    False, False, 0, None,  # sam args
+                    [], 0, False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [], False, 0, None, None,
+                    '<ul>\n<li><code>CFG Scale</code> should be 2 or lower.</li>\n</ul>\n', True, True, '', '', True,
+                    50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
+                    '<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: 0.8</p>',
+                    128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0, ['left', 'right', 'up', 'down'], False,
+                    False, 'positive', 'comma', 0, False, False, '',
+                    '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
+                    64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None, None, False, None,
+                    None, False, None, None, False, 50
                     ]
 
         cnet_res = modules.img2img.img2img(task_id, 0, sd_positive_prompt, sd_negative_prompt, prompt_styles, init_img,
-                                      sketch,
-                                      init_img_with_mask, inpaint_color_sketch, inpaint_color_sketch_orig,
-                                      init_img_inpaint, init_mask_inpaint,
-                                      steps, sampler_index, mask_blur, mask_alpha, inpainting_fill, restore_faces,
-                                      tiling,
-                                      n_iter, batch_size, cfg_scale, image_cfg_scale, denoising_strength, seed,
-                                      subseed,
-                                      subseed_strength, seed_resize_from_h, seed_resize_from_w, seed_enable_extras,
-                                      selected_scale_tab, padding_width, padding_height, scale_by, resize_mode, inpaint_full_res,
-                                      inpaint_full_res_padding, inpainting_mask_invert, img2img_batch_input_dir,
-                                      img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
-                                      override_settings_texts,
-                                      *sam_args)
-
+                                           sketch,
+                                           init_img_with_mask, inpaint_color_sketch, inpaint_color_sketch_orig,
+                                           init_img_inpaint, init_mask_inpaint,
+                                           steps, sampler_index, mask_blur, mask_alpha, inpainting_fill, restore_faces,
+                                           tiling,
+                                           n_iter, batch_size, cfg_scale, image_cfg_scale, denoising_strength, seed,
+                                           subseed,
+                                           subseed_strength, seed_resize_from_h, seed_resize_from_w, seed_enable_extras,
+                                           selected_scale_tab, padding_width, padding_height, scale_by, resize_mode,
+                                           inpaint_full_res,
+                                           inpaint_full_res_padding, inpainting_mask_invert, img2img_batch_input_dir,
+                                           img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
+                                           override_settings_texts,
+                                           *sam_args)
+    else:
+        padding_height = _input_image_height
+        padding_width = _input_image_width
 
     # extra upscaler
     cnet_res_img = _input_image if _output_ratio == 0.5 else cnet_res[0][0]
-    args = (0, 3.3, 512, 512, True, 'R-ESRGAN 4x+ Anime6B', 'None', 0, 0, 0, 0)
+    scales = _output_width / padding_width
+    args = (0, scales, 512, 512, True, 'R-ESRGAN 4x+', 'None', 0, 0, 0, 0)
     assert cnet_res_img, 'image not selected'
 
     devices.torch_gc()
@@ -665,19 +682,31 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                 print(f"height: {person0_box[3] - person0_box[1]}")
                 print(f"increase: {(person0_box[3] - person0_box[1]) * bottom_ratio}")
 
-                padding_left = int(person0_width * left_ratio - int(person0_box[0])) if (int(person0_box[0]) / person0_width) < left_ratio else 0
-                padding_right = int(person0_width * right_ratio - (_input_image_width - int(person0_box[2]))) if ((_input_image_width - int(person0_box[2])) / person0_width) < right_ratio else 0
-                padding_top = int(person0_height * top_ratio - int(person0_box[1])) if (int(person0_box[1]) / person0_height) < top_ratio else 0
-                padding_bottom = int(person0_height * bottom_ratio - (_input_image_height - int(person0_box[3]))) if ((_input_image_height - int(person0_box[3])) / person0_height) < bottom_ratio else 0
+                padding_left = int(person0_width * left_ratio - int(person0_box[0])) if (int(
+                    person0_box[0]) / person0_width) < left_ratio else 0
+                padding_right = int(person0_width * right_ratio - (_input_image_width - int(person0_box[2]))) if ((
+                                                                                                                              _input_image_width - int(
+                                                                                                                          person0_box[
+                                                                                                                              2])) / person0_width) < right_ratio else 0
+                padding_top = int(person0_height * top_ratio - int(person0_box[1])) if (int(
+                    person0_box[1]) / person0_height) < top_ratio else 0
+                padding_bottom = int(person0_height * bottom_ratio - (_input_image_height - int(person0_box[3]))) if ((
+                                                                                                                                  _input_image_height - int(
+                                                                                                                              person0_box[
+                                                                                                                                  3])) / person0_height) < bottom_ratio else 0
 
-                _input_image = padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right, padding_top, padding_bottom)
+                _input_image = padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right, padding_top,
+                                                            padding_bottom)
                 # _input_image = configure_image(_input_image, [0, 0, padding_left + _input_image_width + padding_right,
                 #                                               padding_top + _input_image_height + padding_bottom],
                 #                                target_ratio=output_width / output_height)
-                _input_image = configure_image(_input_image, [0 if padding_left > 0 else person0_box[0] - int(person0_width * left_ratio),
-                                                              0 if padding_top > 0 else person0_box[1] - int(person0_height * top_ratio),
-                                                              padding_left + _input_image_width + padding_right if padding_right > 0 else person0_box[2] + int(person0_width * right_ratio),
-                                                              padding_top + _input_image_height + padding_bottom if padding_bottom > 0 else person0_box[3] + int(person0_height * bottom_ratio)],
+                _input_image = configure_image(_input_image, [
+                    0 if padding_left > 0 else person0_box[0] - int(person0_width * left_ratio),
+                    0 if padding_top > 0 else person0_box[1] - int(person0_height * top_ratio),
+                    padding_left + _input_image_width + padding_right if padding_right > 0 else person0_box[2] + int(
+                        person0_width * right_ratio),
+                    padding_top + _input_image_height + padding_bottom if padding_bottom > 0 else person0_box[3] + int(
+                        person0_height * bottom_ratio)],
                                                target_ratio=output_width / output_height)
 
         except Exception:
@@ -838,7 +867,8 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                                   override_settings_texts,
                                   *sam_args)
 
-    return res[0], res[0], gr.Radio.update(choices=[str(x) for x in range(len(res[0]))], value=0), gr.Button.update(interactive=True), 'done.'
+    return res[0], res[0], gr.Radio.update(choices=[str(x) for x in range(len(res[0]))], value=0), gr.Button.update(
+        interactive=True), 'done.'
 
 
 def webpath(fn):
