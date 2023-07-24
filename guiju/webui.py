@@ -498,7 +498,7 @@ def proceed_generate_hires(_hires_input_gallery, _choosing_index_4_hires, _outpu
         mask_blur = 4
         mask_alpha = 0
         inpainting_fill = 1
-        restore_faces = True
+        restore_faces = False
         tiling = False
         n_iter = 1
         batch_size = 1
@@ -515,8 +515,8 @@ def proceed_generate_hires(_hires_input_gallery, _choosing_index_4_hires, _outpu
         scale_by = 1
         resize_mode = 2
         inpaint_full_res = 0  # choices=["Whole picture", "Only masked"]
-        inpaint_full_res_padding = 0
-        inpainting_mask_invert = 1
+        inpaint_full_res_padding = 32
+        inpainting_mask_invert = 0
         img2img_batch_input_dir = ''
         img2img_batch_output_dir = ''
         img2img_batch_inpaint_mask_dir = ''
