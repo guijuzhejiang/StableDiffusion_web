@@ -581,7 +581,7 @@ def proceed_generate_hires(_hires_input_gallery, _choosing_index_4_hires, _outpu
                                            n_iter, batch_size, cfg_scale, image_cfg_scale, denoising_strength, seed,
                                            subseed,
                                            subseed_strength, seed_resize_from_h, seed_resize_from_w, seed_enable_extras,
-                                           selected_scale_tab, padding_width, padding_height, scale_by, resize_mode,
+                                           selected_scale_tab, padding_height, padding_width, scale_by, resize_mode,
                                            inpaint_full_res,
                                            inpaint_full_res_padding, inpainting_mask_invert, img2img_batch_input_dir,
                                            img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
@@ -594,7 +594,7 @@ def proceed_generate_hires(_hires_input_gallery, _choosing_index_4_hires, _outpu
     # extra upscaler
     cnet_res_img = _input_image if _output_ratio == 0.5 else cnet_res[0][0]
     scales = _output_width / padding_width
-    args = (0, scales, padding_width, padding_height, True, 'R-ESRGAN 4x+', 'None', 0, 0, 0, 0)
+    args = (0, scales, padding_height, padding_width, True, 'R-ESRGAN 4x+', 'None', 0, 0, 0, 0)
     assert cnet_res_img, 'image not selected'
 
     devices.torch_gc()
@@ -869,7 +869,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                                   override_settings_texts,
                                   *sam_args)
 
-    return res[0], res[0], gr.Radio.update(choices=[str(x) for x in range(len(res[0]))], value=0), gr.Button.update(
+    return res[0], res[0], gr.Radio.update(choices=[str(x) for x in range(1 if len(res[0]) == 1 else len(res[0])-1)], value=0), gr.Button.update(
         interactive=True), 'done.'
 
 
