@@ -673,11 +673,11 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                 person0_box = [int(x) for x in person_boxes[0]]
                 person0_width = person0_box[2] - person0_box[0]
                 person0_height = person0_box[3] - person0_box[1]
-                constant = 2.4
+                constant = 2.5
                 left_ratio = 0.1
                 right_ratio = 0.1
-                top_ratio = 0.25
-                bottom_ratio = min(0.42, math.pow(person0_width / person0_height, 3) * constant)
+                top_ratio = 0.32
+                bottom_ratio = min(0.5, math.pow(person0_width / person0_height, 3) * constant)
                 print(f"bottom_ratio: {bottom_ratio}")
                 print(f"boxes: {person_boxes}")
                 print(f"width: {person0_box[2] - person0_box[0]}")
