@@ -470,6 +470,7 @@ function guiju_submit() {
     var id = randomId()
     gradioApp().getElementById('interrupt').style.display = "block";
     gradioApp().getElementById('re_generate').style.display = "none";
+    gradioApp().getElementById('generate_hires').disabled = true;
 
     // requestProgress(id, gradioApp().getElementById('gallery_container'), gradioApp().getElementById('result_gallery'), function(){
     //     gradioApp().getElementById('interrupt').style.display = "none";
@@ -480,6 +481,33 @@ function guiju_submit() {
         if (!not_done) {
             gradioApp().getElementById('interrupt').style.display = "none";
             gradioApp().getElementById('re_generate').style.display = "block";
+            gradioApp().getElementById('generate_hires').disabled = false;
+            gradioApp().querySelector('#choosing_index_4_hires > div > label').click();
+            clearInterval(checkProgress);
+        }
+    }, 1000);
+
+    var res = create_submit_args(arguments);
+
+    return res;
+}
+
+function guiju_hires_submit() {
+    var id = randomId()
+    gradioApp().getElementById('interrupt').style.display = "block";
+    gradioApp().getElementById('re_generate').style.display = "none";
+    gradioApp().getElementById('generate_hires').disabled = true;
+
+    // requestProgress(id, gradioApp().getElementById('gallery_container'), gradioApp().getElementById('result_gallery'), function(){
+    //     gradioApp().getElementById('interrupt').style.display = "none";
+    //     gradioApp().getElementById('re_generate').style.display = "block";
+    // })
+    var checkProgress = setInterval(function () {
+        var not_done = gradioApp().getElementById('hires_input_image').innerHTML.indexOf('svelte-j1gjts meta-text') >= 0;
+        if (!not_done) {
+            gradioApp().getElementById('interrupt').style.display = "none";
+            gradioApp().getElementById('re_generate').style.display = "block";
+            gradioApp().getElementById('generate_hires').disabled = false;
             clearInterval(checkProgress);
         }
     }, 1000);

@@ -26,6 +26,6 @@ html_label = {
     'generate_hires_label': {'ch': '生成高清图片', 'jp': '生成高清图片'},
     'ai_model_label': {'ch': '生成ai模特', 'jp': '生成ai模特'},
     'output_resolution_label': {'ch': '输出分辨率', 'jp': '输出分辨率'},
-    'output_resolution_list': ['1024x2048', '2048x4096', '1024x1316', '2048x2632', '1024x1280', '2048x2560', '2048x2048', '4096x4096'],
+    'output_resolution_list': ['1024x2048(1:2)', '2048x4096(1:2)', '2048x2048(1:1)', '2048x2560(4:5)', '2048x2632(7:9)'],
     'hires_result_image_label': {'ch': '高清结果', 'jp': '高清结果'},
 }

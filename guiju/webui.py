@@ -7,6 +7,7 @@ import io
 import math
 import os
 import random
+import re
 import string
 import traceback
 
@@ -227,8 +228,363 @@ def padding_rgba_image_pil_to_cv(original_image, pl, pr, pt, pb):
     return padded_image
 
 
-def proceed_generate_hires():
-    pass
+def create_ui():
+    shared.state.server_command = None
+    reload_javascript()
+    # init sam
+    modules.scripts.scripts_current = modules.scripts.scripts_img2img
+    modules.scripts.scripts_img2img.initialize_scripts(is_img2img=True)
+    # modules.scripts.scripts_img2img.alwayson_scripts[0].args_from = 1
+    # modules.scripts.scripts_img2img.alwayson_scripts[0].args_to = 21
+
+    cnet_idx = 1
+    sam_idx = 2
+    adetail_idx = 0
+    modules.scripts.scripts_img2img.alwayson_scripts[0], \
+    modules.scripts.scripts_img2img.alwayson_scripts[1], \
+    modules.scripts.scripts_img2img.alwayson_scripts[2] \
+        = modules.scripts.scripts_img2img.alwayson_scripts[sam_idx], \
+          modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx], \
+          modules.scripts.scripts_img2img.alwayson_scripts[adetail_idx]
+
+    # sam 20 args
+    modules.scripts.scripts_img2img.alwayson_scripts[0].args_from = 7
+    modules.scripts.scripts_img2img.alwayson_scripts[0].args_to = 27
+
+    # controlnet 3 args
+    modules.scripts.scripts_img2img.alwayson_scripts[1].args_from = 4
+    modules.scripts.scripts_img2img.alwayson_scripts[1].args_to = 7
+
+    # adetail 3 args
+    modules.scripts.scripts_img2img.alwayson_scripts[2].args_from = 1
+    modules.scripts.scripts_img2img.alwayson_scripts[2].args_to = 4
+
+    # invisible detectmap
+    shared.opts.control_net_no_detectmap = True
+
+    # web ui
+    with gr.Blocks(analytics_enabled=False, title="cloths_inpaint", css='style.css') as demo:
+        with gr.Row(elem_id='2nd_row', visible=False):
+            lang_vals = list(html_label['lang_selection'].values())
+            lang_sel_list = gr.Dropdown(label="language", elem_id="lang_list", choices=lang_vals, type="value",
+                                        value=html_label['lang_selection'][shared.lang])
+
+        with gr.Tabs(elem_id="tabs") as tabs:
+            with gr.TabItem(html_label['ai_model_label'][shared.lang], elem_id="generate_ai_model_tab"):
+                with gr.Row(elem_id=f"image_row"):
+                    with gr.Column(scale=1):
+                        input_image = gr.Image(label=html_label['input_image_label'][shared.lang],
+                                               elem_id=f"input_image",
+                                               source="upload",
+                                               type="pil", image_mode="RGBA").style(height=640)
+
+                    with gr.Column(scale=1):
+                        with gr.Group(elem_id=f"gallery_container"):
+                            result_gallery = gr.Gallery(label=html_label['output_gallery_label'][shared.lang],
+                                                        elem_id=f"result_gallery").style(
+                                columns=3,
+                                rows=1,
+                                preview=True,
+                                height=640)
+                        # .style(grid=3)
+
+                # img2img input args
+                with gr.Row(elem_id=f"control_row"):
+                    with gr.Column(scale=1):
+                        with gr.Row():
+                            with gr.Column(scale=10):
+                                # batch_size = gr.Slider(minimum=1, maximum=3, step=1, label=html_label['batch_size_label'][shared.lang],
+                                #                        value=1, elem_id="batch_size")
+                                with gr.Row():
+                                    with gr.Column(scale=1):
+                                        batch_size = gr.Dropdown(label=html_label['batch_size_label'][shared.lang],
+                                                                 choices=[1, 2, 3],
+                                                                 type='value', value='1', elem_id="batch_size")
+                                    with gr.Column(scale=1):
+                                        model_mode = gr.Radio(label=html_label['model_mode_label'][shared.lang],
+                                                              choices=html_label['model_mode_list'][shared.lang],
+                                                              value=html_label['model_mode_list'][shared.lang][0],
+                                                              type="index", elem_id="model_mode", interactive=True,
+                                                              visible=True)
+                                    with gr.Column(scale=1):
+                                        gender = gr.Radio(label=html_label['output_gender_label'][shared.lang],
+                                                          choices=html_label['output_gender_list'][shared.lang],
+                                                          value=html_label['output_gender_list'][shared.lang][0],
+                                                          type="index", elem_id="gender")
+                                    with gr.Column(scale=1):
+                                        age = gr.Radio(label=html_label['output_age_label'][shared.lang],
+                                                       choices=html_label['output_age_list'][shared.lang],
+                                                       value=html_label['output_age_list'][shared.lang][1],
+                                                       type="index", elem_id="age")
+
+                                with gr.Row():
+                                    viewpoint_mode = gr.Radio(label=html_label['output_viewpoint_label'][shared.lang],
+                                                              choices=html_label['output_viewpoint_list'][shared.lang],
+                                                              value=html_label['output_viewpoint_list'][shared.lang][0],
+                                                              type="index", elem_id="viewpoint_mode", interactive=True,
+                                                              visible=True)
+                                    cloth_part = gr.CheckboxGroup(choices=html_label['input_part_list'][shared.lang],
+                                                                  value=html_label['input_part_list'][shared.lang][:2],
+                                                                  label=html_label['input_part_label'][shared.lang],
+                                                                  elem_id="input_part",
+                                                                  type="index",
+                                                                  visible=False)
+
+                            with gr.Column(scale=1):
+                                regenerate = gr.Button(html_label['generate_btn_label'][shared.lang],
+                                                       elem_id=f"re_generate",
+                                                       variant='primary')
+                                interrupt = gr.Button(html_label['interrupt_btn_label'][shared.lang],
+                                                      elem_id=f"interrupt",
+                                                      visible=False)
+                                prompt = gr.Button('prompt', elem_id=f"show_prompt",
+                                                   visible=True if cmd_opts.debug_mode else False)
+                    with gr.Column(scale=1):
+                        with gr.Row():
+                            hint1 = gr.Text(value=html_label['hint1'][shared.lang], elem_id="hint1", label='',
+                                            elem_classes='hint')
+                        with gr.Row():
+                            hint2 = gr.Text(value=html_label['hint2'][shared.lang], elem_id="hint2", label='',
+                                            elem_classes='hint')
+
+            with gr.TabItem(html_label['generate_hires_label'][shared.lang], elem_id="generate_hires_tab"):
+                with gr.Row(elem_id=f"hires_image_row"):
+                    with gr.Column(scale=1):
+                        with gr.Group(elem_id=f"hires_gallery_container"):
+                            hires_input_gallery = gr.Gallery(label=html_label['hires_input_gallery_label'][shared.lang],
+                                                             elem_id=f"result_gallery").style(
+                                columns=3,
+                                rows=1,
+                                preview=True,
+                                height=640)
+                    with gr.Column(scale=1):
+                        hires_result_image = gr.Image(label=html_label['hires_result_image_label'][shared.lang],
+                                                      elem_id=f"hires_input_image",
+                                                      type="pil", image_mode="RGBA").style(height=640)
+
+                with gr.Row(elem_id=f"hires_control_row"):
+                    output_resolution = gr.Dropdown(label=html_label['output_resolution_label'][shared.lang],
+                                                    elem_id="lang_list",
+                                                    choices=html_label['output_resolution_list'], type="value",
+                                                    value=html_label['output_resolution_list'][0])
+                    choosing_index_4_hires = gr.Radio(
+                        label=html_label['choosing_index_4_hires_label'][shared.lang],
+                        choices=['0', '1', '2'],
+                        value='0',
+                        type="index", elem_id="choosing_index_4_hires",
+                        visible=True)
+                    generate_hires = gr.Button(html_label['generate_hires_label'][shared.lang],
+                                               variant='primary',
+                                               interactive=False,
+                                               elem_id=f"generate_hires")
+
+        with gr.Row(visible=True if cmd_opts.debug_mode else False):
+            sam_result = gr.Text(value="", label="Status")
+
+        # def cloth_partchange(_c):
+        #     if 0 in _c:
+        #         if len(_c) > 1:
+        #             return [html_label['input_part_list'][shared.lang][x] for x in _c if x != 0]
+        #         else:
+        #             return [html_label['input_part_list'][shared.lang][0]]
+        #     else:
+        #         return [html_label['input_part_list'][shared.lang][x] for x in _c if x != 0]
+
+        # cloth_part.change(fn=cloth_partchange,
+        #                   inputs=[cloth_part],
+        #                   outputs=[cloth_part])
+
+        regenerate.click(
+            fn=proceed_cloth_inpaint,
+            _js='guiju_submit',
+            inputs=[batch_size,
+                    input_image,
+                    gender,
+                    age,
+                    viewpoint_mode,
+                    cloth_part,
+                    model_mode,
+                    ],
+            outputs=[result_gallery, hires_input_gallery, choosing_index_4_hires, generate_hires, sam_result]
+        )
+
+        generate_hires.click(
+            fn=proceed_generate_hires,
+            _js='guiju_hires_submit',
+            inputs=[hires_input_gallery,
+                    choosing_index_4_hires,
+                    output_resolution,
+                    ],
+            outputs=[hires_result_image]
+        )
+
+        def reload_ui(lang):
+            for k, v in html_label['lang_selection'].items():
+                if v == lang:
+                    shared.lang = k
+            print(lang)
+            shared.state.request_restart()
+
+        lang_sel_list.change(
+            fn=reload_ui,
+            _js='restart_reload2',
+            inputs=[lang_sel_list],
+        )
+
+        interrupt.click(
+            fn=lambda: shared.state.interrupt(),
+            inputs=[],
+            outputs=[],
+        )
+
+        prompt.click(
+            fn=show_prompt,
+            inputs=[gender, age, viewpoint_mode, model_mode],
+            outputs=[sam_result],
+        )
+
+    modules.scripts.scripts_current = None
+    script_callbacks.ui_settings_callback()
+
+    return demo
+
+
+def proceed_generate_hires(_hires_input_gallery, _choosing_index_4_hires, _output_resolution):
+    _input_image = Image.open(_hires_input_gallery[_choosing_index_4_hires]['name'])
+    if _input_image.mode != "RGBA":
+        _input_image = _input_image.convert("RGBA")
+    _input_image_width, _input_image_height = _input_image.size
+    print('proceed_generate_hires')
+
+    # 定义正则表达式模式，用于匹配宽度和高度
+    pattern = r'(\d+)x(\d+)'
+    # 使用 re.findall() 方法进行匹配
+    matches = re.findall(pattern, _output_resolution)
+
+    # 检查是否找到匹配结果
+    if matches:
+        # 匹配结果是一个元组列表，每个元组包含宽度和高度
+        _output_width, _output_height = matches[0]
+    else:
+        raise Exception("未找到匹配的宽度和高度信息")
+
+    _output_ratio = _output_width / _output_height
+    if _output_ratio != 0.5:
+        padding_height = int(
+            _input_image_width / _output_ratio) if _input_image_width <= _input_image_height else _input_image_height
+        padding_width = _input_image_width if _input_image_width <= _input_image_height else int(
+            _input_image_height * _output_ratio)
+
+        # img2img padding to _output_ratio
+        steps = 20
+        sampler_index = 18  # sampling method modules/sd_samplers_kdiffusion.py
+
+        task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
+        sd_positive_prompt = ''
+        sd_negative_prompt = ''
+        prompt_styles = None
+        init_img = _input_image
+        sketch = None
+        init_img_with_mask = None
+        inpaint_color_sketch = None
+        inpaint_color_sketch_orig = None
+        init_img_inpaint = None
+        init_mask_inpaint = None
+        mask_blur = 4
+        mask_alpha = 0
+        inpainting_fill = 1
+        restore_faces = True
+        tiling = False
+        n_iter = 1
+        batch_size = 1
+        cfg_scale = 7
+        image_cfg_scale = 1.5
+        denoising_strength = 0.7
+        seed = -1.0
+        subseed = -1.0
+        subseed_strength = 0
+        seed_resize_from_h = 0
+        seed_resize_from_w = 0
+        seed_enable_extras = False
+        selected_scale_tab = 0
+        scale_by = 1
+        resize_mode = 2
+        inpaint_full_res = 0  # choices=["Whole picture", "Only masked"]
+        inpaint_full_res_padding = 0
+        inpainting_mask_invert = 1
+        img2img_batch_input_dir = ''
+        img2img_batch_output_dir = ''
+        img2img_batch_inpaint_mask_dir = ''
+        override_settings_texts = []
+
+        # controlnet args
+        cnet_idx = 1
+        controlnet_args_unit1 = modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx].get_default_ui_unit()
+        controlnet_args_unit1.batch_images = ''
+        controlnet_args_unit1.control_mode = 'ControlNet is more important'
+        controlnet_args_unit1.enabled = True
+        controlnet_args_unit1.guidance_end = 1
+        controlnet_args_unit1.guidance_start = 0  # ending control step
+        controlnet_args_unit1.image = _input_image
+        controlnet_args_unit1.low_vram = False
+        controlnet_args_unit1.model = 'control_v11p_sd15_inpaint'
+        controlnet_args_unit1.module = 'inpaint_only+lama'
+        controlnet_args_unit1.pixel_perfect = True
+        controlnet_args_unit1.resize_mode = 'Resize and Fill'
+        controlnet_args_unit1.weight = 1
+        controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
+        controlnet_args_unit2.enabled = False
+        controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
+        controlnet_args_unit3.enabled = False
+
+        # adetail
+        adetail_enabled = False
+        fake_args = {'ad_model': 'face_yolov8m.pt', 'ad_prompt': '', 'ad_negative_prompt': '', 'ad_confidence': 0.3,
+                     'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
+                     'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4, 'ad_denoising_strength': 0.4,
+                     'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
+                     'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512, 'ad_inpaint_height': 512,
+                     'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False, 'ad_cfg_scale': 7,
+                     'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1, 'ad_restore_face': False,
+                     'ad_controlnet_model': 'None', 'ad_controlnet_module': 'inpaint_global_harmonious',
+                     'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0, 'ad_controlnet_guidance_end': 1,
+                     'is_api': ()}
+        sam_args = [0,
+                    adetail_enabled, fake_args, fake_args,  # adetail args
+                    controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,  # controlnet args
+                    True, False, 0, _input_image,
+                    sam_result_tmp_png_fp,
+                    0,  # sam_output_chosen_mask
+                    False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                    '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
+                    True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
+                    f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
+                    128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0, ['left', 'right', 'up', 'down'],
+                    False, False, 'positive', 'comma', 0, False, False, '',
+                    '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
+                    64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None, None, False, None, None,
+                    False, None, None, False, 50
+                    ]
+
+        cnet_res = modules.img2img.img2img(task_id, 4, sd_positive_prompt, sd_negative_prompt, prompt_styles, init_img,
+                                      sketch,
+                                      init_img_with_mask, inpaint_color_sketch, inpaint_color_sketch_orig,
+                                      init_img_inpaint, init_mask_inpaint,
+                                      steps, sampler_index, mask_blur, mask_alpha, inpainting_fill, restore_faces,
+                                      tiling,
+                                      n_iter, batch_size, cfg_scale, image_cfg_scale, denoising_strength, seed,
+                                      subseed,
+                                      subseed_strength, seed_resize_from_h, seed_resize_from_w, seed_enable_extras,
+                                      selected_scale_tab, padding_width, padding_height, scale_by, resize_mode, inpaint_full_res,
+                                      inpaint_full_res_padding, inpainting_mask_invert, img2img_batch_input_dir,
+                                      img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
+                                      override_settings_texts,
+                                      *sam_args)
+
+    # extra upscaler
+
+
+    return None
 
 
 def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_mode, _cloth_part, _model_mode):
@@ -451,228 +807,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                                   override_settings_texts,
                                   *sam_args)
 
-    return res[0], 'done.'
-
-
-def create_ui():
-    shared.state.server_command = None
-    reload_javascript()
-    # init sam
-    modules.scripts.scripts_current = modules.scripts.scripts_img2img
-    modules.scripts.scripts_img2img.initialize_scripts(is_img2img=True)
-    # modules.scripts.scripts_img2img.alwayson_scripts[0].args_from = 1
-    # modules.scripts.scripts_img2img.alwayson_scripts[0].args_to = 21
-
-    cnet_idx = 1
-    sam_idx = 2
-    adetail_idx = 0
-    modules.scripts.scripts_img2img.alwayson_scripts[0], \
-    modules.scripts.scripts_img2img.alwayson_scripts[1], \
-    modules.scripts.scripts_img2img.alwayson_scripts[2] \
-        = modules.scripts.scripts_img2img.alwayson_scripts[sam_idx], \
-          modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx], \
-          modules.scripts.scripts_img2img.alwayson_scripts[adetail_idx]
-
-    # sam 20 args
-    modules.scripts.scripts_img2img.alwayson_scripts[0].args_from = 7
-    modules.scripts.scripts_img2img.alwayson_scripts[0].args_to = 27
-
-    # controlnet 3 args
-    modules.scripts.scripts_img2img.alwayson_scripts[1].args_from = 4
-    modules.scripts.scripts_img2img.alwayson_scripts[1].args_to = 7
-
-    # adetail 3 args
-    modules.scripts.scripts_img2img.alwayson_scripts[2].args_from = 1
-    modules.scripts.scripts_img2img.alwayson_scripts[2].args_to = 4
-
-    # invisible detectmap
-    shared.opts.control_net_no_detectmap = True
-
-    # web ui
-    with gr.Blocks(analytics_enabled=False, title="cloths_inpaint", css='style.css') as demo:
-        with gr.Row(elem_id='2nd_row', visible=False):
-            lang_vals = list(html_label['lang_selection'].values())
-            lang_sel_list = gr.Dropdown(label="language", elem_id="lang_list", choices=lang_vals, type="value",
-                                        value=html_label['lang_selection'][shared.lang])
-
-        with gr.Tabs(elem_id="tabs") as tabs:
-            with gr.TabItem(html_label['ai_model_label'][shared.lang], elem_id="generate_ai_model_tab"):
-                with gr.Row(elem_id=f"image_row"):
-                    with gr.Column(scale=1):
-                        input_image = gr.Image(label=html_label['input_image_label'][shared.lang],
-                                               elem_id=f"input_image",
-                                               source="upload",
-                                               type="pil", image_mode="RGBA").style(height=640)
-
-                    with gr.Column(scale=1):
-                        with gr.Group(elem_id=f"gallery_container"):
-                            result_gallery = gr.Gallery(label=html_label['output_gallery_label'][shared.lang],
-                                                        elem_id=f"result_gallery").style(
-                                columns=3,
-                                rows=1,
-                                preview=True,
-                                height=640)
-                        # .style(grid=3)
-
-                # img2img input args
-                with gr.Row(elem_id=f"control_row"):
-                    with gr.Column(scale=1):
-                        with gr.Row():
-                            with gr.Column(scale=10):
-                                # batch_size = gr.Slider(minimum=1, maximum=3, step=1, label=html_label['batch_size_label'][shared.lang],
-                                #                        value=1, elem_id="batch_size")
-                                with gr.Row():
-                                    with gr.Column(scale=1):
-                                        batch_size = gr.Dropdown(label=html_label['batch_size_label'][shared.lang],
-                                                                 choices=[1, 2, 3],
-                                                                 type='value', value='1', elem_id="batch_size")
-                                    with gr.Column(scale=1):
-                                        model_mode = gr.Radio(label=html_label['model_mode_label'][shared.lang],
-                                                              choices=html_label['model_mode_list'][shared.lang],
-                                                              value=html_label['model_mode_list'][shared.lang][0],
-                                                              type="index", elem_id="model_mode", interactive=True,
-                                                              visible=True)
-                                    with gr.Column(scale=1):
-                                        gender = gr.Radio(label=html_label['output_gender_label'][shared.lang],
-                                                          choices=html_label['output_gender_list'][shared.lang],
-                                                          value=html_label['output_gender_list'][shared.lang][0],
-                                                          type="index", elem_id="gender")
-                                    with gr.Column(scale=1):
-                                        age = gr.Radio(label=html_label['output_age_label'][shared.lang],
-                                                       choices=html_label['output_age_list'][shared.lang],
-                                                       value=html_label['output_age_list'][shared.lang][1],
-                                                       type="index", elem_id="age")
-
-                                with gr.Row():
-                                    viewpoint_mode = gr.Radio(label=html_label['output_viewpoint_label'][shared.lang],
-                                                              choices=html_label['output_viewpoint_list'][shared.lang],
-                                                              value=html_label['output_viewpoint_list'][shared.lang][0],
-                                                              type="index", elem_id="viewpoint_mode", interactive=True,
-                                                              visible=True)
-                                    cloth_part = gr.CheckboxGroup(choices=html_label['input_part_list'][shared.lang],
-                                                                  value=html_label['input_part_list'][shared.lang][:2],
-                                                                  label=html_label['input_part_label'][shared.lang],
-                                                                  elem_id="input_part",
-                                                                  type="index",
-                                                                  visible=False)
-
-                            with gr.Column(scale=1):
-                                regenerate = gr.Button(html_label['generate_btn_label'][shared.lang],
-                                                       elem_id=f"re_generate",
-                                                       variant='primary')
-                                interrupt = gr.Button(html_label['interrupt_btn_label'][shared.lang],
-                                                      elem_id=f"interrupt",
-                                                      visible=False)
-                                prompt = gr.Button('prompt', elem_id=f"show_prompt",
-                                                   visible=True if cmd_opts.debug_mode else False)
-                    with gr.Column(scale=1):
-                        with gr.Row():
-                            hint1 = gr.Text(value=html_label['hint1'][shared.lang], elem_id="hint1", label='',
-                                            elem_classes='hint')
-                        with gr.Row():
-                            hint2 = gr.Text(value=html_label['hint2'][shared.lang], elem_id="hint2", label='',
-                                            elem_classes='hint')
-
-            with gr.TabItem(html_label['generate_hires_label'][shared.lang], elem_id="generate_hires_tab"):
-                with gr.Row(elem_id=f"hires_image_row"):
-                    with gr.Column(scale=1):
-                        with gr.Group(elem_id=f"hires_gallery_container"):
-                            hires_input_gallery = gr.Gallery(label=html_label['hires_input_gallery_label'][shared.lang],
-                                                             elem_id=f"result_gallery").style(
-                                columns=3,
-                                rows=1,
-                                preview=True,
-                                height=640)
-                    with gr.Column(scale=1):
-                        hires_result_image = gr.Image(label=html_label['hires_result_image_label'][shared.lang],
-                                                      elem_id=f"hires_input_image",
-                                                      type="pil", image_mode="RGBA").style(height=640)
-
-                with gr.Row(elem_id=f"hires_control_row"):
-                    output_resolution = gr.Dropdown(label=html_label['output_resolution_label'][shared.lang],
-                                                    elem_id="lang_list",
-                                                    choices=html_label['output_resolution_list'], type="value",
-                                                    value=html_label['output_resolution_list'][0])
-                    choosing_index_4_hires = gr.Radio(
-                        label=html_label['choosing_index_4_hires_label'][shared.lang],
-                        choices=[0, 1, 2],
-                        value=0,
-                        type="index", elem_id="choosing_index_4_hires",
-                        visible=True)
-                    generate_hires = gr.Button(html_label['generate_hires_label'][shared.lang],
-                                               variant='primary',
-                                               interactive=False,
-                                               elem_id=f"generate_hires")
-
-        with gr.Row(visible=True if cmd_opts.debug_mode else False):
-            sam_result = gr.Text(value="", label="Status")
-
-        # def cloth_partchange(_c):
-        #     if 0 in _c:
-        #         if len(_c) > 1:
-        #             return [html_label['input_part_list'][shared.lang][x] for x in _c if x != 0]
-        #         else:
-        #             return [html_label['input_part_list'][shared.lang][0]]
-        #     else:
-        #         return [html_label['input_part_list'][shared.lang][x] for x in _c if x != 0]
-
-        # cloth_part.change(fn=cloth_partchange,
-        #                   inputs=[cloth_part],
-        #                   outputs=[cloth_part])
-
-        regenerate.click(
-            fn=proceed_cloth_inpaint,
-            _js='guiju_submit',
-            inputs=[batch_size,
-                    input_image,
-                    gender,
-                    age,
-                    viewpoint_mode,
-                    cloth_part,
-                    model_mode,
-                    ],
-            outputs=[result_gallery, sam_result]
-        )
-
-        generate_hires.click(
-            fn=proceed_generate_hires,
-            _js='guiju_hires_submit',
-            inputs=[hires_input_gallery,
-                    choosing_index_4_hires,
-                    output_resolution,
-                    ],
-            outputs=[hires_result_image]
-        )
-
-        def reload_ui(lang):
-            for k, v in html_label['lang_selection'].items():
-                if v == lang:
-                    shared.lang = k
-            print(lang)
-            shared.state.request_restart()
-
-        lang_sel_list.change(
-            fn=reload_ui,
-            _js='restart_reload2',
-            inputs=[lang_sel_list],
-        )
-
-        interrupt.click(
-            fn=lambda: shared.state.interrupt(),
-            inputs=[],
-            outputs=[],
-        )
-
-        prompt.click(
-            fn=show_prompt,
-            inputs=[gender, age, viewpoint_mode, model_mode],
-            outputs=[sam_result],
-        )
-
-    modules.scripts.scripts_current = None
-    script_callbacks.ui_settings_callback()
-
-    return demo
+    return res[0], res[0], gr.Radio.update(choices=[str(x) for x in range(len(res[0]))], value=0), gr.Button.update(interactive=True), 'done.'
 
 
 def webpath(fn):
