@@ -485,8 +485,8 @@ def proceed_generate_hires(_hires_input_gallery, _choosing_index_4_hires, _outpu
         sampler_index = 18  # sampling method modules/sd_samplers_kdiffusion.py
 
         task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
-        sd_positive_prompt = ''
-        sd_negative_prompt = ''
+        sd_positive_prompt = '(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece,extremely detailed CG unity 8k wallpaper'
+        sd_negative_prompt = 'NSFW,paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, worst quality, jpeg artifacts, signature, watermark, username, bad feet, Multiple people, blurry, poorly drawn hands, poorly drawn face, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, fused fingers, too many fingers, long neck, cross-eyed, mutated hands, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, fused fingers, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old,(extra clothes:1.3)'
         prompt_styles = None
         init_img = _input_image
         sketch = None
@@ -504,7 +504,7 @@ def proceed_generate_hires(_hires_input_gallery, _choosing_index_4_hires, _outpu
         batch_size = 1
         cfg_scale = 7
         image_cfg_scale = 1.5
-        denoising_strength = 0.7
+        denoising_strength = 0.8
         seed = -1.0
         subseed = -1.0
         subseed_strength = 0
@@ -530,13 +530,15 @@ def proceed_generate_hires(_hires_input_gallery, _choosing_index_4_hires, _outpu
         controlnet_args_unit1.enabled = True
         controlnet_args_unit1.guidance_end = 1
         controlnet_args_unit1.guidance_start = 0  # ending control step
-        controlnet_args_unit1.image = _input_image
+        controlnet_args_unit1.image = {'image':np.array(_input_image.convert('RGB')), 'mask': np.full((_input_image_height, _input_image_width, 4), (0, 0, 0, 255), dtype=np.uint8)}
         controlnet_args_unit1.low_vram = False
         controlnet_args_unit1.model = 'control_v11p_sd15_inpaint'
         controlnet_args_unit1.module = 'inpaint_only+lama'
         controlnet_args_unit1.pixel_perfect = True
         controlnet_args_unit1.resize_mode = 'Resize and Fill'
         controlnet_args_unit1.weight = 1
+        controlnet_args_unit1.threshold_a = 64
+        controlnet_args_unit1.threshold_b = 64
         controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
         controlnet_args_unit2.enabled = False
         controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
@@ -592,7 +594,7 @@ def proceed_generate_hires(_hires_input_gallery, _choosing_index_4_hires, _outpu
     # extra upscaler
     cnet_res_img = _input_image if _output_ratio == 0.5 else cnet_res[0][0]
     scales = _output_width / padding_width
-    args = (0, scales, 512, 512, True, 'R-ESRGAN 4x+', 'None', 0, 0, 0, 0)
+    args = (0, scales, padding_width, padding_height, True, 'R-ESRGAN 4x+', 'None', 0, 0, 0, 0)
     assert cnet_res_img, 'image not selected'
 
     devices.torch_gc()

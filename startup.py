@@ -464,6 +464,6 @@ if __name__ == "__main__":
     cmd_opts.hide_ui_dir_config = True
     cmd_opts.disable_tome = False
     cmd_opts.lang = 'ch'
-    cmd_opts.disable_adetailer = True
+    cmd_opts.disable_adetailer = False
     # cmd_opts.vae_path = 'models/VAE/orangemix.vae.pt'
     webui()
