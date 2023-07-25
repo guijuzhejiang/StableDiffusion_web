@@ -9,6 +9,7 @@ from PIL import Image
 import numpy as np
 import gradio as gr
 import torch
+from scipy.ndimage import label
 from segment_anything import SamPredictor, sam_model_registry
 
 from guiju.segment_anything_util.dino import show_boxes, dino_predict_internal, dino_install_issue_text
@@ -123,8 +124,7 @@ def sam_predict(dino_model_name, text_prompt, box_threshold, input_image):
             boxes=transformed_boxes.to(device),
             multimask_output=True)
         masks = masks.permute(1, 0, 2, 3).cpu().numpy()
-        # 最大面积
-        masks = [masks[np.argmax([np.count_nonzero(m) for m in masks])]]
+
     else:
         num_box = 0 if boxes_filt is None else boxes_filt.shape[0]
         num_points = len(positive_points) + len(negative_points)
@@ -144,5 +144,11 @@ def sam_predict(dino_model_name, text_prompt, box_threshold, input_image):
             box=box,
             multimask_output=True)
         masks = masks[:, None, ...]
+
+    # 最大面积
+    masks = [masks[np.argmin([label(m)[1] for m in masks])]]
+    # if len(masks) > 1:
+    #     masks = [masks[np.argmax([np.count_nonzero(m) for m in masks])]]
+
     garbage_collect(sam)
     return create_mask_output(image_np, masks, boxes_filt), sam_predict_status + sam_predict_result

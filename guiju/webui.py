@@ -134,7 +134,7 @@ def resize_rgba_image_pil_to_cv(image, target_ratio=0.5, quality=80):
     return pil_image
 
 
-def configure_image(image, person_pos, target_ratio=0.5, quality=80):
+def configure_image(image, person_pos, target_ratio=0.5, quality=90):
     person_pos = [int(x) for x in person_pos]
     # 将PIL RGBA图像转换为BGR图像
     cv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGBA2BGRA)

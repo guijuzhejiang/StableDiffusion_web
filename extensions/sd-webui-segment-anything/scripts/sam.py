@@ -7,7 +7,7 @@ from PIL import Image
 import torch
 import gradio as gr
 from collections import OrderedDict
-from scipy.ndimage import binary_dilation
+from scipy.ndimage import binary_dilation, label
 from modules import scripts, shared, script_callbacks
 from modules.ui import gr_show
 from modules.ui_components import FormRow
@@ -216,8 +216,7 @@ def sam_predict(sam_model_name, input_image, positive_points, negative_points,
             boxes=transformed_boxes.to(device),
             multimask_output=True)
         masks = masks.permute(1, 0, 2, 3).cpu().numpy()
-        # 最大面积
-        masks = [masks[np.argmax([np.count_nonzero(m) for m in masks])]]
+
     else:
         num_box = 0 if boxes_filt is None else boxes_filt.shape[0]
         num_points = len(positive_points) + len(negative_points)
@@ -236,7 +235,13 @@ def sam_predict(sam_model_name, input_image, positive_points, negative_points,
             point_labels=point_labels if len(point_coords) > 0 else None,
             box=box,
             multimask_output=True)
+
         masks = masks[:, None, ...]
+
+    # 最大面积
+    masks = [masks[np.argmin([label(m)[1] for m in masks])]]
+    # if len(masks) > 1:
+    #     masks = [masks[np.argmax([np.count_nonzero(m) for m in masks])]]
     garbage_collect(sam)
     return create_mask_output(image_np, masks, boxes_filt), sam_predict_status + sam_predict_result
 
