@@ -238,8 +238,9 @@ def sam_predict(sam_model_name, input_image, positive_points, negative_points,
 
         masks = masks[:, None, ...]
 
-    # 最大面积
+    # 连同区域数量最少
     masks = [masks[np.argmin([label(m)[1] for m in masks])]]
+    # 最大面积
     # if len(masks) > 1:
     #     masks = [masks[np.argmax([np.count_nonzero(m) for m in masks])]]
     garbage_collect(sam)

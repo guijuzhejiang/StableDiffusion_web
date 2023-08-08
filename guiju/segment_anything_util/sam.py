@@ -145,8 +145,9 @@ def sam_predict(dino_model_name, text_prompt, box_threshold, input_image):
             multimask_output=True)
         masks = masks[:, None, ...]
 
-    # 最大面积
+    # 连同区域数量最少
     masks = [masks[np.argmin([label(m)[1] for m in masks])]]
+    # 最大面积
     # if len(masks) > 1:
     #     masks = [masks[np.argmax([np.count_nonzero(m) for m in masks])]]
 
