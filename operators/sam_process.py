@@ -9,7 +9,7 @@
 import datetime
 import os
 from lib.common.common_util import logging
-from lib.redis_pipline.operator import Operator
+from lib.celery_workshop.operator import Operator
 from modules.devices import torch_gc, device
 from modules.safe import unsafe_torch_load, load
 from segment_anything import SamPredictor, sam_model_registry
