@@ -10,13 +10,13 @@ from utils.global_vars import CONFIG
 if __name__ == '__main__':
     try:
         from operators.ocr_preprocess import OperatorPre
-        from operators.ocr_process import OperatorOCR
+        from operators.sam_process import OperatorSAM
         from operators.text_to_speech import OperatorTextToSpeech
 
         """ init RedisMQ """
         redis_mq = SyncRedisMQ(CONFIG['redis']['host'], CONFIG['redis']['port'], CONFIG['redis']['redis_mq'], 'clothing_inpaint')
         """ define work line """
-        workline = [OperatorPre, OperatorOCR]
+        workline = [OperatorPre, OperatorSAM]
 
         if CONFIG['debug_mode']:
             os.makedirs('data/debug', exist_ok=True)
@@ -35,7 +35,7 @@ if __name__ == '__main__':
                 f"{__file__}got msg: {msg}",
                 f"logs/info.log", print_msg=CONFIG['debug_mode'])
             json_msg = json.loads(msg['json_msg'])
-            procedure = [OperatorPre.consume_queue_name, OperatorOCR.consume_queue_name]
+            procedure = [OperatorPre.consume_queue_name, OperatorSAM.consume_queue_name]
             msg['pipeline'] = ','.join(procedure)
 
             # del json_msg['operation']

@@ -1,14 +1,13 @@
 # -*- encoding: utf-8 -*-
 '''
-@File    :   ocr_process.py    
+@File    :   sam_process.py
 @Modify Time      @Author    @Version    @Desciption
 ------------      -------    --------    -----------
-2022/2/21 上午10:21   ray      1.0         None
+2023/8/10 上午10:21   zzg      1.0         None
 '''
 
 import datetime
 import os
-import traceback
 from lib.common.common_util import logging
 from lib.redis_pipline.operator import Operator
 from modules.devices import torch_gc, device
@@ -22,10 +21,20 @@ import numpy as np
 import gradio as gr
 import torch
 from scipy.ndimage import label
-from guiju.segment_anything_util.dino import show_boxes, dino_predict_internal, dino_install_issue_text
+from guiju.segment_anything_util.dino import dino_model_list, dino_predict_internal, show_boxes, dino_install_issue_text
+from guiju.segment_anything_util.sam import sam_model_list, sam_predict
+from modules import shared, scripts
+import modules.img2img
+from modules.shared import cmd_opts
+import random
+import string
+import traceback
+import cv2
+import io
+import math
 
 
-class OperatorOCR(Operator):
+class OperatorSAM(Operator):
     num = 2
     cache = True
     cuda = True
@@ -35,7 +44,8 @@ class OperatorOCR(Operator):
         """ load sam model """
         self.sam_model_cache = OrderedDict()
         self.sam_model_dir = 'extensions/sd-webui-segment-anything/models/sam'
-        self.sam_model_list = [f for f in os.listdir(self.sam_model_dir) if os.path.isfile(os.path.join(self.sam_model_dir, f)) and f.split('.')[-1] != 'txt']
+        self.sam_model_list = [f for f in os.listdir(self.sam_model_dir) if
+                               os.path.isfile(os.path.join(self.sam_model_dir, f)) and f.split('.')[-1] != 'txt']
         self.sam_model = self.init_sam_model(self.sam_model_list[0])
         print('SAM model is Initialized')
 
@@ -71,38 +81,165 @@ class OperatorOCR(Operator):
         torch.load = load
         return sam
 
+    def configure_image(self, image, person_pos, target_ratio=0.5, quality=90):
+        person_pos = [int(x) for x in person_pos]
+        # 将PIL RGBA图像转换为BGR图像
+        cv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGBA2BGRA)
+
+        # 获取原始图像的尺寸
+        original_height, original_width = cv_image.shape[:2]
+
+        # 计算模特图像的长宽比
+        person_height = person_pos[3] - person_pos[1]
+        person_width = person_pos[2] - person_pos[0]
+        person_ratio = person_width / person_height
+
+        # 计算应该添加的填充量
+        if person_ratio > target_ratio:
+            # 需要添加垂直box
+            target_height = int(person_width / target_ratio)
+            remainning_height = original_height - target_height
+            if remainning_height >= 0:
+                top = int((target_height - person_height) / 2)
+                bottom = target_height - person_height - top
+                if person_pos[1] - top < 0:
+                    padded_image = cv_image[:person_pos[3] + bottom - person_pos[1] + top, person_pos[0]:person_pos[2]]
+
+                else:
+                    padded_image = cv_image[person_pos[1] - top:person_pos[3] + bottom, person_pos[0]:person_pos[2]]
+            else:
+                top = int((target_height - original_height) / 2)
+                bottom = target_height - original_height - top
+                padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_REPLICATE)
+                padded_image = padded_image[:, person_pos[0]:person_pos[2]]
+        else:
+            # 需要添加水平box
+            target_width = int(person_height * target_ratio)
+            remainning_width = original_width - target_width
+            if remainning_width >= 0:
+                left = int((target_width - person_width) / 2)
+                right = target_width - person_width - left
+
+                if person_pos[0] - left < 0:
+                    padded_image = cv_image[person_pos[1]:person_pos[3], :person_pos[2] + right - person_pos[0] + left]
+
+                else:
+                    padded_image = cv_image[person_pos[1]:person_pos[3], person_pos[0] - left:person_pos[2] + right]
+            else:
+                left = int((target_width - original_width) / 2)
+                right = target_width - original_width - left
+                padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, right, cv2.BORDER_REPLICATE)
+                padded_image = padded_image[person_pos[1]:person_pos[3], :]
+        # 压缩图像质量
+        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
+        _, jpeg_data = cv2.imencode('.jpg', padded_image, encode_param)
+        # 将压缩后的图像转换为PIL图像
+        pil_image = Image.open(io.BytesIO(jpeg_data)).convert('RGBA')
+        return pil_image
+
+    def padding_rgba_image_pil_to_cv(self, original_image, pl, pr, pt, pb):
+        original_width, original_height = original_image.size
+        #     # 获取原图的边缘颜色
+        edge_color = original_image.getpixel((0, 0))
+        #     # 创建新的空白图像并粘贴原始图像
+        padded_image = Image.new('RGBA', (original_width + pl + pr, original_height + pt + pb), edge_color)
+        padded_image.paste(original_image, (pl, pt), mask=original_image)
+        return padded_image
+
+    def get_prompt(self, _gender, _age, _viewpoint, _model_mode=0):
+        sd_positive_prompts_dict = OrderedDict({
+            'gender': [
+                # female
+                '1girl',
+                # male
+                '1boy',
+            ],
+            'age': [
+                # child
+                f'(child:1.3){"" if _gender else ", <lora:shojovibe_v11:0.4> ,<lora:koreanDollLikeness:0.4>"}',
+                # youth
+                f'(youth:1.3){"" if _gender else ", <lora:shojovibe_v11:0.4> ,<lora:koreanDollLikeness:0.4>"}',
+                # middlescent
+                '(middlescent:1.3)',
+            ],
+            'common': [
+                '(RAW photo, best quality)',
+                '(realistic, photo-realistic:1.3)',
+                'masterpiece',
+                # f'(a naked {"man" if _gender else "woman"}:1.5)',
+                f'an extremely delicate and {"handsome" if _gender else "beautiful"} {"male" if _gender else "female"}',
+                'extremely detailed CG unity 8k wallpaper',
+                'highres',
+                'detailed fingers',
+                'realistic fingers',
+                # 'sleeves past wrist',
+                'beautiful detailed nose',
+                'beautiful detailed eyes',
+                'detailed hand',
+                'realistic hand',
+                # 'detailed foot',
+                'realistic body',
+                '' if _gender else 'fluffy hair',
+                '' if _viewpoint == 2 else 'posing for a photo, normal foot posture, light on face, realistic face',
+                '(simple background:1.3)',
+                '(white background:1.3)',
+                'full body' if _model_mode == 0 else '(full body:1.8)',
+            ],
+            'viewpoint': [
+                # 正面
+                'light smile',
+                # 侧面
+                'light smile, a side portrait photo of a people, (looking to the side:1.5)',
+                # 反面
+                '(a person with their back to the camera:1.5)'
+            ]
+        })
+
+        sd_positive_prompts_dict['common'] = [x for x in sd_positive_prompts_dict['common'] if x]
+        sd_positive_prompts_dict['gender'] = [sd_positive_prompts_dict['gender'][_gender]]
+        sd_positive_prompts_dict['age'] = [sd_positive_prompts_dict['age'][_age]]
+        sd_positive_prompts_dict['viewpoint'] = [sd_positive_prompts_dict['viewpoint'][_viewpoint]]
+
+        if _viewpoint == 2:
+            sd_positive_prompt = f'(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, 2k wallpaper,realistic body, (simple background:1.3), (white background:1.3), (from behind:1.3){", 1boy" if _gender else ""}'
+
+        else:
+            sd_positive_prompt = ', '.join([i for x in sd_positive_prompts_dict.values() for i in x])
+
+        sd_negative_prompt = '(extra clothes:1.5),(clothes:1.5),(NSFW:1.3),paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), clothing, pants, shorts, t-shirt, dress, sleeves, lowres, ((monochrome)), ((grayscale)), duplicate, morbid, mutilated, mutated hands, poorly drawn face,skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, worst quality, jpeg artifacts, signature, watermark, username, bad feet, Multiple people, blurry, poorly drawn hands, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, too many fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, fused fingers, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8)'
+
+        return sd_positive_prompt, sd_negative_prompt
+
     def operation(self, *args, **kwargs):
+        _batch_size = kwargs['_batch_size']
+        _input_image = kwargs['_input_image']
+        _gender = kwargs['_gender']
+        _age = kwargs['_age']
+        _viewpoint_mode = kwargs['_viewpoint_mode']
+        _cloth_part = kwargs['_cloth_part']
+        _model_mode = kwargs['_model_mode']
         try:
             _batch_size = int(_batch_size)
             shared.state.interrupted = False
-
             output_height = 1024
             output_width = 512
-
             _sam_model_name = sam_model_list[0]
             _dino_model_name = dino_model_list[1]
-            # _input_part_prompt = [['upper cloth'], ['pants', 'skirts'], ['shoes']]
-            # _dino_text_prompt = ' . '.join([y for x in _cloth_part for y in _input_part_prompt[x]])
-            # _dino_text_prompt = 'dress'
             _dino_text_prompt = 'clothing . pants . shorts . t-shirt . dress'
             _box_threshold = 0.3
-
             if _input_image is None:
                 return None, None
             else:
                 _input_image.save(f'tmp/origin_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
                                   format='PNG')
-
                 try:
                     # real people
                     if _model_mode == 0:
                         person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "person",
                                                                 _box_threshold)
-                        _input_image = configure_image(_input_image, person_boxes[0],
-                                                       target_ratio=output_width / output_height)
-                        # _input_image = configure_image(_input_image, person_boxes[0], target_ratio=output_width / output_height)
+                        _input_image = self.configure_image(_input_image, person_boxes[0],
+                                                            target_ratio=output_width / output_height)
                         pass
-
                     # artificial model
                     else:
                         _input_image_width, _input_image_height = _input_image.size
@@ -128,40 +265,29 @@ class OperatorOCR(Operator):
                         print(f"height: {person0_height}")
                         print(f"increase: {person0_height * bottom_ratio}")
 
-                        padding_left = int(person0_width * left_ratio - int(person0_box[0])) if (int(
-                            person0_box[0]) / person0_width) < left_ratio else 0
-                        padding_right = int(
-                            person0_width * right_ratio - (_input_image_width - int(person0_box[2]))) if ((
-                                                                                                                      _input_image_width - int(
-                                                                                                                  person0_box[
-                                                                                                                      2])) / person0_width) < right_ratio else 0
-                        padding_top = int(person0_height * top_ratio - int(person0_box[1])) if (int(
-                            person0_box[1]) / person0_height) < top_ratio else 0
-                        padding_bottom = int(
-                            person0_height * bottom_ratio - (_input_image_height - int(person0_box[3]))) if ((
-                                                                                                                         _input_image_height - int(
-                                                                                                                     person0_box[
-                                                                                                                         3])) / person0_height) < bottom_ratio else 0
+                        padding_left = int(person0_width * left_ratio - int(person0_box[0])) if \
+                            (int(person0_box[0]) / person0_width) < left_ratio else 0
 
-                        _input_image = padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right,
-                                                                    padding_top, padding_bottom)
-                        # _input_image = configure_image(_input_image, [0, 0, padding_left + _input_image_width + padding_right,
-                        #                                               padding_top + _input_image_height + padding_bottom],
-                        #                                target_ratio=output_width / output_height)
-                        _input_image = configure_image(_input_image,
-                                                       [0 if padding_left > 0 else person0_box[0] - int(
-                                                           person0_width * left_ratio),
-                                                        0 if padding_top > 0 else person0_box[1] - int(
-                                                            person0_height * top_ratio),
-                                                        padding_left + _input_image_width + padding_right if padding_right > 0 else padding_left +
-                                                                                                                                    person0_box[
-                                                                                                                                        2] + int(
-                                                            person0_width * right_ratio),
-                                                        padding_top + _input_image_height + padding_bottom if padding_bottom > 0 else padding_top +
-                                                                                                                                      person0_box[
-                                                                                                                                          3] + int(
-                                                            person0_height * bottom_ratio)],
-                                                       target_ratio=output_width / output_height)
+                        padding_right = int(person0_width * right_ratio - (_input_image_width - int(person0_box[2]))) \
+                            if ((_input_image_width - int(person0_box[2])) / person0_width) < right_ratio else 0
+
+                        padding_top = int(person0_height * top_ratio - int(person0_box[1])) if \
+                            (int(person0_box[1]) / person0_height) < top_ratio else 0
+
+                        padding_bottom = int(
+                            person0_height * bottom_ratio - (_input_image_height - int(person0_box[3]))) if \
+                            ((_input_image_height - int(person0_box[3])) / person0_height) < bottom_ratio else 0
+
+                        _input_image = self.padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right,
+                                                                         padding_top, padding_bottom)
+                        _input_image = self.configure_image(_input_image,
+                                                            [0 if padding_left > 0 else person0_box[0] - int(person0_width * left_ratio),
+                                                             0 if padding_top > 0 else person0_box[1] - int(person0_height * top_ratio),
+                                                             padding_left + _input_image_width + padding_right if
+                                                             padding_right > 0 else padding_left + person0_box[2] + int(person0_width * right_ratio),
+                                                             padding_top + _input_image_height + padding_bottom
+                                                             if padding_bottom > 0 else padding_top + person0_box[3] + int(person0_height * bottom_ratio)],
+                                                            target_ratio=output_width / output_height)
 
                 except Exception:
                     print(traceback.format_exc())
@@ -182,13 +308,9 @@ class OperatorOCR(Operator):
                 cache_fp = f"tmp/{idx}_{pic_name}.png"
                 sam_mask_img.save(cache_fp)
                 sam_result_tmp_png_fp.append({'name': cache_fp})
-
             task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
-
-            sd_positive_prompt, sd_negative_prompt = get_prompt(_gender, _age, _viewpoint_mode, _model_mode)
-
+            sd_positive_prompt, sd_negative_prompt = self.get_prompt(_gender, _age, _viewpoint_mode, _model_mode)
             prompt_styles = None
-            # init_img = sam_result_gallery[2]
             init_img = _input_image
             sketch = None
             init_img_with_mask = None
@@ -226,7 +348,6 @@ class OperatorOCR(Operator):
             img2img_batch_output_dir = ''
             img2img_batch_inpaint_mask_dir = ''
             override_settings_texts = []
-
             # controlnet args
             cnet_idx = 1
             controlnet_args_unit1 = modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx].get_default_ui_unit()
@@ -310,7 +431,7 @@ class OperatorOCR(Operator):
                                           *sam_args)
         except Exception:
             logging(
-                f"[ocr predict fatal error][{datetime.datetime.now()}]:"
+                f"[SAM predict fatal error][{datetime.datetime.now()}]:"
                 f"{traceback.format_exc()}",
                 f"logs/error.log")
         return res[0], res[0], gr.Radio.update(
@@ -350,7 +471,8 @@ class OperatorOCR(Operator):
         boxes_filt = None
         sam_predict_result = " done."
         if dino_enabled:
-            boxes_filt, install_success = dino_predict_internal(input_image, dino_model_name, text_prompt, box_threshold)
+            boxes_filt, install_success = dino_predict_internal(input_image, dino_model_name, text_prompt,
+                                                                box_threshold)
             if not install_success:
                 if len(positive_points) == 0 and len(negative_points) == 0:
                     return [], f"GroundingDINO installment has failed. Check your terminal for more detail and {dino_install_issue_text}. "

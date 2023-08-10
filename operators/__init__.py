@@ -7,5 +7,5 @@
 '''
 
 # import lib
-from operators.ocr_process import OperatorOCR
+from operators.sam_process import OperatorSAM
 
