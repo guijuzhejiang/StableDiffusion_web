@@ -12,26 +12,13 @@ from lib.common.common_util import logging
 from lib.celery_workshop.operator import Operator
 from modules.devices import torch_gc, device
 from modules.safe import unsafe_torch_load, load
-from segment_anything import SamPredictor, sam_model_registry
-import copy
+from segment_anything import sam_model_registry
 import gc
 from collections import OrderedDict
-from PIL import Image
-import numpy as np
-import gradio as gr
 import torch
-from scipy.ndimage import label
-from guiju.segment_anything_util.dino import dino_model_list, dino_predict_internal, show_boxes, dino_install_issue_text
-from guiju.segment_anything_util.sam import sam_model_list, sam_predict
-from modules import shared, scripts
-import modules.img2img
-from modules.shared import cmd_opts
-import random
-import string
+from guiju.segment_anything_util.dino import dino_model_list
+from guiju.segment_anything_util.sam import sam_predict
 import traceback
-import cv2
-import io
-import math
 
 
 class OperatorSAM(Operator):
@@ -81,6 +68,7 @@ class OperatorSAM(Operator):
         return sam
 
     def operation(self, *args, **kwargs):
+        sam_result_gallery = None
         try:
             sam_result_gallery, _ = sam_predict(self._dino_model_name, self._dino_text_prompt, self._box_threshold,
                                                 kwargs['_input_image'])
