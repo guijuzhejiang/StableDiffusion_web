@@ -1,0 +1,6 @@
+data
+.idea
+/.idea
+lib/TTS_JP/pretrained_models
+test.py
+*.jpg

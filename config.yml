@@ -1,0 +1,17 @@
+debug_mode: true
+server:
+  host: 0.0.0.0
+  access_log: true
+  workers: 16
+  port: 5003
+  ssl_key: /etc/letsencrypt/live/www.guijutech.com/privkey.pem
+  ssl_cert: /etc/letsencrypt/live/www.guijutech.com/fullchain.pem
+  ssl: false
+  msg_expire_secs: 600
+redis:
+  host: 127.0.0.1
+  port: 6379
+  redis_mq: 11
+storage_dirpath:
+  user_dir: data
+mq_name: ch_ocr_queue
