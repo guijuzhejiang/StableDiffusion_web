@@ -748,7 +748,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     mask_blur = 4
     mask_alpha = 0
     inpainting_fill = 1
-    restore_faces = True
+    restore_faces = False
     tiling = False
     n_iter = 1
     batch_size = _batch_size
