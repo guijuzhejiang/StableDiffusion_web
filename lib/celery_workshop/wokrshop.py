@@ -1,13 +1,11 @@
 # coding=utf-8
 # @Time : 2023/8/9 上午11:08
 # @File : wokrshop.py
-import json
 import sys
 from collections import OrderedDict
 from lib.common.NoDaemonProcessPool import NoDaemonProcess
-from celery import Task, Celery
-
-
+from celery import Celery
+import GPUtil
 
 
 class WorkShop(object):
@@ -18,7 +16,10 @@ class WorkShop(object):
     def __init__(self, op):
         print(f"run {self.__class__.__name__}:{sys._getframe().f_code.co_name}")
         self.op = op
-        self.celery_app_name_prefix = f"{self.op.__name__}_{'cuda' if self.op.cuda else 'cpu'}"
+
+    @staticmethod
+    def get_celery_app_name(index, op_name, is_cuda):
+        return f"{op_name}_{'cuda' if is_cuda else 'cpu'}_{index}"
 
     # 指定独立存在的子进程，处理业务的进程，存储加载后的模型
     @staticmethod
@@ -29,20 +30,26 @@ class WorkShop(object):
         from lib.common.common_util import logging
         from utils.global_vars import CONFIG
 
+        celery_app_name = WorkShop.get_celery_app_name(index, op_name, is_cuda)
         while True:
             try:
-                app = Celery(f"{op_name}_{index}", broker='amqp://localhost:5672', backend='redis://localhost:6379/0')
+                app = Celery(celery_app_name, broker='amqp://localhost:5672', backend='redis://localhost:6379/0')
 
                 module = import_module(f'operators')
 
                 class ProceedTask(Task):
+                    # load model
                     operator = getattr(module, op_name)()
+                    # task 命名
+                    name = f"{celery_app_name}.ProceedTask"
 
                     def run(self, *args, **kwargs):
                         res = self.operator.operation(*args, **kwargs)
                         return res
 
                 task = app.register_task(ProceedTask)
+                print(app.tasks)
+
                 app.worker_main(argv=['worker', '--loglevel=info', '--concurrency=1'])
             except Exception:
                 print(traceback.format_exc())
@@ -58,11 +65,13 @@ class WorkShop(object):
 
     # 客户端异步调用发布任务，订阅任务结果
     async def __call__(self):
-        # TODO
-        cuda_device_idx = 0 if self.op.cuda else 0
-        celery_app_name = f"{self.celery_app_name_prefix}_{cuda_device_idx}"
-        app = Celery(celery_app_name, backend='redis://localhost:6379/0')
-        task_result = await app.send_task(f'{celery_app_name}.ProceedTask', args=[1, 4])
+        # 获取显存占用最小的显卡idx
+        cuda_device_idx = GPUtil.getAvailable(order='memory', limit=1)[0] if self.op.cuda and len(GPUtil.getGPUs()) > 1 else 0
+
+        celery_app_name = self.get_celery_app_name(cuda_device_idx, self.op.__name__, self.op.cuda)
+        app = Celery(celery_app_name, broker='amqp://localhost:5672', backend='redis://localhost:6379/0')
+        target_task_name = f'{celery_app_name}.ProceedTask'
+        task_result = await app.send_task(target_task_name, args=[1, 4])
         return task_result.result
 
     # 服务端建立celery生产者进程

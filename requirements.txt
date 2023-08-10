@@ -1,3 +1,4 @@
 redis
 Celery
 sanic
+sanic_cors
