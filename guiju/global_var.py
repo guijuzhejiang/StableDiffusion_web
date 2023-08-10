@@ -26,6 +26,6 @@ html_label = {
     'generate_hires_label': {'ch': '生成高清图像', 'jp': '高解像度画像の生成'},
     'ai_model_label': {'ch': '生成真人模特', 'jp': 'ライブ・モデルの生成'},
     'output_resolution_label': {'ch': '输出分辨率', 'jp': '出力解像度'},
-    'output_resolution_list': ['1024x2048(1:2)', '2048x4096(1:2)', '1024x1536(2:3)', '2048x3072(2:3)', '2048x2048(1:1)', '2048x2560(4:5)', '2048x2632(7:9)'],
+    'output_resolution_list': ['1024x2048(1 point)', '2048x4096(3 points)', '1024x1536(1 point)', '2048x3072(3 points)', '2048x2048(2 points)', '2048x2560(2 points)', '2048x2632(2 points)'],
     'hires_result_image_label': {'ch': '高分辨率图像', 'jp': '高解像度画像'},
 }
