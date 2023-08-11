@@ -98,44 +98,44 @@ def show_prompt(_gender, _age, _viewpoint, _model_mode):
     return f'sd_positive_prompt: {_sd_positive_prompt}\n\nsd_negative_prompt: {_sd_negative_prompt}'
 
 
-def resize_rgba_image_pil_to_cv(image, target_ratio=0.5, quality=80):
-    # 将PIL RGBA图像转换为BGR图像
-    cv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGBA2BGRA)
+# def resize_rgba_image_pil_to_cv(image, target_ratio=0.5, quality=80):
+#     # 将PIL RGBA图像转换为BGR图像
+#     cv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGBA2BGRA)
+#
+#     # 获取原始图像的尺寸
+#     original_height, original_width = cv_image.shape[:2]
+#
+#     # 计算原始图像的长宽比
+#     original_ratio = original_width / original_height
+#
+#     # 计算应该添加的填充量
+#     padded_image = cv_image
+#     if original_ratio > target_ratio:
+#         # 需要添加垂直填充
+#         target_height = int(original_width / target_ratio)
+#         # top = int((target_height - original_height) / 2)
+#         # bottom = target_height - original_height - top
+#         # padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_REPLICATE)
+#         padded_image = cv2.copyMakeBorder(cv_image, int(target_height - original_height), 0, 0, 0, cv2.BORDER_REPLICATE)
+#     else:
+#         if original_width <= original_height:
+#             # 需要添加水平填充
+#             target_width = int(original_height * target_ratio)
+#             left = int((target_width - original_width) / 2)
+#             right = target_width - original_width - left
+#             padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, right, cv2.BORDER_REPLICATE)
+#
+#     # 压缩图像质量
+#     encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
+#     _, jpeg_data = cv2.imencode('.jpg', padded_image, encode_param)
+#
+#     # 将压缩后的图像转换为PIL图像
+#     pil_image = Image.open(io.BytesIO(jpeg_data)).convert('RGBA')
+#
+#     return pil_image
 
-    # 获取原始图像的尺寸
-    original_height, original_width = cv_image.shape[:2]
 
-    # 计算原始图像的长宽比
-    original_ratio = original_width / original_height
-
-    # 计算应该添加的填充量
-    padded_image = cv_image
-    if original_ratio > target_ratio:
-        # 需要添加垂直填充
-        target_height = int(original_width / target_ratio)
-        # top = int((target_height - original_height) / 2)
-        # bottom = target_height - original_height - top
-        # padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_REPLICATE)
-        padded_image = cv2.copyMakeBorder(cv_image, int(target_height - original_height), 0, 0, 0, cv2.BORDER_REPLICATE)
-    else:
-        if original_width <= original_height:
-            # 需要添加水平填充
-            target_width = int(original_height * target_ratio)
-            left = int((target_width - original_width) / 2)
-            right = target_width - original_width - left
-            padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, right, cv2.BORDER_REPLICATE)
-
-    # 压缩图像质量
-    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
-    _, jpeg_data = cv2.imencode('.jpg', padded_image, encode_param)
-
-    # 将压缩后的图像转换为PIL图像
-    pil_image = Image.open(io.BytesIO(jpeg_data)).convert('RGBA')
-
-    return pil_image
-
-
-def configure_image(image, person_pos, target_ratio=0.5, quality=90):
+def configure_image(image, person_pos, target_ratio=0.5, quality=90, padding=8):
     person_pos = [int(x) for x in person_pos]
     # 将PIL RGBA图像转换为BGR图像
     cv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGBA2BGRA)
@@ -166,7 +166,7 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=90):
         else:
             top = int((target_height - original_height) / 2)
             bottom = target_height - original_height - top
-            padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_REPLICATE)
+            padded_image = cv2.copyMakeBorder(cv_image[padding:original_height-padding, :], top+padding, bottom+padding, 0, 0, cv2.BORDER_REPLICATE)
             padded_image = padded_image[:, person_pos[0]:person_pos[2]]
     else:
         # 需要添加水平box
@@ -184,7 +184,7 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=90):
         else:
             left = int((target_width - original_width) / 2)
             right = target_width - original_width - left
-            padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, right, cv2.BORDER_REPLICATE)
+            padded_image = cv2.copyMakeBorder(cv_image[:, padding:original_width-padding], 0, 0, left+padding, right+padding, cv2.BORDER_REPLICATE)
             padded_image = padded_image[person_pos[1]:person_pos[3], :]
 
     # 压缩图像质量
@@ -197,14 +197,15 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=90):
     return pil_image
 
 
-def padding_rgba_image_pil_to_cv(original_image, pl, pr, pt, pb):
+def padding_rgba_image_pil_to_cv(original_image, pl, pr, pt, pb, padding=8):
     original_width, original_height = original_image.size
     # edge_color = original_image.getpixel((0, 0))
     # padded_image = Image.new('RGBA', (original_width + pl + pr, original_height + pt + pb), edge_color)
     # padded_image.paste(original_image, (pl, pt), mask=original_image)
 
     cv_image = cv2.cvtColor(np.array(original_image), cv2.COLOR_RGBA2BGRA)
-    padded_image = cv2.copyMakeBorder(cv_image, pt, pb, pl, pr, cv2.BORDER_REPLICATE)
+    h, w, _ = cv_image.shape
+    padded_image = cv2.copyMakeBorder(cv_image[padding:h-padding, padding:w-padding], pt+padding, pb+padding, pl+padding, pr+padding, cv2.BORDER_REPLICATE)
     padded_image = cv2.cvtColor(np.array(padded_image), cv2.COLOR_BGRA2RGBA)
     return padded_image
 
