@@ -139,8 +139,7 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=90):
     person_pos = [int(x) for x in person_pos]
     # 将PIL RGBA图像转换为BGR图像
     cv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGBA2BGRA)
-    person_top_left_color = [int(x) for x in cv_image[person_pos[1], person_pos[0]][:3]]
-    person_bottom_right_color = [int(x) for x in cv_image[person_pos[3], person_pos[2]][:3]]
+
     # 获取原始图像的尺寸
     original_height, original_width = cv_image.shape[:2]
 
@@ -168,8 +167,6 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=90):
             top = int((target_height - original_height) / 2)
             bottom = target_height - original_height - top
             padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_REPLICATE)
-            # padded_image = cv2.copyMakeBorder(cv_image, top, 0, 0, 0, cv2.BORDER_CONSTANT, value=person_top_left_color)
-            # padded_image = cv2.copyMakeBorder(padded_image, 0, bottom, 0, 0, cv2.BORDER_CONSTANT, value=person_bottom_right_color)
             padded_image = padded_image[:, person_pos[0]:person_pos[2]]
     else:
         # 需要添加水平box
@@ -188,9 +185,6 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=90):
             left = int((target_width - original_width) / 2)
             right = target_width - original_width - left
             padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, right, cv2.BORDER_REPLICATE)
-            # padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, 0, cv2.BORDER_CONSTANT, value=person_top_left_color)
-            # padded_image = cv2.copyMakeBorder(padded_image, 0, 0, 0, right, cv2.BORDER_CONSTANT,
-            #                                   value=person_bottom_right_color)
             padded_image = padded_image[person_pos[1]:person_pos[3], :]
 
     # 压缩图像质量
@@ -203,34 +197,15 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=90):
     return pil_image
 
 
-def padding_rgba_image_pil_to_cv(original_image, pl, pr, pt, pb, person_pos):
+def padding_rgba_image_pil_to_cv(original_image, pl, pr, pt, pb):
     original_width, original_height = original_image.size
-
-    #     # 获取原图的边缘颜色
     # edge_color = original_image.getpixel((0, 0))
-    #
-    #     # 创建新的空白图像并粘贴原始图像
     # padded_image = Image.new('RGBA', (original_width + pl + pr, original_height + pt + pb), edge_color)
     # padded_image.paste(original_image, (pl, pt), mask=original_image)
 
-
-    person_pos = [int(x) for x in person_pos]
-    # # 将PIL RGBA图像转换为BGR图像
     cv_image = cv2.cvtColor(np.array(original_image), cv2.COLOR_RGBA2BGRA)
-    # person_top_left_color = cv_image[person_pos[1], person_pos[0]]
-    # person_bottom_right_color = cv_image[person_pos[3], person_pos[2]]
-    # crop
-    cv_image = cv_image[person_pos[1]:person_pos[3], person_pos[0]:person_pos[2]]
-
-    #
-    padded_image = cv2.copyMakeBorder(cv_image, pt+person_pos[1], pb+original_height-person_pos[3], pl+person_pos[0], pr+original_width-person_pos[2], cv2.BORDER_REPLICATE)
+    padded_image = cv2.copyMakeBorder(cv_image, pt, pb, pl, pr, cv2.BORDER_REPLICATE)
     padded_image = cv2.cvtColor(np.array(padded_image), cv2.COLOR_BGRA2RGBA)
-    # person_top_left_color_rgb = [int(x) for x in cv_image[person_pos[1], person_pos[0]][:3]]
-    # person_bottom_right_color_rgb = [int(x) for x in cv_image[person_pos[3], person_pos[2]][:3]]
-    # padded_image = cv2.copyMakeBorder(cv_image, pt, 0, pl, 0, cv2.BORDER_CONSTANT, value=person_top_left_color_rgb)
-    # padded_image = cv2.copyMakeBorder(padded_image, 0, pb, 0, pr, cv2.BORDER_CONSTANT,
-    #                                   value=person_bottom_right_color_rgb)
-
     return padded_image
 
 
@@ -699,15 +674,23 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                 padding_top = int(person0_height * top_ratio - int(person0_box[1])) if (int(person0_box[1]) / person0_height) < top_ratio else 0
                 padding_bottom = int(person0_height * bottom_ratio - (_input_image_height - int(person0_box[3]))) if ((_input_image_height - int(person0_box[3])) / person0_height) < bottom_ratio else 0
 
-                _input_image = padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right, padding_top, padding_bottom, person_boxes[0])
+                _input_image = padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right, padding_top, padding_bottom)
                 # _input_image = configure_image(_input_image, [0, 0, padding_left + _input_image_width + padding_right,
                 #                                               padding_top + _input_image_height + padding_bottom],
                 #                                target_ratio=output_width / output_height)
                 _input_image = configure_image(_input_image,
                                                [0 if padding_left > 0 else person0_box[0] - int(person0_width * left_ratio),
                                                 0 if padding_top > 0 else person0_box[1] - int(person0_height * top_ratio),
-                                                min(_input_image.shape[1]-1, padding_left + _input_image_width + padding_right-1 if padding_right > 0 else padding_left+person0_box[2] + int(person0_width * right_ratio)),
-                                                min(_input_image.shape[0]-1, padding_top + _input_image_height + padding_bottom-1 if padding_bottom > 0 else padding_top+person0_box[3] + int(person0_height * bottom_ratio))],
+                                                min(_input_image.shape[1] - 1,
+                                                    padding_left + _input_image_width + padding_right - 1 if padding_right > 0 else padding_left +
+                                                                                                                                    person0_box[
+                                                                                                                                        2] + int(
+                                                        person0_width * right_ratio)),
+                                                min(_input_image.shape[0] - 1,
+                                                    padding_top + _input_image_height + padding_bottom - 1 if padding_bottom > 0 else padding_top +
+                                                                                                                                      person0_box[
+                                                                                                                                          3] + int(
+                                                        person0_height * bottom_ratio))],
                                                target_ratio=output_width / output_height)
 
         except Exception:
