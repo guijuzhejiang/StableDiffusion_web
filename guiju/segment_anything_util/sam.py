@@ -146,10 +146,12 @@ def sam_predict(dino_model_name, text_prompt, box_threshold, input_image):
         masks = masks[:, None, ...]
 
     # 连同区域数量最少
-    masks = [masks[np.argmin([label(m)[1] for m in masks])]]
+    # masks = [masks[np.argmin([label(m)[1] for m in masks])]]
     # 最大面积
     # if len(masks) > 1:
     #     masks = [masks[np.argmax([np.count_nonzero(m) for m in masks])]]
+    # first
+    masks = masks[masks[0]]
 
     garbage_collect(sam)
     return create_mask_output(image_np, masks, boxes_filt), sam_predict_status + sam_predict_result
