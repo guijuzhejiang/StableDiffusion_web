@@ -62,7 +62,7 @@ def get_prompt(_gender, _age, _viewpoint, _model_mode=0):
             # 'detailed foot',
             'realistic body',
             '' if _gender else 'fluffy hair',
-            '' if _viewpoint == 2 else 'posing for a photo, normal foot posture, light on face, realistic face',
+            '' if _viewpoint == 2 else 'posing for a photo, light on face, realistic face',
             '(simple background:1.3)',
             '(white background:1.3)',
             'full body' if _model_mode == 0 else '(full body:1.8)',
@@ -654,7 +654,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     # _dino_text_prompt = ' . '.join([y for x in _cloth_part for y in _input_part_prompt[x]])
     # _dino_text_prompt = 'dress'
     _dino_text_prompt = 'clothing . pants . shorts . t-shirt . dress'
-    _box_threshold = 0.3
+    _box_threshold = 0.5
 
     if _input_image is None:
         return None, None
