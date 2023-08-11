@@ -167,9 +167,9 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=90):
         else:
             top = int((target_height - original_height) / 2)
             bottom = target_height - original_height - top
-            # padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_REPLICATE)
-            padded_image = cv2.copyMakeBorder(cv_image, top, 0, 0, 0, cv2.BORDER_CONSTANT, value=person_top_left_color)
-            padded_image = cv2.copyMakeBorder(padded_image, 0, bottom, 0, 0, cv2.BORDER_CONSTANT, value=person_bottom_right_color)
+            padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_REPLICATE)
+            # padded_image = cv2.copyMakeBorder(cv_image, top, 0, 0, 0, cv2.BORDER_CONSTANT, value=person_top_left_color)
+            # padded_image = cv2.copyMakeBorder(padded_image, 0, bottom, 0, 0, cv2.BORDER_CONSTANT, value=person_bottom_right_color)
             padded_image = padded_image[:, person_pos[0]:person_pos[2]]
     else:
         # 需要添加水平box
@@ -187,10 +187,10 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=90):
         else:
             left = int((target_width - original_width) / 2)
             right = target_width - original_width - left
-            # padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, right, cv2.BORDER_REPLICATE)
-            padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, 0, cv2.BORDER_CONSTANT, value=person_top_left_color)
-            padded_image = cv2.copyMakeBorder(padded_image, 0, 0, 0, right, cv2.BORDER_CONSTANT,
-                                              value=person_bottom_right_color)
+            padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, right, cv2.BORDER_REPLICATE)
+            # padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, 0, cv2.BORDER_CONSTANT, value=person_top_left_color)
+            # padded_image = cv2.copyMakeBorder(padded_image, 0, 0, 0, right, cv2.BORDER_CONSTANT,
+            #                                   value=person_bottom_right_color)
             padded_image = padded_image[person_pos[1]:person_pos[3], :]
 
     # 压缩图像质量
@@ -206,31 +206,33 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=90):
 def padding_rgba_image_pil_to_cv(original_image, pl, pr, pt, pb, person_pos):
     original_width, original_height = original_image.size
 
-    # #     # 获取原图的边缘颜色
+    #     # 获取原图的边缘颜色
     # edge_color = original_image.getpixel((0, 0))
-    # #
-    # #     # 创建新的空白图像并粘贴原始图像
+    #
+    #     # 创建新的空白图像并粘贴原始图像
     # padded_image = Image.new('RGBA', (original_width + pl + pr, original_height + pt + pb), edge_color)
     # padded_image.paste(original_image, (pl, pt), mask=original_image)
 
 
     person_pos = [int(x) for x in person_pos]
-    # 将PIL RGBA图像转换为BGR图像
+    # # 将PIL RGBA图像转换为BGR图像
     cv_image = cv2.cvtColor(np.array(original_image), cv2.COLOR_RGBA2BGRA)
-    person_top_left_color = cv_image[person_pos[1], person_pos[0]]
-    person_bottom_right_color = cv_image[person_pos[3], person_pos[2]]
-    cv_image[:person_pos[1], :] = person_top_left_color
-    cv_image[:, :person_pos[0]] = person_top_left_color
-    cv_image[person_pos[3]:, :] = person_bottom_right_color
-    cv_image[:, person_pos[2]:] = person_bottom_right_color
+    # person_top_left_color = cv_image[person_pos[1], person_pos[0]]
+    # person_bottom_right_color = cv_image[person_pos[3], person_pos[2]]
+    # cv_image[:person_pos[1], :] = person_top_left_color
+    # cv_image[:, :person_pos[0]] = person_top_left_color
+    # cv_image[person_pos[3]:, :] = person_bottom_right_color
+    # cv_image[:, person_pos[2]:] = person_bottom_right_color
+    #
+    padded_image = cv2.copyMakeBorder(cv_image, pt, pb, pl, pr, cv2.BORDER_REPLICATE)
+    padded_image = cv2.cvtColor(np.array(padded_image), cv2.COLOR_BGRA2RGBA)
+    # person_top_left_color_rgb = [int(x) for x in cv_image[person_pos[1], person_pos[0]][:3]]
+    # person_bottom_right_color_rgb = [int(x) for x in cv_image[person_pos[3], person_pos[2]][:3]]
+    # padded_image = cv2.copyMakeBorder(cv_image, pt, 0, pl, 0, cv2.BORDER_CONSTANT, value=person_top_left_color_rgb)
+    # padded_image = cv2.copyMakeBorder(padded_image, 0, pb, 0, pr, cv2.BORDER_CONSTANT,
+    #                                   value=person_bottom_right_color_rgb)
 
-    person_top_left_color_rgb = [int(x) for x in cv_image[person_pos[1], person_pos[0]][:3]]
-    person_bottom_right_color_rgb = [int(x) for x in cv_image[person_pos[3], person_pos[2]][:3]]
-    padded_image = cv2.copyMakeBorder(cv_image, pt, 0, pl, 0, cv2.BORDER_CONSTANT, value=person_top_left_color_rgb)
-    padded_image = cv2.copyMakeBorder(padded_image, 0, pb, 0, pr, cv2.BORDER_CONSTANT,
-                                      value=person_bottom_right_color_rgb)
-
-    return cv2.cvtColor(np.array(padded_image), cv2.COLOR_BGRA2RGBA)
+    return padded_image
 
 
 def create_ui():
