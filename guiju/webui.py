@@ -655,7 +655,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                 person0_height = person0_box[3] - person0_box[1]
                 constant_bottom = 30
                 constant_top = 15
-                factor_bottom = 7
+                factor_bottom = 5
                 factor_top = 4
                 left_ratio = 0.1
                 right_ratio = 0.1
