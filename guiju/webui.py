@@ -217,11 +217,18 @@ def padding_rgba_image_pil_to_cv(original_image, pl, pr, pt, pb, person_pos):
     person_pos = [int(x) for x in person_pos]
     # 将PIL RGBA图像转换为BGR图像
     cv_image = cv2.cvtColor(np.array(original_image), cv2.COLOR_RGBA2BGRA)
-    person_top_left_color = [int(x) for x in cv_image[person_pos[1], person_pos[0]][:3]]
-    person_bottom_right_color = [int(x) for x in cv_image[person_pos[3], person_pos[2]][:3]]
-    padded_image = cv2.copyMakeBorder(cv_image, pt, 0, pl, 0, cv2.BORDER_CONSTANT, value=person_top_left_color)
+    person_top_left_color = cv_image[person_pos[1], person_pos[0]]
+    person_bottom_right_color = cv_image[person_pos[3], person_pos[2]]
+    cv_image[:person_pos[1], :] = person_top_left_color
+    cv_image[:, :person_pos[0]] = person_top_left_color
+    cv_image[person_pos[3]:, :] = person_bottom_right_color
+    cv_image[:, person_pos[2]:] = person_bottom_right_color
+
+    person_top_left_color_rgb = [int(x) for x in cv_image[person_pos[1], person_pos[0]][:3]]
+    person_bottom_right_color_rgb = [int(x) for x in cv_image[person_pos[3], person_pos[2]][:3]]
+    padded_image = cv2.copyMakeBorder(cv_image, pt, 0, pl, 0, cv2.BORDER_CONSTANT, value=person_top_left_color_rgb)
     padded_image = cv2.copyMakeBorder(padded_image, 0, pb, 0, pr, cv2.BORDER_CONSTANT,
-                                      value=person_bottom_right_color)
+                                      value=person_bottom_right_color_rgb)
 
     return cv2.cvtColor(np.array(padded_image), cv2.COLOR_BGRA2RGBA)
 
