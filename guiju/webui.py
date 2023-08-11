@@ -631,7 +631,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     # _dino_text_prompt = ' . '.join([y for x in _cloth_part for y in _input_part_prompt[x]])
     # _dino_text_prompt = 'dress'
     _dino_text_prompt = 'clothing . pants . shorts . t-shirt . dress'
-    _box_threshold = 0.5
+    _box_threshold = 0.45
 
     if _input_image is None:
         return None, None
