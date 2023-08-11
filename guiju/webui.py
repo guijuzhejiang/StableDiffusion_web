@@ -219,12 +219,11 @@ def padding_rgba_image_pil_to_cv(original_image, pl, pr, pt, pb, person_pos):
     cv_image = cv2.cvtColor(np.array(original_image), cv2.COLOR_RGBA2BGRA)
     # person_top_left_color = cv_image[person_pos[1], person_pos[0]]
     # person_bottom_right_color = cv_image[person_pos[3], person_pos[2]]
-    # cv_image[:person_pos[1], :] = person_top_left_color
-    # cv_image[:, :person_pos[0]] = person_top_left_color
-    # cv_image[person_pos[3]:, :] = person_bottom_right_color
-    # cv_image[:, person_pos[2]:] = person_bottom_right_color
+    # crop
+    cv_image = cv_image[person_pos[1]:person_pos[3], person_pos[0]:person_pos[2]]
+
     #
-    padded_image = cv2.copyMakeBorder(cv_image, pt, pb, pl, pr, cv2.BORDER_REPLICATE)
+    padded_image = cv2.copyMakeBorder(cv_image, pt+person_pos[1], pb+original_height-person_pos[3], pl+person_pos[0], pr+original_width-person_pos[2], cv2.BORDER_REPLICATE)
     padded_image = cv2.cvtColor(np.array(padded_image), cv2.COLOR_BGRA2RGBA)
     # person_top_left_color_rgb = [int(x) for x in cv_image[person_pos[1], person_pos[0]][:3]]
     # person_bottom_right_color_rgb = [int(x) for x in cv_image[person_pos[3], person_pos[2]][:3]]
