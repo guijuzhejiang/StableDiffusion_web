@@ -326,8 +326,8 @@ def wait_on_server(demo=None):
 
 def webui():
     initialize()
-    guiju.segment_anything_util.sam.sam = init_sam_model(sam_model_list[0])
-
+    # guiju.segment_anything_util.sam.sam = init_sam_model(sam_model_list[0])
+    guiju.segment_anything_util.sam.sam = init_sam_model('sam_vit_h_4b8939.pth')
     while 1:
         if shared.opts.clean_temp_dir_at_start:
             ui_tempdir.cleanup_tmpdr()
