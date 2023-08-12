@@ -26,6 +26,8 @@ from modules import shared, script_callbacks, devices, scripts_postprocessing, s
 from modules.paths import script_path, data_path
 import modules.img2img
 from modules.shared import cmd_opts
+from guiju.predictor_opennsfw2 import predict_image
+import sys
 
 
 def get_prompt(_gender, _age, _viewpoint, _model_mode=0):
@@ -630,15 +632,19 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     # _input_part_prompt = [['upper cloth'], ['pants', 'skirts'], ['shoes']]
     # _dino_text_prompt = ' . '.join([y for x in _cloth_part for y in _input_part_prompt[x]])
     # _dino_text_prompt = 'dress'
-    _dino_text_prompt = 'clothing . pants . shorts . dress . shirts . skirt'
+    _dino_text_prompt = 'clothing . pants . shorts . dress . shirts . skirt . lingerie . bras'
     _box_threshold = 0.41
 
     if _input_image is None:
         return None, None
     else:
-        _input_image.save(f'tmp/origin_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
+        origin_image_path = f'tmp/origin_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png'
+        _input_image.save(origin_image_path, format='PNG')
 
         try:
+            if predict_image(origin_image_path):
+                print('The input image is NSFW!!!')
+                sys.exit()
             # real people
             if _model_mode == 0:
                 person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "person",

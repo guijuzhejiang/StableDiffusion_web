@@ -79,6 +79,11 @@ import modules.hypernetworks.hypernetwork
 
 startup_timer.record("other imports")
 
+import tensorflow as tf
+config = tf.compat.v1.ConfigProto()
+config.gpu_options.allow_growth = True
+tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=config))
+
 
 def fix_asyncio_event_loop_policy():
     """
