@@ -632,7 +632,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     # _input_part_prompt = [['upper cloth'], ['pants', 'skirts'], ['shoes']]
     # _dino_text_prompt = ' . '.join([y for x in _cloth_part for y in _input_part_prompt[x]])
     # _dino_text_prompt = 'dress'
-    _dino_text_prompt = 'clothing . pants . shorts . dress . shirts . skirt . lingerie . bras'
+    _dino_clothing_text_prompt = 'clothing . pants . shorts . dress . shirts . skirt . lingerie . bras'
     _box_threshold = 0.41
 
     if _input_image is None:
@@ -656,8 +656,20 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
             # artificial model
             else:
                 _input_image_width, _input_image_height = _input_image.size
-                person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "clothing", _box_threshold)
-                person0_box = [int(x) for x in person_boxes[0]]
+                person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, _dino_clothing_text_prompt, _box_threshold)
+
+                # get max area clothing box
+                top_y_list = [x[1] for x in person_boxes]
+                min_top_value = int(min(top_y_list))
+                min_top_index = top_y_list.index(min_top_value)
+                bottom_y_list = [x[-1] for x in person_boxes]
+                max_top_value = int(max(bottom_y_list))
+                max_top_index = bottom_y_list.index(max_top_value)
+                person0_box = [int(person_boxes[min_top_index][0]),
+                               min_top_value,
+                               int(person_boxes[max_top_index][0]),
+                               max_top_value]
+
                 person0_width = person0_box[2] - person0_box[0]
                 person0_height = person0_box[3] - person0_box[1]
                 constant_bottom = 30
@@ -710,7 +722,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
 
     sam_result_tmp_png_fp = []
 
-    sam_result_gallery, sam_result = sam_predict(_dino_model_name, _dino_text_prompt,
+    sam_result_gallery, sam_result = sam_predict(_dino_model_name, _dino_clothing_text_prompt,
                                                  _box_threshold,
                                                  _input_image)
 
