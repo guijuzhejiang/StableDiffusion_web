@@ -1,7 +1,9 @@
 import threading
-import numpy
 import opennsfw2
-from PIL import Image
+import tensorflow as tf
+config = tf.compat.v1.ConfigProto()
+config.gpu_options.allow_growth = True
+tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=config))
 from keras import Model
 
 

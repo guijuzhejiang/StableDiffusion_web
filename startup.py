@@ -79,11 +79,6 @@ import modules.hypernetworks.hypernetwork
 
 startup_timer.record("other imports")
 
-import tensorflow as tf
-config = tf.compat.v1.ConfigProto()
-config.gpu_options.allow_growth = True
-tf.compat.v1.keras.backend.set_session(tf.compat.v1.Session(config=config))
-
 
 def fix_asyncio_event_loop_policy():
     """
@@ -332,7 +327,7 @@ def wait_on_server(demo=None):
 def webui():
     initialize()
     # guiju.segment_anything_util.sam.sam = init_sam_model(sam_model_list[0])
-    guiju.segment_anything_util.sam.sam = init_sam_model('sam_vit_h_4b8939.pth')
+    guiju.segment_anything_util.sam.sam = init_sam_model()
     while 1:
         if shared.opts.clean_temp_dir_at_start:
             ui_tempdir.cleanup_tmpdr()

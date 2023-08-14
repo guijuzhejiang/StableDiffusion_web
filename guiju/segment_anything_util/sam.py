@@ -10,9 +10,11 @@ import numpy as np
 import gradio as gr
 import torch
 from scipy.ndimage import label
-from segment_anything import SamPredictor, sam_model_registry
+from segment_anything import SamPredictor
 
 from guiju.segment_anything_util.dino import show_boxes, dino_predict_internal, dino_install_issue_text
+from guiju.segment_anything_util.sam_hq.build_sam_hq import sam_model_registry
+from guiju.segment_anything_util.sam_hq.predictor import SamPredictorHQ
 from modules.devices import torch_gc, device
 from modules.safe import unsafe_torch_load, load
 
@@ -29,6 +31,7 @@ txt2img_width: gr.Slider = None
 txt2img_height: gr.Slider = None
 img2img_width: gr.Slider = None
 img2img_height: gr.Slider = None
+sam_model_name='sam_hq_vit_h.pth'
 
 
 def clear_sam_cache():
@@ -42,25 +45,24 @@ def garbage_collect(sam):
     torch_gc()
 
 
-def init_sam_model(sam_model_name):
-    print("Initializing SAM")
-    if sam_model_name in sam_model_cache:
-        sam = sam_model_cache[sam_model_name]
-        return sam
-    elif sam_model_name in sam_model_list:
+def init_sam_model():
+    try:
+        print("Initializing SAM")
         clear_sam_cache()
         sam_model_cache[sam_model_name] = load_sam_model(sam_model_name)
         return sam_model_cache[sam_model_name]
-    else:
-        Exception(
+    except Exception:
+        raise Exception(
             f"{sam_model_name} not found, please download model to models/sam.")
 
 
 def load_sam_model(sam_checkpoint):
-    model_type = '_'.join(sam_checkpoint.split('_')[1:-1])
-    sam_checkpoint = os.path.join(sam_model_dir, sam_checkpoint)
+    model_type = sam_checkpoint.split('.')[0]
+    if 'hq' not in model_type and 'mobile' not in model_type:
+        model_type = '_'.join(model_type.split('_')[:-1])
+    sam_checkpoint_path = os.path.join(sam_model_dir, sam_checkpoint)
     torch.load = unsafe_torch_load
-    sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
+    sam = sam_model_registry[model_type](checkpoint=sam_checkpoint_path)
     sam.to(device=device)
     sam.eval()
     torch.load = load
@@ -112,7 +114,7 @@ def sam_predict(dino_model_name, text_prompt, box_threshold, input_image):
             else:
                 sam_predict_result += f" However, GroundingDINO installment has failed. Your process automatically fall back to point prompt only. Check your terminal for more detail and {dino_install_issue_text}. "
     print(f"Running SAM Inference {image_np_rgb.shape}")
-    predictor = SamPredictor(sam)
+    predictor = SamPredictorHQ(sam, 'hq' in sam_model_name)
     predictor.set_image(image_np_rgb)
     if dino_enabled and boxes_filt.shape[0] > 1:
         sam_predict_status = f"SAM inference with {boxes_filt.shape[0]} boxes, point prompts disgarded"

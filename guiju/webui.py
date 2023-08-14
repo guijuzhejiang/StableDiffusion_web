@@ -231,9 +231,9 @@ def create_ui():
           modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx], \
           modules.scripts.scripts_img2img.alwayson_scripts[adetail_idx]
 
-    # sam 20 args
+    # sam 24 args
     modules.scripts.scripts_img2img.alwayson_scripts[0].args_from = 7
-    modules.scripts.scripts_img2img.alwayson_scripts[0].args_to = 27
+    modules.scripts.scripts_img2img.alwayson_scripts[0].args_to = 31
 
     # controlnet 3 args
     modules.scripts.scripts_img2img.alwayson_scripts[1].args_from = 4
@@ -627,7 +627,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     output_height = 1024
     output_width = 512
     _dino_model_name = "GroundingDINO_SwinB (938MB)"
-    _sam_model_name = 'sam_vit_h_4b8939.pth'
+    _sam_model_name = 'samhq_vit_h_1b3123.pth'
     # _input_part_prompt = [['upper cloth'], ['pants', 'skirts'], ['shoes']]
     # _dino_text_prompt = ' . '.join([y for x in _cloth_part for y in _input_part_prompt[x]])
     # _dino_text_prompt = 'dress'
@@ -657,16 +657,12 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                 person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, _dino_clothing_text_prompt, _box_threshold)
 
                 # get max area clothing box
-                top_y_list = [int(x[1]) for x in person_boxes]
-                min_top_value = int(min(top_y_list))
-                min_top_index = top_y_list.index(min_top_value)
-                bottom_y_list = [int(x[-1]) for x in person_boxes]
-                max_top_value = int(max(bottom_y_list))
-                max_top_index = bottom_y_list.index(max_top_value)
-                person0_box = [int(person_boxes[min_top_index][0]),
-                               min_top_value,
-                               int(person_boxes[max_top_index][2]),
-                               max_top_value]
+                x_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 0 or i ==2]
+                y_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 1 or i ==3]
+                person0_box = [min(x_list),
+                               min(y_list),
+                               max(x_list),
+                               max(y_list)]
 
                 person0_width = person0_box[2] - person0_box[0]
                 person0_height = person0_box[3] - person0_box[1]
@@ -870,7 +866,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                                       override_settings_texts,
                                       *sam_args)
     except:
-        raise gr.Error("found not cloth")
+        raise gr.Error("found no cloth")
     else:
         for res_img in res[0]:
             if predict_image(res_img.already_saved_as):

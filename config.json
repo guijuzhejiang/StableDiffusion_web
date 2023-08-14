@@ -3,7 +3,7 @@
     "samples_format": "png",
     "samples_filename_pattern": "",
     "save_images_add_number": true,
-    "grid_save": true,
+    "grid_save": false,
     "grid_format": "png",
     "grid_extended_filename": false,
     "grid_only_if_multiple": true,

@@ -7,7 +7,7 @@ from PIL import Image
 import torch
 import gradio as gr
 from collections import OrderedDict
-from scipy.ndimage import binary_dilation, label
+from scipy.ndimage import binary_dilation
 from modules import scripts, shared, script_callbacks
 from modules.ui import gr_show
 from modules.ui_components import FormRow
@@ -15,7 +15,8 @@ from modules.safe import unsafe_torch_load, load
 from modules.processing import StableDiffusionProcessingImg2Img, StableDiffusionProcessing
 from modules.devices import device, torch_gc, cpu
 from modules.paths import models_path
-from segment_anything import SamPredictor, sam_model_registry
+from sam_hq.predictor import SamPredictorHQ
+from sam_hq.build_sam_hq import sam_model_registry
 from scripts.dino import dino_model_list, dino_predict_internal, show_boxes, clear_dino_cache, dino_install_issue_text
 from scripts.auto import clear_sem_sam_cache, register_auto_sam, semantic_segmentation, sem_sam_garbage_collect, image_layer_internal, categorical_mask_image
 from scripts.process_params import SAMProcessUnit, max_cn_num
@@ -27,6 +28,7 @@ scripts_sam_model_dir = os.path.join(scripts.basedir(), "models/sam")
 sd_sam_model_dir = os.path.join(models_path, "sam")
 sam_model_dir = sd_sam_model_dir if os.path.exists(sd_sam_model_dir) else scripts_sam_model_dir 
 sam_model_list = [f for f in os.listdir(sam_model_dir) if os.path.isfile(os.path.join(sam_model_dir, f)) and f.split('.')[-1] != 'txt']
+sam_device = device
 
 
 txt2img_width: gr.Slider = None
@@ -70,11 +72,13 @@ def update_mask(mask_gallery, chosen_mask, dilation_amt, input_image):
 
 
 def load_sam_model(sam_checkpoint):
-    model_type = '_'.join(sam_checkpoint.split('_')[1:-1])
-    sam_checkpoint = os.path.join(sam_model_dir, sam_checkpoint)
+    model_type = sam_checkpoint.split('.')[0]
+    if 'hq' not in model_type and 'mobile' not in model_type:
+        model_type = '_'.join(model_type.split('_')[:-1])
+    sam_checkpoint_path = os.path.join(sam_model_dir, sam_checkpoint)
     torch.load = unsafe_torch_load
-    sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
-    sam.to(device=device)
+    sam = sam_model_registry[model_type](checkpoint=sam_checkpoint_path)
+    sam.to(device=sam_device)
     sam.eval()
     torch.load = load
     return sam
@@ -114,18 +118,18 @@ def refresh_sam_models(*inputs):
 
 
 def init_sam_model(sam_model_name):
-    print("Initializing SAM")
+    print(f"Initializing SAM to {sam_device}")
     if sam_model_name in sam_model_cache:
         sam = sam_model_cache[sam_model_name]
-        if shared.cmd_opts.lowvram:
-            sam.to(device=device)
+        if shared.cmd_opts.lowvram or (str(sam_device) not in str(sam.device)):
+            sam.to(device=sam_device)
         return sam
     elif sam_model_name in sam_model_list:
         clear_sam_cache()
         sam_model_cache[sam_model_name] = load_sam_model(sam_model_name)
         return sam_model_cache[sam_model_name]
     else:
-        Exception(
+        raise Exception(
             f"{sam_model_name} not found, please download model to models/sam.")
 
 
@@ -194,29 +198,23 @@ def sam_predict(sam_model_name, input_image, positive_points, negative_points,
     sam_predict_result = " done."
     if dino_enabled:
         boxes_filt, install_success = dino_predict_internal(input_image, dino_model_name, text_prompt, box_threshold)
-        if install_success and dino_preview_checkbox is not None and dino_preview_checkbox and dino_preview_boxes_selection is not None:
+        if dino_preview_checkbox is not None and dino_preview_checkbox and dino_preview_boxes_selection is not None:
             valid_indices = [int(i) for i in dino_preview_boxes_selection if int(i) < boxes_filt.shape[0]]
             boxes_filt = boxes_filt[valid_indices]
-        if not install_success:
-            if len(positive_points) == 0 and len(negative_points) == 0:
-                return [], f"GroundingDINO installment has failed. Check your terminal for more detail and {dino_install_issue_text}. "
-            else:
-                sam_predict_result += f" However, GroundingDINO installment has failed. Your process automatically fall back to point prompt only. Check your terminal for more detail and {dino_install_issue_text}. "
     sam = init_sam_model(sam_model_name)
     print(f"Running SAM Inference {image_np_rgb.shape}")
-    predictor = SamPredictor(sam)
+    predictor = SamPredictorHQ(sam, 'hq' in sam_model_name)
     predictor.set_image(image_np_rgb)
     if dino_enabled and boxes_filt.shape[0] > 1:
-        sam_predict_status = f"SAM inference with {boxes_filt.shape[0]} boxes, point prompts disgarded"
+        sam_predict_status = f"SAM inference with {boxes_filt.shape[0]} boxes, point prompts discarded"
         print(sam_predict_status)
         transformed_boxes = predictor.transform.apply_boxes_torch(boxes_filt, image_np.shape[:2])
         masks, _, _ = predictor.predict_torch(
             point_coords=None,
             point_labels=None,
-            boxes=transformed_boxes.to(device),
+            boxes=transformed_boxes.to(sam_device),
             multimask_output=True)
         masks = masks.permute(1, 0, 2, 3).cpu().numpy()
-
     else:
         num_box = 0 if boxes_filt is None else boxes_filt.shape[0]
         num_points = len(positive_points) + len(negative_points)
@@ -235,18 +233,9 @@ def sam_predict(sam_model_name, input_image, positive_points, negative_points,
             point_labels=point_labels if len(point_coords) > 0 else None,
             box=box,
             multimask_output=True)
-
         masks = masks[:, None, ...]
-
-    # 连同区域数量最少
-    # masks = [masks[np.argmin([label(m)[1] for m in masks])]]
-    # 最大面积
-    # if len(masks) > 1:
-    #     masks = [masks[np.argmax([np.count_nonzero(m) for m in masks])]]
-    # first
-    masks = [masks[1]]
     garbage_collect(sam)
-    return create_mask_output(image_np, masks, boxes_filt), sam_predict_status + sam_predict_result
+    return create_mask_output(image_np, masks, boxes_filt), sam_predict_status + sam_predict_result + (f" However, GroundingDINO installment has failed. Your process automatically fall back to local groundingdino. Check your terminal for more detail and {dino_install_issue_text}." if (dino_enabled and not install_success) else "")
 
 
 def dino_predict(input_image, dino_model_name, text_prompt, box_threshold):
@@ -256,11 +245,9 @@ def dino_predict(input_image, dino_model_name, text_prompt, box_threshold):
         return None, gr.update(), gr.update(visible=True, value=f"GroundingDINO requires text prompt.")
     image_np = np.array(input_image)
     boxes_filt, install_success = dino_predict_internal(input_image, dino_model_name, text_prompt, box_threshold)
-    if not install_success:
-        return None, gr.update(), gr.update(visible=True, value=f"GroundingDINO installment failed. Preview failed. See your terminal for more detail and {dino_install_issue_text}")
     boxes_filt = boxes_filt.numpy()
     boxes_choice = [str(i) for i in range(boxes_filt.shape[0])]
-    return Image.fromarray(show_boxes(image_np, boxes_filt.astype(int), show_index=True)), gr.update(choices=boxes_choice, value=boxes_choice), gr.update(visible=False)
+    return Image.fromarray(show_boxes(image_np, boxes_filt.astype(int), show_index=True)), gr.update(choices=boxes_choice, value=boxes_choice), gr.update(visible=False) if install_success else gr.update(visible=True, value=f"GroundingDINO installment failed. Your process automatically fall back to local groundingdino. See your terminal for more detail and {dino_install_issue_text}")
 
 
 def dino_batch_process(
@@ -271,9 +258,14 @@ def dino_batch_process(
         return "Please add text prompts to generate masks"
     print("Start batch processing")
     sam = init_sam_model(batch_sam_model_name)
-    predictor = SamPredictor(sam)
+    predictor = SamPredictorHQ(sam, 'hq' in batch_sam_model_name)
+
+    if not os.path.exists(dino_batch_dest_dir):
+        os.makedirs(dino_batch_dest_dir)
+        print(f"Destination directory created: {dino_batch_dest_dir}")
     
     process_info = ""
+    install_success = True
     all_files = glob.glob(os.path.join(dino_batch_source_dir, "*"))
     for image_index, input_image_file in enumerate(all_files):
         print(f"Processing {image_index}/{len(all_files)} {input_image_file}")
@@ -286,9 +278,6 @@ def dino_batch_process(
         image_np_rgb = image_np[..., :3]
 
         boxes_filt, install_success = dino_predict_internal(input_image, batch_dino_model_name, batch_text_prompt, batch_box_threshold)
-        if not install_success:
-            return f"GroundingDINO installment failed. Batch processing failed. See your terminal for more detail and {dino_install_issue_text}"
-
         if boxes_filt is None or boxes_filt.shape[0] == 0:
             msg = f"GroundingDINO generated 0 box for image {input_image_file}, please lower the box threshold if you want any segmentation for this image. "
             print(msg)
@@ -300,7 +289,7 @@ def dino_batch_process(
         masks, _, _ = predictor.predict_torch(
             point_coords=None,
             point_labels=None,
-            boxes=transformed_boxes.to(device),
+            boxes=transformed_boxes.to(sam_device),
             multimask_output=(dino_batch_output_per_image == 1))
         
         masks = masks.permute(1, 0, 2, 3).cpu().numpy()
@@ -312,7 +301,7 @@ def dino_batch_process(
             dino_batch_save_image, dino_batch_save_mask, dino_batch_save_background, dino_batch_save_image_with_mask)
     
     garbage_collect(sam)
-    return process_info + "Done"
+    return process_info + "Done" + ("" if install_success else f". However, GroundingDINO installment has failed. Your process automatically fall back to local groundingdino. See your terminal for more detail and {dino_install_issue_text}")
 
 
 def cnet_seg(
@@ -325,7 +314,8 @@ def cnet_seg(
     print(f"Start semantic segmentation with processor {cnet_seg_processor}")
     auto_sam_output_mode = "coco_rle" if "seg" in cnet_seg_processor else "binary_mask"
     sam = load_sam_model(sam_model_name)
-    register_auto_sam(sam, auto_sam_points_per_side, auto_sam_points_per_batch, auto_sam_pred_iou_thresh, 
+    predictor = SamPredictorHQ(sam, 'hq' in sam_model_name)
+    register_auto_sam(predictor, auto_sam_points_per_side, auto_sam_points_per_batch, auto_sam_pred_iou_thresh, 
     auto_sam_stability_score_thresh, auto_sam_stability_score_offset, auto_sam_box_nms_thresh, 
     auto_sam_crop_n_layers, auto_sam_crop_nms_thresh, auto_sam_crop_overlap_ratio, 
     auto_sam_crop_n_points_downscale_factor, auto_sam_min_mask_region_area, auto_sam_output_mode)
@@ -344,7 +334,8 @@ def image_layout(
     auto_sam_crop_n_points_downscale_factor, auto_sam_min_mask_region_area):
     print("Start processing image layout")
     sam = load_sam_model(sam_model_name)
-    register_auto_sam(sam, auto_sam_points_per_side, auto_sam_points_per_batch, auto_sam_pred_iou_thresh, 
+    predictor = SamPredictorHQ(sam, 'hq' in sam_model_name)
+    register_auto_sam(predictor, auto_sam_points_per_side, auto_sam_points_per_batch, auto_sam_pred_iou_thresh, 
     auto_sam_stability_score_thresh, auto_sam_stability_score_offset, auto_sam_box_nms_thresh, 
     auto_sam_crop_n_layers, auto_sam_crop_nms_thresh, auto_sam_crop_overlap_ratio, 
     auto_sam_crop_n_points_downscale_factor, auto_sam_min_mask_region_area, "binary_mask")
@@ -364,7 +355,8 @@ def categorical_mask(
     auto_sam_crop_n_points_downscale_factor, auto_sam_min_mask_region_area):
     print("Start processing categorical mask")
     sam = load_sam_model(sam_model_name)
-    register_auto_sam(sam, auto_sam_points_per_side, auto_sam_points_per_batch, auto_sam_pred_iou_thresh, 
+    predictor = SamPredictorHQ(sam, 'hq' in sam_model_name)
+    register_auto_sam(predictor, auto_sam_points_per_side, auto_sam_points_per_batch, auto_sam_pred_iou_thresh, 
     auto_sam_stability_score_thresh, auto_sam_stability_score_offset, auto_sam_box_nms_thresh, 
     auto_sam_crop_n_layers, auto_sam_crop_nms_thresh, auto_sam_crop_overlap_ratio, 
     auto_sam_crop_n_points_downscale_factor, auto_sam_min_mask_region_area, "coco_rle")
@@ -391,7 +383,8 @@ def categorical_mask_batch(
     auto_sam_crop_n_points_downscale_factor, auto_sam_min_mask_region_area):
     print("Start processing categorical mask in batch")
     sam = load_sam_model(sam_model_name)
-    register_auto_sam(sam, auto_sam_points_per_side, auto_sam_points_per_batch, auto_sam_pred_iou_thresh, 
+    predictor = SamPredictorHQ(sam, 'hq' in sam_model_name)
+    register_auto_sam(predictor, auto_sam_points_per_side, auto_sam_points_per_batch, auto_sam_pred_iou_thresh, 
     auto_sam_stability_score_thresh, auto_sam_stability_score_offset, auto_sam_box_nms_thresh, 
     auto_sam_crop_n_layers, auto_sam_crop_nms_thresh, auto_sam_crop_overlap_ratio, 
     auto_sam_crop_n_points_downscale_factor, auto_sam_min_mask_region_area, "coco_rle")
@@ -488,10 +481,10 @@ def ui_dilation(sam_output_mask_gallery, sam_output_chosen_mask, sam_input_image
 def ui_inpaint(is_img2img, max_cn):
     with FormRow():
         if is_img2img:
-            inpaint_upload_enable_label = "Copy to Inpaint Upload" + (" & ControlNet Inpainting" if max_cn > 0 else "")
+            inpaint_upload_enable_label = "Copy to Inpaint Upload" + (" & img2img ControlNet Inpainting" if max_cn > 0 else "")
         else:
-            inpaint_upload_enable_label = "Copy to ControlNet Inpainting" if max_cn > 0 else ""
-        inpaint_upload_enable = gr.Checkbox(value=True, label=inpaint_upload_enable_label, visible=(len(inpaint_upload_enable_label) > 0))
+            inpaint_upload_enable_label = "Copy to txt2img ControlNet Inpainting" if max_cn > 0 else ""
+        inpaint_upload_enable = gr.Checkbox(value=False, label=inpaint_upload_enable_label, visible=(len(inpaint_upload_enable_label) > 0))
         cnet_inpaint_invert = gr.Checkbox(value=False, label='ControlNet inpaint not masked', visible=((max_cn > 0) and not is_img2img))
         cnet_inpaint_idx = gr.Radio(value="0" if max_cn > 0 else None, choices=[str(i) for i in range(max_cn)], label='ControlNet Inpaint Index', type="index", visible=((max_cn > 0) and not is_img2img))
     return inpaint_upload_enable, cnet_inpaint_invert, cnet_inpaint_idx
@@ -556,12 +549,19 @@ class Script(scripts.Script):
             priorize_sam_scripts(is_img2img)
         tab_prefix = ("img2img" if is_img2img else "txt2img") + "_sam_"
         ui_process = ()
-        # with gr.Accordion('Segment Anything', open=False):
-        with gr.Blocks():
+        with gr.Accordion('Segment Anything', open=False):
             with gr.Row():
-                sam_model_name = gr.Dropdown(label="SAM Model", choices=sam_model_list, value=sam_model_list[0] if len(sam_model_list) > 0 else None)
-                sam_refresh_models = ToolButton(value=refresh_symbol)
-                sam_refresh_models.click(refresh_sam_models, sam_model_name, sam_model_name)
+                with gr.Column(scale=10):
+                    with gr.Row():
+                        sam_model_name = gr.Dropdown(label="SAM Model", choices=sam_model_list, value=sam_model_list[0] if len(sam_model_list) > 0 else None)
+                        sam_refresh_models = ToolButton(value=refresh_symbol)
+                        sam_refresh_models.click(refresh_sam_models, sam_model_name, sam_model_name)
+                with gr.Column(scale=1):
+                    sam_use_cpu = gr.Checkbox(value=False, label="Use CPU for SAM")
+                    def change_sam_device(use_cpu=False):
+                        global sam_device
+                        sam_device = "cpu" if use_cpu else device
+                    sam_use_cpu.change(fn=change_sam_device, inputs=[sam_use_cpu], show_progress=False)
             with gr.Tabs():
                 with gr.TabItem(label="Single Image"):
                     gr.HTML(value="<p>Left click the image to add one positive point (black dot). Right click the image to add one negative point (red dot). Left click the point to remove it.</p>")
@@ -577,12 +577,12 @@ class Script(scripts.Script):
                     dino_checkbox = gr.Checkbox(value=False, label="Enable GroundingDINO", elem_id=f"{tab_prefix}dino_enable_checkbox")
                     with gr.Column(visible=False) as dino_column:
                         gr.HTML(value="<p>Due to the limitation of Segment Anything, when there are point prompts, at most 1 box prompt will be allowed; when there are multiple box prompts, no point prompts are allowed.</p>")
-                        dino_model_name = gr.Dropdown(label="GroundingDINO Model (Auto download from huggingface)", choices=dino_model_list, value=dino_model_list[1])
+                        dino_model_name = gr.Dropdown(label="GroundingDINO Model (Auto download from huggingface)", choices=dino_model_list, value=dino_model_list[0])
                         dino_text_prompt = gr.Textbox(placeholder="You must enter text prompts to enable groundingdino. Otherwise this extension will fall back to point prompts only.", label="GroundingDINO Detection Prompt", elem_id=f"{tab_prefix}dino_text_prompt")
                         dino_box_threshold = gr.Slider(label="GroundingDINO Box Threshold", minimum=0.0, maximum=1.0, value=0.3, step=0.001)
                         dino_preview_checkbox = gr.Checkbox(value=False, label="I want to preview GroundingDINO detection result and select the boxes I want.", elem_id=f"{tab_prefix}dino_preview_checkbox")
                         with gr.Column(visible=False) as dino_preview:
-                            dino_preview_boxes = gr.Image(label="Image for GroundingDINO", type="pil", image_mode="RGBA")
+                            dino_preview_boxes = gr.Image(show_label=False, type="pil", image_mode="RGBA")
                             dino_preview_boxes_button = gr.Button(value="Generate bounding box", elem_id=f"{tab_prefix}dino_run_button")
                             dino_preview_boxes_selection = gr.CheckboxGroup(label="Select your favorite boxes: ", elem_id=f"{tab_prefix}dino_preview_boxes_selection")
                             dino_preview_result = gr.Text(value="", label="GroundingDINO preview status", visible=False)
@@ -604,14 +604,6 @@ class Script(scripts.Script):
                     sam_output_mask_gallery = gr.Gallery(label='Segment Anything Output').style(grid=3)
                     sam_submit = gr.Button(value="Preview Segmentation", elem_id=f"{tab_prefix}run_button")
                     sam_result = gr.Text(value="", label="Segment Anything status")
-
-                    # onchange predict
-                    sam_input_image.change(
-                        fn=dino_predict,
-                        _js="submit_dino",
-                        inputs=[sam_input_image, dino_model_name, dino_text_prompt, dino_box_threshold],
-                        outputs=[dino_preview_boxes, dino_preview_boxes_selection, dino_preview_result])
-
                     sam_submit.click(
                         fn=sam_predict,
                         _js='submit_sam',
@@ -673,7 +665,7 @@ class Script(scripts.Script):
                         with gr.TabItem(label="ControlNet"):
                             gr.Markdown(
                                 "You can enhance semantic segmentation for control_v11p_sd15_seg from lllyasviel. "
-                                "Non-semantic segmentation for [Edit-Anything](https://github.com/sail-sg/EditAnything) will be supported [when they convert their models to lllyasviel format](https://github.com/sail-sg/EditAnything/issues/14).")
+                                "You can also utilize [Edit-Anything](https://github.com/sail-sg/EditAnything) and generate images according to random segmentation which preserve image layout.")
                             cnet_seg_processor, cnet_seg_processor_res, cnet_seg_gallery_input, cnet_seg_pixel_perfect, cnet_seg_resize_mode = ui_processor(use_cnet=(max_cn_num() > 0))
                             cnet_seg_input_image = gr.Image(label="Image for Auto Segmentation", source="upload", type="pil", image_mode="RGBA")
                             cnet_seg_output_gallery = gr.Gallery(label="Auto segmentation output").style(grid=2)
@@ -752,6 +744,24 @@ class Script(scripts.Script):
                                                 crop_category_input, crop_batch_dilation_amt, crop_batch_source_dir, crop_batch_dest_dir, 
                                                 crop_batch_save_image, crop_batch_save_mask, crop_batch_save_image_with_mask, crop_batch_save_background, *auto_sam_config],
                                         outputs=[crop_batch_progress])
+                            
+                            
+                with gr.TabItem(label="Upload Mask to ControlNet Inpainting"):
+                    gr.Markdown("This panel is for those who want to upload mask to ControlNet inpainting. It is not part of the SAM feature. It might be removed someday when ControlNet support uploading image and mask. "
+                                "It serves as a temporarily workaround to overcome the unavailability of image with mask uploading feature in ControlNet extension.")
+                    with gr.Row():
+                        cnet_upload_enable = gr.Checkbox(value=False, label="Enable uploading manually created mask to SAM.")
+                        cnet_upload_num = gr.Radio(value="0", choices=[str(i) for i in range(max_cn_num())], label='ControlNet Inpaint Number', type="index")
+                    with gr.Column(visible=False) as cnet_upload_panel:
+                        cnet_upload_img_inpaint = gr.Image(label="Image for ControlNet Inpaint", show_label=False, source="upload", interactive=True, type="pil")
+                        cnet_upload_mask_inpaint = gr.Image(label="Mask for ControlNet Inpaint", source="upload", interactive=True, type="pil")
+                    cnet_upload_enable.change(
+                        fn=gr_show,
+                        inputs=[cnet_upload_enable],
+                        outputs=[cnet_upload_panel],
+                        show_progress=False)
+                    cnet_upload_process = (cnet_upload_enable, cnet_upload_num, cnet_upload_img_inpaint, cnet_upload_mask_inpaint)
+                    ui_process += cnet_upload_process
 
                 with gr.Row():
                     switch = gr.Button(value="Switch to Inpaint Upload")
@@ -802,4 +812,11 @@ def on_after_component(component, **_kwargs):
         return
 
 
+
+def on_ui_settings():
+    section = ('segment_anything', "Segment Anything")
+    shared.opts.add_option("sam_use_local_groundingdino", shared.OptionInfo(False, "Use local groundingdino to bypass C++ problem", section=section))
+
+
+script_callbacks.on_ui_settings(on_ui_settings)
 script_callbacks.on_after_component(on_after_component)
