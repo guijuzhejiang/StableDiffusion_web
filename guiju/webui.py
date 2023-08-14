@@ -626,13 +626,12 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
 
     output_height = 1024
     output_width = 512
-
-    _sam_model_name = sam_model_list[0]
-    _dino_model_name = dino_model_list[1]
+    _dino_model_name = "GroundingDINO_SwinB (938MB)"
+    _sam_model_name = 'sam_vit_h_4b8939.pth'
     # _input_part_prompt = [['upper cloth'], ['pants', 'skirts'], ['shoes']]
     # _dino_text_prompt = ' . '.join([y for x in _cloth_part for y in _input_part_prompt[x]])
     # _dino_text_prompt = 'dress'
-    _dino_text_prompt = 'clothing . pants . shorts . dress . shirts . skirt . underwear . bra . swimsuits . bikini . stocking'
+    _dino_clothing_text_prompt = 'clothing . pants . shorts . dress . shirts . skirt . underwear . bra . swimsuits . bikini . stocking'
     _box_threshold = 0.3
 
     if _input_image is None:
@@ -641,10 +640,9 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
         origin_image_path = f'tmp/origin_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png'
         _input_image.save(origin_image_path, format='PNG')
 
+        if predict_image(origin_image_path):
+            raise gr.Error("The input image is NSFW!!!")
         try:
-            if predict_image(origin_image_path):
-                print('The input image is NSFW!!!')
-                sys.exit()
             # real people
             if _model_mode == 0:
                 person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "person",
@@ -715,6 +713,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
         except Exception:
             print(traceback.format_exc())
             print('preprocess img error')
+            raise gr.Error("preprocess img error")
 
         if cmd_opts.debug_mode:
             _input_image.save(f'tmp/resized_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
@@ -855,21 +854,27 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                 False, None, None, False, 50
                 ]
 
-    res = modules.img2img.img2img(task_id, 4, sd_positive_prompt, sd_negative_prompt, prompt_styles, init_img,
-                                  sketch,
-                                  init_img_with_mask, inpaint_color_sketch, inpaint_color_sketch_orig,
-                                  init_img_inpaint, init_mask_inpaint,
-                                  steps, sampler_index, mask_blur, mask_alpha, inpainting_fill, restore_faces,
-                                  tiling,
-                                  n_iter, batch_size, cfg_scale, image_cfg_scale, denoising_strength, seed,
-                                  subseed,
-                                  subseed_strength, seed_resize_from_h, seed_resize_from_w, seed_enable_extras,
-                                  selected_scale_tab, height, width, scale_by, resize_mode, inpaint_full_res,
-                                  inpaint_full_res_padding, inpainting_mask_invert, img2img_batch_input_dir,
-                                  img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
-                                  override_settings_texts,
-                                  *sam_args)
-
+    try:
+        res = modules.img2img.img2img(task_id, 4, sd_positive_prompt, sd_negative_prompt, prompt_styles, init_img,
+                                      sketch,
+                                      init_img_with_mask, inpaint_color_sketch, inpaint_color_sketch_orig,
+                                      init_img_inpaint, init_mask_inpaint,
+                                      steps, sampler_index, mask_blur, mask_alpha, inpainting_fill, restore_faces,
+                                      tiling,
+                                      n_iter, batch_size, cfg_scale, image_cfg_scale, denoising_strength, seed,
+                                      subseed,
+                                      subseed_strength, seed_resize_from_h, seed_resize_from_w, seed_enable_extras,
+                                      selected_scale_tab, height, width, scale_by, resize_mode, inpaint_full_res,
+                                      inpaint_full_res_padding, inpainting_mask_invert, img2img_batch_input_dir,
+                                      img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
+                                      override_settings_texts,
+                                      *sam_args)
+    except:
+        raise gr.Error("found not cloth")
+    else:
+        for res_img in res[0]:
+            if predict_image(res_img.already_saved_as):
+                raise gr.Error("The output image is NSFW!!!")
     return res[0], res[0], gr.Radio.update(choices=[str(x) for x in range(1 if len(res[0]) == 1 else len(res[0])-1)], value=0), gr.Button.update(
         interactive=True), 'done.'
 
