@@ -660,6 +660,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
             if _model_mode == 0:
                 person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "person",
                                                         _box_threshold)
+                _input_image = padding_rgba_image_pil_to_cv(_input_image, 9, 9, 9, 9, person_boxes[0])
                 _input_image = configure_image(_input_image, person_boxes[0], target_ratio=output_width / output_height)
                 # _input_image = configure_image(_input_image, person_boxes[0], target_ratio=output_width / output_height)
                 pass
@@ -699,7 +700,6 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                 padding_bottom = int(person0_height * bottom_ratio - (_input_image_height - int(person0_box[3]))) if ((_input_image_height - int(person0_box[3])) / person0_height) < bottom_ratio else 0
 
                 _input_image = padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right, padding_top, padding_bottom, person0_box)
-                cv2.imwrite('tttt.jpg', _input_image)
                 # _input_image = configure_image(_input_image, [0, 0, padding_left + _input_image_width + padding_right,
                 #                                               padding_top + _input_image_height + padding_bottom],
                 #                                target_ratio=output_width / output_height)
