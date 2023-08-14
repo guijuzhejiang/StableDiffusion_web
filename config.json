@@ -111,7 +111,7 @@
     "extra_networks_card_height": 0,
     "extra_networks_add_text_separator": " ",
     "sd_hypernetwork": "None",
-    "return_grid": true,
+    "return_grid": false,
     "return_mask": false,
     "return_mask_composite": false,
     "do_not_show_images": false,
