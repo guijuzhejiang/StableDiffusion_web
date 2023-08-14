@@ -869,8 +869,9 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
         raise gr.Error("found no cloth")
     else:
         for res_img in res[0]:
-            if predict_image(res_img.already_saved_as):
-                raise gr.Error("The output image is NSFW!!!")
+            if getattr(res_img, 'already_saved_as', False):
+                if predict_image(res_img.already_saved_as):
+                    raise gr.Error("The output image is NSFW!!!")
     return res[0], res[0], gr.Radio.update(choices=[str(x) for x in range(1 if len(res[0]) == 1 else len(res[0])-1)], value=0), gr.Button.update(
         interactive=True), 'done.'
 
