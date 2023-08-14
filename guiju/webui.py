@@ -657,15 +657,15 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                 person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, _dino_clothing_text_prompt, _box_threshold)
 
                 # get max area clothing box
-                top_y_list = [x[1] for x in person_boxes]
+                top_y_list = [int(x[1]) for x in person_boxes]
                 min_top_value = int(min(top_y_list))
                 min_top_index = top_y_list.index(min_top_value)
-                bottom_y_list = [x[-1] for x in person_boxes]
+                bottom_y_list = [int(x[-1]) for x in person_boxes]
                 max_top_value = int(max(bottom_y_list))
                 max_top_index = bottom_y_list.index(max_top_value)
                 person0_box = [int(person_boxes[min_top_index][0]),
                                min_top_value,
-                               int(person_boxes[max_top_index][0]),
+                               int(person_boxes[max_top_index][2]),
                                max_top_value]
 
                 person0_width = person0_box[2] - person0_box[0]
