@@ -25,7 +25,9 @@ def clear_predictor() -> None:
 
 
 def predict_image(target_path: str) -> bool:
-    return opennsfw2.predict_image(target_path) > MAX_PROBABILITY
+    nsfw_probability = opennsfw2.predict_image(target_path)
+    print(f'nsfw probability:{nsfw_probability}')
+    return nsfw_probability > MAX_PROBABILITY
 
 
 def predict_video(target_path: str) -> bool:
