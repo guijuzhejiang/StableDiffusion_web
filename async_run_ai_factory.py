@@ -1,6 +1,6 @@
 import time
 import traceback
-
+import os
 import ujson
 
 from lib.celery_workshop.util import load_workshops
@@ -9,6 +9,7 @@ from lib.redis_mq import SyncRedisMQ
 from utils.global_vars import CONFIG
 
 if __name__ == '__main__':
+    os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
     try:
         if CONFIG['debug_mode']:
             redis_mq = SyncRedisMQ(CONFIG['redis']['host'], CONFIG['redis']['port'], CONFIG['redis']['redis_mq'])

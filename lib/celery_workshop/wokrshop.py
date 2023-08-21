@@ -1,6 +1,8 @@
 # coding=utf-8
 # @Time : 2023/8/9 上午11:08
 # @File : wokrshop.py
+import os
+import subprocess
 import sys
 from collections import OrderedDict
 from lib.common.NoDaemonProcessPool import NoDaemonProcess
@@ -52,7 +54,8 @@ class WorkShop(object):
                 task = app.register_task(ProceedTask)
                 print(app.tasks)
 
-                app.worker_main(argv=['worker', '--loglevel=info', '--concurrency=1'])
+                # , '--pool=eventlet'
+                app.worker_main(argv=['worker', '--loglevel=info', '--concurrency=1', '-P', 'solo'])
             except Exception:
                 print(traceback.format_exc())
                 logging(
@@ -87,9 +90,13 @@ class WorkShop(object):
                 # self.instance_worker_proc(*args.values())
                 self.proc = NoDaemonProcess(target=self.instance_worker_proc,
                                                   args=tuple(i for i in args.values())).start()
+                # self.proc = subprocess.Popen(f"python worker_proc.py {' '.join([str(i) for i in args.values()])}", shell=True)
+
 
         else:
             args = OrderedDict({'op_name': self.op.__name__,
                                 'cuda': self.op.cuda,
                                 })
             self.proc = NoDaemonProcess(target=self.procedure_worker_proc, args=tuple(i for i in args.values()))
+            # self.proc = subprocess.Popen(f"python worker_proc.py {''.join([i for i in args.values()])}", shell=True)
+
