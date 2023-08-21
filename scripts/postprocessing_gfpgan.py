@@ -18,7 +18,10 @@ class ScriptPostprocessingGfpGan(scripts_postprocessing.ScriptPostprocessing):
         return {
             "gfpgan_visibility": gfpgan_visibility,
         }
-
+    def get_args(self):
+        return {
+            "gfpgan_visibility": 0.0,
+        }
     def process(self, pp: scripts_postprocessing.PostprocessedImage, gfpgan_visibility):
         if gfpgan_visibility == 0:
             return

@@ -19,11 +19,11 @@ class SDGenertae(HTTPMethodView):
             redis_mq = RedisMQ(CONFIG['redis']['host'], CONFIG['redis']['port'],
                                              CONFIG['redis']['redis_mq'])
 
-            task_result = await redis_mq.rpc_call(redis_mq.task_queue_name, request.form['params'][0])
+            task_result = await redis_mq.rpc_call(redis_mq.task_queue_name, request.form)
             print(task_result)
             await redis_mq.close()
         else:
-            task_result = sd_workshop(request.form['params'][0])
+            task_result = sd_workshop(**request.form)
             while not task_result.ready():
                 await asyncio.sleep(1)
                 print('wait')

@@ -13,7 +13,7 @@ import GPUtil
 class WorkShop(object):
     """Celery application.
     """
-    proc = None
+    proc = []
 
     def __init__(self, op):
         print(f"run {self.__class__.__name__}:{sys._getframe().f_code.co_name}")
@@ -29,6 +29,7 @@ class WorkShop(object):
         print("index, op_name, is_cuda")
         print(index, op_name, is_cuda)
         import traceback
+        import os
         from importlib import import_module
         from celery import Task, Celery
         from lib.common.common_util import logging
@@ -88,8 +89,9 @@ class WorkShop(object):
                                     'cuda': self.op.cuda,
                                     })
                 # self.instance_worker_proc(*args.values())
-                self.proc = NoDaemonProcess(target=self.instance_worker_proc,
+                proc = NoDaemonProcess(target=self.instance_worker_proc,
                                                   args=tuple(i for i in args.values())).start()
+                self.proc.append(proc)
                 # self.proc = subprocess.Popen(f"python worker_proc.py {' '.join([str(i) for i in args.values()])}", shell=True)
 
 
@@ -97,6 +99,7 @@ class WorkShop(object):
             args = OrderedDict({'op_name': self.op.__name__,
                                 'cuda': self.op.cuda,
                                 })
-            self.proc = NoDaemonProcess(target=self.procedure_worker_proc, args=tuple(i for i in args.values()))
+            proc = NoDaemonProcess(target=self.procedure_worker_proc, args=tuple(i for i in args.values()))
+            self.proc.append(proc)
             # self.proc = subprocess.Popen(f"python worker_proc.py {''.join([i for i in args.values()])}", shell=True)
 

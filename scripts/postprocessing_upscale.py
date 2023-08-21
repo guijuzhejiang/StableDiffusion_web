@@ -54,6 +54,18 @@ class ScriptPostprocessingUpscale(scripts_postprocessing.ScriptPostprocessing):
             "upscaler_2_visibility": extras_upscaler_2_visibility,
         }
 
+    def get_args(self):
+        return {
+                "upscale_mode": 0,
+                "upscale_by": 4.0,
+                "upscale_to_width": 1024,
+                "upscale_to_height": 1024,
+                "upscale_crop": True,
+                "upscaler_1_name": '4x',
+                "upscaler_2_name": '4x',
+                "upscaler_2_visibility": 0.0,
+            }
+
     def upscale(self, image, info, upscaler, upscale_mode, upscale_by,  upscale_to_width, upscale_to_height, upscale_crop):
         if upscale_mode == 1:
             upscale_by = max(upscale_to_width/image.width, upscale_to_height/image.height)

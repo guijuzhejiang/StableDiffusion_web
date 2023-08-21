@@ -744,8 +744,7 @@ class Script(scripts.Script):
                                                 crop_category_input, crop_batch_dilation_amt, crop_batch_source_dir, crop_batch_dest_dir, 
                                                 crop_batch_save_image, crop_batch_save_mask, crop_batch_save_image_with_mask, crop_batch_save_background, *auto_sam_config],
                                         outputs=[crop_batch_progress])
-                            
-                            
+
                 with gr.TabItem(label="Upload Mask to ControlNet Inpainting"):
                     gr.Markdown("This panel is for those who want to upload mask to ControlNet inpainting. It is not part of the SAM feature. It might be removed someday when ControlNet support uploading image and mask. "
                                 "It serves as a temporarily workaround to overcome the unavailability of image with mask uploading feature in ControlNet extension.")

@@ -10,6 +10,7 @@ import uuid
 
 import aioredis
 import redis
+import ujson
 
 from lib.common.common_util import logging, generate_random
 from utils.global_vars import CONFIG
@@ -51,7 +52,7 @@ class RedisMQ:
         try:
             # lock_id = await self.acquire_lock('mq_locker')
 
-            task_id = await self.redis_session.xadd(call_queue_name, {'params': args[0],
+            task_id = await self.redis_session.xadd(call_queue_name, {'params': ujson.dumps(args[0]),
                                                                       'reply_queue_name': reply_queue_name})
 
             # await self.release_lock('mq_locker', lock_id)

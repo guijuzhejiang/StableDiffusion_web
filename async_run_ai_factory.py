@@ -1,6 +1,5 @@
 import time
 import traceback
-import os
 import ujson
 
 from lib.celery_workshop.util import load_workshops
@@ -9,7 +8,7 @@ from lib.redis_mq import SyncRedisMQ
 from utils.global_vars import CONFIG
 
 if __name__ == '__main__':
-    os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
+    # os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
     try:
         if CONFIG['debug_mode']:
             redis_mq = SyncRedisMQ(CONFIG['redis']['host'], CONFIG['redis']['port'], CONFIG['redis']['redis_mq'])
@@ -23,7 +22,7 @@ if __name__ == '__main__':
                 logging(
                     f"{__file__}got msg: {msg}",
                     f"logs/info.log", print_msg=CONFIG['debug_mode'])
-                res = workers['OperatorSD'](msg['params'])
+                res = workers['OperatorSD'](**ujson.loads(msg['params']))
                 # res = {'success': False, 'result':"fatal error"}
                 redis_mq.pub(msg['reply_queue_name'], {'res': ujson.dumps(res)}, CONFIG['server']['msg_expire_secs'])
         else:

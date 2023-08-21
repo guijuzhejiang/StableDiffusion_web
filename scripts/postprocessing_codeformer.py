@@ -21,6 +21,12 @@ class ScriptPostprocessingCodeFormer(scripts_postprocessing.ScriptPostprocessing
             "codeformer_weight": codeformer_weight,
         }
 
+    def get_args(self):
+        return {
+            "codeformer_visibility": 0.0,
+            "codeformer_weight": 0.0,
+        }
+
     def process(self, pp: scripts_postprocessing.PostprocessedImage, codeformer_visibility, codeformer_weight):
         if codeformer_visibility == 0:
             return

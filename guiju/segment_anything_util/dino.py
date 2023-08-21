@@ -62,7 +62,6 @@ def load_dino_image(image_pil):
                 T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
             ]
         )
-        print('asdasdasdddddddddddddd')
         image, _ = transform(image_pil, None)  # 3, h, w
         print("load_dino_image done.")
     except Exception:
