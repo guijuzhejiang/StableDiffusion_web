@@ -1,5 +1,5 @@
-#debug_mode: false
-debug_mode: true
+debug_mode: false
+#debug_mode: true
 server:
   host: 0.0.0.0
   access_log: true
