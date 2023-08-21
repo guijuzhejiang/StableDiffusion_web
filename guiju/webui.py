@@ -26,6 +26,8 @@ from modules import shared, script_callbacks, devices, scripts_postprocessing, s
 from modules.paths import script_path, data_path
 import modules.img2img
 from modules.shared import cmd_opts
+from guiju.predictor_opennsfw2 import predict_image
+import sys
 
 
 def get_prompt(_gender, _age, _viewpoint, _model_mode=0):
@@ -62,7 +64,7 @@ def get_prompt(_gender, _age, _viewpoint, _model_mode=0):
             # 'detailed foot',
             'realistic body',
             '' if _gender else 'fluffy hair',
-            '' if _viewpoint == 2 else 'posing for a photo, normal foot posture, light on face, realistic face',
+            '' if _viewpoint == 2 else 'posing for a photo, light on face, realistic face',
             '(simple background:1.3)',
             '(white background:1.3)',
             'full body' if _model_mode == 0 else '(full body:1.8)',
@@ -98,44 +100,44 @@ def show_prompt(_gender, _age, _viewpoint, _model_mode):
     return f'sd_positive_prompt: {_sd_positive_prompt}\n\nsd_negative_prompt: {_sd_negative_prompt}'
 
 
-def resize_rgba_image_pil_to_cv(image, target_ratio=0.5, quality=80):
-    # 将PIL RGBA图像转换为BGR图像
-    cv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGBA2BGRA)
+# def resize_rgba_image_pil_to_cv(image, target_ratio=0.5, quality=80):
+#     # 将PIL RGBA图像转换为BGR图像
+#     cv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGBA2BGRA)
+#
+#     # 获取原始图像的尺寸
+#     original_height, original_width = cv_image.shape[:2]
+#
+#     # 计算原始图像的长宽比
+#     original_ratio = original_width / original_height
+#
+#     # 计算应该添加的填充量
+#     padded_image = cv_image
+#     if original_ratio > target_ratio:
+#         # 需要添加垂直填充
+#         target_height = int(original_width / target_ratio)
+#         # top = int((target_height - original_height) / 2)
+#         # bottom = target_height - original_height - top
+#         # padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_REPLICATE)
+#         padded_image = cv2.copyMakeBorder(cv_image, int(target_height - original_height), 0, 0, 0, cv2.BORDER_REPLICATE)
+#     else:
+#         if original_width <= original_height:
+#             # 需要添加水平填充
+#             target_width = int(original_height * target_ratio)
+#             left = int((target_width - original_width) / 2)
+#             right = target_width - original_width - left
+#             padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, right, cv2.BORDER_REPLICATE)
+#
+#     # 压缩图像质量
+#     encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
+#     _, jpeg_data = cv2.imencode('.jpg', padded_image, encode_param)
+#
+#     # 将压缩后的图像转换为PIL图像
+#     pil_image = Image.open(io.BytesIO(jpeg_data)).convert('RGBA')
+#
+#     return pil_image
 
-    # 获取原始图像的尺寸
-    original_height, original_width = cv_image.shape[:2]
 
-    # 计算原始图像的长宽比
-    original_ratio = original_width / original_height
-
-    # 计算应该添加的填充量
-    padded_image = cv_image
-    if original_ratio > target_ratio:
-        # 需要添加垂直填充
-        target_height = int(original_width / target_ratio)
-        # top = int((target_height - original_height) / 2)
-        # bottom = target_height - original_height - top
-        # padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_REPLICATE)
-        padded_image = cv2.copyMakeBorder(cv_image, int(target_height - original_height), 0, 0, 0, cv2.BORDER_REPLICATE)
-    else:
-        if original_width <= original_height:
-            # 需要添加水平填充
-            target_width = int(original_height * target_ratio)
-            left = int((target_width - original_width) / 2)
-            right = target_width - original_width - left
-            padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, right, cv2.BORDER_REPLICATE)
-
-    # 压缩图像质量
-    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
-    _, jpeg_data = cv2.imencode('.jpg', padded_image, encode_param)
-
-    # 将压缩后的图像转换为PIL图像
-    pil_image = Image.open(io.BytesIO(jpeg_data)).convert('RGBA')
-
-    return pil_image
-
-
-def configure_image(image, person_pos, target_ratio=0.5, quality=90):
+def configure_image(image, person_pos, target_ratio=0.5, quality=90, padding=8):
     person_pos = [int(x) for x in person_pos]
     # 将PIL RGBA图像转换为BGR图像
     cv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGBA2BGRA)
@@ -166,7 +168,7 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=90):
         else:
             top = int((target_height - original_height) / 2)
             bottom = target_height - original_height - top
-            padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_REPLICATE)
+            padded_image = cv2.copyMakeBorder(cv_image[padding:original_height-padding, :], top+padding, bottom+padding, 0, 0, cv2.BORDER_REPLICATE)
             padded_image = padded_image[:, person_pos[0]:person_pos[2]]
     else:
         # 需要添加水平box
@@ -184,7 +186,7 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=90):
         else:
             left = int((target_width - original_width) / 2)
             right = target_width - original_width - left
-            padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, right, cv2.BORDER_REPLICATE)
+            padded_image = cv2.copyMakeBorder(cv_image[:, padding:original_width-padding], 0, 0, left+padding, right+padding, cv2.BORDER_REPLICATE)
             padded_image = padded_image[person_pos[1]:person_pos[3], :]
 
     # 压缩图像质量
@@ -197,40 +199,29 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=90):
     return pil_image
 
 
-def padding_rgba_image_pil_to_cv(original_image, pl, pr, pt, pb):
+def padding_rgba_image_pil_to_cv(original_image, pl, pr, pt, pb, person_box, padding=8):
     original_width, original_height = original_image.size
-    #
-    #     # 计算原始图像的长宽比
-    #     original_ratio = original_width / original_height
-    #
-    #     # 计算应该添加的填充量
-    #     if original_ratio > target_ratio:
-    #         # 需要添加垂直填充
-    #         target_height = original_width / target_ratio
-    #         pad_height = int((target_height - original_height) / 2)
-    #         pad_width = 0
-    #     else:
-    #         # 需要添加水平填充
-    #         target_width = original_height * target_ratio
-    #         pad_width = int((target_width - original_width) / 2)
-    #         pad_height = 0
-    #
-    #     # 获取原图的边缘颜色
     edge_color = original_image.getpixel((0, 0))
-    #
-    #     # 创建新的空白图像并粘贴原始图像
-    padded_image = Image.new('RGBA', (original_width + pl + pr, original_height + pt + pb), edge_color)
-    padded_image.paste(original_image, (pl, pt), mask=original_image)
-    #
-    #     # 压缩图像质量并返回图像数据
-    #     output_buffer = BytesIO()
-    #     padded_image.save(output_buffer, format='PNG', quality=quality)
-    #     output_buffer.seek(0)
-    #
-    #     # 使用 PIL 的 Image.open() 函数加载图像数据
-    #     compressed_image = Image.open(output_buffer)
-    #
-    #     # 返回填充和压缩后的图像
+    # padded_image = Image.new('RGBA', (original_width + pl + pr, original_height + pt + pb), edge_color)
+    # padded_image.paste(original_image, (pl, pt), mask=original_image)
+
+    cv_image = cv2.cvtColor(np.array(original_image), cv2.COLOR_RGBA2BGRA)
+    h, w, _ = cv_image.shape
+
+    padded_image = cv2.copyMakeBorder(cv_image[padding:h-padding, padding:w-padding],
+                                      pt+padding if person_box[1] > 8 else 0,
+                                      pb+padding if 8 <= original_height - person_box[3] else 0,
+                                      pl+padding if person_box[0] > 8 else 0,
+                                      pr+padding if 8 <= original_width - person_box[2] else 0,
+                                      cv2.BORDER_REPLICATE)
+    padded_image = cv2.copyMakeBorder(padded_image,
+                                      pt+padding if person_box[1] <= 8 else 0,
+                                      pb+padding if 8 > original_height - person_box[3] else 0,
+                                      pl+padding if person_box[0] <= 8 else 0,
+                                      pr+padding if 8 > original_width - person_box[2] else 0,
+                                      cv2.BORDER_CONSTANT,
+                                      value=edge_color)
+    padded_image = cv2.cvtColor(np.array(padded_image), cv2.COLOR_BGRA2RGBA)
     return padded_image
 
 
@@ -253,9 +244,9 @@ def create_ui():
           modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx], \
           modules.scripts.scripts_img2img.alwayson_scripts[adetail_idx]
 
-    # sam 20 args
+    # sam 24 args
     modules.scripts.scripts_img2img.alwayson_scripts[0].args_from = 7
-    modules.scripts.scripts_img2img.alwayson_scripts[0].args_to = 27
+    modules.scripts.scripts_img2img.alwayson_scripts[0].args_to = 31
 
     # controlnet 3 args
     modules.scripts.scripts_img2img.alwayson_scripts[1].args_from = 4
@@ -648,25 +639,28 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
 
     output_height = 1024
     output_width = 512
-
-    _sam_model_name = sam_model_list[0]
-    _dino_model_name = dino_model_list[1]
+    _dino_model_name = "GroundingDINO_SwinB (938MB)"
+    _sam_model_name = 'samhq_vit_h_1b3123.pth'
     # _input_part_prompt = [['upper cloth'], ['pants', 'skirts'], ['shoes']]
     # _dino_text_prompt = ' . '.join([y for x in _cloth_part for y in _input_part_prompt[x]])
     # _dino_text_prompt = 'dress'
-    _dino_text_prompt = 'clothing . pants . shorts . t-shirt . dress'
+    _dino_clothing_text_prompt = 'clothing . pants . shorts . dress . shirts . skirt . underwear . bra . swimsuits . bikini . stocking . chain . bow'
     _box_threshold = 0.3
 
     if _input_image is None:
         return None, None
     else:
-        _input_image.save(f'tmp/origin_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', format='PNG')
+        origin_image_path = f'tmp/origin_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png'
+        _input_image.save(origin_image_path, format='PNG')
 
+        if predict_image(origin_image_path):
+            raise gr.Error("The input image is NSFW!!!")
         try:
             # real people
             if _model_mode == 0:
                 person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "person",
                                                         _box_threshold)
+                _input_image = padding_rgba_image_pil_to_cv(_input_image, 9, 9, 9, 9, person_boxes[0])
                 _input_image = configure_image(_input_image, person_boxes[0], target_ratio=output_width / output_height)
                 # _input_image = configure_image(_input_image, person_boxes[0], target_ratio=output_width / output_height)
                 pass
@@ -674,45 +668,52 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
             # artificial model
             else:
                 _input_image_width, _input_image_height = _input_image.size
-                person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "clothing", _box_threshold)
-                person0_box = [int(x) for x in person_boxes[0]]
+                person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, _dino_clothing_text_prompt, _box_threshold)
+
+                # get max area clothing box
+                x_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 0 or i ==2]
+                y_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 1 or i ==3]
+                person0_box = [min(x_list), min(y_list), max(x_list), max(y_list)]
+
                 person0_width = person0_box[2] - person0_box[0]
                 person0_height = person0_box[3] - person0_box[1]
-                constant_bottom = 30
-                constant_top = 15
-                factor_bottom = 7
+                constant_bottom = 40
+                constant_top = 30
+                factor_bottom = 5
                 factor_top = 4
                 left_ratio = 0.1
                 right_ratio = 0.1
                 # top_ratio = 0.32
-                top_ratio = min(0.32, math.pow(person0_width / person0_height, factor_top) * constant_top)
-                bottom_ratio = min(0.54, math.pow(person0_width / person0_height, factor_bottom) * constant_bottom)
+                top_ratio = min(0.35, math.pow(person0_width / person0_height, factor_top) * constant_top)
+                bottom_ratio = min(0.58, math.pow(person0_width / person0_height, factor_bottom) * constant_bottom)
                 print(f"bottom_ratio: {bottom_ratio}")
                 print(f"top_ratio: {top_ratio}")
                 print(f"boxes: {person_boxes}")
                 print(f"width: {person0_width}")
                 print(f"height: {person0_height}")
-                print(f"increase: {person0_height * bottom_ratio}")
+                print(f"top increase: {person0_height * top_ratio}")
+                print(f"bottom increase: {person0_height * bottom_ratio}")
 
                 padding_left = int(person0_width * left_ratio - int(person0_box[0])) if (int(person0_box[0]) / person0_width) < left_ratio else 0
                 padding_right = int(person0_width * right_ratio - (_input_image_width - int(person0_box[2]))) if ((_input_image_width - int(person0_box[2])) / person0_width) < right_ratio else 0
                 padding_top = int(person0_height * top_ratio - int(person0_box[1])) if (int(person0_box[1]) / person0_height) < top_ratio else 0
                 padding_bottom = int(person0_height * bottom_ratio - (_input_image_height - int(person0_box[3]))) if ((_input_image_height - int(person0_box[3])) / person0_height) < bottom_ratio else 0
 
-                _input_image = padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right, padding_top, padding_bottom)
+                _input_image = padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right, padding_top, padding_bottom, person0_box)
                 # _input_image = configure_image(_input_image, [0, 0, padding_left + _input_image_width + padding_right,
                 #                                               padding_top + _input_image_height + padding_bottom],
                 #                                target_ratio=output_width / output_height)
                 _input_image = configure_image(_input_image,
                                                [0 if padding_left > 0 else person0_box[0] - int(person0_width * left_ratio),
                                                 0 if padding_top > 0 else person0_box[1] - int(person0_height * top_ratio),
-                                                padding_left + _input_image_width + padding_right if padding_right > 0 else padding_left+person0_box[2] + int(person0_width * right_ratio),
-                                                padding_top + _input_image_height + padding_bottom if padding_bottom > 0 else padding_top+person0_box[3] + int(person0_height * bottom_ratio)],
+                                                padding_left + _input_image_width + padding_right - 1 if padding_right > 0 else padding_left + person0_box[2] + int(person0_width * right_ratio),
+                                                padding_top + _input_image_height + padding_bottom - 1 if padding_bottom > 0 else padding_top + person0_box[3] + int(person0_height * bottom_ratio)],
                                                target_ratio=output_width / output_height)
 
         except Exception:
             print(traceback.format_exc())
             print('preprocess img error')
+            raise gr.Error("preprocess img error")
 
         if cmd_opts.debug_mode:
             _input_image.save(f'tmp/resized_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
@@ -720,7 +721,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
 
     sam_result_tmp_png_fp = []
 
-    sam_result_gallery, sam_result = sam_predict(_dino_model_name, _dino_text_prompt,
+    sam_result_gallery, sam_result = sam_predict(_dino_model_name, _dino_clothing_text_prompt,
                                                  _box_threshold,
                                                  _input_image)
 
@@ -748,7 +749,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     mask_blur = 4
     mask_alpha = 0
     inpainting_fill = 1
-    restore_faces = True
+    restore_faces = False
     tiling = False
     n_iter = 1
     batch_size = _batch_size
@@ -853,22 +854,38 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                 False, None, None, False, 50
                 ]
 
-    res = modules.img2img.img2img(task_id, 4, sd_positive_prompt, sd_negative_prompt, prompt_styles, init_img,
-                                  sketch,
-                                  init_img_with_mask, inpaint_color_sketch, inpaint_color_sketch_orig,
-                                  init_img_inpaint, init_mask_inpaint,
-                                  steps, sampler_index, mask_blur, mask_alpha, inpainting_fill, restore_faces,
-                                  tiling,
-                                  n_iter, batch_size, cfg_scale, image_cfg_scale, denoising_strength, seed,
-                                  subseed,
-                                  subseed_strength, seed_resize_from_h, seed_resize_from_w, seed_enable_extras,
-                                  selected_scale_tab, height, width, scale_by, resize_mode, inpaint_full_res,
-                                  inpaint_full_res_padding, inpainting_mask_invert, img2img_batch_input_dir,
-                                  img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
-                                  override_settings_texts,
-                                  *sam_args)
+    try:
+        ok_img_count = 0
+        fuck_img_count = 0
+        ok_res = []
+        while ok_img_count < batch_size:
+            res = modules.img2img.img2img(task_id, 4, sd_positive_prompt, sd_negative_prompt, prompt_styles, init_img,
+                                          sketch,
+                                          init_img_with_mask, inpaint_color_sketch, inpaint_color_sketch_orig,
+                                          init_img_inpaint, init_mask_inpaint,
+                                          steps, sampler_index, mask_blur, mask_alpha, inpainting_fill, restore_faces,
+                                          tiling,
+                                          n_iter, batch_size, cfg_scale, image_cfg_scale, denoising_strength, seed,
+                                          subseed,
+                                          subseed_strength, seed_resize_from_h, seed_resize_from_w, seed_enable_extras,
+                                          selected_scale_tab, height, width, scale_by, resize_mode, inpaint_full_res,
+                                          inpaint_full_res_padding, inpainting_mask_invert, img2img_batch_input_dir,
+                                          img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
+                                          override_settings_texts,
+                                          *sam_args)
+            for res_img in res[0]:
+                if getattr(res_img, 'already_saved_as', False):
+                    if predict_image(res_img.already_saved_as):
+                        fuck_img_count += 1
+                        if fuck_img_count > 10:
+                            raise gr.Error("fatal error")
+                    else:
+                        ok_img_count += 1
+                        ok_res.append(res_img)
+    except Exception:
+        raise gr.Error("found no cloth")
 
-    return res[0], res[0], gr.Radio.update(choices=[str(x) for x in range(1 if len(res[0]) == 1 else len(res[0])-1)], value=0), gr.Button.update(
+    return ok_res, ok_res, gr.Radio.update(choices=[str(x) for x in range(1 if len(res[0]) == 1 else len(res[0])-1)], value=0), gr.Button.update(
         interactive=True), 'done.'
 
 

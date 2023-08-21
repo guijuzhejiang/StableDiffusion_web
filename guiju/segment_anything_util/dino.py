@@ -4,12 +4,17 @@
 import copy
 import gc
 import os
+import traceback
 from collections import OrderedDict
+from importlib import import_module
 
 import cv2
 import torch
+import groundingdino.datasets.transforms as T
 
+from lib.common.common_util import logging
 from modules.devices import torch_gc, device
+from utils.global_vars import CONFIG
 
 dino_install_issue_text = "submit an issue to https://github.com/IDEA-Research/Grounded-Segment-Anything/issues."
 dino_model_cache = OrderedDict()
@@ -47,15 +52,24 @@ def install_goundingdino():
 
 
 def load_dino_image(image_pil):
-    import groundingdino.datasets.transforms as T
-    transform = T.Compose(
-        [
-            T.RandomResize([800], max_size=1333),
-            T.ToTensor(),
-            T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-        ]
-    )
-    image, _ = transform(image_pil, None)  # 3, h, w
+    print("load_dino_image")
+    # T = import_module("groundingdino.datasets.transforms")
+    try:
+        transform = T.Compose(
+            [
+                T.RandomResize([800], max_size=1333),
+                T.ToTensor(),
+                T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+            ]
+        )
+        print('asdasdasdddddddddddddd')
+        image, _ = transform(image_pil, None)  # 3, h, w
+        print("load_dino_image done.")
+    except Exception:
+        print(traceback.format_exc())
+        logging(
+            f"{__file__} fatal error: {traceback.format_exc()}",
+            f"logs/error.log", print_msg=CONFIG['debug_mode'])
     return image
 
 

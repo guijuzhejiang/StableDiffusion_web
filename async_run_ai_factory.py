@@ -1,16 +1,36 @@
 import time
 import traceback
 
+import ujson
+
 from lib.celery_workshop.util import load_workshops
 from lib.common.common_util import logging
+from lib.redis_mq import SyncRedisMQ
 from utils.global_vars import CONFIG
 
 if __name__ == '__main__':
     try:
-        # 从operators加载服务对像并开启进程和celery worker
-        for workshop in load_workshops():
-            # init workers && load models
-            workshop.register()
+        if CONFIG['debug_mode']:
+            redis_mq = SyncRedisMQ(CONFIG['redis']['host'], CONFIG['redis']['port'], CONFIG['redis']['redis_mq'])
+            workers = {}
+            for workshop in load_workshops():
+                if workshop.op.enable:
+                    workers[workshop.op.__name__] = workshop.op()
+
+            for msg_id, msg in redis_mq.consume():
+                # print(msg)
+                logging(
+                    f"{__file__}got msg: {msg}",
+                    f"logs/info.log", print_msg=CONFIG['debug_mode'])
+                res = workers['OperatorSD'](msg['params'])
+                # res = {'success': False, 'result':"fatal error"}
+                redis_mq.pub(msg['reply_queue_name'], {'res': ujson.dumps(res)}, CONFIG['server']['msg_expire_secs'])
+        else:
+            # 从operators加载服务对像并开启进程和celery worker
+            for workshop in load_workshops():
+                if workshop.op.enable:
+                    # init workers && load models
+                    workshop.register()
 
         while True:
             time.sleep(5)

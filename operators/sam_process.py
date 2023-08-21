@@ -25,6 +25,7 @@ class OperatorSAM(Operator):
     num = 2
     cache = True
     cuda = True
+    enable = False
 
     def __init__(self):
         Operator.__init__(self)
@@ -67,7 +68,7 @@ class OperatorSAM(Operator):
         torch.load = load
         return sam
 
-    def operation(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         sam_result_gallery = None
         try:
             sam_result_gallery, _ = sam_predict(self._dino_model_name, self._dino_text_prompt, self._box_threshold,

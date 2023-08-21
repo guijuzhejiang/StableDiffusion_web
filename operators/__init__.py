@@ -7,5 +7,5 @@
 '''
 
 # import lib
-from operators.sam_process import OperatorSAM
+from operators.sd_webui import OperatorSD
 

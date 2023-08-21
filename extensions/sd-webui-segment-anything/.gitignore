@@ -1,0 +1,4 @@
+models/*/*.pth
+scripts/__pycache__
+GroundingDINO
+annotator

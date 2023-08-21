@@ -24,6 +24,8 @@ class WorkShop(object):
     # 指定独立存在的子进程，处理业务的进程，存储加载后的模型
     @staticmethod
     def instance_worker_proc(index, op_name, is_cuda):
+        print("index, op_name, is_cuda")
+        print(index, op_name, is_cuda)
         import traceback
         from importlib import import_module
         from celery import Task, Celery
@@ -39,12 +41,12 @@ class WorkShop(object):
 
                 class ProceedTask(Task):
                     # load model
-                    operator = getattr(module, op_name)()
+                    operator = getattr(module, op_name)(index)
                     # task 命名
                     name = f"{celery_app_name}.ProceedTask"
 
                     def run(self, *args, **kwargs):
-                        res = self.operator.operation(*args, **kwargs)
+                        res = self.operator(*args, **kwargs)
                         return res
 
                 task = app.register_task(ProceedTask)
@@ -64,15 +66,15 @@ class WorkShop(object):
         pass
 
     # 客户端异步调用发布任务，订阅任务结果
-    async def __call__(self):
+    def __call__(self, *args, **kwargs):
         # 获取显存占用最小的显卡idx
         cuda_device_idx = GPUtil.getAvailable(order='memory', limit=1)[0] if self.op.cuda and len(GPUtil.getGPUs()) > 1 else 0
 
         celery_app_name = self.get_celery_app_name(cuda_device_idx, self.op.__name__, self.op.cuda)
         app = Celery(celery_app_name, broker='amqp://localhost:5672', backend='redis://localhost:6379/0')
         target_task_name = f'{celery_app_name}.ProceedTask'
-        task_result = await app.send_task(target_task_name, args=[1, 4])
-        return task_result.result
+        task_result = app.send_task(target_task_name, args=args, kwargs=kwargs)
+        return task_result
 
     # 服务端建立celery生产者进程
     def register(self):
@@ -84,7 +86,7 @@ class WorkShop(object):
                                     })
                 # self.instance_worker_proc(*args.values())
                 self.proc = NoDaemonProcess(target=self.instance_worker_proc,
-                                            args=tuple(i for i in args.values())).start()
+                                                  args=tuple(i for i in args.values())).start()
 
         else:
             args = OrderedDict({'op_name': self.op.__name__,

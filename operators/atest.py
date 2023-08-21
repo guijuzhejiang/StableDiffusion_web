@@ -13,7 +13,7 @@
 import datetime
 import traceback
 
-from lib.common.common_util import logging, point_distance_line, get_vertical_line, cross_point
+from lib.common.common_util import logging
 from lib.celery_workshop.operator import Operator
 from utils.global_vars import CONFIG
 
@@ -22,6 +22,7 @@ class OperatorOCR(Operator):
     num = 1
     cache = True
     cuda = True
+    enable = False
 
     def __init__(self):
         Operator.__init__(self)
@@ -31,7 +32,7 @@ class OperatorOCR(Operator):
         print('init')
 
 
-    def operation(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         try:
             print('operation')
         except Exception:

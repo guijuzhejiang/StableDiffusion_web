@@ -16,9 +16,9 @@ from utils.global_vars import CONFIG
 
 
 class RedisMQ:
-    task_queue_name = f'{CONFIG["ocr"]["lang"]}_ocr_tq'
-    group_name = f'{CONFIG["ocr"]["lang"]}_ocr_consumer_group'
-    consumer_name = f'{CONFIG["ocr"]["lang"]}_ocr_consumer'
+    task_queue_name = f'debug_tq'
+    group_name = f'debug_consumer_group'
+    consumer_name = f'debug_consumer'
     host = 'localhost'
     port = 6379
     db = 11
@@ -40,7 +40,7 @@ class RedisMQ:
     async def close(self):
         await self.redis_session.close()
 
-    async def rpc_call(self, call_queue_name=None, reply_queue_name='reply_task', **kwargs):
+    async def rpc_call(self, call_queue_name=None, *args):
         if call_queue_name is None:
             call_queue_name = self.task_queue_name
 
@@ -51,7 +51,7 @@ class RedisMQ:
         try:
             # lock_id = await self.acquire_lock('mq_locker')
 
-            task_id = await self.redis_session.xadd(call_queue_name, {'json_msg': json.dumps(kwargs),
+            task_id = await self.redis_session.xadd(call_queue_name, {'params': args[0],
                                                                       'reply_queue_name': reply_queue_name})
 
             # await self.release_lock('mq_locker', lock_id)
@@ -78,7 +78,7 @@ class RedisMQ:
         if not res:
             return {'error': 'redis mq fatal error'}
         else:
-            return json.loads(res[0][1][0][1]['json_msg'])
+            return json.loads(res[0][1][0][1]['res'])
 
     async def pub(self, queue_name, msg):
         try:
@@ -165,14 +165,14 @@ class RedisMQ:
 
 
 class SyncRedisMQ:
-    task_queue_name = f'task_q'
-    group_name = f'{CONFIG["ocr"]["lang"]}_ocr_consumer_group'
-    consumer_name = f'{CONFIG["ocr"]["lang"]}_ocr_consumer'
+    task_queue_name = f'debug_tq'
+    group_name = f'debug_consumer_group'
+    consumer_name = f'debug_consumer'
     host = 'localhost'
     port = 6379
     db = 11
 
-    def __init__(self, host='localhost', port=6379, db=11, task_queue_name='task_q'):
+    def __init__(self, host='localhost', port=6379, db=11, task_queue_name='debug_tq'):
         self.host = host
         self.port = port
         self.db = db

@@ -1,3 +1,0 @@
-snap install core; sudo snap refresh core
-sudo snap install --classic certbot
-certbot certonly --nginx -m uubs@yeah.net -d retriever-ocr.co.jp --text --agree-tos
