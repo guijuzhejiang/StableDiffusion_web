@@ -166,10 +166,11 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=90, padding=8):
                 padded_image = cv_image[person_pos[1] - top:person_pos[3] + bottom, person_pos[0]:person_pos[2]]
 
         else:
-            top = int((target_height - original_height) / 2)
-            bottom = target_height - original_height - top
-            padded_image = cv2.copyMakeBorder(cv_image[padding:original_height-padding, :], top+padding, bottom+padding, 0, 0, cv2.BORDER_REPLICATE)
-            padded_image = padded_image[:, person_pos[0]:person_pos[2]]
+            # top = int((target_height - original_height) / 2)
+            # bottom = target_height - original_height - top
+            # padded_image = cv2.copyMakeBorder(cv_image[padding:original_height-padding, :], top+padding, bottom+padding, 0, 0, cv2.BORDER_REPLICATE)
+            # padded_image = padded_image[:, person_pos[0]:person_pos[2]]
+            padded_image = cv_image
     else:
         # 需要添加水平box
         target_width = int(person_height * target_ratio)
@@ -184,24 +185,19 @@ def configure_image(image, person_pos, target_ratio=0.5, quality=90, padding=8):
             else:
                 padded_image = cv_image[person_pos[1]:person_pos[3], person_pos[0] - left:person_pos[2] + right]
         else:
-            left = int((target_width - original_width) / 2)
-            right = target_width - original_width - left
-            padded_image = cv2.copyMakeBorder(cv_image[:, padding:original_width-padding], 0, 0, left+padding, right+padding, cv2.BORDER_REPLICATE)
-            padded_image = padded_image[person_pos[1]:person_pos[3], :]
+            # left = int((target_width - original_width) / 2)
+            # right = target_width - original_width - left
+            # padded_image = cv2.copyMakeBorder(cv_image[:, padding:original_width-padding], 0, 0, left+padding, right+padding, cv2.BORDER_REPLICATE)
+            # padded_image = padded_image[person_pos[1]:person_pos[3], :]
+            padded_image = cv_image
 
-    # 压缩图像质量
-    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
-    _, jpeg_data = cv2.imencode('.jpg', padded_image, encode_param)
-
-    # 将压缩后的图像转换为PIL图像
-    pil_image = Image.open(io.BytesIO(jpeg_data)).convert('RGBA')
-
-    return pil_image
+    padded_image = cv2.cvtColor(np.array(padded_image), cv2.COLOR_BGRA2RGBA)
+    return padded_image
 
 
 def padding_rgba_image_pil_to_cv(original_image, pl, pr, pt, pb, person_box, padding=8):
     original_width, original_height = original_image.size
-    edge_color = original_image.getpixel((0, 0))
+    edge_color = original_image.getpixel((padding, padding))
     # padded_image = Image.new('RGBA', (original_width + pl + pr, original_height + pt + pb), edge_color)
     # padded_image.paste(original_image, (pl, pt), mask=original_image)
 
@@ -219,10 +215,20 @@ def padding_rgba_image_pil_to_cv(original_image, pl, pr, pt, pb, person_box, pad
                                       pb+padding if 8 > original_height - person_box[3] else 0,
                                       pl+padding if person_box[0] <= 8 else 0,
                                       pr+padding if 8 > original_width - person_box[2] else 0,
-                                      cv2.BORDER_CONSTANT,
-                                      value=edge_color)
+                                      cv2.BORDER_REPLICATE,
+                                      # value=edge_color
+                                      )
     padded_image = cv2.cvtColor(np.array(padded_image), cv2.COLOR_BGRA2RGBA)
     return padded_image
+
+
+def crop_image(original_image, person_box):
+    person_box = [int(x) for x in person_box]
+    original_width, original_height = original_image.size
+    cv_image = cv2.cvtColor(np.array(original_image), cv2.COLOR_RGBA2BGRA)
+    crop_image = cv_image[person_box[1]:person_box[3], person_box[0]:person_box[2]]
+    crop_image = cv2.cvtColor(np.array(crop_image), cv2.COLOR_BGRA2RGBA)
+    return crop_image
 
 
 def create_ui():
@@ -644,7 +650,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     # _input_part_prompt = [['upper cloth'], ['pants', 'skirts'], ['shoes']]
     # _dino_text_prompt = ' . '.join([y for x in _cloth_part for y in _input_part_prompt[x]])
     # _dino_text_prompt = 'dress'
-    _dino_clothing_text_prompt = 'clothing . pants . shorts . dress . shirts . skirt . underwear . bra . swimsuits . bikini . stocking . chain . bow'
+    _dino_clothing_text_prompt = 'clothing . pants . shorts . dress . shirts . skirt . underwear . bra . swimsuits . bikini . stocking . chain . bow' if _model_mode == 1 else 'clothing . pants . shorts'
     _box_threshold = 0.3
 
     if _input_image is None:
@@ -656,18 +662,20 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
         if predict_image(origin_image_path):
             raise gr.Error("The input image is NSFW!!!")
         try:
+            _input_image_width, _input_image_height = _input_image.size
+
+            # 得到的box宽长比小于0.5则resize到2/3，其余保持原本长宽比， 得到的缩放比例后左右不padding
             # real people
             if _model_mode == 0:
                 person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, "person",
                                                         _box_threshold)
-                _input_image = padding_rgba_image_pil_to_cv(_input_image, 9, 9, 9, 9, person_boxes[0])
-                _input_image = configure_image(_input_image, person_boxes[0], target_ratio=output_width / output_height)
-                # _input_image = configure_image(_input_image, person_boxes[0], target_ratio=output_width / output_height)
-                pass
+                person0_box = [int(x) for x in person_boxes[0]]
+                person0_width = person0_box[2] - person0_box[0]
+                person0_height = person0_box[3] - person0_box[1]
+                _input_image = configure_image(_input_image, person_boxes[0], target_ratio=2/3 if (person0_width / person0_height) < 0.5 else person0_width / person0_height)
 
             # artificial model
             else:
-                _input_image_width, _input_image_height = _input_image.size
                 person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name, _dino_clothing_text_prompt, _box_threshold)
 
                 # get max area clothing box
@@ -694,26 +702,48 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
                 print(f"top increase: {person0_height * top_ratio}")
                 print(f"bottom increase: {person0_height * bottom_ratio}")
 
-                padding_left = int(person0_width * left_ratio - int(person0_box[0])) if (int(person0_box[0]) / person0_width) < left_ratio else 0
-                padding_right = int(person0_width * right_ratio - (_input_image_width - int(person0_box[2]))) if ((_input_image_width - int(person0_box[2])) / person0_width) < right_ratio else 0
+                # padding_left = int(person0_width * left_ratio - int(person0_box[0])) if (int(person0_box[0]) / person0_width) < left_ratio else 0
+                # padding_right = int(person0_width * right_ratio - (_input_image_width - int(person0_box[2]))) if ((_input_image_width - int(person0_box[2])) / person0_width) < right_ratio else 0
+                padding_left = 0
+                padding_right = 0
                 padding_top = int(person0_height * top_ratio - int(person0_box[1])) if (int(person0_box[1]) / person0_height) < top_ratio else 0
                 padding_bottom = int(person0_height * bottom_ratio - (_input_image_height - int(person0_box[3]))) if ((_input_image_height - int(person0_box[3])) / person0_height) < bottom_ratio else 0
+
+                new_person0_box = []
 
                 _input_image = padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right, padding_top, padding_bottom, person0_box)
                 # _input_image = configure_image(_input_image, [0, 0, padding_left + _input_image_width + padding_right,
                 #                                               padding_top + _input_image_height + padding_bottom],
                 #                                target_ratio=output_width / output_height)
                 _input_image = configure_image(_input_image,
-                                               [0 if padding_left > 0 else person0_box[0] - int(person0_width * left_ratio),
-                                                0 if padding_top > 0 else person0_box[1] - int(person0_height * top_ratio),
-                                                padding_left + _input_image_width + padding_right - 1 if padding_right > 0 else padding_left + person0_box[2] + int(person0_width * right_ratio),
-                                                padding_top + _input_image_height + padding_bottom - 1 if padding_bottom > 0 else padding_top + person0_box[3] + int(person0_height * bottom_ratio)],
-                                               target_ratio=output_width / output_height)
+                                               [0 if (int(person0_box[0]) / person0_width) < left_ratio else person0_box[0] - int(person0_width * left_ratio),
+                                                padding_top if padding_top > 0 else person0_box[1] - int(person0_height * top_ratio),
+                                                _input_image_width if ((_input_image_width - int(person0_box[2])) / person0_width) < right_ratio else padding_left + person0_box[2] + int(person0_width * right_ratio),
+                                                _input_image_height + padding_bottom + padding_top if padding_bottom > 0 else padding_top + person0_box[3] + int(person0_height * bottom_ratio)],
+                                               target_ratio=2/3 if (person0_width / person0_height) < 0.5 else person0_width / person0_height)
 
         except Exception:
             print(traceback.format_exc())
             print('preprocess img error')
             raise gr.Error("preprocess img error")
+        else:
+            # limit height 768
+            check_h, check_w, _ = _input_image.shape
+            if check_h % 2 != 0:
+                check_h -= 1
+            if check_h > 768:
+                tmp_w = int(768 * check_w / check_h)
+                if tmp_w % 2 != 0:
+                    tmp_w -= 1
+                _input_image = cv2.resize(_input_image, (tmp_w, 768))
+            # 压缩图像质量
+            quality = 100
+            encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
+            _, jpeg_data = cv2.imencode('.png', cv2.cvtColor(np.array(_input_image), cv2.COLOR_RGBA2BGRA), encode_param)
+
+            # 将压缩后的图像转换为PIL图像
+            _input_image = Image.open(io.BytesIO(jpeg_data)).convert('RGBA')
+            output_width, output_height = tuple(int(x) for x in _input_image.size)
 
         if cmd_opts.debug_mode:
             _input_image.save(f'tmp/resized_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
