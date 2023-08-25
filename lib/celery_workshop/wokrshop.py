@@ -36,6 +36,8 @@ class WorkShop(object):
         from utils.global_vars import CONFIG
 
         celery_app_name = WorkShop.get_celery_app_name(index, op_name, is_cuda)
+        print("celery_app_name!!!!!!!!!!!!!!!!!!")
+        print(celery_app_name)
         while True:
             try:
                 app = Celery(celery_app_name, broker='amqp://localhost:5672', backend='redis://localhost:6379/0')
@@ -72,7 +74,7 @@ class WorkShop(object):
     # 客户端异步调用发布任务，订阅任务结果
     def __call__(self, celery_app=None, *args, **kwargs):
         # 获取显存占用最小的显卡idx
-        cuda_device_idx = GPUtil.getAvailable(order='memory', limit=1)[0] if self.op.cuda and len(GPUtil.getGPUs()) > 1 else 0
+        cuda_device_idx = GPUtil.getAvailable(order='memory', limit=1)[0] if self.op.cuda and len(GPUtil.getGPUs()) > 1 and self.op.num > 1 else 0
 
         celery_app_name = self.get_celery_app_name(cuda_device_idx, self.op.__name__, self.op.cuda)
         if celery_app is None:

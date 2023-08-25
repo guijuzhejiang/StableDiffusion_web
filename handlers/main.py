@@ -46,6 +46,10 @@ class SDGenertae(HTTPMethodView):
             account = request.app.ctx.supabase_client.table("account").select("*").eq("id", user_id).execute().data[0]
             if cost_points <= account['balance']:
                 task_result = sd_workshop(**request.form)
+                while not task_result.ready():
+                    await asyncio.sleep(1)
+                    print('wait')
+                task_result = task_result.result
                 if task_result['success']:
                     data = request.app.ctx.supabase_client.table("transaction").insert({"user_id": user_id,
                                                                                         'amount': cost_points,
@@ -56,10 +60,6 @@ class SDGenertae(HTTPMethodView):
                         {"balance": account['balance']-cost_points}).eq("id", user_id).execute().data
             else:
                 task_result = {'success': False, 'result': "余额不足"}
-            while not task_result.ready():
-                await asyncio.sleep(1)
-                print('wait')
-            task_result = task_result.result
 
         return sanic_json(task_result)
 

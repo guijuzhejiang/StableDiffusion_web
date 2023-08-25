@@ -47,6 +47,7 @@ class OperatorSD(Operator):
         from modules import extra_networks
         os.environ['ACCELERATE'] = 'True'
         os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_idx)
+        print("use gpu:" + str(gpu_idx))
 
         cmd_opts.gradio_debug = True
         cmd_opts.listen = True
