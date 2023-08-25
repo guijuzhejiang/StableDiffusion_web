@@ -1,11 +1,13 @@
+import logging
 import os
 
 from sanic import Blueprint
 from sanic import Sanic
 from sanic_cors import CORS
+from wechatpayv3 import WeChatPay, WeChatPayType
 
-from handlers.main import SDGenertae, SDHires
-from lib.redis_mq import RedisMQ
+from handlers.main import SDGenertae, SDHires, Pay, Query
+from supabase import create_client
 from utils.global_vars import CONFIG
 
 # Blueprint
@@ -13,9 +15,11 @@ bp = Blueprint("ai_tasks")
 # add_route
 bp.add_route(SDGenertae.as_view(), "/sd/generate")
 bp.add_route(SDHires.as_view(), "/sd/hires")
+bp.add_route(Pay.as_view(), "/wechat/pay")
+bp.add_route(Query.as_view(), "/wechat/query")
 
 # CORS settings
-cors = CORS(bp, resources={r"/sd/*": {"origins": "*", "headers": "*"}})
+cors = CORS(bp, resources={r"/sd/*": {"origins": "*", "headers": "*"}, r"/wechat/*": {"origins": "*", "headers": "*"}})
 
 # setup sanic app
 app = Sanic(__name__)
@@ -28,11 +32,31 @@ async def close_redis(sanic_app, loop):
     #     await sanic_app.ctx.redis_mq.close()
 
 
-@app.listener("main_process_start")
+@app.listener("before_server_start")
 async def main_process_start(sanic_app, loop):
-    print(f"main_process_start {os.path.abspath('.')}")
-    # if CONFIG['debug_mode']:
-    #     sanic_app.ctx.redis_mq = RedisMQ(CONFIG['redis']['host'], CONFIG['redis']['port'], CONFIG['redis']['redis_mq'])
+    print(f"before_server_start {os.path.abspath('.')}")
+    # celery.Celery.control.purge()
+    # await celery.connection.connect()
+
+    logging.basicConfig(filename=os.path.join(os.getcwd(), 'demo.log'), level=logging.DEBUG, filemode='a',
+                        format='%(asctime)s - %(process)s - %(levelname)s: %(message)s')
+
+    with open(CONFIG['wechatpay']['PRIVATE_KEY'], 'r') as f:
+        PRIVATE_KEY = f.read()
+        sanic_app.ctx.wxpay = WeChatPay(
+            wechatpay_type=WeChatPayType.NATIVE,
+            mchid=CONFIG['wechatpay']['MCHID'],
+            private_key=PRIVATE_KEY,
+            cert_serial_no=CONFIG['wechatpay']['CERT_SERIAL_NO'],
+            apiv3_key=CONFIG['wechatpay']['APIV3_KEY'],
+            appid=CONFIG['wechatpay']['APPID'],
+            notify_url=CONFIG['wechatpay']['NOTIFY_URL'],
+            cert_dir=CONFIG['wechatpay']['CERT_DIR'],
+            logger=logging.getLogger("wxpay"),
+            partner_mode=CONFIG['wechatpay']['PARTNER_MODE'],
+            proxy=None)
+        # sanic_app.ctx.wxpay.query()
+    sanic_app.ctx.supabase_client = create_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'])
 
 
 class Config:
