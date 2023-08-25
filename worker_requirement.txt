@@ -44,3 +44,9 @@ timm
 torchdiffeq
 torchsde
 transformers==4.25.1
+clip
+opennsfw2
+tensorflow
+typing_extensions
+gradio==3.31.0
+fastapi==0.94.0
