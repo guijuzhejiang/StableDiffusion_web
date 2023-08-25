@@ -75,7 +75,7 @@ class WorkShop(object):
         cuda_device_idx = GPUtil.getAvailable(order='memory', limit=1)[0] if self.op.cuda and len(GPUtil.getGPUs()) > 1 else 0
 
         celery_app_name = self.get_celery_app_name(cuda_device_idx, self.op.__name__, self.op.cuda)
-        if celery_app is not None:
+        if celery_app is None:
             celery_app = Celery(celery_app_name, broker='amqp://localhost:5672', backend='redis://localhost:6379/0')
         target_task_name = f'{celery_app_name}.ProceedTask'
         task_result = celery_app.send_task(target_task_name, args=args, kwargs=kwargs)
