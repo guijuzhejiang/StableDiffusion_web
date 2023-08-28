@@ -42,6 +42,8 @@ class SDGenertae(HTTPMethodView):
                     cost_points += 1
                 if sum >= 5120:
                     cost_points += 1
+            else:
+                cost_points *= int(int(params['batch_size']))
 
             account = request.app.ctx.supabase_client.table("account").select("*").eq("id", user_id).execute().data[0]
             if cost_points <= account['balance']:

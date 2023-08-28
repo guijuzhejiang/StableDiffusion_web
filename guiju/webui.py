@@ -885,7 +885,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     except Exception:
         raise gr.Error("found no cloth")
 
-    return ok_res, ok_res, gr.Radio.update(choices=[str(x) for x in range(1 if len(res[0]) == 1 else len(res[0])-1)], value=0), gr.Button.update(
+    return ok_res, ok_res, gr.Radio.update(choices=[str(x) for x in range(len(res[0]))], value=0), gr.Button.update(
         interactive=True), 'done.'
 
 

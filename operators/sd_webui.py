@@ -218,7 +218,6 @@ class OperatorSD(Operator):
         padded_image = cv2.cvtColor(np.array(padded_image), cv2.COLOR_BGRA2RGBA)
         return padded_image
 
-
     def get_prompt(self, _gender, _age, _viewpoint, _model_mode=0):
         sd_positive_prompts_dict = OrderedDict({
             'gender': [
@@ -321,9 +320,9 @@ class OperatorSD(Operator):
                 _batch_size = int(params['batch_size'])
                 _input_image = base64_to_pil(params['input_image'])
                 _gender = 0 if params['gender'] == 'female' else 1
-                arge_idxs = {v:i for i, v in enumerate(['child', 'youth', 'middlescent'])}
+                arge_idxs = {v: i for i, v in enumerate(['child', 'youth', 'middlescent'])}
                 _age = arge_idxs[params['age']]
-                viewpoint_mode_idxs = {v:i for i, v in enumerate(['front', 'side', 'back'])}
+                viewpoint_mode_idxs = {v: i for i, v in enumerate(['front', 'side', 'back'])}
                 _viewpoint_mode = viewpoint_mode_idxs[params['viewpoint_mode']]
                 _model_mode = 0 if params['model_mode'] == 'normal' else 1
 
@@ -356,7 +355,7 @@ class OperatorSD(Operator):
                             person0_width = person0_box[2] - person0_box[0]
                             person0_height = person0_box[3] - person0_box[1]
                             _input_image = self.configure_image(_input_image, person_boxes[0], target_ratio=2 / 3 if (
-                                                                                                                            person0_width / person0_height) < 0.5 else person0_width / person0_height)
+                                                                                                                             person0_width / person0_height) < 0.5 else person0_width / person0_height)
 
                         # artificial model
                         else:
@@ -392,17 +391,35 @@ class OperatorSD(Operator):
                             # padding_right = int(person0_width * right_ratio - (_input_image_width - int(person0_box[2]))) if ((_input_image_width - int(person0_box[2])) / person0_width) < right_ratio else 0
                             padding_left = 0
                             padding_right = 0
-                            padding_top = int(person0_height * top_ratio - int(person0_box[1])) if (int(person0_box[1]) / person0_height) < top_ratio else 0
-                            padding_bottom = int(person0_height * bottom_ratio - (_input_image_height - int(person0_box[3]))) if ((_input_image_height - int(person0_box[3])) / person0_height) < bottom_ratio else 0
+                            padding_top = int(person0_height * top_ratio - int(person0_box[1])) if (int(
+                                person0_box[1]) / person0_height) < top_ratio else 0
+                            padding_bottom = int(
+                                person0_height * bottom_ratio - (_input_image_height - int(person0_box[3]))) if ((
+                                                                                                                         _input_image_height - int(
+                                                                                                                     person0_box[
+                                                                                                                         3])) / person0_height) < bottom_ratio else 0
 
                             _input_image = self.padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right,
                                                                              padding_top, padding_bottom, person0_box)
                             _input_image = self.configure_image(_input_image,
-                                                                [0 if (int(person0_box[0]) / person0_width) < left_ratio else person0_box[0] - int(person0_width * left_ratio),
-                                                                 padding_top if padding_top > 0 else person0_box[1] - int(person0_height * top_ratio),
-                                                                 _input_image_width if ((_input_image_width - int(person0_box[2])) / person0_width) < right_ratio else padding_left +person0_box[2] + int(person0_width * right_ratio),
-                                                                 _input_image_height + padding_bottom + padding_top if padding_bottom > 0 else padding_top + person0_box[3] + int(person0_height * bottom_ratio)],
-                                                                 target_ratio=2/3 if (person0_width / person0_height) < 0.5 else person0_width / person0_height)
+                                                                [0 if (int(
+                                                                    person0_box[0]) / person0_width) < left_ratio else
+                                                                 person0_box[0] - int(person0_width * left_ratio),
+                                                                 padding_top if padding_top > 0 else person0_box[
+                                                                                                         1] - int(
+                                                                     person0_height * top_ratio),
+                                                                 _input_image_width if ((_input_image_width - int(
+                                                                     person0_box[
+                                                                         2])) / person0_width) < right_ratio else padding_left +
+                                                                                                                  person0_box[
+                                                                                                                      2] + int(
+                                                                     person0_width * right_ratio),
+                                                                 _input_image_height + padding_bottom + padding_top if padding_bottom > 0 else padding_top +
+                                                                                                                                               person0_box[
+                                                                                                                                                   3] + int(
+                                                                     person0_height * bottom_ratio)],
+                                                                target_ratio=2 / 3 if (
+                                                                                              person0_width / person0_height) < 0.5 else person0_width / person0_height)
 
                     except Exception:
                         print(traceback.format_exc())
@@ -438,6 +455,9 @@ class OperatorSD(Operator):
                                                              _input_image)
 
                 pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
+                if len(sam_result_gallery) == 0:
+                    return {'success': False, 'result': '未检测到服装'}
+
                 for idx, sam_mask_img in enumerate(sam_result_gallery):
                     cache_fp = f"tmp/{idx}_{pic_name}.png"
                     sam_mask_img.save(cache_fp)
@@ -529,7 +549,8 @@ class OperatorSD(Operator):
 
                 # adetail
                 adetail_enabled = not cmd_opts.disable_adetailer
-                face_args = {'ad_model': 'face_yolov8m.pt', 'ad_prompt': '', 'ad_negative_prompt': '', 'ad_confidence': 0.3,
+                face_args = {'ad_model': 'face_yolov8m.pt', 'ad_prompt': '', 'ad_negative_prompt': '',
+                             'ad_confidence': 0.3,
                              'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
                              'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
                              'ad_denoising_strength': 0.4,
@@ -538,9 +559,11 @@ class OperatorSD(Operator):
                              'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False, 'ad_cfg_scale': 7,
                              'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1, 'ad_restore_face': False,
                              'ad_controlnet_model': 'None', 'ad_controlnet_module': 'inpaint_global_harmonious',
-                             'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0, 'ad_controlnet_guidance_end': 1,
+                             'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
+                             'ad_controlnet_guidance_end': 1,
                              'is_api': ()}
-                hand_args = {'ad_model': 'hand_yolov8s.pt', 'ad_prompt': '', 'ad_negative_prompt': '', 'ad_confidence': 0.3,
+                hand_args = {'ad_model': 'hand_yolov8s.pt', 'ad_prompt': '', 'ad_negative_prompt': '',
+                             'ad_confidence': 0.3,
                              'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
                              'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
                              'ad_denoising_strength': 0.4,
@@ -549,7 +572,8 @@ class OperatorSD(Operator):
                              'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False, 'ad_cfg_scale': 7,
                              'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1, 'ad_restore_face': False,
                              'ad_controlnet_model': 'None', 'ad_controlnet_module': 'inpaint_global_harmonious',
-                             'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0, 'ad_controlnet_guidance_end': 1,
+                             'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
+                             'ad_controlnet_guidance_end': 1,
                              'is_api': ()}
                 sam_args = [0,
                             adetail_enabled, face_args, hand_args,  # adetail args
@@ -561,7 +585,8 @@ class OperatorSD(Operator):
                             '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
                             True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
                             f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
-                            128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0, ['left', 'right', 'up', 'down'],
+                            128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
+                            ['left', 'right', 'up', 'down'],
                             False, False, 'positive', 'comma', 0, False, False, '',
                             '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
                             64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None, None, False,
@@ -581,13 +606,15 @@ class OperatorSD(Operator):
                                                   steps, sampler_index, mask_blur, mask_alpha, inpainting_fill,
                                                   restore_faces,
                                                   tiling,
-                                                  n_iter, batch_size, cfg_scale, image_cfg_scale, denoising_strength, seed,
+                                                  n_iter, batch_size, cfg_scale, image_cfg_scale, denoising_strength,
+                                                  seed,
                                                   subseed,
                                                   subseed_strength, seed_resize_from_h, seed_resize_from_w,
                                                   seed_enable_extras,
                                                   selected_scale_tab, height, width, scale_by, resize_mode,
                                                   inpaint_full_res,
-                                                  inpaint_full_res_padding, inpainting_mask_invert, img2img_batch_input_dir,
+                                                  inpaint_full_res_padding, inpainting_mask_invert,
+                                                  img2img_batch_input_dir,
                                                   img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
                                                   override_settings_texts,
                                                   *sam_args)
@@ -596,7 +623,7 @@ class OperatorSD(Operator):
                             if predict_image(res_img.already_saved_as):
                                 fuck_img_count += 1
                                 if fuck_img_count > 10:
-                                    return {'success': False, 'result':"fatal error"}
+                                    return {'success': False, 'result': "fatal error"}
                             else:
                                 ok_img_count += 1
                                 ok_res.append(res_img)
@@ -775,7 +802,7 @@ class OperatorSD(Operator):
                 f"{traceback.format_exc()}",
                 f"logs/error.log")
 
-        return {'success': False, 'result':"fatal error"}
+        return {'success': False, 'result': "fatal error"}
 
 
 if __name__ == '__main__':
