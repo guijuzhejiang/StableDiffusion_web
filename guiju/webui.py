@@ -455,7 +455,7 @@ def create_ui():
 
 
 def proceed_generate_hires(_hires_input_gallery, _choosing_index_4_hires, _output_resolution):
-    _input_image = Image.open(_hires_input_gallery[_choosing_index_4_hires+1 if len(_hires_input_gallery) > 1 else _choosing_index_4_hires]['name'])
+    _input_image = Image.open(_hires_input_gallery[_choosing_index_4_hires]['name'])
     if _input_image.mode != "RGBA":
         _input_image = _input_image.convert("RGBA")
     _input_image_width, _input_image_height = _input_image.size
@@ -650,7 +650,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     # _input_part_prompt = [['upper cloth'], ['pants', 'skirts'], ['shoes']]
     # _dino_text_prompt = ' . '.join([y for x in _cloth_part for y in _input_part_prompt[x]])
     # _dino_text_prompt = 'dress'
-    _dino_clothing_text_prompt = 'clothing . pants . shorts . dress . shirts . skirt . underwear . bra . swimsuits . bikini . stocking . chain . bow. belt' if _model_mode == 1 else 'clothing . shorts'
+    _dino_clothing_text_prompt = 'clothing' if _model_mode == 1 else 'clothing . shorts'
     _box_threshold = 0.3
 
     if _input_image is None:
@@ -915,7 +915,7 @@ def proceed_cloth_inpaint(_batch_size, _input_image, _gender, _age, _viewpoint_m
     except Exception:
         raise gr.Error("found no cloth")
 
-    return ok_res, ok_res, gr.Radio.update(choices=[str(x) for x in range(1 if len(res[0]) == 1 else len(res[0])-1)], value=0), gr.Button.update(
+    return ok_res, ok_res, gr.Radio.update(choices=[str(x) for x in range(len(res[0]))], value=0), gr.Button.update(
         interactive=True), 'done.'
 
 
