@@ -58,7 +58,7 @@ class OperatorSD(Operator):
         cmd_opts.hide_ui_dir_config = True
         cmd_opts.disable_tome = False
         cmd_opts.lang = 'ch'
-        cmd_opts.disable_adetailer = True
+        cmd_opts.disable_adetailer = False
         initialize()
         guiju.segment_anything_util.sam.sam = init_sam_model()
 
