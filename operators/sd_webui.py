@@ -342,7 +342,8 @@ class OperatorSD(Operator):
                 # _sam_model_name = 'samhq_vit_h_1b3123.pth'
 
                 # _dino_clothing_text_prompt = 'clothing . pants . shorts . dress . shirt . t-shirt . skirt . underwear . bra . swimsuits . bikini . stocking . chain . bow' if _model_mode == 1 else 'clothing . pants . shorts'
-                _dino_clothing_text_prompt = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear . bra . swimsuit . bikini . stocking . chain . bow'
+                # _dino_clothing_text_prompt = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear . bra . swimsuit . bikini . stocking . chain . bow'
+                _dino_clothing_text_prompt = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear . bra . bikini'
                 _box_threshold = 0.3
 
                 if _input_image is None:
@@ -383,9 +384,9 @@ class OperatorSD(Operator):
                                 cv2.imwrite(f'tmp/person_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', cv2.cvtColor(np.array(_input_image), cv2.COLOR_RGBA2BGRA))
                         # artificial model
                         else:
-                            artificial_model_dino_clothing_prompt = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear . bra . bikini'
+                            # artificial_model_dino_clothing_prompt = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear . bra . bikini'
                             person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name,
-                                                                    artificial_model_dino_clothing_prompt, _box_threshold)
+                                                                    _dino_clothing_text_prompt, _box_threshold)
 
                             # get max area clothing box
                             x_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 0 or i == 2]
