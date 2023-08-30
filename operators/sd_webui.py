@@ -19,6 +19,7 @@ import cv2
 import numpy as np
 
 from lib.celery_workshop.operator import Operator
+from modules import ui_extra_networks
 from utils.global_vars import CONFIG
 
 
@@ -47,6 +48,9 @@ class OperatorSD(Operator):
         import guiju.segment_anything_util.sam
         from guiju.segment_anything_util.sam import init_sam_model, sam_predict
         from modules import extra_networks
+
+        os.makedirs(CONFIG['storage_dirpath']['user_dir'], exist_ok=True)
+
         os.environ['ACCELERATE'] = 'True'
         os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_idx)
         print("use gpu:" + str(gpu_idx))
@@ -63,6 +67,12 @@ class OperatorSD(Operator):
         cmd_opts.disable_adetailer = False
         initialize()
         guiju.segment_anything_util.sam.sam = init_sam_model()
+
+        ui_extra_networks.initialize()
+        ui_extra_networks.register_default_pages()
+
+        extra_networks.initialize()
+        extra_networks.register_default_extra_networks()
         modules.script_callbacks.before_ui_callback()
 
         if shared.opts.clean_temp_dir_at_start:
