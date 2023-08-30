@@ -837,7 +837,7 @@ class OperatorSD(Operator):
                 dir_path = CONFIG['storage_dirpath']['user_dir']
                 img_fn = f"{datetime.datetime.now().strftime('%y%m%d%H%M%S')}_{''.join([random.choice(string.ascii_letters) for c in range(6)])}.png"
                 img_fp = f"http://localhost:5004/user/image/fetch?imgpath={img_fn}"
-                pp.image.save(os.path.join(dir_path, img_fn), format="PNG")
+                pp.image.save(os.path.join(dir_path, img_fn), format=".png", quality=100)
                 return {'success': True, 'result': [img_fp]}
 
         except Exception:
