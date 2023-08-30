@@ -366,7 +366,7 @@ class OperatorSD(Operator):
                             person0_height = person0_box[3] - person0_box[1]
                             top_ratio = 0.2
                             bottom_ratio = 0.2
-                            if person0_box[1] / person0_height <= top_ratio:
+                            if (person0_box[1] / person0_height) <= top_ratio:
                                 person0_box[1] = 0
                             else:
                                 person0_box[1] -= top_ratio*person0_height
@@ -377,7 +377,7 @@ class OperatorSD(Operator):
                                 person0_box[3] += bottom_ratio*person0_height
                             person0_width = person0_box[2] - person0_box[0]
                             person0_height = person0_box[3] - person0_box[1]
-                            _input_image = self.configure_image(_input_image, person_boxes[0], target_ratio=2 / 3 if (person0_width / person0_height) < 0.5 else person0_width / person0_height)
+                            _input_image = self.configure_image(_input_image, person0_box, target_ratio=2 / 3 if (person0_width / person0_height) < 0.5 else person0_width / person0_height)
 
                             if cmd_opts.debug_mode:
                                 cv2.imwrite(f'tmp/person_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', cv2.cvtColor(np.array(_input_image), cv2.COLOR_RGBA2BGRA))
