@@ -68,8 +68,8 @@ class OperatorSD(Operator):
         initialize()
         guiju.segment_anything_util.sam.sam = init_sam_model()
 
-        ui_extra_networks.initialize()
-        ui_extra_networks.register_default_pages()
+        # ui_extra_networks.initialize()
+        # ui_extra_networks.register_default_pages()
 
         extra_networks.initialize()
         extra_networks.register_default_extra_networks()
