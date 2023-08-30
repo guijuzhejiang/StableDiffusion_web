@@ -814,7 +814,7 @@ class OperatorSD(Operator):
                 # extra upscaler
                 cnet_res_img = _input_image if _output_ratio == 0.5 else cnet_res[0][0]
                 scales = _output_width / padding_width
-                args = (0, scales, padding_height, padding_width, True, 'ESRGAN_4x', 'None', 0, 0, 0, 0)
+                args = (0, scales, padding_height, padding_width, True, 'ESRGAN_4x', 'None', 0, 0, 1, 0)
                 assert cnet_res_img, 'image not selected'
 
                 devices.torch_gc()
