@@ -63,6 +63,7 @@ class OperatorSD(Operator):
         cmd_opts.disable_adetailer = False
         initialize()
         guiju.segment_anything_util.sam.sam = init_sam_model()
+        modules.script_callbacks.before_ui_callback()
 
         if shared.opts.clean_temp_dir_at_start:
             ui_tempdir.cleanup_tmpdr()
