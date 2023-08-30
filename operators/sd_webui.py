@@ -242,7 +242,7 @@ class OperatorSD(Operator):
                 # child
                 f'(child:1.3)',
                 # youth
-                f'(youth:1.3)',
+                f'(youth:1.3){"" if _gender else ", <lora:shojovibe_v11:0.4> ,<lora:koreanDollLikeness:0.4>"}',
                 # middlescent
                 '(middlescent:1.3)',
             ],
@@ -367,6 +367,8 @@ class OperatorSD(Operator):
                             _input_image = self.configure_image(_input_image, person_boxes[0], target_ratio=2 / 3 if (
                                                                                                                              person0_width / person0_height) < 0.5 else person0_width / person0_height)
 
+                            if cmd_opts.debug_mode:
+                                cv2.imwrite(f'tmp/person_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', cv2.cvtColor(np.array(_input_image), cv2.COLOR_RGBA2BGRA))
                         # artificial model
                         else:
                             person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name,
@@ -560,7 +562,7 @@ class OperatorSD(Operator):
                 # adetail
                 adetail_enabled = not cmd_opts.disable_adetailer
                 face_args = {'ad_model': 'face_yolov8m.pt',
-                             'ad_prompt': f'best quality,masterpiece,(realistic:1.2){"" if _gender else ", <lora:shojovibe_v11:0.4>"}',
+                             'ad_prompt': f'',
                              'ad_negative_prompt': '2 head, poorly drawn face, ugly, cloned face, blurred faces, irregular face',
                              'ad_confidence': 0.3,
                              'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
@@ -574,7 +576,9 @@ class OperatorSD(Operator):
                              'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
                              'ad_controlnet_guidance_end': 1,
                              'is_api': ()}
-                hand_args = {'ad_model': 'hand_yolov8s.pt', 'ad_prompt': 'best quality,masterpiece,(realistic:1.2),detailed hand, well-proportioned hands, delicate hands', 'ad_negative_prompt': 'mutated hands, bad hands, poorly drawn hands, 3 hand, 3 hand, twisted hands, fused fingers, too many fingers, duplicate, poorly drawn hands, extra fingers',
+                hand_args = {'ad_model': 'hand_yolov8s.pt',
+                             'ad_prompt': '',
+                             'ad_negative_prompt': 'mutated hands, bad hands, poorly drawn hands, 3 hand, 3 hand, twisted hands, fused fingers, too many fingers, duplicate, poorly drawn hands, extra fingers',
                              'ad_confidence': 0.3,
                              'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
                              'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
