@@ -364,15 +364,28 @@ class OperatorSD(Operator):
                             person0_box = [int(x) for x in person_boxes[0]]
                             person0_width = person0_box[2] - person0_box[0]
                             person0_height = person0_box[3] - person0_box[1]
-                            _input_image = self.configure_image(_input_image, person_boxes[0], target_ratio=2 / 3 if (
-                                                                                                                             person0_width / person0_height) < 0.5 else person0_width / person0_height)
+                            top_ratio = 0.2
+                            bottom_ratio = 0.2
+                            if person0_box[1] / person0_height <= top_ratio:
+                                person0_box[1] = 0
+                            else:
+                                person0_box[1] -= top_ratio*person0_height
+
+                            if (_input_image_height-person0_box[3]) / person0_height <= bottom_ratio:
+                                person0_box[3] = _input_image_height
+                            else:
+                                person0_box[3] += bottom_ratio*person0_height
+                            person0_width = person0_box[2] - person0_box[0]
+                            person0_height = person0_box[3] - person0_box[1]
+                            _input_image = self.configure_image(_input_image, person_boxes[0], target_ratio=2 / 3 if (person0_width / person0_height) < 0.5 else person0_width / person0_height)
 
                             if cmd_opts.debug_mode:
                                 cv2.imwrite(f'tmp/person_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png', cv2.cvtColor(np.array(_input_image), cv2.COLOR_RGBA2BGRA))
                         # artificial model
                         else:
+                            artificial_model_dino_clothing_prompt = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear . bra . bikini'
                             person_boxes, _ = dino_predict_internal(_input_image, _dino_model_name,
-                                                                    _dino_clothing_text_prompt, _box_threshold)
+                                                                    artificial_model_dino_clothing_prompt, _box_threshold)
 
                             # get max area clothing box
                             x_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 0 or i == 2]
