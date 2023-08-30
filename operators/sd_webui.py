@@ -243,6 +243,7 @@ class OperatorSD(Operator):
                 # f'(a naked {"man" if _gender else "woman"}:1.5)',
                 f'an extremely delicate and {"handsome" if _gender else "beautiful"} {"male" if _gender else "female"}',
                 'extremely detailed CG unity 8k wallpaper',
+                'asian',
                 'highres',
                 'detailed fingers',
                 'realistic fingers',
@@ -257,7 +258,7 @@ class OperatorSD(Operator):
                 '' if _viewpoint == 2 else 'posing for a photo, light on face, realistic face',
                 '(simple background:1.3)',
                 '(white background:1.3)',
-                'full body' if _model_mode == 0 else '(full body:1.8)',
+                '(full body:1.3)' if _model_mode == 0 else '(full body:1.8)',
             ],
             'viewpoint': [
                 # 正面
