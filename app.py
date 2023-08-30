@@ -4,6 +4,7 @@ import os
 from sanic import Blueprint
 from sanic import Sanic
 from sanic_cors import CORS
+from supabase.lib.client_options import ClientOptions
 from wechatpayv3 import WeChatPay, WeChatPayType
 
 from handlers.main import SDGenertae, SDHires, Pay, Query, ImageProvider
@@ -60,11 +61,14 @@ async def main_process_start(sanic_app, loop):
             partner_mode=CONFIG['wechatpay']['PARTNER_MODE'],
             proxy=None)
         # sanic_app.ctx.wxpay.query()
-    sanic_app.ctx.supabase_client = create_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'])
+    supabase_opt = ClientOptions()
+    supabase_opt.postgrest_client_timeout = 20
+    sanic_app.ctx.supabase_client = create_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'],
+                                                  options=supabase_opt)
 
 
 class Config:
-    RESPONSE_TIMEOUT = 300
+    RESPONSE_TIMEOUT = 600
     SECRET = "xxxGUIJU_TeCH&^%$"
 
 
