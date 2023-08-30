@@ -559,7 +559,7 @@ class OperatorSD(Operator):
 
                 # adetail
                 adetail_enabled = not cmd_opts.disable_adetailer
-                face_args = {'ad_model': 'face_yolov8m.pt', 'ad_prompt': '', 'ad_negative_prompt': '',
+                face_args = {'ad_model': 'face_yolov8m.pt', 'ad_prompt': 'best quality,masterpiece,(realistic:1.2),<lora:shojovibe_v11:0.4>', 'ad_negative_prompt': '2 head, poorly drawn face, ugly, cloned face, blurred faces, irregular face',
                              'ad_confidence': 0.3,
                              'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
                              'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
@@ -572,7 +572,7 @@ class OperatorSD(Operator):
                              'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
                              'ad_controlnet_guidance_end': 1,
                              'is_api': ()}
-                hand_args = {'ad_model': 'hand_yolov8s.pt', 'ad_prompt': '', 'ad_negative_prompt': '',
+                hand_args = {'ad_model': 'hand_yolov8s.pt', 'ad_prompt': 'best quality,masterpiece,(realistic:1.2),detailed hand, well-proportioned hands, delicate hands', 'ad_negative_prompt': 'mutated hands, bad hands, poorly drawn hands, 3 hand, 3 hand, twisted hands, fused fingers, too many fingers, duplicate, poorly drawn hands, extra fingers',
                              'ad_confidence': 0.3,
                              'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
                              'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
