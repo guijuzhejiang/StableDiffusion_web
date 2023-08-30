@@ -560,7 +560,7 @@ class OperatorSD(Operator):
                 # adetail
                 adetail_enabled = not cmd_opts.disable_adetailer
                 face_args = {'ad_model': 'face_yolov8m.pt',
-                             'ad_prompt': f'best quality,masterpiece,(realistic:1.2){"" if _gender else ", <lora:shojovibe_v11:0.4> ,<lora:koreanDollLikeness:0.4>"}',
+                             'ad_prompt': f'best quality,masterpiece,(realistic:1.2){"" if _gender else ", <lora:shojovibe_v11:0.4>"}',
                              'ad_negative_prompt': '2 head, poorly drawn face, ugly, cloned face, blurred faces, irregular face',
                              'ad_confidence': 0.3,
                              'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
