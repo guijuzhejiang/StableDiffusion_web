@@ -243,7 +243,7 @@ class OperatorSD(Operator):
                 # f'(a naked {"man" if _gender else "woman"}:1.5)',
                 f'an extremely delicate and {"handsome" if _gender else "beautiful"} {"male" if _gender else "female"}',
                 'extremely detailed CG unity 8k wallpaper',
-                'asian',
+                # 'asian',
                 'highres',
                 'detailed fingers',
                 'realistic fingers',
