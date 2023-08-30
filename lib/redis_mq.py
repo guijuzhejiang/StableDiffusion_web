@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import datetime
 import json
 import math
@@ -51,9 +52,12 @@ class RedisMQ:
 
         try:
             # lock_id = await self.acquire_lock('mq_locker')
+            params = {'reply_queue_name': reply_queue_name}
+            img = args[0].pop('input_image')
+            params['params'] = ujson.dumps(args[0])
+            params['input_image'] = base64.b64encode(img[0].body).decode('utf-8')
 
-            task_id = await self.redis_session.xadd(call_queue_name, {'params': ujson.dumps(args[0]),
-                                                                      'reply_queue_name': reply_queue_name})
+            task_id = await self.redis_session.xadd(call_queue_name, params)
 
             # await self.release_lock('mq_locker', lock_id)
 

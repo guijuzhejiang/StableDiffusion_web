@@ -6,7 +6,7 @@ from sanic import Sanic
 from sanic_cors import CORS
 from wechatpayv3 import WeChatPay, WeChatPayType
 
-from handlers.main import SDGenertae, SDHires, Pay, Query
+from handlers.main import SDGenertae, SDHires, Pay, Query, ImageProvider
 from supabase import create_client
 from utils.global_vars import CONFIG
 
@@ -17,9 +17,13 @@ bp.add_route(SDGenertae.as_view(), "/sd/generate")
 bp.add_route(SDHires.as_view(), "/sd/hires")
 bp.add_route(Pay.as_view(), "/wechat/pay")
 bp.add_route(Query.as_view(), "/wechat/query")
+bp.add_route(ImageProvider.as_view(), "/user/image/fetch")
 
 # CORS settings
-cors = CORS(bp, resources={r"/sd/*": {"origins": "*", "headers": "*"}, r"/wechat/*": {"origins": "*", "headers": "*"}})
+cors = CORS(bp, resources={r"/sd/*": {"origins": "*", "headers": "*"},
+                           r"/wechat/*": {"origins": "*", "headers": "*"},
+                           r"/user/image/fetch": {"origins": "*", "headers": "*"},
+                           })
 
 # setup sanic app
 app = Sanic(__name__)

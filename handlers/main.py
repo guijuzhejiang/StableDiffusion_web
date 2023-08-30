@@ -1,11 +1,15 @@
 import asyncio
+import os.path
 import random
 import string
 from datetime import datetime, timedelta
+from io import BytesIO
 
 import pytz
 import ujson
-from sanic.response import json as sanic_json
+from PIL import Image
+from sanic import HTTPResponse
+from sanic.response import json as sanic_json, file_stream
 from sanic.views import HTTPMethodView
 from wechatpayv3 import WeChatPayType
 
@@ -20,13 +24,18 @@ temp_udb = [f'test_{"%03d" % i}' for i in range(1, 11)]
 
 class SDGenertae(HTTPMethodView):
     async def post(self, request):
+        # 解析表单参数
+        request_form = dict(request.form)
+        request_form['input_image'] = request.files['input_image']
+
         if CONFIG['debug_mode']:
             redis_mq = RedisMQ(CONFIG['redis']['host'], CONFIG['redis']['port'],
                                CONFIG['redis']['redis_mq'])
 
-            task_result = await redis_mq.rpc_call(redis_mq.task_queue_name, request.form)
+            task_result = await redis_mq.rpc_call(redis_mq.task_queue_name, request_form)
             print(task_result)
             await redis_mq.close()
+
         else:
             mode = request.form['mode'][0]
             params = ujson.loads(request.form['params'][0])
@@ -47,7 +56,7 @@ class SDGenertae(HTTPMethodView):
 
             account = request.app.ctx.supabase_client.table("account").select("*").eq("id", user_id).execute().data[0]
             if cost_points <= account['balance']:
-                task_result = sd_workshop(**request.form)
+                task_result = sd_workshop(**request_form)
                 while not task_result.ready():
                     await asyncio.sleep(1)
                     print('wait')
@@ -60,6 +69,8 @@ class SDGenertae(HTTPMethodView):
                                                                                         }).execute()
                     res = request.app.ctx.supabase_client.table("account").update(
                         {"balance": account['balance']-cost_points}).eq("id", user_id).execute().data
+
+                    sanic_json(task_result)
             else:
                 task_result = {'success': False, 'result': "余额不足"}
 
@@ -149,3 +160,8 @@ class Query(HTTPMethodView):
             return sanic_json({'success': code == 200, 'balance': account['balance']+pre_charge_amount})
         else:
             return sanic_json({'balance': account['balance']+pre_charge_amount})
+
+
+class ImageProvider(HTTPMethodView):
+    async def get(self, request):
+        return await file_stream(os.path.join(CONFIG['storage_dirpath']['user_dir'], request.args.get("imgpath")))

@@ -306,7 +306,7 @@ def prepare_environment():
     git_clone(blip_repo, repo_dir('BLIP'), "BLIP", blip_commit_hash)
 
     if not is_installed("lpips"):
-        run_pip(f"install -r \"{os.path.join(repo_dir('CodeFormer'), 'requirements.txt')}\"", "requirements for CodeFormer")
+        run_pip(f"install -r \"{os.path.join(repo_dir('CodeFormer'), 'web_backend_requirements.txt')}\"", "requirements for CodeFormer")
 
     if not os.path.isfile(requirements_file):
         requirements_file = os.path.join(script_path, requirements_file)

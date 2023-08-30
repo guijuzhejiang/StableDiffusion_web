@@ -11,6 +11,7 @@
 
 # import lib
 import io
+import os
 from collections import OrderedDict
 from PIL import Image
 
@@ -18,6 +19,7 @@ import cv2
 import numpy as np
 
 from lib.celery_workshop.operator import Operator
+from utils.global_vars import CONFIG
 
 
 class OperatorSD(Operator):
@@ -318,7 +320,8 @@ class OperatorSD(Operator):
                 params = ujson.loads(kwargs['params'][0])
                 _cloth_part = 0
                 _batch_size = int(params['batch_size'])
-                _input_image = base64_to_pil(params['input_image'])
+                # _input_image = base64_to_pil(params['input_image'])
+                _input_image = Image.open(io.BytesIO(kwargs['input_image'][0][1]))
                 _gender = 0 if params['gender'] == 'female' else 1
                 arge_idxs = {v: i for i, v in enumerate(['child', 'youth', 'middlescent'])}
                 _age = arge_idxs[params['age']]
@@ -332,7 +335,7 @@ class OperatorSD(Operator):
                 _dino_model_name = "GroundingDINO_SwinB (938MB)"
                 # _sam_model_name = 'samhq_vit_h_1b3123.pth'
 
-                _dino_clothing_text_prompt = 'clothing . pants . shorts . dress . shirts . skirt . underwear . bra . swimsuits . bikini . stocking . chain . bow' if _model_mode == 1 else 'clothing . pants . shorts'
+                _dino_clothing_text_prompt = 'clothing . pants . shorts . dress . shirts . t-shirt . skirt . underwear . bra . swimsuits . bikini . stocking . chain . bow' if _model_mode == 1 else 'clothing . pants . shorts'
                 _box_threshold = 0.3
 
                 if _input_image is None:
@@ -627,11 +630,21 @@ class OperatorSD(Operator):
                             else:
                                 ok_img_count += 1
                                 ok_res.append(res_img)
-                return {'success': True, 'result': [pil_to_base64(i) for i in ok_res]}
+
+                    else:
+                        img_urls = []
+                        dir_path = CONFIG['storage_dirpath']['user_dir']
+                        for ok_img in ok_res:
+                            img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}_{''.join([random.choice(string.ascii_letters) for c in range(6)])}.png"
+                            img_fp = f"http://localhost:5004/user/image/fetch?imgpath={img_fn}"
+                            ok_img.save(os.path.join(dir_path, img_fn), format="PNG")
+                            img_urls.append(img_fp)
+                return {'success': True, 'result': img_urls}
 
             else:
                 params = ujson.loads(kwargs['params'][0])
-                _input_image = base64_to_pil(params['input_image'])
+                # _input_image = base64_to_pil(params['input_image'])
+                _input_image = Image.open(io.BytesIO(kwargs['input_image'][0][1]))
                 _output_width = int(params['output_width'])
                 _output_height = int(params['output_height'])
 
@@ -789,11 +802,16 @@ class OperatorSD(Operator):
                 scripts.scripts_postproc.run(pp, args)
 
                 # if save_output:
-                pp.image.save('test.png')
+                # pp.image.save('test.png')
 
                 devices.torch_gc()
 
-                return {'success': True, 'result': pil_to_base64(pp.image)}
+                # return {'success': True, 'result': pil_to_base64(pp.image)}
+                dir_path = CONFIG['storage_dirpath']['user_dir']
+                img_fn = f"{datetime.datetime.now().strftime('%y%m%d%H%M%S')}_{''.join([random.choice(string.ascii_letters) for c in range(6)])}.png"
+                img_fp = f"http://localhost:5004/user/image/fetch?imgpath={img_fn}"
+                pp.image.save(os.path.join(dir_path, img_fn), format="PNG")
+                return {'success': True, 'result': [img_fp]}
 
         except Exception:
             print('errrrr!!!!!!!!!!!!!!')

@@ -1,7 +1,0 @@
-redis
-Celery
-sanic
-sanic_cors
-wechatpayv3
-ujson
-aioredis
