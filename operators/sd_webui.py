@@ -19,8 +19,9 @@ import cv2
 import numpy as np
 
 from lib.celery_workshop.operator import Operator
-from modules import ui_extra_networks
 from utils.global_vars import CONFIG
+from modules import extra_networks
+import modules.script_callbacks
 
 
 class OperatorSD(Operator):
@@ -39,15 +40,13 @@ class OperatorSD(Operator):
         from guiju.segment_anything_util.dino import dino_predict_internal
         from lib.stable_diffusion.util import initialize
         from modules import shared, ui_tempdir, sd_samplers, config_states, modelloader, extensions
+        from modules import extra_networks_hypernet
 
         from modules.shared import cmd_opts
-        from modules import extra_networks_hypernet
         import modules.scripts
-        import modules.script_callbacks
         import modules.sd_models
         import guiju.segment_anything_util.sam
-        from guiju.segment_anything_util.sam import init_sam_model, sam_predict
-        from modules import extra_networks
+        from guiju.segment_anything_util.sam import init_sam_model
 
         os.makedirs(CONFIG['storage_dirpath']['user_dir'], exist_ok=True)
 
@@ -71,9 +70,9 @@ class OperatorSD(Operator):
         # ui_extra_networks.initialize()
         # ui_extra_networks.register_default_pages()
 
-        extra_networks.initialize()
-        extra_networks.register_default_extra_networks()
-        modules.script_callbacks.before_ui_callback()
+        # extra_networks.initialize()
+        # extra_networks.register_default_extra_networks()
+        # modules.script_callbacks.before_ui_callback()
 
         if shared.opts.clean_temp_dir_at_start:
             ui_tempdir.cleanup_tmpdr()
@@ -309,23 +308,18 @@ class OperatorSD(Operator):
         from lib.common.common_util import logging, base64_to_pil, pil_to_base64
         from modules.shared import cmd_opts
         import modules.scripts
-        import modules.sd_models
+        import modules.img2img
         from guiju.segment_anything_util.sam import sam_predict
         from modules import devices, scripts_postprocessing, scripts
 
         try:
-            # generateParams = JSON.stringify({
-            #     batch_size: batchSize,
-            #     input_image: draggerImameRef?.current?.uploadPreviewImage,
-            #                                            gender: gender,
-            # age: age,
-            # viewpoint_mode: orientation,
-            # model_mode: mode,
-            # });
-            # _batch_size, _input_image, _gender, _age, _viewpoint_mode, _cloth_part, _model_mode
+            # init lora
+            extra_networks.initialize()
+            extra_networks.register_default_extra_networks()
+            modules.script_callbacks.before_ui_callback()
             print("operation start !!!!!!!!!!!!!!!!!!!!!!!!!!")
             print(args)
-            print(kwargs)
+            # print(kwargs)
             proceed_mode = kwargs['mode'][0]
 
             if proceed_mode == 'model':
