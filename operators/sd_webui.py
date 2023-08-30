@@ -335,7 +335,8 @@ class OperatorSD(Operator):
                 _dino_model_name = "GroundingDINO_SwinB (938MB)"
                 # _sam_model_name = 'samhq_vit_h_1b3123.pth'
 
-                _dino_clothing_text_prompt = 'clothing . pants . shorts . dress . shirt . t-shirt . skirt . underwear . bra . swimsuits . bikini . stocking . chain . bow' if _model_mode == 1 else 'clothing . pants . shorts'
+                # _dino_clothing_text_prompt = 'clothing . pants . shorts . dress . shirt . t-shirt . skirt . underwear . bra . swimsuits . bikini . stocking . chain . bow' if _model_mode == 1 else 'clothing . pants . shorts'
+                _dino_clothing_text_prompt = 'clothing . pant . short . dress . shirt . t-shirt . skirt . underwear . bra . swimsuit . bikini . stocking . chain . bow'
                 _box_threshold = 0.3
 
                 if _input_image is None:
