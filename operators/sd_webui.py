@@ -240,9 +240,9 @@ class OperatorSD(Operator):
             ],
             'age': [
                 # child
-                f'(child:1.3){"" if _gender else ", <lora:shojovibe_v11:0.4> ,<lora:koreanDollLikeness:0.4>"}',
+                f'(child:1.3)',
                 # youth
-                f'(youth:1.3){"" if _gender else ", <lora:shojovibe_v11:0.4> ,<lora:koreanDollLikeness:0.4>"}',
+                f'(youth:1.3)',
                 # middlescent
                 '(middlescent:1.3)',
             ],
@@ -559,7 +559,9 @@ class OperatorSD(Operator):
 
                 # adetail
                 adetail_enabled = not cmd_opts.disable_adetailer
-                face_args = {'ad_model': 'face_yolov8m.pt', 'ad_prompt': 'best quality,masterpiece,(realistic:1.2),<lora:shojovibe_v11:0.4>', 'ad_negative_prompt': '2 head, poorly drawn face, ugly, cloned face, blurred faces, irregular face',
+                face_args = {'ad_model': 'face_yolov8m.pt',
+                             'ad_prompt': f'best quality,masterpiece,(realistic:1.2){"" if _gender else ", <lora:shojovibe_v11:0.4> ,<lora:koreanDollLikeness:0.4>"}',
+                             'ad_negative_prompt': '2 head, poorly drawn face, ugly, cloned face, blurred faces, irregular face',
                              'ad_confidence': 0.3,
                              'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
                              'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
