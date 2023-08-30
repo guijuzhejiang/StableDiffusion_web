@@ -396,8 +396,8 @@ class OperatorSD(Operator):
                             person0_width = person0_box[2] - person0_box[0]
                             person0_height = person0_box[3] - person0_box[1]
                             constant_bottom = 40
-                            constant_top = 30
-                            factor_bottom = 5
+                            constant_top = 40
+                            factor_bottom = 4
                             factor_top = 4
                             left_ratio = 0.1
                             right_ratio = 0.1
