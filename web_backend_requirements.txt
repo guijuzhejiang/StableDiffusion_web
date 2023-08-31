@@ -11,3 +11,4 @@ pillow
 pyyaml
 opencv_python
 supabase
+fastapi

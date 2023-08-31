@@ -122,11 +122,19 @@ class ScriptPostprocessingRunner:
             shared.state.job = script.name
 
             script_args = args[script.args_from:script.args_to]
+            if script.name == 'GFPGAN':
+                script_args = args[-3:-2]
+            if script.name == 'CodeFormer':
+                script_args = args[-2:]
 
             process_args = {}
-            for (name, _component), value in zip(script.controls.items(), script_args):
+            for (name, _component), value in zip(script.get_args().items(), script_args):
+            # for (name, _component), value in zip(script.controls.items(), script_args):
                 process_args[name] = value
 
+            print("script.name:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            print(script.name)
+            print(process_args)
             script.process(pp, **process_args)
 
     def create_args_for_run(self, scripts_args):

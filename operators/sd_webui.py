@@ -664,7 +664,15 @@ class OperatorSD(Operator):
                         for ok_img in ok_res:
                             img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}_{''.join([random.choice(string.ascii_letters) for c in range(6)])}.png"
                             img_fp = f"http://localhost:5004/user/image/fetch?imgpath={img_fn}"
-                            ok_img.save(os.path.join(dir_path, img_fn), format="PNG")
+
+                            # extra upscaler
+                            scales = 1
+                            args = (0, scales, 512, 512, True, 'ESRGAN_4x', 'None', 0, 1, 1, 0)
+                            devices.torch_gc()
+                            pp = scripts_postprocessing.PostprocessedImage(ok_img.convert("RGB"))
+                            scripts.scripts_postproc.run(pp, args)
+
+                            pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=100, lossless=True)
                             img_urls.append(img_fp)
                 return {'success': True, 'result': img_urls}
 
@@ -814,30 +822,21 @@ class OperatorSD(Operator):
                 # extra upscaler
                 cnet_res_img = _input_image if _output_ratio == 0.5 else cnet_res[0][0]
                 scales = _output_width / padding_width
-                args = (0, scales, 512, 512, True, 'ESRGAN_4x', 'None', 0, 0, 1, 0)
+                args = (0, scales, 512, 512, True, 'ESRGAN_4x', 'None', 0, 1, 1, 0)
                 assert cnet_res_img, 'image not selected'
-
                 devices.torch_gc()
-                image_data = []
-                image_names = []
-                image_data.append(cnet_res_img)
-                image_names.append(None)
-                # outpath = shared.opts.outdir_samples or shared.opts.outdir_extras_samples
-
                 pp = scripts_postprocessing.PostprocessedImage(cnet_res_img.convert("RGB"))
-
                 scripts.scripts_postproc.run(pp, args)
-
-                # if save_output:
-                # pp.image.save('test.png')
 
                 devices.torch_gc()
 
                 # return {'success': True, 'result': pil_to_base64(pp.image)}
                 dir_path = CONFIG['storage_dirpath']['user_dir']
-                img_fn = f"{datetime.datetime.now().strftime('%y%m%d%H%M%S')}_{''.join([random.choice(string.ascii_letters) for c in range(6)])}.png"
+                img_fn = f"{datetime.datetime.now().strftime('%y%m%d%H%M%S')}_{''.join([random.choice(string.ascii_letters) for c in range(6)])}.jpeg"
                 img_fp = f"http://localhost:5004/user/image/fetch?imgpath={img_fn}"
-                pp.image.save(os.path.join(dir_path, img_fn), format="png", quality=100)
+                # pp.image.save(os.path.join(dir_path, img_fn), format="png", quality=100)
+                pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=100, lossless=True)
+
                 return {'success': True, 'result': [img_fp]}
 
         except Exception:
