@@ -206,6 +206,10 @@ def upscale_without_tiling(model, img):
 
 
 def esrgan_upscale(model, img):
+    print("opts.ESRGAN_tile:")
+    print(opts.ESRGAN_tile)
+    print("opts.ESRGAN_tile_overlap:")
+    print(opts.ESRGAN_tile_overlap)
     if opts.ESRGAN_tile == 0:
         return upscale_without_tiling(model, img)
 
