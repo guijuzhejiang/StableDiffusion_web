@@ -76,10 +76,10 @@ class ScriptPostprocessingUpscale(scripts_postprocessing.ScriptPostprocessing):
         cache_key = (hash(np.array(image.getdata()).tobytes()), upscaler.name, upscale_mode, upscale_by,  upscale_to_width, upscale_to_height, upscale_crop)
         cached_image = upscale_cache.pop(cache_key, None)
 
-        if cached_image is not None:
-            image = cached_image
-        else:
-            image = upscaler.scaler.upscale(image, upscale_by, upscaler.data_path)
+        # if cached_image is not None:
+        #     image = cached_image
+        # else:
+        image = upscaler.scaler.upscale(image, upscale_by, upscaler.data_path)
 
         upscale_cache[cache_key] = image
         if len(upscale_cache) > shared.opts.upscaling_max_images_in_cache:
