@@ -124,12 +124,9 @@ class ScriptPostprocessingRunner:
             script_args = args[script.args_from:script.args_to]
 
             process_args = {}
-            for (name, _component), value in zip(script.get_args().items(), script_args):
+            for (name, _component), value in zip(script.controls.items(), script_args):
                 process_args[name] = value
 
-            # for k, v in zip(args_dict.keys(), script_args):
-            #     process_args[k] = v
-            # (0, scales, padding_height, padding_width, True, 'R-ESRGAN 4x+', 'None', 0, 0, 0, 0)
             script.process(pp, **process_args)
 
     def create_args_for_run(self, scripts_args):

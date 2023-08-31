@@ -1,8 +1,10 @@
 import inspect
 import os
 from collections import namedtuple
-from typing import Dict, Any
+from typing import Optional, Dict, Any
 
+from fastapi import FastAPI
+from gradio import Blocks
 
 from modules import errors, timer
 
@@ -118,7 +120,7 @@ def clear_callbacks():
         callback_list.clear()
 
 
-def app_started_callback(demo, app):
+def app_started_callback(demo: Optional[Blocks], app: FastAPI):
     for c in callback_map['callbacks_app_started']:
         try:
             c.callback(demo, app)
