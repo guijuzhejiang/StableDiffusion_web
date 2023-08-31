@@ -47,7 +47,7 @@ class SDGenertae(HTTPMethodView):
                 _output_width = int(params['output_width'])
                 _output_height = int(params['output_height'])
                 sum = _output_width + _output_height
-                if sum >= 4096:
+                if sum >= 3840:
                     cost_points += 1
                 if sum >= 5120:
                     cost_points += 1

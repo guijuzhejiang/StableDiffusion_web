@@ -643,7 +643,8 @@ class OperatorSD(Operator):
                                                   subseed,
                                                   subseed_strength, seed_resize_from_h, seed_resize_from_w,
                                                   seed_enable_extras,
-                                                  selected_scale_tab, height, width, scale_by, resize_mode,
+                                                  selected_scale_tab, 768, 512, scale_by, resize_mode,
+                                                  # selected_scale_tab, height, width, scale_by, resize_mode,
                                                   inpaint_full_res,
                                                   inpaint_full_res_padding, inpainting_mask_invert,
                                                   img2img_batch_input_dir,
@@ -758,8 +759,8 @@ class OperatorSD(Operator):
                     controlnet_args_unit1.pixel_perfect = True
                     controlnet_args_unit1.resize_mode = 'Resize and Fill'
                     controlnet_args_unit1.weight = 1
-                    controlnet_args_unit1.threshold_a = 128
-                    controlnet_args_unit1.threshold_b = 128
+                    controlnet_args_unit1.threshold_a = 64
+                    controlnet_args_unit1.threshold_b = 64
                     controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
                     controlnet_args_unit2.enabled = False
                     controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
@@ -827,12 +828,12 @@ class OperatorSD(Operator):
                     padding_width = _input_image_width // 8 * 8
 
                 devices.torch_gc()
-                cnet_res[0][0].save(f'tmp/cnet_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
-                                  format='PNG')
+                # cnet_res[0][0].save(f'tmp/cnet_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
+                #                   format='PNG')
                 # extra upscaler
                 cnet_res_img = _input_image if _output_ratio == _input_ratio else cnet_res[0][0]
                 scales = _output_width / padding_width
-                args = (0, scales, None, None, True, 'SwinIR_4x', 'None', 0, 1, 1, 0)
+                args = (0, scales, None, None, True, 'ESRGAN_4x', 'None', 0, 1, 1, 0)
                 assert cnet_res_img, 'image not selected'
                 devices.torch_gc()
                 pp = scripts_postprocessing.PostprocessedImage(cnet_res_img.convert("RGB"))
