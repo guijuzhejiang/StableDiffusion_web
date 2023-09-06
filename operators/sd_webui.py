@@ -55,7 +55,16 @@ class OperatorSD(Operator):
         print("use gpu:" + str(gpu_idx))
 
         # TODO laod model dict
-        self.model_dict = {}
+        self.lora_model_dict = {}
+        for fn in os.listdir(CONFIG['storage_dirpath']['lora_model_dir']):
+            index, lora_text = fn.split('_')
+            lora_name, weight = lora_text.split(':')
+            self.lora_model_dict[index] = {'name': lora_name, 'weight': weight}
+        self.lora_place_dict = {}
+        for fn in os.listdir(CONFIG['storage_dirpath']['lora_place_dir']):
+            index, lora_text = fn.split('_')
+            lora_name, weight = lora_text.split(':')
+            self.lora_model_dict[index] = {'name': lora_name, 'weight': weight}
 
         cmd_opts.gradio_debug = True
         cmd_opts.listen = True
@@ -235,7 +244,8 @@ class OperatorSD(Operator):
 
     def get_prompt(self, _age, _viewpoint, _model_type, _place_type, _model_mode=0):
         # TODO
-        prompt = self.model_dict[_model_type]
+        lora_model = self.lora_model_dict[_model_type]
+        lora_place = self.lora_place_dict[_place_type]
         sd_positive_prompts_dict = OrderedDict({
             'gender': [
                 # female

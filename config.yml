@@ -15,6 +15,8 @@ redis:
   redis_mq: 11
 storage_dirpath:
   user_dir: outputs/img2img-images/web_storage
+  lora_model_dir: /home/ray/Workspace/file/素材/头像/224/
+  lora_place_dir: /home/ray/Workspace/file/素材/背景/224/
 mq_name: debug_queue
 wechatpay:
   # 微信支付商户号，服务商模式下为服务商户号，即官方文档中的sp_mchid。
