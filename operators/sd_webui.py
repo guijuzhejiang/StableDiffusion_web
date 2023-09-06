@@ -54,6 +54,9 @@ class OperatorSD(Operator):
         os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_idx)
         print("use gpu:" + str(gpu_idx))
 
+        # TODO laod model dict
+        self.model_dict = {}
+
         cmd_opts.gradio_debug = True
         cmd_opts.listen = True
         cmd_opts.debug_mode = True
@@ -230,7 +233,9 @@ class OperatorSD(Operator):
         padded_image = cv2.cvtColor(np.array(padded_image), cv2.COLOR_BGRA2RGBA)
         return padded_image
 
-    def get_prompt(self, _gender, _age, _viewpoint, _model_mode=0):
+    def get_prompt(self, _age, _viewpoint, _model_type, _place_type, _model_mode=0):
+        # TODO
+        prompt = self.model_dict[_model_type]
         sd_positive_prompts_dict = OrderedDict({
             'gender': [
                 # female
@@ -242,7 +247,8 @@ class OperatorSD(Operator):
                 # child
                 f'(child:1.3)',
                 # youth
-                f'(youth:1.3){"" if _gender else ", <lora:shojovibe_v11:0.4> ,<lora:koreanDollLikeness:0.4>"}',
+                # f'(youth:1.3){"" if _gender else ", <lora:shojovibe_v11:0.4> ,<lora:koreanDollLikeness:0.4>"}',
+                f'(youth:1.3)',
                 # middlescent
                 '(middlescent:1.3)',
             ],
@@ -264,7 +270,7 @@ class OperatorSD(Operator):
                 'realistic hand',
                 # 'detailed foot',
                 'realistic body',
-                '' if _gender else 'fluffy hair',
+                # '' if _gender else 'fluffy hair',
                 '' if _viewpoint == 2 else 'posing for a photo, light on face, realistic face',
                 '(simple background:1.3)',
                 '(white background:1.3)',
@@ -281,12 +287,13 @@ class OperatorSD(Operator):
         })
 
         sd_positive_prompts_dict['common'] = [x for x in sd_positive_prompts_dict['common'] if x]
-        sd_positive_prompts_dict['gender'] = [sd_positive_prompts_dict['gender'][_gender]]
+        # sd_positive_prompts_dict['gender'] = [sd_positive_prompts_dict['gender'][_gender]]
         sd_positive_prompts_dict['age'] = [sd_positive_prompts_dict['age'][_age]]
         sd_positive_prompts_dict['viewpoint'] = [sd_positive_prompts_dict['viewpoint'][_viewpoint]]
 
         if _viewpoint == 2:
-            sd_positive_prompt = f'(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, 2k wallpaper,realistic body, (simple background:1.3), (white background:1.3), (from behind:1.3){", 1boy" if _gender else ""}'
+            # sd_positive_prompt = f'(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, 2k wallpaper,realistic body, (simple background:1.3), (white background:1.3), (from behind:1.3){", 1boy" if _gender else ""}'
+            sd_positive_prompt = f'(RAW photo, best quality), (realistic, photo-realistic:1.3), masterpiece, 2k wallpaper,realistic body, (simple background:1.3), (white background:1.3), (from behind:1.3)'
 
         else:
             sd_positive_prompt = ', '.join([i for x in sd_positive_prompts_dict.values() for i in x])
@@ -334,6 +341,9 @@ class OperatorSD(Operator):
                 viewpoint_mode_idxs = {v: i for i, v in enumerate(['front', 'side', 'back'])}
                 _viewpoint_mode = viewpoint_mode_idxs[params['viewpoint_mode']]
                 _model_mode = 0 if params['model_mode'] == 'normal' else 1
+                # model and place type
+                _model_type = int(params['model_type'])
+                _place_type = int(params['place_type'])
 
                 output_height = 1024
                 output_width = 512
@@ -493,7 +503,7 @@ class OperatorSD(Operator):
 
                 task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
 
-                sd_positive_prompt, sd_negative_prompt = self.get_prompt(_gender, _age, _viewpoint_mode, _model_mode)
+                sd_positive_prompt, sd_negative_prompt = self.get_prompt(_age, _viewpoint_mode, _model_type, _place_type, _model_mode=_model_mode)
 
                 prompt_styles = None
                 # init_img = sam_result_gallery[2]
@@ -539,9 +549,10 @@ class OperatorSD(Operator):
                 cnet_idx = 1
                 controlnet_args_unit1 = modules.scripts.scripts_img2img.alwayson_scripts[cnet_idx].get_default_ui_unit()
                 controlnet_args_unit1.batch_images = ''
-                controlnet_args_unit1.control_mode = 'Balanced' if _model_mode == 0 else 'My prompt is more important'
-                controlnet_args_unit1.enabled = _model_mode == 0
-                # controlnet_args_unit1.enabled = False
+                # controlnet_args_unit1.control_mode = 'Balanced' if _model_mode == 0 else 'My prompt is more important'
+                controlnet_args_unit1.control_mode = 'My prompt is more important'
+                # controlnet_args_unit1.enabled = _model_mode == 0
+                controlnet_args_unit1.enabled = True
                 controlnet_args_unit1.guidance_end = 0.8
                 controlnet_args_unit1.guidance_start = 0  # ending control step
                 controlnet_args_unit1.image = None
@@ -554,8 +565,8 @@ class OperatorSD(Operator):
                 controlnet_args_unit1.processor_res = 512
                 controlnet_args_unit1.threshold_a = 64
                 controlnet_args_unit1.threshold_b = 64
-                controlnet_args_unit1.weight = 1
-                # controlnet_args_unit1.weight = 0.4
+                controlnet_args_unit1.weight = 0.2
+                # controlnet_args_unit1.weight = 1
                 controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
                 controlnet_args_unit2.enabled = False
                 controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
