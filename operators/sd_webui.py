@@ -18,6 +18,7 @@ from PIL import Image
 import cv2
 import numpy as np
 
+from config import lora_model_dict, lora_gender_dict, lora_model_common_dict, lora_place_dict
 from lib.celery_workshop.operator import Operator
 from utils.global_vars import CONFIG
 from modules import extra_networks
@@ -54,17 +55,16 @@ class OperatorSD(Operator):
         os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_idx)
         print("use gpu:" + str(gpu_idx))
 
-        # TODO laod model dict
-        self.lora_model_dict = {}
-        for fn in os.listdir(CONFIG['storage_dirpath']['lora_model_dir']):
-            index, lora_text = fn.split('_')
-            lora_name, weight = lora_text.split(':')
-            self.lora_model_dict[index] = {'name': lora_name, 'weight': weight}
-        self.lora_place_dict = {}
-        for fn in os.listdir(CONFIG['storage_dirpath']['lora_place_dir']):
-            index, lora_text = fn.split('_')
-            lora_name, weight = lora_text.split(':')
-            self.lora_model_dict[index] = {'name': lora_name, 'weight': weight}
+        # self.lora_model_dict = {}
+        # for fn in os.listdir(CONFIG['storage_dirpath']['lora_model_dir']):
+        #     index, lora_text = fn.split('_')
+        #     lora_name, weight = lora_text.split(':')
+        #     self.lora_model_dict[index] = {'name': lora_name, 'weight': weight}
+        # self.lora_place_dict = {}
+        # for fn in os.listdir(CONFIG['storage_dirpath']['lora_place_dir']):
+        #     index, lora_text = fn.split('_')
+        #     lora_name, weight = lora_text.split(':')
+        #     self.lora_model_dict[index] = {'name': lora_name, 'weight': weight}
 
         cmd_opts.gradio_debug = True
         cmd_opts.listen = True
@@ -243,16 +243,13 @@ class OperatorSD(Operator):
         return padded_image
 
     def get_prompt(self, _age, _viewpoint, _model_type, _place_type, _model_mode=0):
-        # TODO
-        lora_model = self.lora_model_dict[_model_type]
-        lora_place = self.lora_place_dict[_place_type]
         sd_positive_prompts_dict = OrderedDict({
-            'gender': [
-                # female
-                '1girl',
-                # male
-                '1boy',
-            ],
+            # 'gender': [
+            #     # female
+            #     '1girl',
+            #     # male
+            #     '1boy',
+            # ],
             'age': [
                 # child
                 f'(child:1.3)',
@@ -297,7 +294,6 @@ class OperatorSD(Operator):
         })
 
         sd_positive_prompts_dict['common'] = [x for x in sd_positive_prompts_dict['common'] if x]
-        # sd_positive_prompts_dict['gender'] = [sd_positive_prompts_dict['gender'][_gender]]
         sd_positive_prompts_dict['age'] = [sd_positive_prompts_dict['age'][_age]]
         sd_positive_prompts_dict['viewpoint'] = [sd_positive_prompts_dict['viewpoint'][_viewpoint]]
 
@@ -310,6 +306,21 @@ class OperatorSD(Operator):
 
         sd_negative_prompt = '(extra clothes:1.5),(clothes:1.5),(NSFW:1.3),paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), clothing, pants, shorts, t-shirt, dress, sleeves, lowres, ((monochrome)), ((grayscale)), duplicate, morbid, mutilated, mutated hands, poorly drawn face,skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, worst quality, jpeg artifacts, signature, watermark, username, bad feet, Multiple people, blurry, poorly drawn hands, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, too many fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, fused fingers, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8)'
 
+        # lora
+        lora_model = lora_model_dict[_model_type]
+        lora_prompt_list = [f"<lora:{lora_model['lora_name']}:{lora_model['weight']}>",
+                                  lora_gender_dict[lora_model['gender']],
+                                  ]
+        if len(lora_model['prompt'])>0:
+            lora_prompt_list.append(lora_model['prompt'])
+        for lora_common in lora_model_common_dict:
+            lora_prompt_list.append(f"<lora:{lora_common['lora_name']}:{lora_common['weight']}>")
+        else:
+            lora_prompt_list.append(lora_place_dict[_place_type]['prompt'])
+        sd_positive_prompt = f"{', '.join(lora_prompt_list)}, {sd_positive_prompt}"
+
+        print(f'sd_positive_prompt: {sd_positive_prompt}')
+        print(f'sd_negative_prompt: {sd_negative_prompt}')
         return sd_positive_prompt, sd_negative_prompt
 
     def __call__(self, *args, **kwargs):
