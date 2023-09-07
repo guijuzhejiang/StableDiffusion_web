@@ -264,7 +264,7 @@ class OperatorSD(Operator):
                 '(realistic, photo-realistic:1.3)',
                 'masterpiece',
                 # f'(a naked {"man" if _gender else "woman"}:1.5)',
-                f'an extremely delicate and {"handsome" if _gender else "beautiful"} {"male" if _gender else "female"}',
+                # f'an extremely delicate and {"handsome" if _gender else "beautiful"} {"male" if _gender else "female"}',
                 'extremely detailed CG unity 8k wallpaper',
                 # 'asian',
                 'highres',
@@ -356,7 +356,7 @@ class OperatorSD(Operator):
                 _batch_size = int(params['batch_size'])
                 # _input_image = base64_to_pil(params['input_image'])
                 _input_image = Image.open(io.BytesIO(kwargs['input_image'][0][1]))
-                _gender = 0 if params['gender'] == 'female' else 1
+                # _gender = 0 if params['gender'] == 'female' else 1
                 arge_idxs = {v: i for i, v in enumerate(['child', 'youth', 'middlescent'])}
                 _age = arge_idxs[params['age']]
                 viewpoint_mode_idxs = {v: i for i, v in enumerate(['front', 'side', 'back'])}
