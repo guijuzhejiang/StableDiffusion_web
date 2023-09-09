@@ -100,7 +100,7 @@ lora_model_dict = {
 
     12: {'lora_name': 'esd',
          'weight': 1,
-         'prompt': 'beautiful esd_woman,perfect esd_face, perfect esd_body,',
+         'prompt': 'beautiful esd_woman,perfect esd_face, perfect esd_body',
          'gender': 0,
          'label': '西班牙'
          },

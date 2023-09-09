@@ -276,6 +276,8 @@ class OperatorSD(Operator):
                 '(middlescent:1.3)',
             ],
             'common': [
+                '(full body:1.3)',
+                'Complete limbs and head',
                 '(best quality:1.2)',
                 '(high quality:1.2)',
                 'high details',
@@ -298,7 +300,6 @@ class OperatorSD(Operator):
                 '' if _viewpoint == 2 else 'posing for a photo, realistic face',
                 # '(simple background:1.3)',
                 # '(white background:1.3)',
-                '(full body:1.8)',
             ],
             'viewpoint': [
                 # 正面
@@ -591,7 +592,7 @@ class OperatorSD(Operator):
                 # controlnet_args_unit1.control_mode = 'Balanced' if _model_mode == 0 else 'My prompt is more important'
                 controlnet_args_unit1.control_mode = 'My prompt is more important'
                 # controlnet_args_unit1.enabled = _model_mode == 0
-                controlnet_args_unit1.enabled = True
+                controlnet_args_unit1.enabled = False
                 controlnet_args_unit1.guidance_end = 1
                 controlnet_args_unit1.guidance_start = 0  # ending control step
                 controlnet_args_unit1.image = None
