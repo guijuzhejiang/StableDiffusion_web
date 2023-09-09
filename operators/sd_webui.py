@@ -298,7 +298,7 @@ class OperatorSD(Operator):
                 '' if _viewpoint == 2 else 'posing for a photo, realistic face',
                 # '(simple background:1.3)',
                 # '(white background:1.3)',
-                '(full body:1.3)',
+                '(full body:1.8)',
             ],
             'viewpoint': [
                 # 正面

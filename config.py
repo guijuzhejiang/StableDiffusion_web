@@ -281,7 +281,7 @@ lora_place_dict = {
         },
 
     10: {'label': '林间溪流',
-         'prompt': 'slg,forest,grass,(stream:1.5),<lora:slg_v30:1>,outdoor,nice bokeh professional nature photography,calm atmosphere',
+         'prompt': 'slg,forest,(river:1.3),(stream),<lora:slg_v30:1>,outdoor,nice bokeh professional nature photography,calm atmosphere',
          },
 
     11: {'label': '林间瀑布',
@@ -289,7 +289,7 @@ lora_place_dict = {
          },
 
     12: {'label': '向日葵海',
-         'prompt': 'sunflower_background,<lora:Sunflower_v1:0.9>,outdoor,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme',
+         'prompt': 'sunflower_background,<lora:Sunflower_v1:0.7>,(sunflowers),outdoor,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme',
          },
 
     13: {'label': '黄昏',
