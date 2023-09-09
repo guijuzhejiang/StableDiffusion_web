@@ -1,3 +1,5 @@
+import shutil
+
 lora_model_common_dict = [
     {'lora_name': 'polyhedron_new_skin_v1.1', 'weight': 0.1, 'label': '赋予真实皮肤，带褶皱'},
     {'lora_name': 'add_detail', 'weight': 1, 'label': '增加细节'},
@@ -242,44 +244,44 @@ lora_place_dict = {
         'prompt': '(simple background:1.3), (white background:1.3)'
         },
 
-    1: {'label': '自然公路',
-        'prompt': 'scenicroad,<lora:scenicroad:1>,outdoor,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme,California'
+    1: {'label': '公路风光',
+        'prompt': '(scenicroad:1.3),<lora:scenicroad:1.0>,landscape,road,Utah,Florida,California,New England,Colorado,Arizona,Texas,Oregon,Pennsylvania,Washington,outdoor,nice bokeh professional nature photography,calm atmosphere'
         },
 
-    2: {'label': '花海森林',
+    2: {'label': '花团锦簇',
         'prompt': '<lora:乐章五部曲-林V1:1>,blue sky,outdoor, tree,nice bokeh professional nature photography,Cute landscape,calm atmosphere,peaceful theme,sen,nature,flowers',
         },
 
-    3: {'label': '樱花盛开',
-        'prompt': 'CherryBlossom_background,<lora:CherryBlossom_v1:0.6>,outdoor,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme',
+    3: {'label': '樱花绽放',
+        'prompt': 'CherryBlossom_background,<lora:CherryBlossom_v1:0.6>,outdoor,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme',
         },
 
-    4: {'label': '散景光斑',
+    4: {'label': '光晕',
         'prompt': 'glowingdust,bokeh,<lora:glowingdust:0.9>,outdoor,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme',
         },
 
-    5: {'label': '北高前街景',
+    5: {'label': '街景',
         'prompt': 'haruhizaka, kitakoumae, scenery,<lora:kitakoukou:1>,outdoor,nice bokeh professional nature photography,calm atmosphere,street, landscape,road, power lines, city, tree, building, sign, cityscape',
         },
 
-    6: {'label': '公园长椅',
-        'prompt': 'Park_Bench_background,<lora:ParkBench_v1:0.7>,outdoor,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme',
+    6: {'label': '公园',
+        'prompt': 'Park_Bench_background,<lora:ParkBench_v1:0.6>,park,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme',
         },
 
-    7: {'label': '校园天台',
-        'prompt': 'school rooftop,<lora:school_rooftop_v0.1:0.8>,outdoor,nice bokeh professional nature photography,calm atmosphere,chain-link fence,building',
+    7: {'label': '天台',
+        'prompt': '<lora:school_rooftop_v0.1:1> school rooftop,(rooftop:1.3),nice bokeh professional nature photography,calm atmosphere,chain-link fence,building',
         },
 
     8: {'label': '草坪',
-        'prompt': 'slg,(grass),<lora:slg_v30:1>,outdoor,nice bokeh professional nature photography,calm atmosphere',
+        'prompt': '<lora:slg_v30:1:1:lbw=0,1,1,1,1,1,1,1,1,1,0,1,1,0,1,1,0>,slg,grass',
         },
 
     9: {'label': '林间小路',
-        'prompt': 'slg,(forest),path,<lora:slg_v30:1>,outdoor,nice bokeh professional nature photography,calm atmosphere',
+        'prompt': 'slg,(forest),path,<lora:slg_v30:1>,(path in woods:1.3),outdoor,nice bokeh professional nature photography,calm atmosphere',
         },
 
     10: {'label': '林间溪流',
-         'prompt': 'slg,(river),<lora:slg_v30:1>,outdoor,nice bokeh professional nature photography,calm atmosphere',
+         'prompt': 'slg,forest,grass,(stream:1.5),<lora:slg_v30:1>,outdoor,nice bokeh professional nature photography,calm atmosphere',
          },
 
     11: {'label': '林间瀑布',
@@ -298,7 +300,13 @@ lora_place_dict = {
          'prompt': 'beach,<lora:Taketomijima:1>,outdoor,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme',
          },
 
-    15: {'label': '热带凉亭',
+    15: {'label': '夏威夷热',
          'prompt': 'tropical_tiki_retreat,<lora:tropical_tiki_retreat-10:1>,outdoor,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme,Exotic, Hawaiian, aloha',
          },
 }
+
+
+if __name__ =='__main__':
+    for k, v in lora_model_dict.items():
+        shutil.copy(f'/media/zzg/GJ_disk01/pretrained_model/stable-diffusion-webui/models/Lora/{v["lora_name"]}.safetensors', f'/home/zzg/workspace/pycharm/StableDiffusion_web/models/Lora/{v["lora_name"]}.safetensors')
+

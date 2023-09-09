@@ -77,9 +77,32 @@ def clear_dino_cache():
     gc.collect()
     torch_gc()
 
+def load_dino_model2(dino_checkpoint):
+    # print(f"Initializing GroundingDINO {dino_checkpoint}")
+    if dino_checkpoint in dino_model_cache:
+        dino = dino_model_cache[dino_checkpoint]
+        print(f"GroundingDINO is loaded in model cache {dino_checkpoint}")
+    else:
+        print(f"loading GroundingDINO {dino_checkpoint}")
+        clear_dino_cache()
+        from groundingdino.models import build_model
+        from groundingdino.util.slconfig import SLConfig
+        from groundingdino.util.utils import clean_state_dict
+        args = SLConfig.fromfile(dino_model_info[dino_checkpoint]["config"])
+        dino = build_model(args)
+        checkpoint = torch.hub.load_state_dict_from_url(
+            dino_model_info[dino_checkpoint]["url"], dino_model_dir)
+        dino.load_state_dict(clean_state_dict(
+            checkpoint['model']), strict=False)
+        dino.to(device=device)
+        dino_model_cache[dino_checkpoint] = dino
+        dino.eval()
+        print(f"GroundingDINO is loaded {dino_checkpoint}")
+    return dino, dino_checkpoint
+
 
 def load_dino_model(dino_checkpoint):
-    # print(f"Initializing GroundingDINO {dino_checkpoint}")
+    print(f"cache[] GroundingDINO {dino_model_cache.keys()}")
     if dino_checkpoint in dino_model_cache:
         dino = dino_model_cache[dino_checkpoint]
         print(f"GroundingDINO is loaded in model cache {dino_checkpoint}")
@@ -159,9 +182,9 @@ def dino_predict_internal(input_image, dino_model_name, text_prompt, box_thresho
         boxes_filt[i][2:] += boxes_filt[i][:2]
 
     print("Running GroundingDINO clean")
-    # gc.collect()
-    # torch_gc()
-    clear_dino_cache()
+    gc.collect()
+    torch_gc()
+    # clear_dino_cache()
     print('dino_predict_internal done.')
     return boxes_filt, True
 

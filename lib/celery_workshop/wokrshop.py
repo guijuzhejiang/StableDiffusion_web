@@ -36,7 +36,6 @@ class WorkShop(object):
         from utils.global_vars import CONFIG
 
         celery_app_name = WorkShop.get_celery_app_name(index, op_name, is_cuda)
-        print("celery_app_name!!!!!!!!!!!!!!!!!!")
         print(celery_app_name)
         while True:
             try:

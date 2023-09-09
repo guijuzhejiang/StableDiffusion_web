@@ -312,6 +312,9 @@ def load_scripts():
 
     for scriptfile in sorted(scripts_list, key=lambda x: [orderby(x.basedir), x]):
         try:
+            # if scriptfile.filename == '!adetailer.py':
+            #     print('ttt')
+            # print(f'scriptfile:{scriptfile}')
             if scriptfile.basedir != paths.script_path:
                 sys.path = [scriptfile.basedir] + sys.path
             current_basedir = scriptfile.basedir
