@@ -245,7 +245,7 @@ lora_place_dict = {
         },
 
     1: {'label': '公路风光',
-        'prompt': '(scenicroad:1.3),<lora:scenicroad:1.0>,landscape,road,Utah,Florida,California,New England,Colorado,Arizona,Texas,Oregon,Pennsylvania,Washington,outdoor,nice bokeh professional nature photography,calm atmosphere'
+        'prompt': '(scenicroad:1.3),<lora:scenicroad:1.0>,landscape,a road with many trees on both sides,Utah,Florida,California,New England,Colorado,Arizona,Texas,Oregon,Pennsylvania,Washington,outdoor,nice bokeh professional nature photography,calm atmosphere'
         },
 
     2: {'label': '花团锦簇',
@@ -253,7 +253,7 @@ lora_place_dict = {
         },
 
     3: {'label': '樱花绽放',
-        'prompt': 'CherryBlossom_background,<lora:CherryBlossom_v1:0.6>,outdoor,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme',
+        'prompt': 'CherryBlossom_background,<lora:CherryBlossom_v1:0.6>,cherry blossoms in bloom,outdoor,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme',
         },
 
     4: {'label': '光晕',
@@ -273,7 +273,7 @@ lora_place_dict = {
         },
 
     8: {'label': '草坪',
-        'prompt': '<lora:slg_v30:1:1:lbw=0,1,1,1,1,1,1,1,1,1,0,1,1,0,1,1,0>,slg,grass',
+        'prompt': '<lora:slg_v30:1>,slg,grass,green lawn',
         },
 
     9: {'label': '林间小路',
@@ -293,7 +293,7 @@ lora_place_dict = {
          },
 
     13: {'label': '黄昏',
-         'prompt': 'sunset_scenery_background,<lora:SunsetScenery_v1:0.7>,outdoor,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme',
+         'prompt': 'sunset_scenery_background,<lora:SunsetScenery_v1:0.7>,sunset,outdoor,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme',
          },
 
     14: {'label': '沙滩',
