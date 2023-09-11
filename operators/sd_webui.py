@@ -437,10 +437,10 @@ class OperatorSD(Operator):
                                     y_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 1 or i == 3]
                                     box = [min(x_list), min(y_list), max(x_list), max(y_list)]
                                     person0_box = [
-                                        box[0] if box[0] == -1 or box[0] < person0_box[0] else person0_box[0],
-                                        box[1] if box[1] == -1 or box[1] < person0_box[1] else person0_box[1],
-                                        box[2] if box[2] == -1 or box[2] > person0_box[2] else person0_box[2],
-                                        box[3] if box[3] == -1 or box[3] > person0_box[3] else person0_box[3],
+                                        box[0] if person0_box[0] == -1 or box[0] < person0_box[0] else person0_box[0],
+                                        box[1] if person0_box[1] == -1 or box[1] < person0_box[1] else person0_box[1],
+                                        box[2] if person0_box[2] == -1 or box[2] > person0_box[2] else person0_box[2],
+                                        box[3] if person0_box[3] == -1 or box[3] > person0_box[3] else person0_box[3],
                                                    ]
 
                             if person0_box[0] == -1:
@@ -542,22 +542,23 @@ class OperatorSD(Operator):
                             sam_result_gallery[1] = 1
                             sam_result_gallery[2] = sam_result[2]
                         else:
-                            sam_result_gallery[0] = sam_result_gallery[0].paste(sam_result[0], (0, 0), sam_result[0])
+                            sam_result_gallery[0].paste(sam_result[0], (0, 0), sam_result[0])
                             sam_result_gallery[1] = 1
-                            sam_result_gallery[2] = sam_result_gallery[2].paste(sam_result[2], (0, 0), sam_result[2])
+                            sam_result_gallery[2].paste(sam_result[2], (0, 0), sam_result[2])
                         sam_mask_result.append(np.array(sam_result[1]))
 
                 if sam_result_gallery[0] is None:
                     return {'success': False, 'result': '未检测到服装'}
                 else:
                     merged_mask = None
-                    for mask_res in sam_mask_result:
+                    for idx, mask_res in enumerate(sam_mask_result):
+                        # Image.fromarray(mask_res).save(f'{idx}_test1.png')
                         if merged_mask is None:
                             merged_mask = mask_res
                         else:
                             merged_mask |= mask_res
                     else:
-                        sam_result_gallery[1] = Image.fromarray(merged_mask.astype('uint8'))
+                        sam_result_gallery[1] = Image.fromarray(merged_mask)
 
                 pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
                 for idx, sam_mask_img in enumerate(sam_result_gallery):
