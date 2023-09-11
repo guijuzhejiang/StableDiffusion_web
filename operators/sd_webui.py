@@ -377,6 +377,8 @@ class OperatorSD(Operator):
                 # _dino_clothing_text_prompt = 'clothing . pants . short . dress . shirt . t-shirt . skirt . bra . bowtie'
                 #bikini和t-shirt冲突
                 _dino_clothing_text_prompt = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear'
+                # _dino_clothing_text_prompt_0 = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear'
+                # _dino_clothing_text_prompt_1 = 'bra . bikini . bowtie . stocking . chain'
                 _box_threshold = 0.3
 
                 if _input_image is None:
