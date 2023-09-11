@@ -376,7 +376,11 @@ class OperatorSD(Operator):
                 #underwear . bikini和bowtie冲突，bra和bowtie不冲突，考虑分组遍历后在合并
                 # _dino_clothing_text_prompt = 'clothing . pants . short . dress . shirt . t-shirt . skirt . bra . bowtie'
                 #bikini和t-shirt冲突
-                _dino_clothing_text_prompt = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear'
+                # _dino_clothing_text_prompt = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear'
+                _dino_clothing_text_prompt = [
+                    'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear',
+                    'bra . bikini . bowtie . stocking . chain',
+                ]
                 # _dino_clothing_text_prompt_0 = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear'
                 # _dino_clothing_text_prompt_1 = 'bra . bikini . bowtie . stocking . chain'
                 _box_threshold = 0.3
@@ -397,6 +401,9 @@ class OperatorSD(Operator):
                         if _model_mode == 0:
                             person_boxes, _ = self.dino.dino_predict_internal(_input_image, _dino_model_name, "person",
                                                                     _box_threshold)
+                            if len(person_boxes) == 0:
+                                return {'success': False, 'result': '未检测到服装'}
+
                             person0_box = [int(x) for x in person_boxes[0]]
                             person0_width = person0_box[2] - person0_box[0]
                             person0_height = person0_box[3] - person0_box[1]
@@ -420,14 +427,24 @@ class OperatorSD(Operator):
                                             cv2.cvtColor(np.array(_input_image), cv2.COLOR_RGBA2BGRA))
                         # artificial model
                         else:
-                            # artificial_model_dino_clothing_prompt = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear . bra . bikini'
-                            person_boxes, _ = self.dino.dino_predict_internal(_input_image, _dino_model_name,
-                                                                    _dino_clothing_text_prompt, _box_threshold)
+                            person0_box = [-1, -1, -1, -1]
+                            for dino_prompt in _dino_clothing_text_prompt:
+                                person_boxes, _ = self.dino.dino_predict_internal(_input_image, _dino_model_name,
+                                                                    dino_prompt, _box_threshold)
+                                if len(person_boxes) > 0:
+                                    # get max area clothing box
+                                    x_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 0 or i == 2]
+                                    y_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 1 or i == 3]
+                                    box = [min(x_list), min(y_list), max(x_list), max(y_list)]
+                                    person0_box = [
+                                        box[0] if box[0] == -1 or box[0] < person0_box[0] else person0_box[0],
+                                        box[1] if box[1] == -1 or box[1] < person0_box[1] else person0_box[1],
+                                        box[2] if box[2] == -1 or box[2] > person0_box[2] else person0_box[2],
+                                        box[3] if box[3] == -1 or box[3] > person0_box[3] else person0_box[3],
+                                                   ]
 
-                            # get max area clothing box
-                            x_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 0 or i == 2]
-                            y_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 1 or i == 3]
-                            person0_box = [min(x_list), min(y_list), max(x_list), max(y_list)]
+                            if person0_box[0] == -1:
+                                return {'success': False, 'result': '未检测到服装'}
 
                             person0_width = person0_box[2] - person0_box[0]
                             person0_height = person0_box[3] - person0_box[1]
@@ -495,7 +512,7 @@ class OperatorSD(Operator):
                         _input_image = Image.open(io.BytesIO(jpeg_data)).convert('RGBA')
 
                         # limit height 768
-                        check_w, check_h  = _input_image.size
+                        check_w, check_h = _input_image.size
                         print(f"before:{_input_image.size}")
 
                         if check_h > _output_height:
@@ -513,15 +530,36 @@ class OperatorSD(Operator):
                                           format='PNG')
 
                 sam_result_tmp_png_fp = []
+                sam_result_gallery = [None, None, None]
+                sam_mask_result = []
+                for dino_prompt in _dino_clothing_text_prompt:
+                    sam_result, _ = self.sam.sam_predict(_dino_model_name, dino_prompt,
+                                                                 _box_threshold,
+                                                                 _input_image)
+                    if len(sam_result) > 0:
+                        if sam_result_gallery[0] is None:
+                            sam_result_gallery[0] = sam_result[0]
+                            sam_result_gallery[1] = 1
+                            sam_result_gallery[2] = sam_result[2]
+                        else:
+                            sam_result_gallery[0] = sam_result_gallery[0].paste(sam_result[0], (0, 0), sam_result[0])
+                            sam_result_gallery[1] = 1
+                            sam_result_gallery[2] = sam_result_gallery[2].paste(sam_result[2], (0, 0), sam_result[2])
+                        sam_mask_result.append(np.array(sam_result[1]))
 
-                sam_result_gallery, sam_result = self.sam.sam_predict(_dino_model_name, _dino_clothing_text_prompt,
-                                                             _box_threshold,
-                                                             _input_image)
+                if sam_result_gallery[0] is None:
+                    return {'success': False, 'result': '未检测到服装'}
+                else:
+                    merged_mask = None
+                    for mask_res in sam_mask_result:
+                        if merged_mask is None:
+                            merged_mask = mask_res
+                        else:
+                            merged_mask |= mask_res
+                    else:
+                        sam_result_gallery[1] = Image.fromarray(merged_mask.astype('uint8'))
 
                 pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
-                if len(sam_result_gallery) == 0:
-                    return {'success': False, 'result': '未检测到服装'}
-
                 for idx, sam_mask_img in enumerate(sam_result_gallery):
                     cache_fp = f"tmp/{idx}_{pic_name}.png"
                     sam_mask_img.save(cache_fp)
@@ -536,8 +574,8 @@ class OperatorSD(Operator):
 
                 prompt_styles = None
                 _input_image_width, _input_image_height = _input_image.size
-                new_img = Image.open("/home/zzg/workspace/pycharm/StableDiffusion_web/outputs/img2img-images/web_storage/20230908154917_GmdUoW.png").resize((_input_image_width, _input_image_height))
-                new_img.paste(sam_result_gallery[2], (0, 0), sam_result_gallery[2])
+                # new_img = Image.open("/home/zzg/workspace/pycharm/StableDiffusion_web/outputs/img2img-images/web_storage/20230908154917_GmdUoW.png").resize((_input_image_width, _input_image_height))
+                # new_img.paste(sam_result_gallery[2], (0, 0), sam_result_gallery[2])
 
                 # init_img = new_img
                 # init_img = Image.alpha_composite(sam_result_gallery[2], Image.new("RGBA", (_input_image_width, _input_image_height), (55, 55, 55)))
