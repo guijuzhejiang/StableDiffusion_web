@@ -382,7 +382,7 @@ class OperatorSD(Operator):
                 #underwear . bikini和bowtie冲突，bra和bowtie不冲突，考虑分组遍历后在合并
                 # _dino_clothing_text_prompt = 'clothing . pants . short . dress . shirt . t-shirt . skirt . bra . bowtie'
                 #bikini和t-shirt冲突
-                _dino_clothing_text_prompt = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear . bra'
+                _dino_clothing_text_prompt = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear'
                 _box_threshold = 0.3
 
                 if _input_image is None:
@@ -443,8 +443,7 @@ class OperatorSD(Operator):
                             right_ratio = 0.1
                             # top_ratio = 0.32
                             top_ratio = min(0.35, math.pow(person0_width / person0_height, factor_top) * constant_top)
-                            bottom_ratio = min(0.58, math.pow(person0_width / person0_height,
-                                                              factor_bottom) * constant_bottom)
+                            bottom_ratio = min(0.58, math.pow(person0_width / person0_height, factor_bottom) * constant_bottom)
                             print(f"bottom_ratio: {bottom_ratio}")
                             print(f"top_ratio: {top_ratio}")
                             print(f"boxes: {person_boxes}")
@@ -467,6 +466,7 @@ class OperatorSD(Operator):
 
                             _input_image = self.padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right,
                                                                              padding_top, padding_bottom, person0_box)
+
                             _input_image = self.configure_image(_input_image,
                                                                 [0 if (int(
                                                                     person0_box[0]) / person0_width) < left_ratio else
@@ -489,26 +489,28 @@ class OperatorSD(Operator):
                         print(traceback.format_exc())
                         print('preprocess img error')
                     else:
-                        # limit height 768
-                        check_h, check_w, _ = _input_image.shape
-                        print(f"before:{_input_image.shape}")
-                        if check_h > _output_height:
-                            tmp_w = int(_output_height * check_w / check_h)
-                            _input_image = cv2.resize(_input_image, (tmp_w, _output_height))
-                        # height and width restrict to 8 times
-                        check_h, check_w, _ = _input_image.shape
-                        tmp_h = int(check_h // 8 * 8)
-                        tmp_w = int(check_w // 8 * 8)
-                        _input_image = _input_image[:tmp_h, :tmp_w]
-
-                        # 压缩图像质量
-                        quality = 100
+                        # # 压缩图像质量
+                        quality = 80
                         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
-                        _, jpeg_data = cv2.imencode('.png', cv2.cvtColor(np.array(_input_image), cv2.COLOR_RGBA2BGRA),
+                        _, jpeg_data = cv2.imencode('.jpg', cv2.cvtColor(np.array(_input_image), cv2.COLOR_RGBA2BGRA),
                                                     encode_param)
 
                         # 将压缩后的图像转换为PIL图像
                         _input_image = Image.open(io.BytesIO(jpeg_data)).convert('RGBA')
+
+                        # limit height 768
+                        check_w, check_h  = _input_image.size
+                        print(f"before:{_input_image.size}")
+
+                        if check_h > _output_height:
+                            tmp_w = int(_output_height * check_w / check_h)
+                            tmp_w = int(tmp_w // 8 * 8)
+                            _input_image = _input_image.resize((tmp_w, _output_height))
+
+                        else:
+                            tmp_h = int(check_h // 8 * 8)
+                            tmp_w = int(check_w // 8 * 8)
+                            _input_image = _input_image.crop((0, 0, tmp_w, tmp_h))
 
                     if self.shared.cmd_opts.debug_mode:
                         _input_image.save(f'tmp/resized_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
@@ -596,7 +598,7 @@ class OperatorSD(Operator):
                 # controlnet_args_unit1.control_mode = 'Balanced' if _model_mode == 0 else 'My prompt is more important'
                 controlnet_args_unit1.control_mode = 'My prompt is more important'
                 # controlnet_args_unit1.enabled = _model_mode == 0
-                controlnet_args_unit1.enabled = False
+                controlnet_args_unit1.enabled = (_place_type == 0 and _model_mode == 0)
                 controlnet_args_unit1.guidance_end = 1
                 controlnet_args_unit1.guidance_start = 0  # ending control step
                 controlnet_args_unit1.image = None
