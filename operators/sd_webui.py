@@ -276,7 +276,7 @@ class OperatorSD(Operator):
                 '(middlescent:1.3)',
             ],
             'common': [
-                '(full body:1.3)',
+                '(full body:1.8)',
                 'Complete limbs and head',
                 '(best quality:1.2)',
                 '(high quality:1.2)',
