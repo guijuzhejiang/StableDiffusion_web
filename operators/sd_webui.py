@@ -378,8 +378,8 @@ class OperatorSD(Operator):
                 #bikini和t-shirt冲突
                 # _dino_clothing_text_prompt = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear'
                 _dino_clothing_text_prompt = [
-                    'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear',
-                    'bra . bikini . bowtie . stocking . chain',
+                    'clothing . pants . dress . shirt . t-shirt . skirt',
+                    'bra . bikini . bowtie . stocking . chain . underwear',
                 ]
                 # _dino_clothing_text_prompt_0 = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear'
                 # _dino_clothing_text_prompt_1 = 'bra . bikini . bowtie . stocking . chain'
@@ -550,9 +550,11 @@ class OperatorSD(Operator):
                 if sam_result_gallery[0] is None:
                     return {'success': False, 'result': '未检测到服装'}
                 else:
+                    pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
+
                     merged_mask = None
                     for idx, mask_res in enumerate(sam_mask_result):
-                        # Image.fromarray(mask_res).save(f'{idx}_test1.png')
+                        Image.fromarray(mask_res).save(f'tmp/{idx}_mask_{pic_name}.png')
                         if merged_mask is None:
                             merged_mask = mask_res
                         else:
@@ -560,7 +562,6 @@ class OperatorSD(Operator):
                     else:
                         sam_result_gallery[1] = Image.fromarray(merged_mask)
 
-                pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
                 for idx, sam_mask_img in enumerate(sam_result_gallery):
                     cache_fp = f"tmp/{idx}_{pic_name}.png"
                     sam_mask_img.save(cache_fp)

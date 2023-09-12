@@ -14,11 +14,12 @@ from utils.global_vars import CONFIG
 # Blueprint
 bp = Blueprint("ai_tasks")
 # add_route
-bp.add_route(SDGenertae.as_view(), "/sd/generate")
+# bp.add_route(SDGenertae.as_view(), "/sd/generate")
 bp.add_route(SDHires.as_view(), "/sd/hires")
 bp.add_route(Pay.as_view(), "/wechat/pay")
 bp.add_route(Query.as_view(), "/wechat/query")
 bp.add_route(ImageProvider.as_view(), "/user/image/fetch")
+bp.add_websocket_route(SDGenertae, "/sd/generate")
 
 # CORS settings
 cors = CORS(bp, resources={r"/sd/*": {"origins": "*", "headers": "*"},

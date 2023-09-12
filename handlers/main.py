@@ -7,8 +7,6 @@ from io import BytesIO
 
 import pytz
 import ujson
-from PIL import Image
-from sanic import HTTPResponse
 from sanic.response import json as sanic_json, file_stream
 from sanic.views import HTTPMethodView
 from wechatpayv3 import WeChatPayType
