@@ -41,6 +41,9 @@ class OperatorSD(Operator):
     enable = True
 
     def __init__(self, gpu_idx=0):
+        os.environ['ACCELERATE'] = 'True'
+        os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_idx)
+        print("use gpu:" + str(gpu_idx))
         Operator.__init__(self)
         self.extra_networks = importlib.import_module('modules.extra_networks')
         self.script_callbacks = importlib.import_module('modules.script_callbacks')
@@ -65,10 +68,6 @@ class OperatorSD(Operator):
         self.scripts_postprocessing = getattr(importlib.import_module('modules'), 'scripts_postprocessing')
 
         os.makedirs(CONFIG['storage_dirpath']['user_dir'], exist_ok=True)
-
-        os.environ['ACCELERATE'] = 'True'
-        os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_idx)
-        print("use gpu:" + str(gpu_idx))
 
         # self.lora_model_dict = {}
         # for fn in os.listdir(CONFIG['storage_dirpath']['lora_model_dir']):
@@ -290,6 +289,7 @@ class OperatorSD(Operator):
                 'realistic hand',
                 # 'detailed foot',
                 'realistic body',
+                'out of frame',
                 '' if _viewpoint == 2 else 'posing for a photo, realistic face',
                 # '(simple background:1.3)',
                 # '(white background:1.3)',
