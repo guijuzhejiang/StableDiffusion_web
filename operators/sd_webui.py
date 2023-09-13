@@ -35,7 +35,7 @@ from utils.global_vars import CONFIG
 
 class OperatorSD(Operator):
     """ stable diffusion """
-    num = 1
+    num = 2
     cache = True
     cuda = True
     enable = True
@@ -277,7 +277,6 @@ class OperatorSD(Operator):
             ],
             'common': [
                 '(full body:1.8)',
-                'Complete limbs and head',
                 '(best quality:1.2)',
                 '(high quality:1.2)',
                 'high details',
@@ -331,7 +330,7 @@ class OperatorSD(Operator):
             lora_prompt_list.append(lora_place_dict[_place_type]['prompt'])
 
         ad_face_positive_prompt = ', '.join(lora_prompt_list)
-        sd_positive_prompt = f"{ad_face_positive_prompt}, {sd_positive_prompt}"
+        sd_positive_prompt = f"{sd_positive_prompt}, {ad_face_positive_prompt}"
 
         print(f'sd_positive_prompt: {sd_positive_prompt}')
         print(f'sd_negative_prompt: {sd_negative_prompt}')
@@ -581,7 +580,7 @@ class OperatorSD(Operator):
 
                 # init_img = new_img
                 # init_img = Image.alpha_composite(sam_result_gallery[2], Image.new("RGBA", (_input_image_width, _input_image_height), (55, 55, 55)))
-                init_img = _input_image
+                # init_img = _input_image
                 # for x in range(_input_image_width):
                 #     for y in range(_input_image_height):
                 #         pixel = sam_result_gallery[2].getpixel((x, y))
@@ -589,7 +588,7 @@ class OperatorSD(Operator):
                 #             # 随机生成噪点的RGB值
                 #             noise_color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 255)
                 #             sam_result_gallery[2].putpixel((x, y), noise_color)
-                # init_img = sam_result_gallery[2]
+                init_img = sam_result_gallery[2]
                 # init_img.save('test!!initimg.png')
 
                 sketch = None
@@ -609,7 +608,7 @@ class OperatorSD(Operator):
                 batch_size = _batch_size
                 cfg_scale = 7
                 image_cfg_scale = 1.5
-                denoising_strength = 0.7
+                denoising_strength = 1
                 seed = -1.0
                 subseed = -1.0
                 subseed_strength = 0
@@ -633,15 +632,16 @@ class OperatorSD(Operator):
                 controlnet_args_unit1.batch_images = ''
                 # controlnet_args_unit1.control_mode = 'Balanced' if _model_mode == 0 else 'My prompt is more important'
                 controlnet_args_unit1.control_mode = 'My prompt is more important'
-                # controlnet_args_unit1.enabled = _model_mode == 0
-                controlnet_args_unit1.enabled = (_place_type == 0 and _model_mode == 0)
+                # controlnet_args_unit1.enabled = True
+                controlnet_args_unit1.enabled = (_place_type == 0)
+                # controlnet_args_unit1.enabled = (_place_type == 0 and _model_mode == 0)
                 controlnet_args_unit1.guidance_end = 1
                 controlnet_args_unit1.guidance_start = 0  # ending control step
                 controlnet_args_unit1.image = None
                 # controlnet_args_unit1.input_mode = batch_hijack.InputMode.SIMPLE
                 controlnet_args_unit1.low_vram = False
                 # controlnet_args_unit1.model = 'control_v11p_sd15_inpaint'
-                # controlnet_args_unit1.module = 'inpaint_only+lama'
+                # controlnet_args_unit1.module = 'inpaint_only'
                 controlnet_args_unit1.model = 'control_v11p_sd15_normalbae'
                 controlnet_args_unit1.module = 'normal_bae'
                 controlnet_args_unit1.pixel_perfect = True
@@ -649,8 +649,7 @@ class OperatorSD(Operator):
                 controlnet_args_unit1.processor_res = 512
                 controlnet_args_unit1.threshold_a = 64
                 controlnet_args_unit1.threshold_b = 64
-                controlnet_args_unit1.weight = 0.2
-                # controlnet_args_unit1.weight = 1
+                controlnet_args_unit1.weight = 0.8
                 controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
                 controlnet_args_unit2.enabled = False
                 controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
