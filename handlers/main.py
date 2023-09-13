@@ -52,21 +52,22 @@ class SDGenertae(HTTPMethodView):
             else:
                 cost_points *= int(int(params['batch_size']))
 
-            account = request.app.ctx.supabase_client.table("account").select("*").eq("id", user_id).execute().data[0]
+            account = (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[0]
             if cost_points <= account['balance']:
                 task_result = sd_workshop(**request_form)
+                print('wait')
                 while not task_result.ready():
                     await asyncio.sleep(1)
-                    print('wait')
+                print('done')
                 task_result = task_result.result
                 if task_result['success']:
-                    data = request.app.ctx.supabase_client.table("transaction").insert({"user_id": user_id,
+                    data = await request.app.ctx.supabase_client.atable("transaction").insert({"user_id": user_id,
                                                                                         'amount': cost_points,
                                                                                         'is_plus': False,
                                                                                         'status': 1,
                                                                                         }).execute()
-                    res = request.app.ctx.supabase_client.table("account").update(
-                        {"balance": account['balance']-cost_points}).eq("id", user_id).execute().data
+                    res = (await request.app.ctx.supabase_client.atable("account").update(
+                        {"balance": account['balance']-cost_points}).eq("id", user_id).execute()).data
 
             else:
                 task_result = {'success': False, 'result': "余额不足"}
@@ -85,7 +86,7 @@ class SDHires(HTTPMethodView):
 class Pay(HTTPMethodView):
     async def post(self, request):
         user_id = request.form['user_id'][0]
-        account = request.app.ctx.supabase_client.table("account").select("*").eq("id", user_id).execute().data[0]
+        account = (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[0]
         # 以native下单为例，下单成功后即可获取到'code_url'，将'code_url'转换为二维码，并用微信扫码即可进行支付测试。
         out_trade_no = datetime.now().strftime('%Y%m%d%H%M%S%f') + '_' + ''.join(
             [random.choice(string.ascii_letters) for c in range(8)])
@@ -102,7 +103,7 @@ class Pay(HTTPMethodView):
         )
         qrcode_url = ''
         if code == 200:
-            data = request.app.ctx.supabase_client.table("transaction").insert({"user_id": user_id,
+            data = await request.app.ctx.supabase_client.atable("transaction").insert({"user_id": user_id,
                                                                                 'amount': charge_points,
                                                                                 'is_plus': True,
                                                                                 'status': 0,
@@ -115,8 +116,8 @@ class Query(HTTPMethodView):
     async def post(self, request):
         user_id = request.form['user_id'][0]
 
-        no_confirm_rows = request.app.ctx.supabase_client.table("transaction").select("*").eq("user_id",
-                                                                                          user_id).eq("is_plus", True).execute().data
+        no_confirm_rows = (await request.app.ctx.supabase_client.atable("transaction").select("*").eq("user_id",
+                                                                                          user_id).eq("is_plus", True).execute()).data
 
         # 计算未确认支付额
         pre_charge_amount = 0
@@ -130,8 +131,8 @@ class Query(HTTPMethodView):
                 trade_message = ujson.loads(message)
 
                 if code == 200 and trade_message['trade_state'] == 'SUCCESS':
-                    data = request.app.ctx.supabase_client.table("transaction").update(
-                        {"status": 1}).eq("id", row['id']).eq("is_plus", True).execute().data
+                    data = (await request.app.ctx.supabase_client.atable("transaction").update(
+                        {"status": 1}).eq("id", row['id']).eq("is_plus", True).execute()).data
                     if len(data) == 0:
                         print(row['id'] + " update transaction false")
                     pre_charge_amount += row['amount']
@@ -140,13 +141,13 @@ class Query(HTTPMethodView):
                     if (datetime.now(pytz.UTC) - datetime.fromisoformat(iso_created_at).replace(tzinfo=pytz.UTC)) >= timedelta(minutes=15):
                         need_del_transaction.append(row['id'])
 
-        account = request.app.ctx.supabase_client.table("account").select("*").eq("id", user_id).execute().data[0]
+        account = (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[0]
         if pre_charge_amount > 0:
-            data = request.app.ctx.supabase_client.table("account").update(
-                        {"balance": account['balance']+pre_charge_amount}).eq("id", account['id']).execute().data
+            data = (await request.app.ctx.supabase_client.atable("account").update(
+                        {"balance": account['balance']+pre_charge_amount}).eq("id", account['id']).execute()).data
         if len(need_del_transaction):
             for del_target in need_del_transaction:
-                data = request.app.ctx.supabase_client.table("transaction").delete().eq("id", del_target).execute().data
+                data = (await request.app.ctx.supabase_client.atable("transaction").delete().eq("id", del_target).execute()).data
 
         if hasattr(request.form, 'out_trade_no'):
             out_trade_no = request.form['out_trade_no'][0]
