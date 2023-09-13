@@ -35,10 +35,11 @@ from utils.global_vars import CONFIG
 
 class OperatorSD(Operator):
     """ stable diffusion """
-    num = 2
+    num = 1
     cache = True
     cuda = True
     enable = True
+    celery_task_name = 'sd_task'
 
     def __init__(self, gpu_idx=0):
         os.environ['ACCELERATE'] = 'True'

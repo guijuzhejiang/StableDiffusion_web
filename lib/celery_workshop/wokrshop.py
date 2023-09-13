@@ -18,10 +18,12 @@ class WorkShop(object):
     def __init__(self, op):
         print(f"run {self.__class__.__name__}:{sys._getframe().f_code.co_name}")
         self.op = op
+        celery_prefix_name = WorkShop.get_celery_prefix_name(op.__class__.__name__, op.cuda)
+        self.celery_app = Celery(f"{celery_prefix_name}_app", broker='amqp://localhost:5672', backend='redis://localhost:6379/0')
 
     @staticmethod
-    def get_celery_app_name(index, op_name, is_cuda):
-        return f"{op_name}_{'cuda' if is_cuda else 'cpu'}_{index}"
+    def get_celery_prefix_name(op_name, is_cuda):
+        return f"{op_name}_{'cuda' if is_cuda else 'cpu'}"
 
     # 指定独立存在的子进程，处理业务的进程，存储加载后的模型
     @staticmethod
@@ -34,19 +36,18 @@ class WorkShop(object):
         from lib.common.common_util import logging
         from utils.global_vars import CONFIG
 
-        celery_app_name = WorkShop.get_celery_app_name(index, op_name, is_cuda)
-        print(celery_app_name)
+        celery_prefix_name = WorkShop.get_celery_prefix_name(op_name, is_cuda)
+        print(celery_prefix_name)
         while True:
             try:
-                app = Celery(celery_app_name, broker='amqp://localhost:5672', backend='redis://localhost:6379/0')
-
-                module = import_module(f'operators')
+                app = Celery(f"{celery_prefix_name}_app", broker='amqp://localhost:5672', backend='redis://localhost:6379/0')
+                module = getattr(import_module(f'operators'), op_name)
 
                 class ProceedTask(Task):
                     # load model
-                    operator = getattr(module, op_name)(index)
+                    operator = module(index)
                     # task 命名
-                    name = f"{celery_app_name}.ProceedTask"
+                    name = module.celery_task_name if hasattr(module, 'celery_task_name') else module.__class__.name
 
                     def run(self, *args, **kwargs):
                         res = self.operator(*args, **kwargs)
@@ -56,7 +57,7 @@ class WorkShop(object):
                 print(app.tasks)
 
                 # , '--pool=eventlet'
-                app.worker_main(argv=['worker', '--loglevel=info', '--concurrency=1', '-P', 'solo'])
+                app.worker_main(argv=['worker', '--loglevel=info', '--concurrency=1', '-P', 'solo', '-Ofair', '-n', f'{celery_prefix_name}_worker'])
             except Exception:
                 print(traceback.format_exc())
                 logging(
@@ -72,13 +73,11 @@ class WorkShop(object):
     # 客户端异步调用发布任务，订阅任务结果
     def __call__(self, celery_app=None, *args, **kwargs):
         # 获取显存占用最小的显卡idx
-        cuda_device_idx = GPUtil.getAvailable(order='memory', limit=1)[0] if self.op.cuda and len(GPUtil.getGPUs()) > 1 and self.op.num > 1 else 0
+        # cuda_device_idx = GPUtil.getAvailable(order='memory', limit=1)[0] if self.op.cuda and len(GPUtil.getGPUs()) > 1 and self.op.num > 1 else 0
 
-        celery_app_name = self.get_celery_app_name(cuda_device_idx, self.op.__name__, self.op.cuda)
-        if celery_app is None:
-            celery_app = Celery(celery_app_name, broker='amqp://localhost:5672', backend='redis://localhost:6379/0')
-        target_task_name = f'{celery_app_name}.ProceedTask'
-        task_result = celery_app.send_task(target_task_name, args=args, kwargs=kwargs)
+        # celery_app_name = self.get_celery_prefix_name(cuda_device_idx, self.op.__name__, self.op.cuda)
+        # if celery_app is None:
+        task_result = self.celery_app.send_task(self.op.celery_task_name, args=args, kwargs=kwargs)
         return task_result
 
     # 服务端建立celery生产者进程
