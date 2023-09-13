@@ -1,14 +1,16 @@
+import importlib
 import logging
 import os
 
 from sanic import Blueprint
 from sanic import Sanic
 from sanic_cors import CORS
-from supabase.lib.client_options import ClientOptions
+# from supabase.lib.client_options import ClientOptions
 from wechatpayv3 import WeChatPay, WeChatPayType
 
 from handlers.main import SDGenertae, SDHires, Pay, Query, ImageProvider
-from supabase import create_client
+# from supabase import create_client
+from handlers.websocket import sd_genreate
 from utils.global_vars import CONFIG
 
 # Blueprint
@@ -19,7 +21,7 @@ bp.add_route(SDHires.as_view(), "/sd/hires")
 bp.add_route(Pay.as_view(), "/wechat/pay")
 bp.add_route(Query.as_view(), "/wechat/query")
 bp.add_route(ImageProvider.as_view(), "/user/image/fetch")
-bp.add_websocket_route(SDGenertae, "/sd/generate")
+bp.add_websocket_route(sd_genreate, "/sd/generate")
 
 # CORS settings
 cors = CORS(bp, resources={r"/sd/*": {"origins": "*", "headers": "*"},
@@ -62,10 +64,16 @@ async def main_process_start(sanic_app, loop):
             partner_mode=CONFIG['wechatpay']['PARTNER_MODE'],
             proxy=None)
         # sanic_app.ctx.wxpay.query()
-    supabase_opt = ClientOptions()
-    supabase_opt.postgrest_client_timeout = 20
-    sanic_app.ctx.supabase_client = create_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'],
-                                                  options=supabase_opt)
+    # supabase_opt = ClientOptions()
+    # supabase_opt.postgrest_client_timeout = 20
+    # sanic_app.ctx.supabase_client = create_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'],
+    #                                               options=supabase_opt)
+    sanic_app.ctx.supabase_client = getattr(importlib.import_module('aiosupabase'), 'Supabase')
+    sanic_app.ctx.supabase_client.configure(
+        url=CONFIG['supabase']['url'],
+        key=CONFIG['supabase']['key'],
+        debug_enabled=True,
+    )
 
 
 class Config:

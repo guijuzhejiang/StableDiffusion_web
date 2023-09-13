@@ -12,3 +12,5 @@ pyyaml
 opencv_python
 supabase
 fastapi
+loguru
+aiosupabase

@@ -29,7 +29,6 @@ class WorkShop(object):
         print("index, op_name, is_cuda")
         print(index, op_name, is_cuda)
         import traceback
-        import os
         from importlib import import_module
         from celery import Task, Celery
         from lib.common.common_util import logging

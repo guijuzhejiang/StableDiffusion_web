@@ -68,7 +68,6 @@ class SDGenertae(HTTPMethodView):
                     res = request.app.ctx.supabase_client.table("account").update(
                         {"balance": account['balance']-cost_points}).eq("id", user_id).execute().data
 
-                    sanic_json(task_result)
             else:
                 task_result = {'success': False, 'result': "余额不足"}
 
