@@ -248,14 +248,14 @@ class OperatorSD(Operator):
                                           pb + padding if 8 <= original_height - person_box[3] else 0,
                                           pl + padding if person_box[0] > 8 else 0,
                                           pr + padding if 8 <= original_width - person_box[2] else 0,
-                                          cv2.BORDER_REPLICATE)
+                                          cv2.BORDER_CONSTANT, value=(255, 255, 255))
         padded_image = cv2.copyMakeBorder(padded_image,
                                           pt + padding if person_box[1] <= 8 else 0,
                                           pb + padding if 8 > original_height - person_box[3] else 0,
                                           pl + padding if person_box[0] <= 8 else 0,
                                           pr + padding if 8 > original_width - person_box[2] else 0,
-                                          cv2.BORDER_REPLICATE,
-                                          # value=edge_color
+                                          cv2.BORDER_CONSTANT,
+                                          value=(255, 255, 255)
                                           )
         padded_image = cv2.cvtColor(np.array(padded_image), cv2.COLOR_BGRA2RGBA)
         return padded_image
