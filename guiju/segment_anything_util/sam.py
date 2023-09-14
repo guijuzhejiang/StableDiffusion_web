@@ -153,7 +153,7 @@ def sam_predict(dino_model_name, text_prompt, box_threshold, input_image):
     # if len(masks) > 1:
     #     masks = [masks[np.argmax([np.count_nonzero(m) for m in masks])]]
     # first
-    masks = [masks[0]]
+    masks = [masks[1]]
 
     garbage_collect(sam)
     return create_mask_output(image_np, masks, boxes_filt), sam_predict_status + sam_predict_result
