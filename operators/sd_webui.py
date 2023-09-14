@@ -16,6 +16,8 @@ import json
 import os
 import sys
 from collections import OrderedDict
+
+import GPUtil
 from PIL import Image
 import copy
 import datetime
@@ -35,7 +37,7 @@ from utils.global_vars import CONFIG
 
 class OperatorSD(Operator):
     """ stable diffusion """
-    num = 1
+    num = len(GPUtil.getGPUs())
     cache = True
     cuda = True
     enable = True
