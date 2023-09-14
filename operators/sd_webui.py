@@ -284,10 +284,9 @@ class OperatorSD(Operator):
                 'high details',
                 '(Realism:1.4)',
                 'masterpiece',
+                'extremely detailed,extremely delicate,Amazing,8k wallpaper',
                 'detailed fingers',
                 'realistic fingers',
-                'beautiful detailed nose',
-                'beautiful detailed eyes',
                 'detailed hand',
                 'realistic hand',
                 # 'detailed foot',
@@ -299,7 +298,7 @@ class OperatorSD(Operator):
             ],
             'viewpoint': [
                 # 正面
-                'light smile',
+                'light smile,looking at viewer,beautiful detailed face,beautiful detailed nose,beautiful detailed eyes',
                 # 侧面
                 'light smile, a side portrait photo of a people, (looking to the side:1.5)',
                 # 反面
@@ -763,7 +762,7 @@ class OperatorSD(Operator):
                         dir_path = CONFIG['storage_dirpath']['user_dir']
                         for ok_img in ok_res:
                             img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}_{''.join([random.choice(string.ascii_letters) for c in range(6)])}.png"
-                            img_fp = f"http://localhost:5004/user/image/fetch?imgpath={img_fn}"
+                            img_fp = f"{'localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}"
 
                             # extra upscaler
                             scales = 1
@@ -946,7 +945,7 @@ class OperatorSD(Operator):
                 # return {'success': True, 'result': pil_to_base64(pp.image)}
                 dir_path = CONFIG['storage_dirpath']['user_dir']
                 img_fn = f"{datetime.datetime.now().strftime('%y%m%d%H%M%S')}_{''.join([random.choice(string.ascii_letters) for c in range(6)])}.jpeg"
-                img_fp = f"{'localhost:'+str(CONFIG['server']['port']) if CONFIG[''] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}"
+                img_fp = f"{'localhost:'+str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}"
                 # pp.image.save(os.path.join(dir_path, img_fn), format="png", quality=100)
                 pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=100, lossless=True)
 
