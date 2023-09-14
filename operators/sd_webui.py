@@ -946,7 +946,7 @@ class OperatorSD(Operator):
                 # return {'success': True, 'result': pil_to_base64(pp.image)}
                 dir_path = CONFIG['storage_dirpath']['user_dir']
                 img_fn = f"{datetime.datetime.now().strftime('%y%m%d%H%M%S')}_{''.join([random.choice(string.ascii_letters) for c in range(6)])}.jpeg"
-                img_fp = f"{CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}"
+                img_fp = f"{'localhost:'+str(CONFIG['server']['port']) if CONFIG[''] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}"
                 # pp.image.save(os.path.join(dir_path, img_fn), format="png", quality=100)
                 pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=100, lossless=True)
 
