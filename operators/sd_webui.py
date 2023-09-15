@@ -285,6 +285,7 @@ class OperatorSD(Operator):
                 '(Realism:1.4)',
                 'masterpiece',
                 'extremely detailed,extremely delicate,Amazing,8k wallpaper',
+                'long legs, correct body proportions, good figure',
                 'detailed fingers',
                 'realistic fingers',
                 'detailed hand',
@@ -386,7 +387,7 @@ class OperatorSD(Operator):
                 #bikini和t-shirt冲突
                 # _dino_clothing_text_prompt = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear'
                 _dino_clothing_text_prompt = [
-                    'clothing . pants . dress . shirt . t-shirt . skirt',
+                    'clothing . pants . dress . shirt . t-shirt',
                     'bra . bikini . bowtie . stocking . chain . underwear',
                 ]
                 # _dino_clothing_text_prompt_0 = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear'
