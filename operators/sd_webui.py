@@ -320,19 +320,23 @@ class OperatorSD(Operator):
         sd_negative_prompt = f'{"" if _place_type ==0 else "(plain background:1.3), (simple background:1.3), (white background:1.3),"}(overexposure:1.5),(exposure:1.5), (extra clothes:1.5),(clothes:1.5),(NSFW:1.3),paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), clothing, pants, shorts, t-shirt, dress, sleeves, lowres, ((monochrome)), ((grayscale)), duplicate, morbid, mutilated, mutated hands, poorly drawn face,skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, worst quality, jpeg artifacts, signature, watermark, username, bad feet, Multiple people, blurry, poorly drawn hands, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, too many fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, fused fingers, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8)'
 
         # lora
-        lora_model = lora_model_dict[_model_type]
-        lora_prompt_list = [f"<lora:{lora_model['lora_name']}:{lora_model['weight']}>",
-                            lora_gender_dict[lora_model['gender']],
-                            ]
-        if len(lora_model['prompt']) > 0:
-            lora_prompt_list.append(lora_model['prompt'])
-        for lora_common in lora_model_common_dict:
-            lora_prompt_list.append(f"<lora:{lora_common['lora_name']}:{lora_common['weight']}>")
-        else:
-            lora_prompt_list.append(lora_place_dict[_place_type]['prompt'])
+        if _viewpoint == 2:
+            ad_face_positive_prompt = ''
 
-        ad_face_positive_prompt = ', '.join(lora_prompt_list)
-        sd_positive_prompt = f"{sd_positive_prompt}, {ad_face_positive_prompt}"
+        else:
+            lora_model = lora_model_dict[_model_type]
+            lora_prompt_list = [f"<lora:{lora_model['lora_name']}:{lora_model['weight']}>",
+                                lora_gender_dict[lora_model['gender']],
+                                ]
+            if len(lora_model['prompt']) > 0:
+                lora_prompt_list.append(lora_model['prompt'])
+            for lora_common in lora_model_common_dict:
+                lora_prompt_list.append(f"<lora:{lora_common['lora_name']}:{lora_common['weight']}>")
+            else:
+                lora_prompt_list.append(lora_place_dict[_place_type]['prompt'])
+
+            ad_face_positive_prompt = ', '.join(lora_prompt_list)
+            sd_positive_prompt = f"{sd_positive_prompt}, {ad_face_positive_prompt}"
 
         print(f'sd_positive_prompt: {sd_positive_prompt}')
         print(f'sd_negative_prompt: {sd_negative_prompt}')
