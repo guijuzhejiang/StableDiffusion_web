@@ -7,7 +7,6 @@ import sys
 from collections import OrderedDict
 from lib.common.NoDaemonProcessPool import NoDaemonProcess
 from celery import Celery
-import GPUtil
 
 
 class WorkShop(object):

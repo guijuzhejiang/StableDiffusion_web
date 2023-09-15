@@ -278,7 +278,7 @@ class OperatorSD(Operator):
                 '(middlescent:1.3)',
             ],
             'common': [
-                '(full body:1.8)',
+                '(full body:1.3)',
                 '(best quality:1.2)',
                 '(high quality:1.2)',
                 'high details',
@@ -394,7 +394,7 @@ class OperatorSD(Operator):
 
                     try:
                         if self.predict_image(origin_image_path):
-                            return {'success': False, 'result': "fatal error"}
+                            return {'success': False, 'result': "抱歉，您上传的图像未通过合规性检查，请重新上传。"}
 
                         _input_image_width, _input_image_height = _input_image.size
 

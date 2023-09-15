@@ -39,18 +39,18 @@ class SDGenertae(HTTPMethodView):
             params = ujson.loads(request.form['params'][0])
             user_id = request.form['user_id'][0]
 
-            cost_points = 1
+            cost_points = 10
 
             if mode == 'hires':
                 _output_width = int(params['output_width'])
                 _output_height = int(params['output_height'])
                 sum = _output_width + _output_height
-                if sum >= 3840:
-                    cost_points += 1
-                if sum >= 5120:
-                    cost_points += 1
+                if sum >= 2561:
+                    cost_points = 16
+                if sum >= 4681:
+                    cost_points = 20
             else:
-                cost_points *= int(int(params['batch_size']))
+                cost_points *= int(params['batch_size'])
 
             account = (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[0]
             if cost_points <= account['balance']:
@@ -91,7 +91,7 @@ class Pay(HTTPMethodView):
         out_trade_no = datetime.now().strftime('%Y%m%d%H%M%S%f') + '_' + ''.join(
             [random.choice(string.ascii_letters) for c in range(8)])
         description = 'guiju_ai_model'
-        unit_price = 4
+        unit_price = 1
         # 分为单位
         charge_points = int(request.form['amount'][0])
         total_price = charge_points * unit_price * 100 if account['access_level'] != 0 else 1
