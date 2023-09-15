@@ -321,6 +321,7 @@ class OperatorSD(Operator):
 
         # lora
         if _viewpoint == 2:
+            lora_prompt_list = []
             ad_face_positive_prompt = ''
 
         else:
@@ -330,13 +331,15 @@ class OperatorSD(Operator):
                                 ]
             if len(lora_model['prompt']) > 0:
                 lora_prompt_list.append(lora_model['prompt'])
-            for lora_common in lora_model_common_dict:
-                lora_prompt_list.append(f"<lora:{lora_common['lora_name']}:{lora_common['weight']}>")
-            else:
-                lora_prompt_list.append(lora_place_dict[_place_type]['prompt'])
 
             ad_face_positive_prompt = ', '.join(lora_prompt_list)
-            sd_positive_prompt = f"{sd_positive_prompt}, {ad_face_positive_prompt}"
+
+        for lora_common in lora_model_common_dict:
+            lora_prompt_list.append(f"<lora:{lora_common['lora_name']}:{lora_common['weight']}>")
+        else:
+            lora_prompt_list.append(lora_place_dict[_place_type]['prompt'])
+
+        sd_positive_prompt = f"{sd_positive_prompt}, {', '.join(lora_prompt_list)}"
 
         print(f'sd_positive_prompt: {sd_positive_prompt}')
         print(f'sd_negative_prompt: {sd_negative_prompt}')
