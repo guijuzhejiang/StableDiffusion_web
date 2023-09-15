@@ -521,6 +521,28 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
     timer.record("hijack")
 
     sd_model.eval()
+
+    # However, if you want to tinker around with the settings, we expose several options.
+    # See docstring and paper for details. Note: you can patch the same model multiple times.
+    # , sx = 4, sy = 4, max_downsample = 2
+    if not shared.cmd_opts.disable_tome:
+        print('Applying ToMe patch...')
+        try:
+            tomesd.apply_patch(sd_model,
+                               ratio=0.6,
+                               max_downsample=1,
+                               sx=2,
+                               sy=2,
+                               use_rand=True,
+                               merge_attn=True,
+                               merge_crossattn=False,
+                               merge_mlp=False)  # Extreme merging, expect diminishing returns
+        except Exception as e:
+            print('Failed to apply ToMe patch, continuing as normal', e)
+            return
+        else:
+            print('ToMe patch applied')
+
     model_data.sd_model = sd_model
     model_data.was_loaded_at_least_once = True
 
