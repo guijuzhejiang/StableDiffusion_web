@@ -2,7 +2,8 @@ import shutil
 
 lora_model_common_dict = [
     {'lora_name': 'polyhedron_new_skin_v1.1', 'weight': 0.1, 'label': '赋予真实皮肤，带褶皱'},
-    {'lora_name': 'add_detail', 'weight': 1, 'label': '增加细节'},
+    {'lora_name': 'add_detail', 'weight': 2, 'label': '增加细节'},
+    {'lora_name': 'more_details', 'weight': 1.5, 'label': '增加细节'},
 ]
 
 lora_gender_dict = [
