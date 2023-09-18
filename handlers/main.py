@@ -3,7 +3,6 @@ import os.path
 import random
 import string
 from datetime import datetime, timedelta
-from io import BytesIO
 
 import pytz
 import ujson
@@ -112,34 +111,43 @@ class Pay(HTTPMethodView):
         return sanic_json({'success': code == 200, 'qrcode_url': qrcode_url, 'out_trade_no': out_trade_no})
 
 
+class QueryPayment(HTTPMethodView):
+    async def post(self, request):
+        out_trade_no = request.form['out_trade_no'][0]
+        code, message = request.app.ctx.wxpay.query(
+            out_trade_no=out_trade_no,
+        )
+
+        res = ujson.loads(message)
+
+        return sanic_json({'success': code == 200, 'message': res})
+
+
 class Query(HTTPMethodView):
     async def post(self, request):
         user_id = request.form['user_id'][0]
-
-        no_confirm_rows = (await request.app.ctx.supabase_client.atable("transaction").select("*").eq("user_id",
-                                                                                          user_id).eq("is_plus", True).execute()).data
+        no_confirm_rows = (await request.app.ctx.supabase_client.atable("transaction").select("*").eq("user_id", user_id).eq("status", 0).eq("is_plus", True).execute()).data
 
         # 计算未确认支付额
         pre_charge_amount = 0
         need_del_transaction = []
         for row in no_confirm_rows:
-            if row['status'] == 0:
-                code, message = request.app.ctx.wxpay.query(
-                    # transaction_id='demo-transation-id'
-                    out_trade_no=row['out_trade_no']
-                )
-                trade_message = ujson.loads(message)
+            code, message = request.app.ctx.wxpay.query(
+                # transaction_id='demo-transation-id'
+                out_trade_no=row['out_trade_no']
+            )
+            trade_message = ujson.loads(message)
 
-                if code == 200 and trade_message['trade_state'] == 'SUCCESS':
-                    data = (await request.app.ctx.supabase_client.atable("transaction").update(
-                        {"status": 1}).eq("id", row['id']).eq("is_plus", True).execute()).data
-                    if len(data) == 0:
-                        print(row['id'] + " update transaction false")
-                    pre_charge_amount += row['amount']
-                else:
-                    iso_created_at = row['created_at'].split('.')[0] + '+' + row['created_at'].split('+')[-1]
-                    if (datetime.now(pytz.UTC) - datetime.fromisoformat(iso_created_at).replace(tzinfo=pytz.UTC)) >= timedelta(minutes=15):
-                        need_del_transaction.append(row['id'])
+            if code == 200 and trade_message['trade_state'] == 'SUCCESS':
+                data = (await request.app.ctx.supabase_client.atable("transaction").update(
+                    {"status": 1}).eq("id", row['id']).eq("is_plus", True).execute()).data
+                if len(data) == 0:
+                    print(row['id'] + " update transaction false")
+                pre_charge_amount += row['amount']
+            else:
+                iso_created_at = row['created_at'].split('.')[0] + '+' + row['created_at'].split('+')[-1]
+                if (datetime.now(pytz.UTC) - datetime.fromisoformat(iso_created_at).replace(tzinfo=pytz.UTC)) >= timedelta(minutes=15):
+                    need_del_transaction.append(row['id'])
 
         account = (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[0]
         if pre_charge_amount > 0:
