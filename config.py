@@ -8,9 +8,9 @@ lora_model_common_dict = [
 
 lora_gender_dict = [
     # 女美化眼睛
-    '<lora:detailed_eye-10:0.1>, 1girl',
+    '<lora:detailed_eye-10:0.1>,1girl',
     # 男美化眼睛
-    '<lora:polyhedron_men_eyes:0.1>, 1man'
+    '<lora:polyhedron_men_eyes:0.1>,1man'
 ]
 
 # gender 男1女0
@@ -24,7 +24,7 @@ lora_model_dict = {
 
     1: {'lora_name': 'abd',
         'weight': 1,
-        'prompt': 'beautiful abd_woman, abd_body, perfect abd_face',
+        'prompt': 'beautiful abd_woman,abd_body,perfect abd_face',
         'gender': 0,
         'label': '非洲'
         },
@@ -52,14 +52,14 @@ lora_model_dict = {
 
     5: {'lora_name': 'edgBulgarian_Doll_Likeness',
         'weight': 1,
-        'prompt': 'edgBulgr_woman, edgBulgr_face,edgBulgr_body',
+        'prompt': 'edgBulgr_woman,edgBulgr_face,edgBulgr_body',
         'gender': 0,
         'label': '保加利亚女性',
         },
 
     6: {'lora_name': 'edgEgyptian_Doll',
         'weight': 0.7,
-        'prompt': 'beautiful dark haired edgEgyptian_woman,perfect edgEgyptian_face, perfect edgEgyptian_body',
+        'prompt': 'beautiful dark haired edgEgyptian_woman,perfect edgEgyptian_face,perfect edgEgyptian_body',
         'gender': 0,
         'label': '埃及',
         },
@@ -73,21 +73,21 @@ lora_model_dict = {
 
     8: {'lora_name': 'edg_LatinaDollLikeness',
         'weight': 0.8,
-        'prompt': 'beautiful Lnd_woman,perfect Lnd_face, perfect Lnd_body',
+        'prompt': 'beautiful Lnd_woman,perfect Lnd_face,perfect Lnd_body',
         'gender': 0,
         'label': '拉丁美洲',
         },
 
     9: {'lora_name': 'edgPersian',
         'weight': 1,
-        'prompt': 'beautiful edgPersian_woman, perfect edgPersian_face, perfect edgPersian_body',
+        'prompt': 'beautiful edgPersian_woman,perfect edgPersian_face,perfect edgPersian_body',
         'gender': 0,
         'label': '波斯',
         },
 
     10: {'lora_name': 'edgSwedishDoll',
          'weight': 0.7,
-         'prompt': 'beautiful edgSwedish_woman,perfect edgSwedish_face, perfect edgSwedish_body',
+         'prompt': 'beautiful edgSwedish_woman,perfect edgSwedish_face,perfect edgSwedish_body',
          'gender': 0,
          'label': '瑞典'
          },
@@ -101,14 +101,14 @@ lora_model_dict = {
 
     12: {'lora_name': 'esd',
          'weight': 1,
-         'prompt': 'beautiful esd_woman,perfect esd_face, perfect esd_body',
+         'prompt': 'beautiful esd_woman,perfect esd_face,perfect esd_body',
          'gender': 0,
          'label': '西班牙'
          },
 
     13: {'lora_name': 'frd',
          'weight': 0.8,
-         'prompt': 'beautiful frd_woman, perfect frd_face, perfect frd_body',
+         'prompt': 'beautiful frd_woman,perfect frd_face,perfect frd_body',
          'gender': 0,
          'label': '法国'
          },
@@ -122,21 +122,21 @@ lora_model_dict = {
 
     15: {'lora_name': 'grd',
          'weight': 1,
-         'prompt': 'beautiful grd_woman,perfect grd_face, perfect grd_body',
+         'prompt': 'beautiful grd_woman,perfect grd_face,perfect grd_body',
          'gender': 0,
          'label': '德国'
          },
 
     16: {'lora_name': 'hld',
          'weight': 1,
-         'prompt': 'beautiful hld_woman, perfect hld_face, perfect hld_body',
+         'prompt': 'beautiful hld_woman,perfect hld_face,perfect hld_body',
          'gender': 0,
          'label': '苏格兰高地'
          },
 
     17: {'lora_name': 'ind',
          'weight': 1,
-         'prompt': 'beautiful ind_woman,perfect ind_face, perfect ind_body',
+         'prompt': 'beautiful ind_woman,perfect ind_face,perfect ind_body',
          'gender': 0,
          'label': '印度'
          },
@@ -150,14 +150,14 @@ lora_model_dict = {
 
     19: {'lora_name': 'ird',
          'weight': 0.8,
-         'prompt': 'beautiful ird_woman,perfect ird_face, perfect ird_body',
+         'prompt': 'beautiful ird_woman,perfect ird_face,perfect ird_body',
          'gender': 0,
          'label': '爱尔兰'
          },
 
     20: {'lora_name': 'itd1',
          'weight': 1,
-         'prompt': 'beautiful itd_woman, perfect itd_face, perfect itd_body',
+         'prompt': 'beautiful itd_woman,perfect itd_face,perfect itd_body',
          'gender': 0,
          'label': '意大利'
          },
@@ -185,7 +185,7 @@ lora_model_dict = {
 
     24: {'lora_name': 'm3d',
          'weight': 1,
-         'prompt': 'beautiful m3d_woman,perfect m3d_body, perfact m3d_face',
+         'prompt': 'beautiful m3d_woman,perfect m3d_body,perfact m3d_face',
          'gender': 0,
          'label': '中东'
          },
@@ -206,7 +206,7 @@ lora_model_dict = {
 
     27: {'lora_name': 'rud',
          'weight': 1,
-         'prompt': 'beautiful rud_woman, perfect rud_face, perfect rud_body',
+         'prompt': 'beautiful rud_woman,perfect rud_face,perfect rud_body',
          'gender': 0,
          'label': '俄罗斯'
          },
@@ -242,7 +242,7 @@ lora_model_dict = {
 
 lora_place_dict = {
     0: {'label': '单色',
-        'prompt': '(simple background:1.3), (white background:1.3)'
+        'prompt': '(simple background:1.3),(white background:1.3)'
         },
 
     1: {'label': '公路风光',
@@ -250,7 +250,7 @@ lora_place_dict = {
         },
 
     2: {'label': '花团锦簇',
-        'prompt': '<lora:乐章五部曲-林V1:1>,blue sky,outdoor, tree,nice bokeh professional nature photography,Cute landscape,calm atmosphere,peaceful theme,sen,nature,flowers',
+        'prompt': '<lora:乐章五部曲-林V1:1>,blue sky,outdoor,tree,nice bokeh professional nature photography,Cute landscape,calm atmosphere,peaceful theme,sen,nature,flowers',
         },
 
     3: {'label': '樱花绽放',
@@ -258,15 +258,15 @@ lora_place_dict = {
         },
 
     4: {'label': '光晕',
-        'prompt': 'glowingdust,bokeh,<lora:glowingdust:0.9>,outdoor,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme',
+        'prompt': 'glowingdust,bokeh,<lora:glowingdust:0.9>,outdoor,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme',
         },
 
     5: {'label': '街景',
-        'prompt': 'haruhizaka, kitakoumae, scenery,<lora:kitakoukou:1>,outdoor,nice bokeh professional nature photography,calm atmosphere,street, landscape,road, power lines, city, tree, building, sign, cityscape',
+        'prompt': 'haruhizaka,kitakoumae,scenery,<lora:kitakoukou:1>,outdoor,nice bokeh professional nature photography,calm atmosphere,street,landscape,road,power lines,city,tree,building,sign,cityscape',
         },
 
     6: {'label': '公园',
-        'prompt': 'Park_Bench_background,<lora:ParkBench_v1:0.6>,park,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme',
+        'prompt': 'Park_Bench_background,<lora:ParkBench_v1:0.6>,park,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme',
         },
 
     7: {'label': '天台',
@@ -290,61 +290,37 @@ lora_place_dict = {
          },
 
     12: {'label': '向日葵海',
-         'prompt': 'sunflower_background,<lora:Sunflower_v1:0.7>,(sunflowers),outdoor,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme',
+         'prompt': 'sunflower_background,<lora:Sunflower_v1:0.7>,(sunflowers),outdoor,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme',
          },
 
     13: {'label': '黄昏',
-         'prompt': 'sunset_scenery_background,<lora:SunsetScenery_v1:0.7>,sunset,outdoor,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme',
+         'prompt': 'sunset_scenery_background,<lora:SunsetScenery_v1:0.7>,sunset,outdoor,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme',
          },
 
     14: {'label': '沙滩',
-         'prompt': 'beach,<lora:Taketomijima:1>,outdoor,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme',
+         'prompt': 'beach,<lora:Taketomijima:1>,outdoor,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme',
          },
 
     15: {'label': '夏威夷热',
-         'prompt': 'tropical_tiki_retreat,<lora:tropical_tiki_retreat-10:1>,outdoor,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme,Exotic, Hawaiian, aloha',
+         'prompt': 'tropical_tiki_retreat,<lora:tropical_tiki_retreat-10:1>,outdoor,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme,Exotic,Hawaiian,aloha',
          },
-    16: {'label': '水族馆',
-         'prompt': 'aquarium,<lora:Aquarium-v1.0:0.8>',
+    16: {'label': '地铁中',
+         'prompt': 'e235,train interior,<lora:E235_V5:1>',
          },
-    17: {'label': '地铁中',
-         'prompt': 'e235, train interior,<lora:E235_V5:1>',
-         },
-    18: {'label': '试衣间',
-         'prompt': 'fittingroom,<lora:fittingroomselfie:1>',
-         },
-    19: {'label': '秋天的童话',
+    17: {'label': '秋天的童话',
          'prompt': 'rogowoarboretum,<lora:hjrogowoarboretum_v10:0.8>',
          },
-    20: {'label': '图书馆',
-         'prompt': 'lib_bg,<lora:libbg_v16:1>',
+    18: {'label': '图书馆',
+         'prompt': 'library,scenery,book,shelf,bookshelf,box,table,office,desk,NCT2,<lora:NishinomiyaChuouTosyokan:1>',
          },
-    21: {'label': '办公室',
-         'prompt': 'office,window, desk, chair, computer, ceiling, ceiling light,crowd, crowded office, many people in background,<lora:lora_office_3:0.8>',
+    19: {'label': '小酒馆',
+         'prompt': 'murayakuba,izakaya,scenery,indoors,lamp,table,<lora:Murayakuba:1>',
          },
-    22: {'label': '酒店房间',
-         'prompt': 'Lovehotel,Lhbedpanel,<lora:LoveHotelV7_1.0_MIDD_Resize_DIM8:0.8>',
+    20: {'label': '泳池',
+         'prompt': 'shs reinopool,reinopool,pool,indoors,tile floor,tile wall,<lora:reinopool_test2:1>',
          },
-    23: {'label': '小酒馆',
-         'prompt': 'murayakuba,izakaya,scenery,indoors,<lora:Murayakuba:0.8>',
-         },
-    24: {'label': '森林',
-         'prompt': 'Forest,tree,<lora:Nice forest:1>',
-         },
-    25: {'label': '泳池',
-         'prompt': 'shs reinopool,reinopool,pool,indoors,tile floor,tile wall,<lora:reinopool_test2:0.8>',
-         },
-    26: {'label': '客厅',
-         'prompt': 'modern roompron,bright lighting,<lora:roompron2:1>',
-         },
-    27: {'label': '日式房间',
-         'prompt': 'ryokan,scenery,table,indoors,television,window,chair,cup,ceiling light,lamp,flower pot,sunlight,<lora:ryokan:0.8>',
-         },
-    28: {'label': '体育馆',
-         'prompt': 'school gym,reflective floor,<lora:school_gym_v0.1:1>',
-         },
-    29: {'label': '操场',
-         'prompt': 'school yard,garden,school uniform,<lora:school_yard_v0.1:1>',
+    21: {'label': '日式房间',
+         'prompt': 'ryokan,scenery,table,indoors,television,window,chair,cup,ceiling light,lamp,flower pot,sunlight,<lora:ryokan:1>',
          },
 }
 
