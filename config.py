@@ -286,7 +286,7 @@ lora_place_dict = {
          },
 
     11: {'label': '林间瀑布',
-         'prompt': 'slg,(waterfall:1.3),river,<lora:slg_v30:1>,outdoor,nice bokeh professional nature photography,calm atmosphere',
+         'prompt': 'slg,(waterfall:1.3),river,<lora:slg_v30:1>,huge waterfall,outdoor,nice bokeh professional nature photography,calm atmosphere',
          },
 
     12: {'label': '向日葵海',
