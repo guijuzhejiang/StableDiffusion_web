@@ -304,7 +304,7 @@ lora_place_dict = {
          'prompt': 'tropical_tiki_retreat,<lora:tropical_tiki_retreat-10:1>,outdoor,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme,Exotic,Hawaiian,aloha',
          },
     16: {'label': '秋天的童话',
-         'prompt': 'rogowoarboretum,<lora:hjrogowoarboretum_v10:0.8>',
+         'prompt': 'rogowoarboretum,beautiful tree with red and yellow leaves,intricate detail,sunny weather,natural lighting,very sharp,<lora:hjrogowoarboretum_v10:0.8>',
          },
     17: {'label': '图书馆',
          'prompt': 'library,scenery,book,shelf,bookshelf,box,table,office,desk,NCT2,<lora:NishinomiyaChuouTosyokan:1>',
