@@ -12,6 +12,7 @@ from wechatpayv3 import WeChatPayType
 
 from lib.celery_workshop.wokrshop import WorkShop
 from lib.redis_mq import RedisMQ
+from lib.sanic_util.sanic_jinja2 import SanicJinja2
 from operators import OperatorSD
 from utils.global_vars import CONFIG
 
@@ -121,6 +122,13 @@ class QueryPayment(HTTPMethodView):
         res = ujson.loads(message)
 
         return sanic_json({'success': code == 200, 'message': res})
+
+
+class WeChatLogin(HTTPMethodView):
+    async def get(self, request):
+        print(request)
+        state = request.args.get('state')
+        return await SanicJinja2.template_render_async("loggingin.html")
 
 
 class Query(HTTPMethodView):

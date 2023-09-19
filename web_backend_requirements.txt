@@ -14,3 +14,4 @@ supabase
 fastapi
 loguru
 aiosupabase
+jinja2
