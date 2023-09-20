@@ -57,5 +57,4 @@ def pil_to_base64(pil_image, to_html=True):
 
 
 if __name__ == '__main__':
-    kk = pil_to_base64(Image.open('/home/ray/Workspace/project/stable_diffusion/StableDiffusion_web/tmp/origin_2023-08-18_17-43-48.png'))
-    print(kk[:8888])
+    print(encrypt("data"))

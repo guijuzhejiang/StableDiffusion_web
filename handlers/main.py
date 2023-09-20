@@ -2,6 +2,7 @@ import asyncio
 import os.path
 import random
 import string
+import traceback
 from datetime import datetime, timedelta
 
 import httpx
@@ -137,44 +138,52 @@ class WeChatLogin(HTTPMethodView):
         return await SanicJinja2.template_render_async("loggingin.html")
 
     async def post(self, request):
-        state = request.args.get('state')
-        code = request.args.get('code')
+        try:
+            state = request.form['state'][0]
+            code = request.form['code'][0]
+            print(code)
+            # 发起GET请求
+            async with httpx.AsyncClient() as client:
+                # 替换下面的URL为你要发送GET请求的目标URL
+                response = await client.get(
+                    f'https://api.weixin.qq.com/sns/oauth2/access_token?appid={CONFIG["wechatlogin"]["appid"]}&secret={CONFIG["wechatlogin"]["secret"]}&code={code}&grant_type=authorization_code')
+                print(
+                    f'https://api.weixin.qq.com/sns/oauth2/access_token?appid={CONFIG["wechatlogin"]["appid"]}&secret={CONFIG["wechatlogin"]["secret"]}&code={code}&grant_type=authorization_code')
+                # 检查响应状态码
+                if response.status_code == 200:
+                    # 获取响应的 JSON 数据
+                    wechat_data = response.json()
+                    print(wechat_data)
+                    email = f"{wechat_data['openid']}@wechat.com"
+                    password = encrypt(str({wechat_data['openid']}))
+                    result_user = {'username': email, 'password': password}
 
-        # 发起GET请求
-        async with httpx.AsyncClient() as client:
-            # 替换下面的URL为你要发送GET请求的目标URL
-            response = await client.get(f'https://api.weixin.qq.com/sns/oauth2/access_token?appid={CONFIG["wechatlogin"]["appid"]}&secret={CONFIG["wechatlogin"]["secret"]}&code={code}&grant_type=authorization_code')
+                    # 获取微信头像
+                    response_uinfo = await client.get(
+                        f'https://api.weixin.qq.com/sns/userinfo?access_token={wechat_data["access_token"]}&openid={wechat_data["openid"]}')
+                    if response_uinfo.status_code == 200:
+                        wechat_uinfo = response_uinfo.json()
+                        result_user['avatar'] = wechat_uinfo['headimgurl']
+                        result_user['name'] = wechat_uinfo['nickname']
 
-            # 检查响应状态码
-            if response.status_code == 200:
-                # 获取响应的 JSON 数据
-                wechat_data = response.json()
-                email = f"{wechat_data['openid']}@wechat.com"
-                password = encrypt({wechat_data['openid']})
-                result_user = {'username': email, 'password': password}
+                    # supabase 检查有没有改用户，没有就注册
+                    users = await request.app.ctx.supabase_client.auth.async_list_users()
+                    users_email = [u.email for u in users]
+                    if email not in users_email:
+                        try:
+                            supabase_res = await request.app.ctx.supabase_client.auth.async_sign_up(email=email,
+                                                                                               password=password)
+                        except Exception:
+                            return sanic_json({'success': False, 'message': "注册失败"})
 
-                # 获取微信头像
-                response_uinfo = await client.get(f'https://api.weixin.qq.com/sns/userinfo?access_token={wechat_data["access_token"]}&openid={wechat_data["openid"]}')
-                if response_uinfo.status_code == 200:
-                    wechat_uinfo = response_uinfo.json()
-                    result_user['avatar'] = wechat_uinfo['headimgurl']
-                    result_user['name'] = wechat_uinfo['nickname']
-
-                # supabase 检查有没有改用户，没有就注册
-                users = await request.app.ctx.supabase_client.auth.async_list_users()
-                users_email = [u.email for u in users]
-                if email not in users_email:
-                    try:
-                        supabase_res = await request.app.ctx.supabase_client.async_sign_up(email=email,
-                                                                                           password=password)
-                    except Exception:
-                        return sanic_json({'success': False, 'message': "注册失败"})
-
-                # 成功返回
-                return sanic_json({'success': True, 'user': result_user})
-            else:
-                print(f"请求失败，状态码: {response.status_code}")
-                return sanic_json({'success': False, 'message': "登录失败"})
+                    # 成功返回
+                    return sanic_json({'success': True, 'user': result_user})
+                else:
+                    print(f"请求失败，状态码: {response.status_code}")
+                    return sanic_json({'success': False, 'message': "登录失败"})
+        except Exception:
+            print(str(traceback.format_exc()))
+            return sanic_json({'success': False, 'message': "登录失败"})
 
 
 class Query(HTTPMethodView):
