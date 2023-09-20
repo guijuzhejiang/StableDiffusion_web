@@ -64,6 +64,7 @@ class SDGenertae(HTTPMethodView):
                 print('done')
                 task_result = task_result.result
                 if task_result['success']:
+                    print('genreate success')
                     data = await request.app.ctx.supabase_client.atable("transaction").insert({"user_id": user_id,
                                                                                         'amount': cost_points,
                                                                                         'is_plus': False,
