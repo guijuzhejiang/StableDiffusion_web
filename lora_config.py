@@ -4,14 +4,14 @@ lora_model_common_dict = [
     {'lora_name': 'polyhedron_new_skin_v1.1', 'weight': 0.1, 'label': '赋予真实皮肤，带褶皱'},
     {'lora_name': 'add_detail', 'weight': 1, 'label': '增加细节'},
     {'lora_name': 'more_details', 'weight': 1.5, 'label': '增加细节'},
-    {'lora_name': 'Xian-T手部修复lora（不用controlnet也不坏手了）_v3.0', 'weight': 1.0, 'label': '手部修复'},
+    # {'lora_name': 'Xian-T手部修复lora（不用controlnet也不坏手了）_v3.0', 'weight': 0.6, 'label': '手部修复'},
 ]
 
 lora_gender_dict = [
     # 女美化眼睛
     '<lora:detailed_eye-10:0.1>,1girl',
     # 男美化眼睛
-    '<lora:polyhedron_men_eyes:0.1>,1man'
+    '<lora:polyhedron_men_eyes:0.1>,1man,1boy'
 ]
 
 # gender 男1女0

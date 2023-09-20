@@ -25,56 +25,62 @@ temp_udb = [f'test_{"%03d" % i}' for i in range(1, 11)]
 
 class SDGenertae(HTTPMethodView):
     async def post(self, request):
-        # 解析表单参数
-        request_form = dict(request.form)
-        request_form['input_image'] = request.files['input_image']
+        try:
+            # 解析表单参数
+            request_form = dict(request.form)
+            request_form['input_image'] = request.files['input_image']
 
-        if CONFIG['debug_mode']:
-            redis_mq = RedisMQ(CONFIG['redis']['host'], CONFIG['redis']['port'],
-                               CONFIG['redis']['redis_mq'])
+            if CONFIG['debug_mode']:
+                redis_mq = RedisMQ(CONFIG['redis']['host'], CONFIG['redis']['port'],
+                                   CONFIG['redis']['redis_mq'])
 
-            task_result = await redis_mq.rpc_call(redis_mq.task_queue_name, request_form)
-            print(task_result)
-            await redis_mq.close()
-
-        else:
-            mode = request.form['mode'][0]
-            params = ujson.loads(request.form['params'][0])
-            user_id = request.form['user_id'][0]
-
-            cost_points = 10
-
-            if mode == 'hires':
-                _output_width = int(params['output_width'])
-                _output_height = int(params['output_height'])
-                sum = _output_width + _output_height
-                if sum >= 2561:
-                    cost_points = 16
-                if sum >= 4681:
-                    cost_points = 20
-            else:
-                cost_points *= int(params['batch_size'])
-
-            account = (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[0]
-            if cost_points <= account['balance']:
-                task_result = sd_workshop(**request_form)
-                print('wait')
-                while not task_result.ready():
-                    await asyncio.sleep(1)
-                print('done')
-                task_result = task_result.result
-                if task_result['success']:
-                    print('genreate success')
-                    data = await request.app.ctx.supabase_client.atable("transaction").insert({"user_id": user_id,
-                                                                                        'amount': cost_points,
-                                                                                        'is_plus': False,
-                                                                                        'status': 1,
-                                                                                        }).execute()
-                    res = (await request.app.ctx.supabase_client.atable("account").update(
-                        {"balance": account['balance']-cost_points}).eq("id", user_id).execute()).data
+                task_result = await redis_mq.rpc_call(redis_mq.task_queue_name, request_form)
+                print(task_result)
+                await redis_mq.close()
 
             else:
-                task_result = {'success': False, 'result': "余额不足"}
+                mode = request.form['mode'][0]
+                params = ujson.loads(request.form['params'][0])
+                user_id = request.form['user_id'][0]
+
+                cost_points = 10
+
+                if mode == 'hires':
+                    _output_width = int(params['output_width'])
+                    _output_height = int(params['output_height'])
+                    sum = _output_width + _output_height
+                    if sum >= 2561:
+                        cost_points = 16
+                    if sum >= 4681:
+                        cost_points = 20
+                else:
+                    cost_points *= int(params['batch_size'])
+
+                account = \
+                (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[
+                    0]
+                if cost_points <= account['balance']:
+                    task_result = sd_workshop(**request_form)
+                    print('wait')
+                    while not task_result.ready():
+                        await asyncio.sleep(1)
+                    print('done')
+                    task_result = task_result.result
+                    if task_result['success']:
+                        print('genreate success')
+                        data = await request.app.ctx.supabase_client.atable("transaction").insert({"user_id": user_id,
+                                                                                                   'amount': cost_points,
+                                                                                                   'is_plus': False,
+                                                                                                   'status': 1,
+                                                                                                   }).execute()
+                        res = (await request.app.ctx.supabase_client.atable("account").update(
+                            {"balance": account['balance'] - cost_points}).eq("id", user_id).execute()).data
+
+                else:
+                    task_result = {'success': False, 'result': "余额不足"}
+        except Exception:
+            print(traceback.format_exc())
+            task_result = {'success': False, 'result': "fatal error"}
 
         return sanic_json(task_result)
 
