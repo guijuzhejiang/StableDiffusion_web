@@ -130,10 +130,10 @@ class WeChatLogin(HTTPMethodView):
     async def get(self, request):
         state = request.args.get('state')
         code = request.args.get('code')
-        users = await request.app.ctx.supabase_client.auth.async_list_users()
-        print(users)
-        supabase_res = await request.app.ctx.supabase_client.auth.async_sign_up(email="ezzmai@teal.com", password="pa6666ssword")
-        print(supabase_res)
+        # users = await request.app.ctx.supabase_client.auth.async_list_users()
+        # print(users)
+        # supabase_res = await request.app.ctx.supabase_client.auth.async_sign_up(email="ezzmai@teal.com", password="pa6666ssword")
+        # print(supabase_res)
         return await SanicJinja2.template_render_async("loggingin.html")
 
     async def post(self, request):
