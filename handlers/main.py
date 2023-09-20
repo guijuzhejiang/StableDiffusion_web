@@ -155,8 +155,8 @@ class WeChatLogin(HTTPMethodView):
                     # 获取响应的 JSON 数据
                     wechat_data = response.json()
                     print(wechat_data)
-                    email = f"{wechat_data['openid']}@wechat.com"
-                    password = encrypt(str({wechat_data['openid']}))
+                    email = f"{wechat_data['openid']}@wechat.com".lower()
+                    password = encrypt(str({wechat_data['openid']}).lower())
                     result_user = {'username': email, 'password': password}
 
                     # 获取微信头像
@@ -175,6 +175,7 @@ class WeChatLogin(HTTPMethodView):
                             supabase_res = await request.app.ctx.supabase_client.auth.async_sign_up(email=email,
                                                                                                password=password)
                         except Exception:
+                            print(str(traceback.format_exc()))
                             return sanic_json({'success': False, 'message': "注册失败"})
 
                     # 成功返回
