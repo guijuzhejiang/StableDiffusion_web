@@ -130,8 +130,10 @@ class WeChatLogin(HTTPMethodView):
     async def get(self, request):
         state = request.args.get('state')
         code = request.args.get('code')
-
-        supabase_res = await request.app.ctx.supabase_client.async_sign_up(email="email", password="password")
+        users = await request.app.ctx.supabase_client.auth.async_list_users()
+        print(users)
+        supabase_res = await request.app.ctx.supabase_client.auth.async_sign_up(email="ezzmai@teal.com", password="pa6666ssword")
+        print(supabase_res)
         return await SanicJinja2.template_render_async("loggingin.html")
 
     async def post(self, request):
@@ -149,9 +151,14 @@ class WeChatLogin(HTTPMethodView):
                 wechat_data = response.json()
                 email = f"{wechat_data['openid']}@wechat.com"
                 password = encrypt({wechat_data['openid']})
-                users = await request.app.ctx.supabase_client.async_list_users()
-                if email not in users:
-                    supabase_res = await request.app.ctx.supabase_client.async_sign_up(email=email, password=password)
+                users = await request.app.ctx.supabase_client.auth.async_list_users()
+                users_email = [u.email for u in users]
+                if email not in users_email:
+                    try:
+                        supabase_res = await request.app.ctx.supabase_client.async_sign_up(email=email,
+                                                                                           password=password)
+                    except Exception:
+                        return sanic_json({'success': False, 'message': "注册失败"})
 
                 return sanic_json({'success': code == 200, 'user': {'username': email, 'password': password}})
             else:
