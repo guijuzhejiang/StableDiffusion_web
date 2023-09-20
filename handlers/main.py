@@ -151,6 +151,16 @@ class WeChatLogin(HTTPMethodView):
                 wechat_data = response.json()
                 email = f"{wechat_data['openid']}@wechat.com"
                 password = encrypt({wechat_data['openid']})
+                result_user = {'username': email, 'password': password}
+
+                # 获取微信头像
+                response_uinfo = await client.get(f'https://api.weixin.qq.com/sns/userinfo?access_token={wechat_data["access_token"]}&openid={wechat_data["openid"]}')
+                if response_uinfo.status_code == 200:
+                    wechat_uinfo = response_uinfo.json()
+                    result_user['avatar'] = wechat_uinfo['headimgurl']
+                    result_user['name'] = wechat_uinfo['nickname']
+
+                # supabase 检查有没有改用户，没有就注册
                 users = await request.app.ctx.supabase_client.auth.async_list_users()
                 users_email = [u.email for u in users]
                 if email not in users_email:
@@ -160,7 +170,8 @@ class WeChatLogin(HTTPMethodView):
                     except Exception:
                         return sanic_json({'success': False, 'message': "注册失败"})
 
-                return sanic_json({'success': code == 200, 'user': {'username': email, 'password': password}})
+                # 成功返回
+                return sanic_json({'success': True, 'user': result_user})
             else:
                 print(f"请求失败，状态码: {response.status_code}")
                 return sanic_json({'success': False, 'message': "登录失败"})
