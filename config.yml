@@ -8,7 +8,7 @@ server:
   port: 5004
   ssl_key: /home/ray/Workspace/file/cert/www.guijutech.com.key
   ssl_cert: /home/ray/Workspace/file/cert/www.guijutech.com.pem
-  client_access_url: www.guijutech.com/service
+  client_access_url: https://www.guijutech.com/service
   ssl: false
   msg_expire_secs: 6000
 redis:
