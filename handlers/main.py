@@ -4,6 +4,7 @@ import random
 import string
 from datetime import datetime, timedelta
 
+import httpx
 import pytz
 import ujson
 from sanic.response import json as sanic_json, file_stream
@@ -11,6 +12,7 @@ from sanic.views import HTTPMethodView
 from wechatpayv3 import WeChatPayType
 
 from lib.celery_workshop.wokrshop import WorkShop
+from lib.common.common_util import encrypt
 from lib.redis_mq import RedisMQ
 from lib.sanic_util.sanic_jinja2 import SanicJinja2
 from operators import OperatorSD
@@ -126,9 +128,35 @@ class QueryPayment(HTTPMethodView):
 
 class WeChatLogin(HTTPMethodView):
     async def get(self, request):
-        print(request)
         state = request.args.get('state')
+        code = request.args.get('code')
+
+        supabase_res = await request.app.ctx.supabase_client.async_sign_up(email="email", password="password")
         return await SanicJinja2.template_render_async("loggingin.html")
+
+    async def post(self, request):
+        state = request.args.get('state')
+        code = request.args.get('code')
+
+        # 发起GET请求
+        async with httpx.AsyncClient() as client:
+            # 替换下面的URL为你要发送GET请求的目标URL
+            response = await client.get(f'https://api.weixin.qq.com/sns/oauth2/access_token?appid={CONFIG["wechatlogin"]["appid"]}&secret={CONFIG["wechatlogin"]["secret"]}&code={code}&grant_type=authorization_code')
+
+            # 检查响应状态码
+            if response.status_code == 200:
+                # 获取响应的 JSON 数据
+                wechat_data = response.json()
+                email = f"{wechat_data['openid']}@wechat.com"
+                password = encrypt({wechat_data['openid']})
+                users = await request.app.ctx.supabase_client.async_list_users()
+                if email not in users:
+                    supabase_res = await request.app.ctx.supabase_client.async_sign_up(email=email, password=password)
+
+                return sanic_json({'success': code == 200, 'user': {'username': email, 'password': password}})
+            else:
+                print(f"请求失败，状态码: {response.status_code}")
+                return sanic_json({'success': False, 'message': "登录失败"})
 
 
 class Query(HTTPMethodView):

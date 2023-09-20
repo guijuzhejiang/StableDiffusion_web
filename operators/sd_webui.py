@@ -29,7 +29,7 @@ import ujson
 import cv2
 import numpy as np
 
-from config import lora_model_dict, lora_gender_dict, lora_model_common_dict, lora_place_dict
+from lora_config import lora_model_dict, lora_gender_dict, lora_model_common_dict, lora_place_dict
 from lib.celery_workshop.operator import Operator
 from utils.global_vars import CONFIG
 

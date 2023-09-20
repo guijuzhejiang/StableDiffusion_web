@@ -30,7 +30,7 @@ def build_model(config) -> DepthModel:
     This function should be used to construct models for training and evaluation.
 
     Args:
-        config (dict): Config dict. Config is constructed in utils/config.py. Each model has its own config file(s) saved in its root model folder.
+        config (dict): Config dict. Config is constructed in utils/lora_config.py. Each model has its own config file(s) saved in its root model folder.
 
     Returns:
         torch.nn.Module: Model corresponding to name and version as specified in config

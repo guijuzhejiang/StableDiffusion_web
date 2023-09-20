@@ -39,6 +39,9 @@ wechatpay:
   PARTNER_MODE: false
   # 代理设置，None或者{"https": "http://10.10.1.10:1080"}，详细格式参见[https://requests.readthedocs.io/en/latest/user/advanced/#proxies](https://requests.readthedocs.io/en/latest/user/advanced/#proxies)
   PROXY: null
+wechatlogin:
+  appid: wx8b7f856da1e0485c
+  secret: 549d9da20952e20ed5cd86ec81303640
 supabase:
   key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjZGpid2draGNlYW14eWl4bnBzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY4ODcyNTExMCwiZXhwIjoyMDA0MzAxMTEwfQ.KbWdkdElmB0BpOgtPWFSmB5F6vq9Bjo7PyTVQAiHwGU"
   url: "https://dcdjbwgkhceamxyixnps.supabase.co"

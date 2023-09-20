@@ -1,8 +1,18 @@
+import hashlib
+import hmac
 import os
 import random
 import base64
 from PIL import Image
 from io import BytesIO
+
+# 定义密钥（应保持安全，不要硬编码在代码中）
+key = 'guijutech1201!'.encode('utf-8')  # 用字节表示的密钥
+
+# 加密函数
+def encrypt(data):
+    h = hmac.new(key, data.encode('utf-8'), hashlib.sha256)
+    return h.hexdigest()
 
 
 def logging(msg, fp, print_msg=False):
