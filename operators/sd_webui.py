@@ -771,8 +771,6 @@ class OperatorSD(Operator):
 
                         for ok_img in ok_res:
                             img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"
-                            img_fp = f"{'localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}"
-
                             # extra upscaler
                             scales = 1
                             gfpgan_enable = 0
@@ -787,7 +785,10 @@ class OperatorSD(Operator):
                             cache_list = sorted(os.listdir(dir_path))
                             if len(cache_list) > 10:
                                 os.remove(os.path.join(dir_path, cache_list[0]))
-                            img_urls.append(img_fp)
+                        else:
+                            for img_fn in sorted(os.listdir(dir_path)):
+                                url_fp = f"{'localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}"
+                                img_urls.append(url_fp)
                 return {'success': True, 'result': img_urls}
 
             else:
