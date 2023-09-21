@@ -249,17 +249,17 @@ class ImageProvider(HTTPMethodView):
 class FetchUserHistory(HTTPMethodView):
     async def post(self, request):
         try:
-            os.makedirs(CONFIG['storage_dirpath']['user_dir'], exist_ok=True)
             user_id = request.form['user_id'][0]
-            dir_path = CONFIG['storage_dirpath']['user_dir']
+            dir_path = os.path.join(CONFIG['storage_dirpath']['user_dir'], user_id)
+            os.makedirs(dir_path, exist_ok=True)
 
-            result = [f"{'localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}" for img_fn in sorted(os.listdir(os.path.join(dir_path, user_id)))]
+            result = [f"{'localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}" for img_fn in sorted(os.listdir(dir_path))]
             if len(result) < 10:
                 for i in range(10-len(result)):
                     result.append('')
 
         except Exception:
             print(traceback.format_exc())
-            return sanic_json({'success': False, 'message': '获取历史记录失败'})
+            return sanic_json({'success': False, 'result': '获取历史记录失败'})
         else:
             return sanic_json({'success': True, 'result': result})
