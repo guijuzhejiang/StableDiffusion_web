@@ -4,7 +4,8 @@ lora_model_common_dict = [
     {'lora_name': 'polyhedron_new_skin_v1.1', 'weight': 0.1, 'label': '赋予真实皮肤，带褶皱'},
     {'lora_name': 'add_detail', 'weight': 1, 'label': '增加细节'},
     {'lora_name': 'more_details', 'weight': 1.5, 'label': '增加细节'},
-    # {'lora_name': 'Xian-T手部修复lora（不用controlnet也不坏手了）_v3.0', 'weight': 0.6, 'label': '手部修复'},
+    # {'lora_name': 'k Hand Mix 101_v1.0', 'weight': 0.6, 'label': '手部修复'},
+    # {'lora_name': 'Xian-T手部修复lora（不用controlnet也不坏手了）_v3.0', 'weight': 1, 'label': '手部修复'},
 ]
 
 lora_gender_dict = [
@@ -291,7 +292,7 @@ lora_place_dict = {
          },
 
     12: {'label': '向日葵海',
-         'prompt': 'sunflower_background,<lora:Sunflower_v1:0.7>,(sunflowers),outdoor,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme',
+         'prompt': 'sunflower_background,<lora:Sunflower_v1:0.6>,(sunflowers),outdoor,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme',
          },
 
     13: {'label': '黄昏',
@@ -314,7 +315,7 @@ lora_place_dict = {
          'prompt': 'murayakuba,izakaya,scenery,indoors,lamp,table,<lora:Murayakuba:1>',
          },
     19: {'label': '泳池',
-         'prompt': 'shs reinopool,reinopool,pool,indoors,tile floor,tile wall,<lora:reinopool_test2:1>',
+         'prompt': 'shs reinopool,reinopool,pool,indoors,<lora:reinopool_test2:1>',
          },
     20: {'label': '日式房间',
          'prompt': 'ryokan,scenery,table,indoors,television,window,chair,cup,ceiling light,lamp,flower pot,sunlight,<lora:ryokan:1>',
@@ -325,4 +326,3 @@ lora_place_dict = {
 if __name__ =='__main__':
     for k, v in lora_model_dict.items():
         shutil.copy(f'/media/zzg/GJ_disk01/pretrained_model/stable-diffusion-webui/models/Lora/{v["lora_name"]}.safetensors', f'/home/zzg/workspace/pycharm/StableDiffusion_web/models/Lora/{v["lora_name"]}.safetensors')
-
