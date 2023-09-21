@@ -3,6 +3,7 @@ import os.path
 import random
 import string
 import traceback
+import urllib.parse
 from datetime import datetime, timedelta
 
 import httpx
@@ -241,7 +242,7 @@ class Query(HTTPMethodView):
 
 class ImageProvider(HTTPMethodView):
     async def get(self, request):
-        user_id = request.args.get("uid")
+        user_id = urllib.parse.unquote(request.args.get("uid"))
         return await file_stream(os.path.join(CONFIG['storage_dirpath']['user_dir'], user_id, request.args.get("imgpath")))
 
 
@@ -253,6 +254,10 @@ class FetchUserHistory(HTTPMethodView):
             dir_path = CONFIG['storage_dirpath']['user_dir']
 
             result = [f"{'localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}" for img_fn in sorted(os.listdir(os.path.join(dir_path, user_id)))]
+            if len(result) < 10:
+                for i in range(10-len(result)):
+                    result.append('')
+
         except Exception:
             print(traceback.format_exc())
             return sanic_json({'success': False, 'message': '获取历史记录失败'})

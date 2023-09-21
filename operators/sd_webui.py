@@ -15,6 +15,7 @@ import importlib
 import json
 import os
 import sys
+import urllib.parse
 from collections import OrderedDict
 
 import GPUtil
@@ -787,7 +788,7 @@ class OperatorSD(Operator):
                                 os.remove(os.path.join(dir_path, cache_list[0]))
                         else:
                             for img_fn in sorted(os.listdir(dir_path)):
-                                url_fp = f"{'localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}"
+                                url_fp = f"{'localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}"
                                 img_urls.append(url_fp)
                 return {'success': True, 'result': img_urls}
 
