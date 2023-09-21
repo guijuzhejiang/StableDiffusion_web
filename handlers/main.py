@@ -39,9 +39,9 @@ class SDGenertae(HTTPMethodView):
                 await redis_mq.close()
 
             else:
-                mode = request.form['mode'][0]
-                params = ujson.loads(request.form['params'][0])
-                user_id = request.form['user_id'][0]
+                mode = request_form['mode'][0]
+                params = ujson.loads(request_form['params'][0])
+                user_id = request_form['user_id'][0]
 
                 cost_points = 10
 
@@ -241,4 +241,20 @@ class Query(HTTPMethodView):
 
 class ImageProvider(HTTPMethodView):
     async def get(self, request):
-        return await file_stream(os.path.join(CONFIG['storage_dirpath']['user_dir'], request.args.get("imgpath")))
+        user_id = request.args.get("uid")
+        return await file_stream(os.path.join(CONFIG['storage_dirpath']['user_dir'], user_id, request.args.get("imgpath")))
+
+
+class FetchUserHistory(HTTPMethodView):
+    async def post(self, request):
+        try:
+            os.makedirs(CONFIG['storage_dirpath']['user_dir'], exist_ok=True)
+            user_id = request.form['user_id'][0]
+            dir_path = CONFIG['storage_dirpath']['user_dir']
+
+            result = [f"{'localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}" for img_fn in sorted(os.listdir(os.path.join(dir_path, user_id)))]
+        except Exception:
+            print(traceback.format_exc())
+            return sanic_json({'success': False, 'message': '获取历史记录失败'})
+        else:
+            return sanic_json({'success': True, 'result': result})

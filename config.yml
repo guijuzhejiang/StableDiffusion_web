@@ -1,5 +1,5 @@
 debug_mode: false
-local: true
+local: false
 #debug_mode: true
 server:
   host: 0.0.0.0
@@ -16,7 +16,8 @@ redis:
   port: 6379
   redis_mq: 11
 storage_dirpath:
-  user_dir: outputs/img2img-images/web_storage
+  user_dir: outputs/img2img-images/user_history
+  hires_dir: outputs/img2img-images/user_history
   lora_model_dir: /home/ray/Workspace/file/素材/头像/224/
   lora_place_dir: /home/ray/Workspace/file/素材/背景/224/
 mq_name: debug_queue

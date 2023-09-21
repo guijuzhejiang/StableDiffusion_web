@@ -70,8 +70,6 @@ class OperatorSD(Operator):
         self.devices = getattr(importlib.import_module('modules'), 'devices')
         self.scripts_postprocessing = getattr(importlib.import_module('modules'), 'scripts_postprocessing')
 
-        os.makedirs(CONFIG['storage_dirpath']['user_dir'], exist_ok=True)
-
         # self.lora_model_dict = {}
         # for fn in os.listdir(CONFIG['storage_dirpath']['lora_model_dir']):
         #     index, lora_text = fn.split('_')
@@ -356,6 +354,7 @@ class OperatorSD(Operator):
             # print(args)
             print({k:v for k, v in kwargs.items() if k != 'input_image'})
             proceed_mode = kwargs['mode'][0]
+            user_id = kwargs['user_id'][0]
 
             if proceed_mode == 'model':
                 params = ujson.loads(kwargs['params'][0])
@@ -767,9 +766,11 @@ class OperatorSD(Operator):
 
                     else:
                         img_urls = []
-                        dir_path = CONFIG['storage_dirpath']['user_dir']
+                        dir_path = os.path.join(CONFIG['storage_dirpath']['user_dir'], user_id)
+                        os.makedirs(dir_path, exist_ok=True)
+
                         for ok_img in ok_res:
-                            img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}_{''.join([random.choice(string.ascii_letters) for c in range(6)])}.png"
+                            img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"
                             img_fp = f"{'localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}"
 
                             # extra upscaler
@@ -782,6 +783,10 @@ class OperatorSD(Operator):
                             self.scripts.scripts_postproc.run(pp, args)
 
                             pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=100, lossless=True)
+
+                            cache_list = sorted(os.listdir(dir_path))
+                            if len(cache_list) > 10:
+                                os.remove(os.path.join(dir_path, cache_list[0]))
                             img_urls.append(img_fp)
                 return {'success': True, 'result': img_urls}
 
@@ -951,7 +956,9 @@ class OperatorSD(Operator):
                 self.devices.torch_gc()
 
                 # return {'success': True, 'result': pil_to_base64(pp.image)}
-                dir_path = CONFIG['storage_dirpath']['user_dir']
+                dir_path = CONFIG['storage_dirpath']['hires']
+                os.makedirs(dir_path, exist_ok=True)
+
                 img_fn = f"{datetime.datetime.now().strftime('%y%m%d%H%M%S')}_{''.join([random.choice(string.ascii_letters) for c in range(6)])}.jpeg"
                 img_fp = f"{'localhost:'+str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}"
                 # pp.image.save(os.path.join(dir_path, img_fn), format="png", quality=100)

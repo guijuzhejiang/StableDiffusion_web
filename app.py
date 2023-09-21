@@ -8,7 +8,7 @@ from sanic_cors import CORS
 # from supabase.lib.client_options import ClientOptions
 from wechatpayv3 import WeChatPay, WeChatPayType
 
-from handlers.main import SDGenertae, SDHires, Pay, Query, ImageProvider, QueryPayment, WeChatLogin
+from handlers.main import SDGenertae, SDHires, Pay, Query, ImageProvider, QueryPayment, WeChatLogin, FetchUserHistory
 # from supabase import create_client
 from handlers.websocket import sd_genreate
 from utils.global_vars import CONFIG
@@ -23,6 +23,7 @@ bp.add_route(Query.as_view(), "/wechat/query")
 bp.add_route(WeChatLogin.as_view(), "/wechat/login")
 bp.add_route(QueryPayment.as_view(), "/wechat/query_payment")
 bp.add_route(ImageProvider.as_view(), "/user/image/fetch")
+bp.add_route(FetchUserHistory.as_view(), "/user/image/history")
 # bp.add_websocket_route(sd_genreate, "/sd/generate")
 
 # CORS settings
