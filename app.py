@@ -30,6 +30,7 @@ bp.add_route(FetchUserHistory.as_view(), "/user/image/history")
 cors = CORS(bp, resources={r"/sd/*": {"origins": "*", "headers": "*"},
                            r"/wechat/*": {"origins": "*", "headers": "*"},
                            r"/user/image/fetch": {"origins": "*", "headers": "*"},
+                           r"/user/image/history": {"origins": "*", "headers": "*"},
                            })
 
 # setup sanic app
