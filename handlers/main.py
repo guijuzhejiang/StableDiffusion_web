@@ -242,8 +242,13 @@ class Query(HTTPMethodView):
 
 class ImageProvider(HTTPMethodView):
     async def get(self, request):
-        user_id = urllib.parse.unquote(request.args.get("uid"))
-        return await file_stream(os.path.join(CONFIG['storage_dirpath']['user_dir'], user_id, request.args.get("imgpath")))
+        if request.args.get("uid"):
+            user_id = urllib.parse.unquote(request.args.get("uid"))
+            fp = os.path.join(CONFIG['storage_dirpath']['user_dir'], user_id, request.args.get("imgpath"))
+        else:
+            fp = os.path.join(CONFIG['storage_dirpath']['hires_dir'], request.args.get("imgpath"))
+
+        return await file_stream(fp)
 
 
 class FetchUserHistory(HTTPMethodView):
@@ -253,7 +258,7 @@ class FetchUserHistory(HTTPMethodView):
             dir_path = os.path.join(CONFIG['storage_dirpath']['user_dir'], user_id)
             os.makedirs(dir_path, exist_ok=True)
 
-            result = [f"{'localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}" for img_fn in sorted(os.listdir(dir_path))]
+            result = [f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}" for img_fn in sorted(os.listdir(dir_path))]
             if len(result) < 10:
                 for i in range(10-len(result)):
                     result.append('')

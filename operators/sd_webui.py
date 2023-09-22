@@ -643,7 +643,7 @@ class OperatorSD(Operator):
                 # controlnet_args_unit1.control_mode = 'Balanced' if _model_mode == 0 else 'My prompt is more important'
                 controlnet_args_unit1.control_mode = 'My prompt is more important'
                 # controlnet_args_unit1.enabled = True
-                controlnet_args_unit1.enabled = (_place_type == 0)
+                controlnet_args_unit1.enabled = _place_type == 0
                 # controlnet_args_unit1.enabled = (_place_type == 0 and _model_mode == 0)
                 controlnet_args_unit1.guidance_end = 1
                 controlnet_args_unit1.guidance_start = 0  # ending control step
@@ -788,7 +788,7 @@ class OperatorSD(Operator):
                                 os.remove(os.path.join(dir_path, cache_list[0]))
                         else:
                             for img_fn in sorted(os.listdir(dir_path)):
-                                url_fp = f"{'localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}"
+                                url_fp = f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}"
                                 img_urls.append(url_fp)
                 return {'success': True, 'result': img_urls}
 
@@ -958,11 +958,11 @@ class OperatorSD(Operator):
                 self.devices.torch_gc()
 
                 # return {'success': True, 'result': pil_to_base64(pp.image)}
-                dir_path = CONFIG['storage_dirpath']['hires']
+                dir_path = CONFIG['storage_dirpath']['hires_dir']
                 os.makedirs(dir_path, exist_ok=True)
 
                 img_fn = f"{datetime.datetime.now().strftime('%y%m%d%H%M%S')}_{''.join([random.choice(string.ascii_letters) for c in range(6)])}.jpeg"
-                img_fp = f"{'localhost:'+str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}"
+                img_fp = f"{'http://localhost:'+str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}"
                 # pp.image.save(os.path.join(dir_path, img_fn), format="png", quality=100)
                 pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=100, lossless=True)
 
