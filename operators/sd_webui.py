@@ -284,7 +284,7 @@ class OperatorSD(Operator):
                 '(Realism:1.4)',
                 'masterpiece',
                 'extremely detailed,extremely delicate,Amazing,8k wallpaper',
-                'long legs, correct body proportions, good figure',
+                'correct body proportions, good figure',
                 'detailed fingers',
                 'realistic fingers',
                 'detailed hand',
