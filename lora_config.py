@@ -248,31 +248,31 @@ lora_place_dict = {
         },
 
     1: {'label': '公路风光',
-        'prompt': '(scenicroad:1.3),<lora:scenicroad:1.0>,landscape,a road with many trees on both sides,Utah,Florida,California,New England,Colorado,Arizona,Texas,Oregon,Pennsylvania,Washington,outdoor,nice bokeh professional nature photography,calm atmosphere'
+        'prompt': '(scenicroad:1.3),<lora:scenicroad:1.0>,landscape,a road with many trees on both sides,Utah,Florida,California,New England,Colorado,Arizona,Texas,Oregon,Pennsylvania,Washington,outdoor,professional nature photography,calm atmosphere'
         },
 
     2: {'label': '花团锦簇',
-        'prompt': '<lora:乐章五部曲-林V1:1>,blue sky,outdoor,tree,nice bokeh professional nature photography,Cute landscape,calm atmosphere,peaceful theme,sen,nature,flowers',
+        'prompt': '<lora:乐章五部曲-林V1:0.5>,blue sky,outdoor,tree,professional nature photography,Cute landscape,calm atmosphere,peaceful theme,sen,nature,flowers',
         },
 
     3: {'label': '樱花绽放',
-        'prompt': 'CherryBlossom_background,<lora:CherryBlossom_v1:0.6>,cherry blossoms in bloom,outdoor,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme',
+        'prompt': 'CherryBlossom_background,<lora:CherryBlossom_v1:0.6>,cherry blossoms in bloom,outdoor,professional nature photography,calm atmosphere,landscape,peaceful theme',
         },
 
     4: {'label': '光晕',
-        'prompt': 'glowingdust,bokeh,<lora:glowingdust:0.9>,outdoor,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme',
+        'prompt': 'glowingdust,bokeh,<lora:glowingdust:0.9>,outdoor,professional nature photography,calm atmosphere,landscape,peaceful theme',
         },
 
     5: {'label': '街景',
-        'prompt': 'haruhizaka,kitakoumae,scenery,<lora:kitakoukou:1>,outdoor,nice bokeh professional nature photography,calm atmosphere,street,landscape,road,power lines,city,tree,building,sign,cityscape',
+        'prompt': 'haruhizaka,kitakoumae,scenery,<lora:kitakoukou:1>,outdoor,professional nature photography,calm atmosphere,street,landscape,road,power lines,city,tree,building,sign,cityscape',
         },
 
     6: {'label': '公园',
-        'prompt': 'Park_Bench_background,<lora:ParkBench_v1:0.6>,park,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme',
+        'prompt': 'Park_Bench_background,<lora:ParkBench_v1:0.6>,park,professional nature photography,calm atmosphere,landscape,peaceful theme',
         },
 
     7: {'label': '天台',
-        'prompt': '<lora:school_rooftop_v0.1:1> school rooftop,(rooftop:1.3),nice bokeh professional nature photography,calm atmosphere,chain-link fence,building',
+        'prompt': '<lora:school_rooftop_v0.1:1> school rooftop,(rooftop:1.3),professional nature photography,calm atmosphere,chain-link fence,building',
         },
 
     8: {'label': '草坪',
@@ -280,30 +280,30 @@ lora_place_dict = {
         },
 
     9: {'label': '林间小路',
-        'prompt': 'slg,(forest),path,<lora:slg_v30:1>,(path in woods:1.3),outdoor,nice bokeh professional nature photography,calm atmosphere',
+        'prompt': 'slg,(forest),path,<lora:slg_v30:1>,(path in woods:1.3),outdoor,professional nature photography,calm atmosphere',
         },
 
     10: {'label': '林间溪流',
-         'prompt': 'slg,forest,(river:1.3),(stream),<lora:slg_v30:1>,outdoor,nice bokeh professional nature photography,calm atmosphere',
+         'prompt': 'slg,forest,(river:1.3),(stream),<lora:slg_v30:1>,outdoor,professional nature photography,calm atmosphere',
          },
 
     11: {'label': '林间瀑布',
-         'prompt': 'slg,(waterfall:1.3),river,<lora:slg_v30:1>,huge waterfall,outdoor,nice bokeh professional nature photography,calm atmosphere',
+         'prompt': 'slg,(waterfall:1.3),river,<lora:slg_v30:1>,huge waterfall,outdoor,professional nature photography,calm atmosphere',
          },
 
     12: {'label': '向日葵海',
-         'prompt': 'sunflower_background,<lora:Sunflower_v1:0.6>,(sunflowers),outdoor,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme',
+         'prompt': 'sunflower_background,<lora:Sunflower_v1:0.6>,(sunflowers),outdoor,professional nature photography,calm atmosphere,landscape,peaceful theme',
          },
 
     13: {'label': '黄昏',
-         'prompt': 'sunset_scenery_background,<lora:SunsetScenery_v1:0.7>,sunset,outdoor,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme',
+         'prompt': 'sunset_scenery_background,<lora:SunsetScenery_v1:0.7>,sunset,outdoor,professional nature photography,calm atmosphere,landscape,peaceful theme',
          },
 
     14: {'label': '沙滩',
-         'prompt': 'beach,<lora:Taketomijima:1>,outdoor,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme',
+         'prompt': 'beach,<lora:Taketomijima:1>,outdoor,professional nature photography,calm atmosphere,landscape,peaceful theme',
          },
     15: {'label': '夏威夷热',
-         'prompt': 'tropical_tiki_retreat,<lora:tropical_tiki_retreat-10:1>,outdoor,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme,Exotic,Hawaiian,aloha',
+         'prompt': 'tropical_tiki_retreat,<lora:tropical_tiki_retreat-10:1>,outdoor,professional nature photography,calm atmosphere,landscape,peaceful theme,Exotic,Hawaiian,aloha',
          },
     16: {'label': '秋天的童话',
          'prompt': 'rogowoarboretum,beautiful tree with red and yellow leaves,intricate detail,sunny weather,natural lighting,very sharp,<lora:hjrogowoarboretum_v10:0.8>',
