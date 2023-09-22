@@ -271,22 +271,18 @@ lora_place_dict = {
         'prompt': '<lora:school_rooftop_v0.1:1> school rooftop,(rooftop:1.3),professional nature photography,calm atmosphere,chain-link fence,building',
         },
 
-    7: {'label': '草坪',
-        'prompt': '<lora:slg_v30:1>,slg,grass,green lawn',
-        },
-
-    8: {'label': '林间小路',
+    7: {'label': '林间小路',
         'prompt': 'slg,(forest),path,<lora:slg_v30:1>,(path in woods:1.3),outdoor,professional nature photography,calm atmosphere',
         },
 
-    9: {'label': '林间溪流',
+    8: {'label': '林间溪流',
          'prompt': 'slg,forest,(river:1.3),(stream),<lora:slg_v30:1>,outdoor,professional nature photography,calm atmosphere',
          },
 
-    10: {'label': '林间瀑布',
+    9: {'label': '林间瀑布',
          'prompt': 'slg,(waterfall:1.3),river,<lora:slg_v30:1>,huge waterfall,outdoor,professional nature photography,calm atmosphere',
          },
-    11: {'label': '黄昏',
+    10: {'label': '黄昏',
          'prompt': 'sunset_scenery_background,<lora:SunsetScenery_v1:0.6>,sunset,outdoor,professional nature photography,calm atmosphere,landscape',
          },
 }
