@@ -790,6 +790,10 @@ class OperatorSD(Operator):
                             for img_fn in sorted(os.listdir(dir_path)):
                                 url_fp = f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}"
                                 img_urls.append(url_fp)
+                            if len(img_urls) < 10:
+                                for i in range(10 - len(img_urls)):
+                                    img_urls.append('')
+
                 return {'success': True, 'result': img_urls}
 
             else:
