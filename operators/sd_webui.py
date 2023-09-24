@@ -619,7 +619,7 @@ class OperatorSD(Operator):
                 batch_size = _batch_size
                 cfg_scale = 7
                 image_cfg_scale = 1.5
-                denoising_strength = 1
+                denoising_strength = 0.9
                 seed = -1.0
                 subseed = -1.0
                 subseed_strength = 0
@@ -660,7 +660,7 @@ class OperatorSD(Operator):
                 controlnet_args_unit1.processor_res = 512
                 controlnet_args_unit1.threshold_a = 64
                 controlnet_args_unit1.threshold_b = 64
-                controlnet_args_unit1.weight = 0.8
+                controlnet_args_unit1.weight = 0.4
                 controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
                 controlnet_args_unit2.enabled = False
                 controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
@@ -841,7 +841,7 @@ class OperatorSD(Operator):
                     batch_size = 1
                     cfg_scale = 7
                     image_cfg_scale = 1.5
-                    denoising_strength = 0.8
+                    denoising_strength = 0.9
                     seed = -1.0
                     subseed = -1.0
                     subseed_strength = 0
