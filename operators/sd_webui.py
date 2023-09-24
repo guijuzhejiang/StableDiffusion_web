@@ -393,7 +393,7 @@ class OperatorSD(Operator):
                 ]
                 # _dino_clothing_text_prompt_0 = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear'
                 # _dino_clothing_text_prompt_1 = 'bra . bikini . bowtie . stocking . chain'
-                _box_threshold = 0.3
+                _box_threshold = 0.4
 
                 if _input_image is None:
                     return None, None
