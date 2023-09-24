@@ -31,7 +31,7 @@ lora_model_dict = {
         'gender': 0,
         'label': '非洲'
         },
-    #delete because add clothes
+
     2: {'lora_name': 'dollface',
         'weight': 1,
         'prompt': 'irish',
