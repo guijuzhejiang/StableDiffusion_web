@@ -132,7 +132,7 @@ class ScriptPostprocessingRunner:
             # for (name, _component), value in zip(script.controls.items(), script_args):
                 process_args[name] = value
 
-            print("script.name:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            print(f"{script.name}:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             print(script.name)
             print(process_args)
             script.process(pp, **process_args)
