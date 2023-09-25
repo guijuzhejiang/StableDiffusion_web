@@ -282,7 +282,7 @@ class OperatorSD(Operator):
                 # 'hand101',
                 # 'Fixhand',
                 '(simple background:1.3)',
-                '(white background:1.3)',
+                '(plain background:1.3)',
             ],
             'viewpoint': [
                 # 正面
