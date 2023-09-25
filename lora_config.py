@@ -7,6 +7,7 @@ lora_model_common_dict = [
     # {'lora_name': 'more_details', 'weight': 1, 'label': '增加细节'},
     # {'lora_name': 'k Hand Mix 101_v1.0', 'weight': 0.6, 'label': '手部修复'},
     # {'lora_name': 'Xian-T手部修复lora（不用controlnet也不坏手了）_v3.0', 'weight': 1, 'label': '手部修复'},
+    # {'lora_name': 'neg4all_bdsqlsz_V3.5', 'weight': 1, 'label': '手部修复'},
 ]
 
 lora_gender_dict = [

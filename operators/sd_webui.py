@@ -277,7 +277,7 @@ class OperatorSD(Operator):
                 '(middlescent:1.3)',
             ],
             'common': [
-                '(full body:1.3)',
+                '(full body:1.5)',
                 '(best quality:1.2)',
                 '(high quality:1.2)',
                 'high details',
@@ -393,7 +393,7 @@ class OperatorSD(Operator):
                 ]
                 # _dino_clothing_text_prompt_0 = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear'
                 # _dino_clothing_text_prompt_1 = 'bra . bikini . bowtie . stocking . chain'
-                _box_threshold = 0.32
+                _box_threshold = 0.37
 
                 if _input_image is None:
                     return None, None
