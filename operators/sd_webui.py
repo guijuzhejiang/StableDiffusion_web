@@ -751,7 +751,7 @@ class OperatorSD(Operator):
                     inpaint_full_res = 0  # choices=["Whole picture", "Only masked"]
                     inpaint_full_res_padding = 0
                     inpainting_mask_invert = 1  # Mask mode 0: Inpaint masked - 1: Inpaint not masked
-                    cfg_scale = 9
+                    cfg_scale = 8
 
                     # controlnet args
                     cnet_idx = 1
