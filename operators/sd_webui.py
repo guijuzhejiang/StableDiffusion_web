@@ -749,6 +749,7 @@ class OperatorSD(Operator):
                     inpaint_full_res = 0  # choices=["Whole picture", "Only masked"]
                     inpaint_full_res_padding = 0
                     inpainting_mask_invert = 1  # Mask mode 0: Inpaint masked - 1: Inpaint not masked
+                    cfg_scale = 9
 
                     # controlnet args
                     cnet_idx = 1
@@ -769,7 +770,7 @@ class OperatorSD(Operator):
                     controlnet_args_unit1.threshold_a = 64
                     controlnet_args_unit1.threshold_b = 64
                     controlnet_args_unit1.weight = 1
-                    controlnet_args_unit1.enabled = True
+                    controlnet_args_unit1.enabled = False
                     controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
                     controlnet_args_unit2.enabled = False
                     controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
