@@ -716,9 +716,9 @@ class OperatorSD(Operator):
                                     print('detect nsfw, retry')
                             else:
                                 # sam
-                                sam_bg_result, _ = self.sam.sam_predict(res_img, 'person',
+                                sam_bg_result, _ = self.sam.sam_predict(_dino_model_name, 'person',
                                                                         0.3,
-                                                                        _input_image)
+                                                                        res_img.convert('RGBA'))
                                 if len(sam_bg_result) > 0:
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
                                         cache_fp = f"tmp/{idx}_{pic_name}_bg.png"
