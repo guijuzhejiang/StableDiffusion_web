@@ -684,6 +684,7 @@ class OperatorSD(Operator):
                 ok_img_count = 0
                 fuck_img_count = 0
                 ok_res = []
+                ok_sam_res = []
                 sam_bg_tmp_png_fp = []
                 while ok_img_count < batch_size:
                     # 模特生成
@@ -717,8 +718,9 @@ class OperatorSD(Operator):
                                 else:
                                     print('detect nsfw, retry')
                             else:
+                                res_img = res_img.convert('RGBA')
                                 # sam
-                                sam_bg_result, _ = self.sam.sam_predict(_dino_model_name, 'person', 0.3, res_img.convert('RGBA'))
+                                sam_bg_result, _ = self.sam.sam_predict(_dino_model_name, 'person', 0.3, res_img)
                                 if len(sam_bg_result) > 0:
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
                                         cache_fp = f"tmp/{idx}_{pic_name}_bg_{res_idx}.png"
@@ -726,6 +728,7 @@ class OperatorSD(Operator):
                                         sam_bg_tmp_png_fp.append({'name': cache_fp})
                                     ok_img_count += 1
                                     ok_res.append(res_img)
+                                    ok_sam_res.append(sam_bg_result[2])
                                 else:
                                     fuck_img_count += 1
                                     if fuck_img_count > 10:
@@ -781,7 +784,7 @@ class OperatorSD(Operator):
                                 False, None, None, False, 50
                                 ]
                     ok_res[ok_idx] = self.img2img.img2img(task_id, 4, sd_bg_positive_prompt, sd_bg_negative_prompt, prompt_styles,
-                                               ok_model_res,
+                                               ok_sam_res[ok_idx],
                                                sketch,
                                                init_img_with_mask, inpaint_color_sketch, inpaint_color_sketch_orig,
                                                init_img_inpaint, init_mask_inpaint,
