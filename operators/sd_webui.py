@@ -754,7 +754,22 @@ class OperatorSD(Operator):
                     cnet_idx = 1
                     controlnet_args_unit1 = self.scripts.scripts_img2img.alwayson_scripts[
                         cnet_idx].get_default_ui_unit()
-                    controlnet_args_unit1.enabled = False
+
+                    controlnet_args_unit1.batch_images = ''
+                    controlnet_args_unit1.control_mode = 'My prompt is more important'
+                    controlnet_args_unit1.guidance_end = 1
+                    controlnet_args_unit1.guidance_start = 0  # ending control step
+                    controlnet_args_unit1.image = None
+                    controlnet_args_unit1.low_vram = False
+                    controlnet_args_unit1.model = 'control_v11p_sd15_normalbae'
+                    controlnet_args_unit1.module = 'normal_bae'
+                    controlnet_args_unit1.pixel_perfect = True
+                    controlnet_args_unit1.resize_mode = 'Crop and Resize'
+                    controlnet_args_unit1.processor_res = 512
+                    controlnet_args_unit1.threshold_a = 64
+                    controlnet_args_unit1.threshold_b = 64
+                    controlnet_args_unit1.weight = 0.4
+                    controlnet_args_unit1.enabled = True
                     controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
                     controlnet_args_unit2.enabled = False
                     controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
