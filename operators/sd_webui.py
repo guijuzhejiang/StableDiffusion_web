@@ -685,7 +685,7 @@ class OperatorSD(Operator):
                 fuck_img_count = 0
                 ok_res = []
                 ok_sam_res = []
-                sam_bg_tmp_png_fp = []
+                sam_bg_tmp_png_fp_list = []
                 while ok_img_count < batch_size:
                     # 模特生成
                     res = self.img2img.img2img(task_id, 4, sd_model_positive_prompt, sd_model_negative_prompt, prompt_styles,
@@ -722,10 +722,13 @@ class OperatorSD(Operator):
                                 # sam
                                 sam_bg_result, _ = self.sam.sam_predict(_dino_model_name, 'person', 0.3, res_img)
                                 if len(sam_bg_result) > 0:
+                                    sam_bg_tmp_png_fp = []
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
                                         cache_fp = f"tmp/{idx}_{pic_name}_bg_{res_idx}.png"
                                         sam_mask_img.save(cache_fp)
                                         sam_bg_tmp_png_fp.append({'name': cache_fp})
+                                    else:
+                                        sam_bg_tmp_png_fp_list.append(sam_bg_tmp_png_fp)
                                     ok_img_count += 1
                                     ok_res.append(res_img)
                                     ok_sam_res.append(sam_bg_result[2])
@@ -784,7 +787,7 @@ class OperatorSD(Operator):
                                 controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
                                 # controlnet args
                                 True, False, 0, ok_model_res,
-                                sam_bg_tmp_png_fp,
+                                sam_bg_tmp_png_fp_list[ok_idx],
                                 0,  # sam_output_chosen_mask
                                 False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                                 '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
