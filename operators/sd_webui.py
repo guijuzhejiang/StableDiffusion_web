@@ -306,7 +306,7 @@ class OperatorSD(Operator):
             sd_model_positive_prompt += ','.join([i for x in sd_positive_model_prompts_dict.values() for i in x])
 
         # model negative
-        sd_model_negative_prompt = f'(extra clothes:1.5),(clothes:1.5),(NSFW:1.3),paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), clothing, pants, shorts, t-shirt, dress, sleeves, lowres, ((monochrome)), ((grayscale)), duplicate, morbid, mutilated, mutated hands, poorly drawn face,skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, worst quality, jpeg artifacts, signature, watermark, username, bad feet, Multiple people, blurry, poorly drawn hands, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, too many fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, fused fingers, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes,extra toes,missing toes, weird toes,2 body,2 pussy,2 upper,2 lower,2 head,3 hand,3 feet,extra long leg,super long leg,mirrored image,mirrored noise,(bad_prompt_version2:0.8)'
+        sd_model_negative_prompt = f'(extra clothes:1.5),(clothes:1.5),(NSFW:1.8),paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), clothing, pants, shorts, t-shirt, dress, sleeves, lowres, ((monochrome)), ((grayscale)), duplicate, morbid, mutilated, mutated hands, poorly drawn face,skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, worst quality, jpeg artifacts, signature, watermark, username, bad feet, Multiple people, blurry, poorly drawn hands, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, too many fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, fused fingers, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes,extra toes,missing toes, weird toes,2 body,2 pussy,2 upper,2 lower,2 head,3 hand,3 feet,extra long leg,super long leg,mirrored image,mirrored noise,(bad_prompt_version2:0.8)'
 
         # lora
         if _viewpoint == 2:
@@ -336,7 +336,7 @@ class OperatorSD(Operator):
         sd_bg_positive_prompt = lora_place_dict[_place_type]['prompt']
         sd_bg_positive_prompt += ',' + ','.join(sd_positive_common_prompts)
         sd_bg_positive_prompt += ',' + '(no humans:1.3)'
-        sd_bg_negative_prompt = f'{"" if _place_type ==0 else "(plain background:1.3), (simple background:1.3), (white background:1.3),"}(overexposure:1.5),(exposure:1.5),(NSFW:1.3),paintings,sketches,(worst quality:2),(low quality:2), (normal quality:2), clothing, pants, shorts, t-shirt, dress, sleeves, lowres, ((monochrome)), ((grayscale)), duplicate, morbid, mutilated, mutated hands, poorly drawn face,skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, worst quality, jpeg artifacts, signature, watermark, username, bad feet, Multiple people, blurry, poorly drawn hands, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, too many fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, fused fingers, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower,2 head, 3 hand,3 feet, extra long leg,super long leg,mirrored image,mirrored noise,(bad_prompt_version2:0.8)'
+        sd_bg_negative_prompt = f'{"" if _place_type ==0 else "(plain background:1.3), (simple background:1.3), (white background:1.3),"}(overexposure:1.5),(exposure:1.5),(NSFW:1.8),paintings,sketches,(worst quality:2),(low quality:2), (normal quality:2), clothing, pants, shorts, t-shirt, dress, sleeves, lowres, ((monochrome)), ((grayscale)), duplicate, morbid, mutilated, mutated hands, poorly drawn face,skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, worst quality, jpeg artifacts, signature, watermark, username, bad feet, Multiple people, blurry, poorly drawn hands, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, too many fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, fused fingers, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower,2 head, 3 hand,3 feet, extra long leg,super long leg,mirrored image,mirrored noise,(bad_prompt_version2:0.8)'
 
         print(f'sd_bg_positive_prompt: {sd_bg_positive_prompt}')
         print(f'sd_bg_negative_prompt: {sd_bg_negative_prompt}')
@@ -711,7 +711,7 @@ class OperatorSD(Operator):
                             if self.predict_image(res_img.already_saved_as):
                                 fuck_img_count += 1
                                 if fuck_img_count > 10:
-                                    return {'success': False, 'result': "fatal error"}
+                                    return {'success': False, 'result': "生成失败次数过多"}
                                 else:
                                     print('detect nsfw, retry')
                             else:
@@ -733,108 +733,108 @@ class OperatorSD(Operator):
                                     else:
                                         print('detect no person, retry')
 
-                    else:
-                        # 背景生成
-                        for ok_idx, ok_model_res in enumerate(ok_res):
-                            task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
-                            steps = 20
-                            sampler_index = 18  # sampling method modules/sd_samplers_kdiffusion.py
-                            inpainting_fill = 1
-                            restore_faces = False
-                            batch_size = 1
-                            resize_mode = 2  # 1: crop and resize 2: resize and fill
-                            inpaint_full_res = 0  # choices=["Whole picture", "Only masked"]
-                            inpaint_full_res_padding = 0
-                            inpainting_mask_invert = 1  # Mask mode 0: Inpaint masked - 1: Inpaint not masked
+                    # else:
+                # 背景生成
+                for ok_idx, ok_model_res in enumerate(ok_res):
+                    task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
+                    steps = 20
+                    sampler_index = 18  # sampling method modules/sd_samplers_kdiffusion.py
+                    inpainting_fill = 1
+                    restore_faces = False
+                    batch_size = 1
+                    resize_mode = 2  # 1: crop and resize 2: resize and fill
+                    inpaint_full_res = 0  # choices=["Whole picture", "Only masked"]
+                    inpaint_full_res_padding = 0
+                    inpainting_mask_invert = 1  # Mask mode 0: Inpaint masked - 1: Inpaint not masked
 
-                            # controlnet args
-                            cnet_idx = 1
-                            controlnet_args_unit1 = self.scripts.scripts_img2img.alwayson_scripts[
-                                cnet_idx].get_default_ui_unit()
-                            controlnet_args_unit1.enabled = False
-                            controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
-                            controlnet_args_unit2.enabled = False
-                            controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
-                            controlnet_args_unit3.enabled = False
+                    # controlnet args
+                    cnet_idx = 1
+                    controlnet_args_unit1 = self.scripts.scripts_img2img.alwayson_scripts[
+                        cnet_idx].get_default_ui_unit()
+                    controlnet_args_unit1.enabled = False
+                    controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
+                    controlnet_args_unit2.enabled = False
+                    controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
+                    controlnet_args_unit3.enabled = False
 
-                            # adetail
-                            adetail_enabled = False
+                    # adetail
+                    adetail_enabled = False
 
-                            sam_args = [0,
-                                        adetail_enabled, face_args, hand_args,  # adetail args
-                                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
-                                        # controlnet args
-                                        True, False, 0, ok_model_res,
-                                        sam_bg_tmp_png_fp,
-                                        0,  # sam_output_chosen_mask
-                                        False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
-                                        '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                                        f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
-                                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
-                                        ['left', 'right', 'up', 'down'],
-                                        False, False, 'positive', 'comma', 0, False, False, '',
-                                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
-                                        None, False,
-                                        None, None,
-                                        False, None, None, False, 50
-                                        ]
-                            ok_res[ok_idx] = self.img2img.img2img(task_id, 4, sd_bg_positive_prompt, sd_bg_negative_prompt, prompt_styles,
-                                                       ok_model_res,
-                                                       sketch,
-                                                       init_img_with_mask, inpaint_color_sketch, inpaint_color_sketch_orig,
-                                                       init_img_inpaint, init_mask_inpaint,
-                                                       steps, sampler_index, mask_blur, mask_alpha, inpainting_fill,
-                                                       restore_faces,
-                                                       tiling,
-                                                       n_iter, batch_size, cfg_scale, image_cfg_scale,
-                                                       denoising_strength,
-                                                       seed,
-                                                       subseed,
-                                                       subseed_strength, seed_resize_from_h, seed_resize_from_w,
-                                                       seed_enable_extras,
-                                                       selected_scale_tab, _output_height, _output_width, scale_by,
-                                                       resize_mode,
-                                                       # selected_scale_tab, height, width, scale_by, resize_mode,
-                                                       inpaint_full_res,
-                                                       inpaint_full_res_padding, inpainting_mask_invert,
-                                                       img2img_batch_input_dir,
-                                                       img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
-                                                       override_settings_texts,
-                                                       *sam_args)[0][0]
+                    sam_args = [0,
+                                adetail_enabled, face_args, hand_args,  # adetail args
+                                controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
+                                # controlnet args
+                                True, False, 0, ok_model_res,
+                                sam_bg_tmp_png_fp,
+                                0,  # sam_output_chosen_mask
+                                False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                                '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
+                                True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
+                                f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
+                                128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
+                                ['left', 'right', 'up', 'down'],
+                                False, False, 'positive', 'comma', 0, False, False, '',
+                                '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
+                                64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
+                                None, False,
+                                None, None,
+                                False, None, None, False, 50
+                                ]
+                    ok_res[ok_idx] = self.img2img.img2img(task_id, 4, sd_bg_positive_prompt, sd_bg_negative_prompt, prompt_styles,
+                                               ok_model_res,
+                                               sketch,
+                                               init_img_with_mask, inpaint_color_sketch, inpaint_color_sketch_orig,
+                                               init_img_inpaint, init_mask_inpaint,
+                                               steps, sampler_index, mask_blur, mask_alpha, inpainting_fill,
+                                               restore_faces,
+                                               tiling,
+                                               n_iter, batch_size, cfg_scale, image_cfg_scale,
+                                               denoising_strength,
+                                               seed,
+                                               subseed,
+                                               subseed_strength, seed_resize_from_h, seed_resize_from_w,
+                                               seed_enable_extras,
+                                               selected_scale_tab, _output_height, _output_width, scale_by,
+                                               resize_mode,
+                                               # selected_scale_tab, height, width, scale_by, resize_mode,
+                                               inpaint_full_res,
+                                               inpaint_full_res_padding, inpainting_mask_invert,
+                                               img2img_batch_input_dir,
+                                               img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
+                                               override_settings_texts,
+                                               *sam_args)[0][0]
 
-                        #  -------------------------------------------------------------------------------------
+                #  -------------------------------------------------------------------------------------
 
-                        # storage img
-                        img_urls = []
-                        dir_path = os.path.join(CONFIG['storage_dirpath']['user_dir'], user_id)
-                        os.makedirs(dir_path, exist_ok=True)
+                # storage img
+                img_urls = []
+                dir_path = os.path.join(CONFIG['storage_dirpath']['user_dir'], user_id)
+                os.makedirs(dir_path, exist_ok=True)
 
-                        for ok_img in ok_res:
-                            img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"
-                            # extra upscaler
-                            scales = 1
-                            gfpgan_enable = 0
-                            codeformer_enable = 1
-                            args = (0, scales, None, None, True, 'None', 'None', 0, gfpgan_enable, codeformer_enable, 0)
-                            self.devices.torch_gc()
-                            pp = self.scripts_postprocessing.PostprocessedImage(ok_img.convert("RGB"))
-                            self.scripts.scripts_postproc.run(pp, args)
+                for ok_img in ok_res:
+                    img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"
+                    # extra upscaler
+                    scales = 1
+                    gfpgan_enable = 0
+                    codeformer_enable = 1
+                    args = (0, scales, None, None, True, 'None', 'None', 0, gfpgan_enable, codeformer_enable, 0)
+                    self.devices.torch_gc()
+                    pp = self.scripts_postprocessing.PostprocessedImage(ok_img.convert("RGB"))
+                    self.scripts.scripts_postproc.run(pp, args)
 
-                            pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=100, lossless=True)
+                    pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=100, lossless=True)
 
-                            # 限制缓存10张
-                            cache_list = sorted(os.listdir(dir_path))
-                            if len(cache_list) > 10:
-                                os.remove(os.path.join(dir_path, cache_list[0]))
-                        else:
-                            for img_fn in sorted(os.listdir(dir_path)):
-                                url_fp = f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}"
-                                img_urls.append(url_fp)
-                            if len(img_urls) < 10:
-                                for i in range(10 - len(img_urls)):
-                                    img_urls.append('')
+                    # 限制缓存10张
+                    cache_list = sorted(os.listdir(dir_path))
+                    if len(cache_list) > 10:
+                        os.remove(os.path.join(dir_path, cache_list[0]))
+                else:
+                    for img_fn in sorted(os.listdir(dir_path)):
+                        url_fp = f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}"
+                        img_urls.append(url_fp)
+                    if len(img_urls) < 10:
+                        for i in range(10 - len(img_urls)):
+                            img_urls.append('')
 
                 return {'success': True, 'result': img_urls}
 
@@ -864,7 +864,7 @@ class OperatorSD(Operator):
 
                     task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
                     sd_positive_prompt = '(best quality:1.2),(high quality:1.2),masterpiece,high details,(Realism:1.4), vivid color, (realistic, photo-realistic:1.3), masterpiece'
-                    sd_negative_prompt = '(extra clothes:1.5),(clothes:1.5),(NSFW:1.3),paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, ((monochrome)), ((grayscale)),(wear a mask),(cover face), duplicate, morbid, mutilated, mutated hands, poorly drawn face,skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, bad feet, multiple people, blurry, poorly drawn hands, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, too many fingers, gross proportions, abdominal stretch, fused fingers, bad body, ng_deepnegative_v1_75t, bad-picture-chill-75v, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers, long neck, cross-eyed, polar lowres, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong'
+                    sd_negative_prompt = '(extra clothes:1.5),(clothes:1.5),(NSFW:1.8),paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, ((monochrome)), ((grayscale)),(wear a mask),(cover face), duplicate, morbid, mutilated, mutated hands, poorly drawn face,skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username, bad feet, multiple people, blurry, poorly drawn hands, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, too many fingers, gross proportions, abdominal stretch, fused fingers, bad body, ng_deepnegative_v1_75t, bad-picture-chill-75v, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers, long neck, cross-eyed, polar lowres, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong'
                     prompt_styles = None
                     init_img = _input_image
                     sketch = None
