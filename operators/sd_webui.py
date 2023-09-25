@@ -327,7 +327,7 @@ class OperatorSD(Operator):
         for lora_common in lora_model_common_dict:
             lora_prompt_list.append(f"<lora:{lora_common['lora_name']}:{lora_common['weight']}>")
 
-        sd_model_positive_prompt = f"{','.join(lora_prompt_list)},{sd_model_positive_prompt}"
+        sd_model_positive_prompt = f"{','.join(lora_prompt_list)},{sd_model_positive_prompt}"+",(plain background:1.3), (simple background:1.3), (white background:1.3)"
 
         print(f'sd_model_positive_prompt: {sd_model_positive_prompt}')
         print(f'sd_model_negative_prompt: {sd_model_negative_prompt}')
@@ -605,9 +605,8 @@ class OperatorSD(Operator):
                 controlnet_args_unit1.batch_images = ''
                 # controlnet_args_unit1.control_mode = 'Balanced' if _model_mode == 0 else 'My prompt is more important'
                 controlnet_args_unit1.control_mode = 'ControlNet is more important' if _model_mode==0 else 'My prompt is more important'
-                # controlnet_args_unit1.enabled = True
-                controlnet_args_unit1.enabled = _model_mode==0
-                # controlnet_args_unit1.enabled = (_place_type == 0 and _model_mode == 0)
+                controlnet_args_unit1.enabled = True
+                # controlnet_args_unit1.enabled = _model_mode==0
                 controlnet_args_unit1.guidance_end = 1
                 controlnet_args_unit1.guidance_start = 0  # ending control step
                 controlnet_args_unit1.image = None
@@ -623,6 +622,7 @@ class OperatorSD(Operator):
                 controlnet_args_unit1.threshold_a = 64
                 controlnet_args_unit1.threshold_b = 64
                 controlnet_args_unit1.weight = 0.4
+                # controlnet_args_unit1.weight = 0.4 if _model_mode==0 else 0.2
                 controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
                 controlnet_args_unit2.enabled = False
                 controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
@@ -705,8 +705,8 @@ class OperatorSD(Operator):
                                                   img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
                                                   override_settings_texts,
                                                   *sam_args)
-
-                    for res_img in res[0]:
+                    self.devices.torch_gc()
+                    for res_idx, res_img in enumerate(res[0]):
                         if getattr(res_img, 'already_saved_as', False):
                             if self.predict_image(res_img.already_saved_as):
                                 fuck_img_count += 1
@@ -716,12 +716,10 @@ class OperatorSD(Operator):
                                     print('detect nsfw, retry')
                             else:
                                 # sam
-                                sam_bg_result, _ = self.sam.sam_predict(_dino_model_name, 'person',
-                                                                        0.3,
-                                                                        res_img.convert('RGBA'))
+                                sam_bg_result, _ = self.sam.sam_predict(_dino_model_name, 'person', 0.3, res_img.convert('RGBA'))
                                 if len(sam_bg_result) > 0:
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
-                                        cache_fp = f"tmp/{idx}_{pic_name}_bg.png"
+                                        cache_fp = f"tmp/{idx}_{pic_name}_bg_{res_idx}.png"
                                         sam_mask_img.save(cache_fp)
                                         sam_bg_tmp_png_fp.append({'name': cache_fp})
                                     ok_img_count += 1
@@ -804,6 +802,7 @@ class OperatorSD(Operator):
                                                override_settings_texts,
                                                *sam_args)[0][0]
 
+                    self.devices.torch_gc()
                 #  -------------------------------------------------------------------------------------
 
                 # storage img
