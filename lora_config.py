@@ -9,7 +9,7 @@ lora_model_common_dict = [
 ]
 
 lora_bg_common_dict = [
-    {'lora_name': 'add_detail', 'weight': 1, 'label': '增加细节'},
+    # {'lora_name': 'add_detail', 'weight': 1, 'label': '增加细节'},
     {'lora_name': 'more_details', 'weight': 1, 'label': '增加细节'},
 ]
 
