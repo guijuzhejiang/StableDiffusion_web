@@ -619,7 +619,7 @@ class OperatorSD(Operator):
                 batch_size = _batch_size
                 cfg_scale = 7
                 image_cfg_scale = 1.5
-                denoising_strength = 0.9
+                denoising_strength = 1
                 seed = -1.0
                 subseed = -1.0
                 subseed_strength = 0
@@ -841,7 +841,7 @@ class OperatorSD(Operator):
                     batch_size = 1
                     cfg_scale = 7
                     image_cfg_scale = 1.5
-                    denoising_strength = 0.9
+                    denoising_strength = 1
                     seed = -1.0
                     subseed = -1.0
                     subseed_strength = 0
