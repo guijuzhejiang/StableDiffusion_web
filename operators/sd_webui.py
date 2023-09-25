@@ -768,7 +768,7 @@ class OperatorSD(Operator):
                     controlnet_args_unit1.processor_res = 512
                     controlnet_args_unit1.threshold_a = 64
                     controlnet_args_unit1.threshold_b = 64
-                    controlnet_args_unit1.weight = 0.4
+                    controlnet_args_unit1.weight = 1
                     controlnet_args_unit1.enabled = True
                     controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
                     controlnet_args_unit2.enabled = False
