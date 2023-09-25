@@ -30,7 +30,7 @@ import ujson
 import cv2
 import numpy as np
 
-from lora_config import lora_model_dict, lora_gender_dict, lora_model_common_dict, lora_place_dict
+from lora_config import lora_model_dict, lora_gender_dict, lora_model_common_dict, lora_place_dict, lora_bg_common_dict
 from lib.celery_workshop.operator import Operator
 from utils.global_vars import CONFIG
 
@@ -281,8 +281,8 @@ class OperatorSD(Operator):
                 '' if _viewpoint == 2 else 'posing for a photo, realistic face',
                 # 'hand101',
                 # 'Fixhand',
-                # '(simple background:1.3)',
-                # '(white background:1.3)',
+                '(simple background:1.3)',
+                '(white background:1.3)',
             ],
             'viewpoint': [
                 # 正面
@@ -327,16 +327,18 @@ class OperatorSD(Operator):
         for lora_common in lora_model_common_dict:
             lora_prompt_list.append(f"<lora:{lora_common['lora_name']}:{lora_common['weight']}>")
 
-        sd_model_positive_prompt = f"{','.join(lora_prompt_list)},{sd_model_positive_prompt}"+",(plain background:1.3), (simple background:1.3), (white background:1.3)"
+        sd_model_positive_prompt = f"{','.join(lora_prompt_list)},{sd_model_positive_prompt}"
 
         print(f'sd_model_positive_prompt: {sd_model_positive_prompt}')
         print(f'sd_model_negative_prompt: {sd_model_negative_prompt}')
 
         # bg prompt
-        sd_bg_positive_prompt = lora_place_dict[_place_type]['prompt']
-        sd_bg_positive_prompt += ',' + ','.join(sd_positive_common_prompts)
-        sd_bg_positive_prompt += ',' + '(no humans:1.3)'
-        sd_bg_negative_prompt = f'{"" if _place_type ==0 else "(plain background:1.3), (simple background:1.3), (white background:1.3),"}(overexposure:1.5),(exposure:1.5),(NSFW:1.8),paintings,sketches,(worst quality:2),(low quality:2), (normal quality:2), clothing, pants, shorts, t-shirt, dress, sleeves, lowres, ((monochrome)), ((grayscale)), duplicate, morbid, mutilated, mutated hands, poorly drawn face,skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, worst quality, jpeg artifacts, signature, watermark, username, bad feet, Multiple people, blurry, poorly drawn hands, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, too many fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, fused fingers, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower,2 head, 3 hand,3 feet, extra long leg,super long leg,mirrored image,mirrored noise,(bad_prompt_version2:0.8)'
+        bg_prmpt_list = [lora_place_dict[_place_type]['prompt'],
+                         ','.join([f"<lora:{lora_model_common_dict['lora_name']}:{bg_common['weight']}>" for bg_common in lora_bg_common_dict]),
+                         ','.join(sd_positive_common_prompts),
+                         '(no humans:1.3)']
+        sd_bg_positive_prompt =','.join(bg_prmpt_list)
+        sd_bg_negative_prompt = f'{"" if _place_type ==0 else "(plain background:1.3),(simple background:1.3),(white background:1.3),"}(overexposure:1.5),(exposure:1.5),(NSFW:1.8),paintings,sketches,(worst quality:2),(low quality:2), (normal quality:2), clothing, pants, shorts, t-shirt, dress, sleeves, lowres, ((monochrome)), ((grayscale)), duplicate, morbid, mutilated, mutated hands, poorly drawn face,skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, worst quality, jpeg artifacts, signature, watermark, username, bad feet, Multiple people, blurry, poorly drawn hands, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, too many fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, fused fingers, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand, 3 feet, extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions, wrong feet bottom render, abdominal stretch, briefs, knickers, kecks, thong, bad body, bad-picture-chill-75v, ng_deepnegative_v1_75t, EasyNegative, bad proportion body to legs, wrong toes, extra toes, missing toes, weird toes, 2 body, 2 pussy, 2 upper, 2 lower,2 head, 3 hand,3 feet, extra long leg,super long leg,mirrored image,mirrored noise,(bad_prompt_version2:0.8)'
 
         print(f'sd_bg_positive_prompt: {sd_bg_positive_prompt}')
         print(f'sd_bg_negative_prompt: {sd_bg_negative_prompt}')
