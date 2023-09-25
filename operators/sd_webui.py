@@ -334,7 +334,7 @@ class OperatorSD(Operator):
 
         # bg prompt
         bg_prmpt_list = [lora_place_dict[_place_type]['prompt'],
-                         ','.join([f"<lora:{lora_model_common_dict['lora_name']}:{bg_common['weight']}>" for bg_common in lora_bg_common_dict]),
+                         ','.join([f"<lora:{bg_common['lora_name']}:{bg_common['weight']}>" for bg_common in lora_bg_common_dict]),
                          ','.join(sd_positive_common_prompts),
                          '(no humans:1.3)']
         sd_bg_positive_prompt =','.join(bg_prmpt_list)
