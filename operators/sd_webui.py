@@ -280,7 +280,7 @@ class OperatorSD(Operator):
                 '(out of frame:1.3)',
                 '' if _viewpoint == 2 else 'posing for a photo, realistic face',
                 '(wearing shoes:1.3)',
-                '(six feet tall:1.3)'
+                '(tall:1.3)'
                 # 'Fixhand',
                 # 'hand101',
                 '(simple background:1.3)',
@@ -308,7 +308,7 @@ class OperatorSD(Operator):
             sd_model_positive_prompt += ','.join([i for x in sd_positive_model_prompts_dict.values() for i in x])
 
         # model negative
-        sd_model_negative_prompt = f'(extra clothes:1.5),(clothes:1.5),(NSFW:1.8),paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), clothing, pants, shorts, t-shirt, dress, sleeves, lowres, ((monochrome)), ((grayscale)), duplicate, morbid, mutilated, mutated hands, poorly drawn face,skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers,bad anatomy, bad hands, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, worst quality,blurry, poorly drawn hands, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, too many fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions,fused fingers, bad body,bad proportion body to legs,mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers,wrong toes, extra toes, weird toes,3 feet,wrong feet bottom render'
+        sd_model_negative_prompt = f'(extra clothes:1.5),(clothes:1.5),(NSFW:1.8),paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), clothing, pants, shorts, t-shirt, dress, sleeves, lowres, ((monochrome)), ((grayscale)), duplicate, morbid, mutilated, mutated hands, poorly drawn face,skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers,bad anatomy, bad hands, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, worst quality,blurry, poorly drawn hands, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, too many fingers, long neck, cross-eyed, polar lowres, bad body,gross proportions,fused fingers,bad proportion body to legs,mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers'
 
         # lora
         if _viewpoint == 2:
