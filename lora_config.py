@@ -10,7 +10,7 @@ lora_model_common_dict = [
 
 lora_bg_common_dict = [
     # {'lora_name': 'add_detail', 'weight': 1, 'label': '增加细节'},
-    {'lora_name': 'more_details', 'weight': 1, 'label': '增加细节'},
+    {'lora_name': 'more_details', 'weight': 0.8, 'label': '增加细节'},
     {'lora_name': 'ClothingAdjuster3', 'weight': 1, 'label': '不填加额外衣服'},
 ]
 
@@ -249,47 +249,65 @@ lora_model_dict = {
 }
 
 lora_place_dict = {
-    0: {'label': '单色',
+    0: {'label': '无背景',
         'prompt': '(simple background:1.3),(white background:1.3)'
         },
-
     1: {'label': '公路风光',
         'prompt': '(scenicroad:1.3),<lora:scenicroad:1.0>,landscape,a road with many trees on both sides,Utah,Florida,California,New England,Colorado,Arizona,Texas,Oregon,Pennsylvania,Washington,outdoor,professional nature photography,calm atmosphere'
         },
-
     2: {'label': '樱花绽放',
         'prompt': 'CherryBlossom_background,<lora:CherryBlossom_v1:0.6>,cherry blossoms in bloom,outdoor,professional nature photography,calm atmosphere,landscape',
         },
-
     3: {'label': '光晕',
         'prompt': 'glowingdust,bokeh,<lora:glowingdust:0.9>,outdoor,professional nature photography,calm atmosphere,landscape',
         },
-
-    4: {'label': '街景',
-        'prompt': 'haruhizaka,kitakoumae,scenery,<lora:kitakoukou:1>,outdoor,professional nature photography,calm atmosphere,street,landscape,road,power lines,city,tree,building,sign,cityscape',
-        },
-
-    5: {'label': '公园',
+    4: {'label': '公园',
         'prompt': 'Park_Bench_background,<lora:ParkBench_v1:0.6>,park,professional nature photography,calm atmosphere,landscape',
         },
-
-    6: {'label': '天台',
+    5: {'label': '天台',
         'prompt': '<lora:school_rooftop_v0.1:1> school rooftop,(rooftop:1.3),professional nature photography,calm atmosphere,chain-link fence,building',
         },
-
-    7: {'label': '林间小路',
+    6: {'label': '林间小路',
         'prompt': 'slg,(forest),path,<lora:slg_v30:1>,(path in woods:1.3),outdoor,professional nature photography,calm atmosphere',
         },
-
-    8: {'label': '林间溪流',
-         'prompt': 'slg,forest,(river:1.3),(stream),<lora:slg_v30:1>,outdoor,professional nature photography,calm atmosphere',
-         },
-
-    9: {'label': '林间瀑布',
-         'prompt': 'slg,(waterfall:1.3),river,<lora:slg_v30:1>,huge waterfall,outdoor,professional nature photography,calm atmosphere',
-         },
-    10: {'label': '黄昏',
+    7: {'label': '林间溪流',
+        'prompt': 'slg,forest,(river:1.3),(stream),<lora:slg_v30:1>,outdoor,professional nature photography,calm atmosphere',
+        },
+    8: {'label': '林间瀑布',
+        'prompt': 'slg,(waterfall:1.3),river,<lora:slg_v30:1>,huge waterfall,outdoor,professional nature photography,calm atmosphere',
+        },
+    9: {'label': '黄昏',
          'prompt': 'sunset_scenery_background,<lora:SunsetScenery_v1:0.6>,sunset,outdoor,professional nature photography,calm atmosphere,landscape',
+         },
+    10: {'label': '花团锦簇',
+         'prompt': '<lora:乐章五部曲-林V1:1>,blue sky,outdoor, tree,nice bokeh professional nature photography,Cute landscape,calm atmosphere,peaceful theme,sen,nature,flowers',
+         },
+    11: {'label': '向日葵海',
+         'prompt': 'sunflower_background,<lora:Sunflower_v1:0.4>,(sunflowers),outdoor,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme',
+         },
+    12: {'label': '沙滩',
+         'prompt': 'beach,<lora:Taketomijima:1>,outdoor,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme',
+         },
+    13: {'label': '夏威夷热',
+         'prompt': 'tropical_tiki_retreat,<lora:tropical_tiki_retreat-10:1>,outdoor,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme,Exotic, Hawaiian, aloha',
+         },
+    14: {'label': '水族馆',
+         'prompt': 'aquarium,<lora:Aquarium-v1.0:0.8>',
+         },
+    15: {'label': '地铁',
+         'prompt': 'e235, train interior,<lora:E235_V5:1>',
+         },
+    16: {'label': '试衣间',
+         'prompt': 'fittingroom,<lora:fittingroomselfie:1>',
+         },
+    17: {'label': '秋天的童话',
+         'prompt': 'rogowoarboretum,<lora:hjrogowoarboretum_v10:0.8>',
+         },
+    18: {'label': '日式房间',
+         'prompt': 'ryokan,scenery,table,indoors,television,window,chair,cup,ceiling light,lamp,flower pot,sunlight,<lora:ryokan:0.8>',
+         },
+    19: {'label': '体育馆',
+         'prompt': 'school gym,reflective floor,<lora:school_gym_v0.1:1>',
          },
 }
 
