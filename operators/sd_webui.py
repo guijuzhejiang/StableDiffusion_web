@@ -277,9 +277,10 @@ class OperatorSD(Operator):
                 'detailed hand',
                 'realistic hand',
                 'realistic body',
-                'out of frame',
+                '(out of frame:1.3)',
                 '' if _viewpoint == 2 else 'posing for a photo, realistic face',
-                '(wearing shoes:1.5)',
+                '(wearing shoes:1.3)',
+                '(six feet tall:1.3)'
                 # 'Fixhand',
                 '(simple background:1.3)',
                 '(plain background:1.3)',
@@ -306,7 +307,7 @@ class OperatorSD(Operator):
             sd_model_positive_prompt += ','.join([i for x in sd_positive_model_prompts_dict.values() for i in x])
 
         # model negative
-        sd_model_negative_prompt = f'(extra clothes:1.5),(clothes:1.5),(NSFW:1.8),paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), clothing, pants, shorts, t-shirt, dress, sleeves, lowres, ((monochrome)), ((grayscale)), duplicate, morbid, mutilated, mutated hands, poorly drawn face,skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, worst quality, jpeg artifacts, signature, watermark, username,Multiple people, blurry, poorly drawn hands, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, too many fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions,abdominal stretch, briefs, knickers, kecks, thong, fused fingers, bad body,bad proportion body to legs,2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand,extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions,abdominal stretch, briefs, knickers, kecks, thong, bad body,bad proportion body to legs,2 body,2 pussy,2 upper,2 lower,2 head,3 hand,extra long leg,super long leg,mirrored image,mirrored noise,(toes:1.2).wrong toes, extra toes, missing toes, weird toes,3 feet, extra long leg, super long leg,wrong feet bottom render'
+        sd_model_negative_prompt = f'(extra clothes:1.5),(clothes:1.5),(NSFW:1.8),paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), clothing, pants, shorts, t-shirt, dress, sleeves, lowres, ((monochrome)), ((grayscale)), duplicate, morbid, mutilated, mutated hands, poorly drawn face,skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, worst quality,blurry, poorly drawn hands, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, too many fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions,abdominal stretch, briefs, knickers, kecks, thong, fused fingers, bad body,bad proportion body to legs,2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand,extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers, long neck, cross-eyed, polar lowres, bad body, bad proportions, gross proportions,abdominal stretch, briefs, knickers, kecks, thong, bad body,bad proportion body to legs,2 body,2 pussy,2 upper,2 lower,2 head,3 hand,extra long leg,super long leg,mirrored image,mirrored noise,(toes:1.2).wrong toes, extra toes, missing toes, weird toes,3 feet, extra long leg, super long leg,wrong feet bottom render'
 
         # lora
         if _viewpoint == 2:
@@ -338,7 +339,7 @@ class OperatorSD(Operator):
                          ','.join(sd_positive_common_prompts),
                          '(no humans:1.3)']
         sd_bg_positive_prompt =','.join(bg_prmpt_list)
-        sd_bg_negative_prompt = f'{"" if _place_type ==0 else "(plain background:1.3),(simple background:1.3),(white background:1.3),"}(overexposure:1.5),(exposure:1.5),(NSFW:1.8),paintings,sketches,(worst quality:2),(low quality:2), (normal quality:2), clothing, pants, shorts, t-shirt, dress, sleeves, lowres, ((monochrome)), ((grayscale)), duplicate,morbid,((watermark:2)), (white letters:1),text, error,extra digit, fewer digits, cropped, worst quality, jpeg artifacts, signature, watermark,username,humans,blurry,deformed,mirrored image,mirrored noise,polar lowres'
+        sd_bg_negative_prompt = f'{"" if _place_type ==0 else "(plain background:1.3),(simple background:1.3),(white background:1.3),"}(overexposure:1.5),(exposure:1.5),(NSFW:1.8),paintings,sketches,(worst quality:2),(low quality:2), (normal quality:2), clothing, pants, shorts, t-shirt, dress, sleeves, lowres, ((monochrome)), ((grayscale)), duplicate,morbid,((watermark:2)), (white letters:1),text, error,extra digit, fewer digits, cropped, worst quality,humans,blurry,deformed,mirrored image,mirrored noise,polar lowres'
         # 3 feet, extra long leg, super long leg,wrong feet bottom render
 
         print(f'sd_bg_positive_prompt: {sd_bg_positive_prompt}')
@@ -463,7 +464,7 @@ class OperatorSD(Operator):
                             bottom_ratio = min(0.58, math.pow(person0_width / person0_height, factor_bottom) * constant_bottom)
                             print(f"bottom_ratio: {bottom_ratio}")
                             print(f"top_ratio: {top_ratio}")
-                            print(f"boxes: {person_boxes}")
+                            print(f"boxes: {person0_box}")
                             print(f"width: {person0_width}")
                             print(f"height: {person0_height}")
                             print(f"top increase: {person0_height * top_ratio}")
@@ -753,7 +754,7 @@ class OperatorSD(Operator):
                     inpaint_full_res = 0  # choices=["Whole picture", "Only masked"]
                     inpaint_full_res_padding = 0
                     inpainting_mask_invert = 1  # Mask mode 0: Inpaint masked - 1: Inpaint not masked
-                    cfg_scale = 8
+                    cfg_scale = 9
 
                     # controlnet args
                     cnet_idx = 1
@@ -773,8 +774,8 @@ class OperatorSD(Operator):
                     controlnet_args_unit1.processor_res = 512
                     controlnet_args_unit1.threshold_a = 64
                     controlnet_args_unit1.threshold_b = 64
-                    controlnet_args_unit1.weight = 1
-                    controlnet_args_unit1.enabled = False
+                    controlnet_args_unit1.weight = 0.4
+                    controlnet_args_unit1.enabled = True
                     controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
                     controlnet_args_unit2.enabled = False
                     controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
@@ -888,7 +889,7 @@ class OperatorSD(Operator):
 
                     task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
                     sd_positive_prompt = '(best quality:1.2),(high quality:1.2),masterpiece,high details,(Realism:1.4), vivid color, (realistic, photo-realistic:1.3), masterpiece'
-                    sd_negative_prompt = '(extra clothes:1.5),(clothes:1.5),(NSFW:1.8),paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, ((monochrome)), ((grayscale)),(wear a mask),(cover face), duplicate, morbid, mutilated, mutated hands, poorly drawn face,skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, jpeg artifacts, signature, watermark, username,multiple people, blurry, poorly drawn hands, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, too many fingers, gross proportions, abdominal stretch, fused fingers, bad body, ng_deepnegative_v1_75t, bad-picture-chill-75v, EasyNegative, bad proportion body to legs,2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand,extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers, long neck, cross-eyed, polar lowres, bad proportions, gross proportions,abdominal stretch, briefs, knickers, kecks, thong'
+                    sd_negative_prompt = '(extra clothes:1.5),(clothes:1.5),(NSFW:1.8),paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, ((monochrome)), ((grayscale)),(wear a mask),(cover face), duplicate, morbid, mutilated, mutated hands, poorly drawn face,skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers, ((watermark:2)), (white letters:1), (multi nipples), bad anatomy, bad hands, text, error, missing fingers, missing arms, missing legs, cropped, blurry, poorly drawn hands, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, too many fingers, gross proportions, abdominal stretch, fused fingers, bad body, ng_deepnegative_v1_75t, bad-picture-chill-75v, EasyNegative, bad proportion body to legs,2 body, 2 pussy, 2 upper, 2 lower, 2 head, 3 hand,extra long leg, super long leg, mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers, long neck, cross-eyed, polar lowres, bad proportions, gross proportions,abdominal stretch, briefs, knickers, kecks, thong'
                     prompt_styles = None
                     init_img = _input_image
                     sketch = None
