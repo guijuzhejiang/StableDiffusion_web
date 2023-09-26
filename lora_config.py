@@ -4,7 +4,6 @@ lora_model_common_dict = [
     {'lora_name': 'polyhedron_new_skin_v1.1', 'weight': 0.2, 'label': '赋予真实皮肤，带褶皱'},
     {'lora_name': 'ClothingAdjuster3', 'weight': 1, 'label': '不填加额外衣服'},
     {'lora_name': 'more_details', 'weight': 0.8, 'label': '增加细节'},
-    # {'lora_name': "各种女性鞋子 various types of women's shoesV1", 'weight': 0.66, 'label': '女性鞋子'},
     # {'lora_name': 'k Hand Mix 101_v1.0', 'weight': 0.6, 'label': '手部修复'},
     # {'lora_name': 'Xian-T手部修复lora（不用controlnet也不坏手了）_v3.0', 'weight': 1, 'label': '手部修复'},
     # {'lora_name': 'neg4all_bdsqlsz_V3.5', 'weight': 1, 'label': '手部修复'},
