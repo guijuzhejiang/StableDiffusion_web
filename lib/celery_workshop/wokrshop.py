@@ -49,7 +49,9 @@ class WorkShop(object):
                     name = module.celery_task_name if hasattr(module, 'celery_task_name') else module.__class__.name
 
                     def run(self, *args, **kwargs):
-                        res = self.operator(*args, **kwargs)
+                        args_list = list(args)
+                        args_list.append(self)
+                        res = self.operator(*args_list, **kwargs)
                         return res
 
                 task = app.register_task(ProceedTask)

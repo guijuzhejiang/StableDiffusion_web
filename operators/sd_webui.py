@@ -355,6 +355,8 @@ class OperatorSD(Operator):
             proceed_mode = kwargs['mode'][0]
             user_id = kwargs['user_id'][0]
 
+            celery_task = args[0]
+            celery_task.update_state(state='PROGRESS', meta={'progress': 1})
             # 生成服装模特
             if proceed_mode == 'model':
                 params = ujson.loads(kwargs['params'][0])
@@ -493,6 +495,8 @@ class OperatorSD(Operator):
                         print(traceback.format_exc())
                         print('preprocess img error')
                     else:
+                        celery_task.update_state(state='PROGRESS', meta={'progress': 5})
+
                         # # 压缩图像质量
                         quality = 80
                         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
@@ -520,6 +524,9 @@ class OperatorSD(Operator):
                         _input_image.save(f'tmp/resized_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
                                           format='PNG')
 
+
+                celery_task.update_state(state='PROGRESS', meta={'progress': 10})
+
                 sam_result_tmp_png_fp = []
                 sam_result_gallery = [None, None, None]
                 sam_mask_result = []
@@ -537,6 +544,8 @@ class OperatorSD(Operator):
                             sam_result_gallery[1] = 1
                             sam_result_gallery[2].paste(sam_result[2], (0, 0), sam_result[2])
                         sam_mask_result.append(np.array(sam_result[1]))
+
+                celery_task.update_state(state='PROGRESS', meta={'progress': 30})
 
                 if sam_result_gallery[0] is None:
                     return {'success': False, 'result': '未检测到服装'}
@@ -711,6 +720,8 @@ class OperatorSD(Operator):
                                                   img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
                                                   override_settings_texts,
                                                   *sam_args)
+
+                    celery_task.update_state(state='PROGRESS', meta={'progress': 50})
                     self.devices.torch_gc()
                     for res_idx, res_img in enumerate(res[0]):
                         if getattr(res_img, 'already_saved_as', False):
@@ -831,7 +842,7 @@ class OperatorSD(Operator):
 
                     self.devices.torch_gc()
                 #  -------------------------------------------------------------------------------------
-
+                celery_task.update_state(state='PROGRESS', meta={'progress': 80})
                 # storage img
                 img_urls = []
                 dir_path = os.path.join(CONFIG['storage_dirpath']['user_dir'], user_id)
@@ -861,7 +872,7 @@ class OperatorSD(Operator):
                     if len(img_urls) < 10:
                         for i in range(10 - len(img_urls)):
                             img_urls.append('')
-
+                celery_task.update_state(state='PROGRESS', meta={'progress': 90})
                 return {'success': True, 'result': img_urls}
 
             else:

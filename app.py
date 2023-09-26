@@ -24,7 +24,7 @@ bp.add_route(WeChatLogin.as_view(), "/wechat/login")
 bp.add_route(QueryPayment.as_view(), "/wechat/query_payment")
 bp.add_route(ImageProvider.as_view(), "/user/image/fetch")
 bp.add_route(FetchUserHistory.as_view(), "/user/image/history")
-# bp.add_websocket_route(sd_genreate, "/sd/generate")
+bp.add_websocket_route(sd_genreate, "/sd/io")
 
 # CORS settings
 cors = CORS(bp, resources={r"/sd/*": {"origins": "*", "headers": "*"},
