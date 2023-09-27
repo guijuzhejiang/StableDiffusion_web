@@ -1055,7 +1055,7 @@ class OperatorSD(Operator):
         except Exception:
             print('errrrr!!!!!!!!!!!!!!')
             self.logging(
-                f"[ocr predict fatal error][{datetime.datetime.now()}]:"
+                f"[predict fatal error][{datetime.datetime.now()}]:"
                 f"{traceback.format_exc()}",
                 f"logs/error.log")
 

@@ -1,4 +1,6 @@
 import asyncio
+import datetime
+import traceback
 
 import async_timeout
 import ujson
@@ -7,6 +9,7 @@ from sanic.request import Request
 from websockets.exceptions import ConnectionClosed
 from loguru import logger
 from lib.celery_workshop.wokrshop import WorkShop
+from lib.common.common_util import logging
 from operators import OperatorSD
 
 sd_workshop = WorkShop(OperatorSD)
@@ -60,9 +63,9 @@ async def sd_genreate(request: Request, ws):
                         if task_result.state == 'PROGRESS':
                             if task_result.info is not None:
                                 try:
-                                    await ws.send(ujson.dumps({'success': True, 'result': task_result.info['progress'], 'act': f"show_{package['mode']}_progress"}))
+                                    await ws.send(ujson.dumps({'success': True, 'result': task_result.info['progress'], 'act': f"show_progress"}))
                                 except Exception:
-                                    await ws.send(ujson.dumps({'success': True, 'result': 99, 'act': f"show_{package['mode']}_progress"}))
+                                    await ws.send(ujson.dumps({'success': True, 'result': 99, 'act': f"show_progress"}))
                                     break
                         elif task_result.state == 'PENDING':
                             try:
@@ -73,23 +76,27 @@ async def sd_genreate(request: Request, ws):
                                     if str(task_result) == q['id']:
                                         get_success = True
                                         await ws.send(ujson.dumps({'success': True, 'result': index+1,
-                                                                   'act': f"show_{package['mode']}_queue"}))
+                                                                   'act': f"show_queue"}))
                                 else:
                                     if not get_success:
                                         await ws.send(ujson.dumps({'success': True, 'result': len(queue_list),
-                                                                   'act': f"show_{package['mode']}_queue"}))
+                                                                   'act': f"show_queue"}))
 
                             except Exception:
+                                logging(
+                                    f"[predict fatal error][{datetime.datetime.now()}]:"
+                                    f"{traceback.format_exc()}",
+                                    f"logs/error.log", print_msg=True)
                                 await ws.send(ujson.dumps({'success': True, 'result': '...',
-                                                           'act': f"show_{package['mode']}_queue"}))
+                                                           'act': f"show_queue"}))
 
                         elif task_result.state == 'SUCCESS':
-                            await ws.send(ujson.dumps({'success': True, 'result': 100, 'act': f"show_{package['mode']}_progress"}))
+                            await ws.send(ujson.dumps({'success': True, 'result': 100, 'act': f"show_progress"}))
                             break
                         await asyncio.sleep(1)
                     print('done.')
                     task_result = task_result.result
-                    task_result['act'] = f"show_{package['mode']}_result"
+                    task_result['act'] = f"show_result"
                     if task_result['success']:
                         data = await request.app.ctx.supabase_client.atable("transaction").insert({"user_id": user_id,
                                                                                                    'amount': cost_points,
@@ -107,5 +114,8 @@ async def sd_genreate(request: Request, ws):
             except asyncio.TimeoutError:
                 pass
     except Exception:
-        print('fatal error')
+        logging(
+            f"[predict fatal error][{datetime.datetime.now()}]:"
+            f"{traceback.format_exc()}",
+            f"logs/error.log", print_msg=True)
         await ws.send(ujson.dumps({'success': False, 'result': "fatal error"}))
