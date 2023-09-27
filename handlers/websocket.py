@@ -84,7 +84,7 @@ async def sd_genreate(request: Request, ws):
 
                             except Exception:
                                 logging(
-                                    f"[predict fatal error][{datetime.datetime.now()}]:"
+                                    f"[websocket fatal error][{datetime.datetime.now()}]:"
                                     f"{traceback.format_exc()}",
                                     f"logs/error.log", print_msg=True)
                                 await ws.send(ujson.dumps({'success': True, 'result': '...',
@@ -115,7 +115,7 @@ async def sd_genreate(request: Request, ws):
                 pass
     except Exception:
         logging(
-            f"[predict fatal error][{datetime.datetime.now()}]:"
+            f"[websocket fatal error][{datetime.datetime.now()}]:"
             f"{traceback.format_exc()}",
             f"logs/error.log", print_msg=True)
         await ws.send(ujson.dumps({'success': False, 'result': "fatal error"}))
