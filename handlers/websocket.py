@@ -103,6 +103,7 @@ async def sd_genreate(request: Request, ws):
                     print('done.')
                     task_result = task_result.result
                     task_result['act'] = f"show_result"
+                    task_result['type'] = package['mode']
                     if task_result['success']:
                         data = await request.app.ctx.supabase_client.atable("transaction").insert({"user_id": user_id,
                                                                                                    'amount': cost_points,
