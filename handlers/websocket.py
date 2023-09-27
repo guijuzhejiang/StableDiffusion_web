@@ -58,40 +58,46 @@ async def sd_genreate(request: Request, ws):
                     # proceed task
                     task_result = sd_workshop(**format_package)
                     print('wait')
+                    buf_result = {'success': True, 'result': None, 'act': None, 'type': package['mode']}
                     while not task_result.ready():
                         print(task_result.state)
                         if task_result.state == 'PROGRESS':
+                            buf_result['act'] = 'show_progress'
                             if task_result.info is not None:
                                 try:
-                                    await ws.send(ujson.dumps({'success': True, 'result': task_result.info['progress'], 'act': f"show_progress"}))
+                                    buf_result['result'] = task_result.info['progress']
+                                    await ws.send(ujson.dumps(buf_result))
                                 except Exception:
-                                    await ws.send(ujson.dumps({'success': True, 'result': 99, 'act': f"show_progress"}))
+                                    buf_result['result'] = 99
+                                    await ws.send(ujson.dumps(buf_result))
                                     break
                         elif task_result.state == 'PENDING':
+                            buf_result['act'] = 'show_queue'
                             try:
                                 queue_list = task_result.app.control.inspect().reserved()[f'{sd_workshop.op.__name__}_worker']
-
                                 get_success = False
                                 for index, q in enumerate(queue_list):
                                     if str(task_result) == q['id']:
                                         get_success = True
-                                        await ws.send(ujson.dumps({'success': True, 'result': index+1,
-                                                                   'act': f"show_queue"}))
+                                        buf_result['result'] = f"{index+1}/{len(queue_list)}"
+                                        await ws.send(ujson.dumps(buf_result))
                                 else:
                                     if not get_success:
-                                        await ws.send(ujson.dumps({'success': True, 'result': len(queue_list),
-                                                                   'act': f"show_queue"}))
+                                        buf_result['result'] = f"..."
+                                        await ws.send(ujson.dumps(buf_result))
 
                             except Exception:
                                 logging(
                                     f"[websocket fatal error][{datetime.datetime.now()}]:"
                                     f"{traceback.format_exc()}",
                                     f"logs/error.log", print_msg=True)
-                                await ws.send(ujson.dumps({'success': True, 'result': '...',
-                                                           'act': f"show_queue"}))
+                                buf_result['result'] = f"..."
+                                await ws.send(ujson.dumps(buf_result))
 
                         elif task_result.state == 'SUCCESS':
-                            await ws.send(ujson.dumps({'success': True, 'result': 100, 'act': f"show_progress"}))
+                            buf_result['act'] = 'show_progress'
+                            buf_result['result'] = 100
+                            await ws.send(ujson.dumps(buf_result))
                             break
                         await asyncio.sleep(1)
                     print('done.')
