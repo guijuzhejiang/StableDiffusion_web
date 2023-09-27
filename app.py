@@ -35,7 +35,7 @@ cors = CORS(bp, resources={r"/sd/*": {"origins": "*", "headers": "*"},
 
 # setup sanic app
 app = Sanic(__name__)
-
+print(app.config.WEBSOCKET_MAX_SIZE)
 
 @bp.after_server_stop
 async def close_redis(sanic_app, loop):
@@ -83,7 +83,7 @@ async def main_process_start(sanic_app, loop):
 class Config:
     RESPONSE_TIMEOUT = 600
     SECRET = "xxxGUIJU_TeCH&^%$"
-
+    WEBSOCKET_MAX_SIZE = 2097152
 
 app.update_config(Config)
 app.blueprint(bp)
