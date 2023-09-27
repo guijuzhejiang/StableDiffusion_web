@@ -1,8 +1,10 @@
 import asyncio
 import datetime
+import os
 import traceback
 
-import async_timeout
+from urllib.parse import urlparse, parse_qs
+
 import ujson
 from celery.result import AsyncResult
 from sanic.request import Request
@@ -11,6 +13,7 @@ from loguru import logger
 from lib.celery_workshop.wokrshop import WorkShop
 from lib.common.common_util import logging
 from operators import OperatorSD
+from utils.global_vars import CONFIG
 
 sd_workshop = WorkShop(OperatorSD)
 
@@ -56,7 +59,18 @@ async def sd_genreate(request: Request, ws):
                     buf_result['act'] = 'send_image'
                     await ws.send(ujson.dumps(buf_result))
                     # recv image
-                    format_package['input_image'][0].append(await ws.recv())
+                    data = await ws.recv()
+                    if package['mode'] == 'model':
+                        format_package['input_image'][0].append(data)
+                    else:
+                        parsed_url = urlparse(data)
+                        # 获取查询参数
+                        query_params = parse_qs(parsed_url.query)
+                        img_fp = os.path.join(CONFIG['storage_dirpath']['user_dir'], query_params['uid'][0], query_params['imgpath'][0])
+                        with open(img_fp, "rb") as image_file:
+                            # 读取二进制数据
+                            image_data = image_file.read()
+                            format_package['input_image'][0].append(image_data)
                     # proceed task
                     task_result = sd_workshop(**format_package)
                     print('wait')
