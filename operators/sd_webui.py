@@ -866,7 +866,7 @@ class OperatorSD(Operator):
                     if len(cache_list) > 10:
                         os.remove(os.path.join(dir_path, cache_list[0]))
                 else:
-                    for img_fn in sorted(os.listdir(dir_path)):
+                    for img_fn in sorted(os.listdir(dir_path), reverse=True):
                         url_fp = f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}"
                         img_urls.append(url_fp)
                     if len(img_urls) < 10:
