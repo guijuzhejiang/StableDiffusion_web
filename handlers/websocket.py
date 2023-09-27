@@ -56,15 +56,16 @@ async def sd_genreate(request: Request, ws):
                     task_result = sd_workshop(**format_package)
                     print('wait')
                     while not task_result.ready():
-                        if task_result.state == 'PENDING':
+                        print(task_result.state)
+                        if task_result.state == 'PROGRESS':
                             if task_result.info is not None:
                                 try:
-                                    ws.send(ujson.dumps({'success': True, 'result': task_result.info['progress'], 'act': 'show_progress'}))
+                                    await ws.send(ujson.dumps({'success': True, 'result': task_result.info['progress'], 'act': 'show_progress'}))
                                 except Exception:
-                                    ws.send(ujson.dumps({'success': True, 'result': 99, 'act': 'show_progress'}))
+                                    await ws.send(ujson.dumps({'success': True, 'result': 99, 'act': 'show_progress'}))
                                     break
                         elif task_result.state == 'SUCCESS':
-                            ws.send(ujson.dumps({'success': True, 'result': 99, 'act': 'show_progress'}))
+                            await ws.send(ujson.dumps({'success': True, 'result': 99, 'act': 'show_progress'}))
                             break
                         await asyncio.sleep(1)
                     print('done.')
