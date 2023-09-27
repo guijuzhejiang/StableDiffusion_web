@@ -60,12 +60,31 @@ async def sd_genreate(request: Request, ws):
                         if task_result.state == 'PROGRESS':
                             if task_result.info is not None:
                                 try:
-                                    await ws.send(ujson.dumps({'success': True, 'result': task_result.info['progress'], 'act': 'show_progress'}))
+                                    await ws.send(ujson.dumps({'success': True, 'result': task_result.info['progress'], 'act': f"show_{package['mode']}_progress"}))
                                 except Exception:
-                                    await ws.send(ujson.dumps({'success': True, 'result': 99, 'act': 'show_progress'}))
+                                    await ws.send(ujson.dumps({'success': True, 'result': 99, 'act': f"show_{package['mode']}_progress"}))
                                     break
+                        elif task_result.state == 'PENDING':
+                            try:
+                                queue_list = task_result.app.control.inspect().reserved()[f'{sd_workshop.op.__name__}_worker']
+
+                                get_success = False
+                                for index, q in enumerate(queue_list):
+                                    if str(task_result) == q['id']:
+                                        get_success = True
+                                        await ws.send(ujson.dumps({'success': True, 'result': index+1,
+                                                                   'act': f"show_{package['mode']}_queue"}))
+                                else:
+                                    if not get_success:
+                                        await ws.send(ujson.dumps({'success': True, 'result': len(queue_list),
+                                                                   'act': f"show_{package['mode']}_queue"}))
+
+                            except Exception:
+                                await ws.send(ujson.dumps({'success': True, 'result': '...',
+                                                           'act': f"show_{package['mode']}_queue"}))
+
                         elif task_result.state == 'SUCCESS':
-                            await ws.send(ujson.dumps({'success': True, 'result': 99, 'act': 'show_progress'}))
+                            await ws.send(ujson.dumps({'success': True, 'result': 100, 'act': f"show_{package['mode']}_progress"}))
                             break
                         await asyncio.sleep(1)
                     print('done.')
