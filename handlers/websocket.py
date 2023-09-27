@@ -50,15 +50,16 @@ async def sd_genreate(request: Request, ws):
                 account = \
                 (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[
                     0]
+                buf_result = {'success': True, 'result': None, 'act': None, 'type': package['mode']}
                 if cost_points <= account['balance']:
                     print("ready for proceed generate")
-                    await ws.send(ujson.dumps({'success': True, 'result': '', 'act': 'send_image'}))
+                    buf_result['act'] = 'send_image'
+                    await ws.send(ujson.dumps(buf_result))
                     # recv image
                     format_package['input_image'][0].append(await ws.recv())
                     # proceed task
                     task_result = sd_workshop(**format_package)
                     print('wait')
-                    buf_result = {'success': True, 'result': None, 'act': None, 'type': package['mode']}
                     while not task_result.ready():
                         print(task_result.state)
                         if task_result.state == 'PROGRESS':
