@@ -286,6 +286,11 @@ class OperatorSD(Operator):
                 # 'hand101',
                 '(simple background:1.3)',
                 '(plain background:1.3)',
+                'natural skin texture',
+                'beautiful fingers',
+                'clear fingernails',
+                'realistic hand appearance',
+                'elegant hand gesture',
             ],
             'viewpoint': [
                 # 正面
@@ -309,7 +314,7 @@ class OperatorSD(Operator):
             sd_model_positive_prompt += ','.join([i for x in sd_positive_model_prompts_dict.values() for i in x])
 
         # model negative
-        sd_model_negative_prompt = f'barefoot,(extra clothes:1.5),(clothes:1.5),(NSFW:1.8),paintings,sketches,(worst quality:2),(low quality:2),(normal quality:2),clothing,pants,shorts,t-shirt,dress,sleeves,lowres,((monochrome)),((grayscale)),duplicate,morbid,mutilated,mutated hands,poorly drawn face,skin spots,acnes,skin blemishes,age spot,glans,extra fingers,fewer fingers,bad anatomy,bad hands,error,missing fingers,missing arms,missing legs,extra digit,fewer digits,cropped,worst quality,blurry,poorly drawn hands,mutation,deformed,extra limbs,extra arms,extra legs,malformed limbs,too many fingers,long neck,cross-eyed,polar lowres,bad body,gross proportions,fused fingers,bad proportion body to legs,mirrored image,mirrored noise,(bad_prompt_version2:0.8),aged up,old fingers,bad feet,wrong feet bottom render,wrong toes,extra toes,missing toes,weird toes,2 upper,2 lower,2 head,3 hand,3 feet'
+        sd_model_negative_prompt = f'avoid abstraction,avoid distortion,barefoot,(extra clothes:1.5),(clothes:1.5),(NSFW:1.8),paintings,sketches,(worst quality:2),(low quality:2),(normal quality:2),clothing,pants,shorts,t-shirt,dress,sleeves,lowres,((monochrome)),((grayscale)),duplicate,morbid,mutilated,mutated hands,poorly drawn face,skin spots,acnes,skin blemishes,age spot,glans,extra fingers,fewer fingers,bad anatomy,bad hands,error,missing fingers,missing arms,missing legs,extra digit,fewer digits,cropped,worst quality,blurry,poorly drawn hands,mutation,deformed,extra limbs,extra arms,extra legs,malformed limbs,too many fingers,long neck,cross-eyed,polar lowres,bad body,gross proportions,fused fingers,bad proportion body to legs,mirrored image,mirrored noise,(bad_prompt_version2:0.8),aged up,old fingers,bad feet,wrong feet bottom render,wrong toes,extra toes,missing toes,weird toes,2 upper,2 lower,2 head,3 hand,3 feet'
 
         # lora
         if _viewpoint == 2:
