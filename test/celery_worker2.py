@@ -11,10 +11,25 @@ app = Celery(celery_name, broker='amqp://localhost:5672', backend='redis://local
 class _AddTask2(Task):
     a = 123
     name = 'task'
+    # bind = True
     def run(self, x, y):
         print(self.a)
         print("222222")
-        time.sleep(2)
+        self.update_state(state='PROGRESS', meta={'progress': 1})
+        time.sleep(1)
+        self.update_state(state='PROGRESS', meta={'progress': 2})
+        time.sleep(1)
+        self.update_state(state='PROGRESS', meta={'progress': 3})
+        time.sleep(1)
+        self.update_state(state='PROGRESS', meta={'progress': 4})
+        time.sleep(1)
+        self.update_state(state='PROGRESS', meta={'progress': 5})
+        time.sleep(1)
+        self.update_state(state='PROGRESS', meta={'progress': 6})
+        time.sleep(1)
+        self.update_state(state='PROGRESS', meta={'progress': 7})
+        time.sleep(1)
+
         print(f"!!!!!!!!!!!!!x: {x} self.a:{self.a}!!!!!!!!!!!!!!!!!!")
         return x + y
 print(_AddTask2.a)
