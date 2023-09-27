@@ -17,7 +17,8 @@ lora_bg_common_dict = [
 
 lora_gender_dict = [
     # 女美化眼睛
-    "<lora:detailed_eye-10:0.1>,1girl,<lora:各种女性鞋子 various types of women's shoesV1:0.66>,shoes",
+    #,<lora:各种女性鞋子 various types of women's shoesV1:1>,shoes
+    "<lora:detailed_eye-10:0.1>,1girl",
     # 男美化眼睛
     '<lora:polyhedron_men_eyes:0.1>,1man,1boy'
 ]
