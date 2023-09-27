@@ -264,22 +264,23 @@ class OperatorSD(Operator):
                 # child
                 f'(child:1.3)',
                 # youth
-                # f'(youth:1.3){"" if _gender else ", <lora:shojovibe_v11:0.4> ,<lora:koreanDollLikeness:0.4>"}',
+                # f'(youth:1.3){"" if _gender else ",<lora:shojovibe_v11:0.4> ,<lora:koreanDollLikeness:0.4>"}',
                 f'(youth:1.3)',
                 # middlescent
                 '(middlescent:1.3)',
             ],
             'common': [
                 '(full body:1.5)',
-                'correct body proportions, good figure',
+                'correct body proportions,good figure',
                 'detailed fingers',
                 'realistic fingers',
                 'detailed hand',
                 'realistic hand',
+                'detailed foot',
                 'realistic body',
                 '(out of frame:1.3)',
-                '' if _viewpoint == 2 else 'posing for a photo, realistic face',
-                'wearing shoes',
+                '' if _viewpoint == 2 else 'posing for a photo,realistic face',
+                '(wearing shoes:1.3)',
                 '(tall:1.3)'
                 # 'Fixhand',
                 # 'hand101',
@@ -308,7 +309,7 @@ class OperatorSD(Operator):
             sd_model_positive_prompt += ','.join([i for x in sd_positive_model_prompts_dict.values() for i in x])
 
         # model negative
-        sd_model_negative_prompt = f'barefoot,(extra clothes:1.5),(clothes:1.5),(NSFW:1.8),paintings, sketches, (worst quality:2), (low quality:2), (normal quality:2), clothing, pants, shorts, t-shirt, dress, sleeves, lowres, ((monochrome)), ((grayscale)), duplicate, morbid, mutilated, mutated hands, poorly drawn face,skin spots, acnes, skin blemishes, age spot, glans, extra fingers, fewer fingers,bad anatomy, bad hands, error, missing fingers, missing arms, missing legs, extra digit, fewer digits, cropped, worst quality,blurry, poorly drawn hands, mutation, deformed, extra limbs, extra arms, extra legs, malformed limbs, too many fingers, long neck, cross-eyed, polar lowres, bad body,gross proportions,fused fingers,bad proportion body to legs,mirrored image, mirrored noise, (bad_prompt_version2:0.8), aged up, old fingers'
+        sd_model_negative_prompt = f'barefoot,(extra clothes:1.5),(clothes:1.5),(NSFW:1.8),paintings,sketches,(worst quality:2),(low quality:2),(normal quality:2),clothing,pants,shorts,t-shirt,dress,sleeves,lowres,((monochrome)),((grayscale)),duplicate,morbid,mutilated,mutated hands,poorly drawn face,skin spots,acnes,skin blemishes,age spot,glans,extra fingers,fewer fingers,bad anatomy,bad hands,error,missing fingers,missing arms,missing legs,extra digit,fewer digits,cropped,worst quality,blurry,poorly drawn hands,mutation,deformed,extra limbs,extra arms,extra legs,malformed limbs,too many fingers,long neck,cross-eyed,polar lowres,bad body,gross proportions,fused fingers,bad proportion body to legs,mirrored image,mirrored noise,(bad_prompt_version2:0.8),aged up,old fingers,bad feet,wrong feet bottom render,wrong toes,extra toes,missing toes,weird toes,2 upper,2 lower,2 head,3 hand,3 feet'
 
         # lora
         if _viewpoint == 2:
@@ -340,8 +341,8 @@ class OperatorSD(Operator):
                          ','.join(sd_positive_common_prompts),
                          '(no humans:1.3)']
         sd_bg_positive_prompt =','.join(bg_prmpt_list)
-        sd_bg_negative_prompt = '(NSFW:1.8),(overexposure:1.5),(exposure:1.5),(NSFW:1.8),paintings,sketches,(worst quality:2),(low quality:2), (normal quality:2), clothing, pants, shorts, t-shirt, dress, sleeves, lowres, ((monochrome)), ((grayscale)), duplicate,morbid,error,extra digit, fewer digits, cropped, worst quality,humans,blurry,deformed,mirrored image,mirrored noise,polar lowres'
-        # 3 feet, extra long leg, super long leg,wrong feet bottom render
+        sd_bg_negative_prompt = '(NSFW:1.8),(overexposure:1.5),(exposure:1.5),(NSFW:1.8),paintings,sketches,(worst quality:2),(low quality:2),(normal quality:2),clothing,pants,shorts,t-shirt,dress,sleeves,lowres,((monochrome)),((grayscale)),duplicate,morbid,error,extra digit,fewer digits,cropped,worst quality,humans,blurry,deformed,mirrored image,mirrored noise,polar lowres'
+        # 3 feet,extra long leg,super long leg,wrong feet bottom render
 
         print(f'sd_bg_positive_prompt: {sd_bg_positive_prompt}')
         print(f'sd_bg_negative_prompt: {sd_bg_negative_prompt}')
