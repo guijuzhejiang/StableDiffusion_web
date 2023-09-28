@@ -17,6 +17,7 @@ redis:
   redis_mq: 11
 storage_dirpath:
   user_dir: outputs/img2img-images/user_history
+  user_upload: outputs/img2img-images/user_upload
   hires_dir: outputs/img2img-images/hires
   lora_model_dir: /home/ray/Workspace/file/素材/头像/224/
   lora_place_dir: /home/ray/Workspace/file/素材/背景/224/

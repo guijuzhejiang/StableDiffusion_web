@@ -5,7 +5,7 @@ import string
 import traceback
 import urllib.parse
 from datetime import datetime, timedelta
-
+import aiofile
 import httpx
 import pytz
 import ujson
@@ -268,3 +268,24 @@ class FetchUserHistory(HTTPMethodView):
             return sanic_json({'success': False, 'result': '获取历史记录失败'})
         else:
             return sanic_json({'success': True, 'result': result})
+
+
+class UserUpload(HTTPMethodView):
+    async def post(self, request):
+        try:
+            user_id = urllib.parse.unquote(request.args.get("uid"))
+            upload_image = request.files['upload_image'][0]
+            image_type = upload_image.type.split('/')[-1]
+            dir_path = os.path.join(CONFIG['storage_dirpath']['user_upload'])
+            os.makedirs(dir_path, exist_ok=True)
+
+            async with aiofile.async_open(os.path.join(dir_path, f"{user_id}.png"), 'wb') as file:
+                await file.write(upload_image.body)
+
+        except Exception:
+            print(traceback.format_exc())
+            return sanic_json({'success': False, 'result': '上传图片失败'})
+        else:
+            return sanic_json({'success': True})
+
+

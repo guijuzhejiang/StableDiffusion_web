@@ -6,9 +6,8 @@ import traceback
 from urllib.parse import urlparse, parse_qs
 
 import ujson
-from celery.result import AsyncResult
+import aiofile
 from sanic.request import Request
-from websockets.exceptions import ConnectionClosed
 from loguru import logger
 from lib.celery_workshop.wokrshop import WorkShop
 from lib.common.common_util import logging
@@ -56,14 +55,12 @@ async def sd_genreate(request: Request, ws):
                 buf_result = {'success': True, 'result': None, 'act': None, 'type': package['mode']}
                 if cost_points <= account['balance']:
                     start = datetime.datetime.now()
-                    print(f"[{str(start)}] ready for proceed generate")
-                    buf_result['act'] = 'send_image'
-                    await ws.send(ujson.dumps(buf_result))
                     # recv image
-                    data = await ws.recv()
-                    print(f"[{str(datetime.datetime.now()-start)}]recvied image")
+                    dir_path = os.path.join(CONFIG['storage_dirpath']['user_upload'])
+                    async with aiofile.async_open(os.path.join(dir_path, f"{user_id}.png"), 'rb') as file:
+                        image_data = await file.read()
                     if package['mode'] == 'model':
-                        format_package['input_image'][0].append(data)
+                        format_package['input_image'][0].append(image_data)
                     else:
                         parsed_url = urlparse(data)
                         # 获取查询参数
