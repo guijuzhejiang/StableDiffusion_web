@@ -62,7 +62,7 @@ async def sd_genreate(request: Request, ws):
                     if package['mode'] == 'model':
                         format_package['input_image'][0].append(image_data)
                     else:
-                        parsed_url = urlparse(data)
+                        parsed_url = urlparse(package['chosen_image'])
                         # 获取查询参数
                         query_params = parse_qs(parsed_url.query)
                         img_fp = os.path.join(CONFIG['storage_dirpath']['user_dir'], query_params['uid'][0], query_params['imgpath'][0])
@@ -113,7 +113,7 @@ async def sd_genreate(request: Request, ws):
                             buf_result['result'] = 100
                             await ws.send(ujson.dumps(buf_result))
                             break
-                        await asyncio.sleep(1)
+                        await asyncio.sleep(0.5)
                     print('done.')
                     task_result = task_result.result
                     task_result['act'] = f"show_result"
