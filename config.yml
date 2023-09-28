@@ -1,5 +1,5 @@
 debug_mode: false
-local: false
+local: true
 #debug_mode: true
 server:
   host: 0.0.0.0
@@ -17,7 +17,7 @@ redis:
   redis_mq: 11
 storage_dirpath:
   user_dir: outputs/img2img-images/user_history
-  hires_dir: outputs/img2img-images/user_history
+  hires_dir: outputs/img2img-images/hires
   lora_model_dir: /home/ray/Workspace/file/素材/头像/224/
   lora_place_dir: /home/ray/Workspace/file/素材/背景/224/
 mq_name: debug_queue
@@ -44,5 +44,5 @@ wechatlogin:
   appid: wx8b7f856da1e0485c
   secret: 549d9da20952e20ed5cd86ec81303640
 supabase:
-  key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjZGpid2draGNlYW14eWl4bnBzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY4ODcyNTExMCwiZXhwIjoyMDA0MzAxMTEwfQ.KbWdkdElmB0BpOgtPWFSmB5F6vq9Bjo7PyTVQAiHwGU"
-  url: "https://dcdjbwgkhceamxyixnps.supabase.co"
+  key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogInNlcnZpY2Vfcm9sZSIsCiAgImlzcyI6ICJzdXBhYmFzZSIsCiAgImlhdCI6IDE2OTU4MzA0MDAsCiAgImV4cCI6IDE4NTM2ODMyMDAKfQ.QanqKpEYyjqgvl1ElcWw7JJAvUEzIC0e0w1pFfPOITE"
+  url: "https://www.guijutech.com:8888"
