@@ -55,11 +55,13 @@ async def sd_genreate(request: Request, ws):
                     0]
                 buf_result = {'success': True, 'result': None, 'act': None, 'type': package['mode']}
                 if cost_points <= account['balance']:
-                    print("ready for proceed generate")
+                    start = datetime.datetime.now()
+                    print(f"[{str(start)}] ready for proceed generate")
                     buf_result['act'] = 'send_image'
                     await ws.send(ujson.dumps(buf_result))
                     # recv image
                     data = await ws.recv()
+                    print(f"[{str(datetime.datetime.now()-start)}]recvied image")
                     if package['mode'] == 'model':
                         format_package['input_image'][0].append(data)
                     else:
