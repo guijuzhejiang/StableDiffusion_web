@@ -291,6 +291,7 @@ class OperatorSD(Operator):
                 'clear fingernails',
                 'realistic hand appearance',
                 'elegant hand gesture',
+                'realistic hand anatomy',
             ],
             'viewpoint': [
                 # 正面
