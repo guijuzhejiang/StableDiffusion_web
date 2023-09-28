@@ -85,7 +85,7 @@ async def sd_genreate(request: Request, ws):
                                 except Exception:
                                     buf_result['result'] = 99
                                     await ws.send(ujson.dumps(buf_result))
-                                    break
+
                         elif task_result.state == 'PENDING':
                             buf_result['act'] = 'show_queue'
                             try:
