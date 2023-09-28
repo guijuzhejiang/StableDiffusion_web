@@ -416,7 +416,6 @@ class OperatorSD(Operator):
                         if _model_mode == 0:
                             person_boxes, _ = self.dino.dino_predict_internal(_input_image, _dino_model_name, "person",
                                                                     _box_threshold)
-                            celery_task.update_state(state='PROGRESS', meta={'progress': 5})
                             if len(person_boxes) == 0:
                                 return {'success': False, 'result': '未检测到服装'}
 
@@ -442,7 +441,6 @@ class OperatorSD(Operator):
                                 cv2.imwrite(f'tmp/person_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
                                             cv2.cvtColor(np.array(_input_image), cv2.COLOR_RGBA2BGRA))
 
-                            celery_task.update_state(state='PROGRESS', meta={'progress': 10})
                         # artificial model
                         else:
                             person0_box = [-1, -1, -1, -1]
@@ -460,7 +458,6 @@ class OperatorSD(Operator):
                                         box[2] if person0_box[2] == -1 or box[2] > person0_box[2] else person0_box[2],
                                         box[3] if person0_box[3] == -1 or box[3] > person0_box[3] else person0_box[3],
                                                    ]
-                                celery_task.update_state(state='PROGRESS', meta={'progress': 5*(dino_idx+1)})
 
                             if person0_box[0] == -1:
                                 return {'success': False, 'result': '未检测到服装'}
@@ -502,11 +499,12 @@ class OperatorSD(Operator):
                             _input_image = self.configure_image(_input_image, [0 if (int(person0_box[0]) / person0_width) < left_ratio else person0_box[0] - int(person0_width * left_ratio), 0 if padding_top > 0 else person0_box[1] - int(person0_height * top_ratio), _input_image_width if ((_input_image_width - int(person0_box[2])) / person0_width) < right_ratio else padding_left + person0_box[2] + int(person0_width * right_ratio), _input_image_height + padding_bottom + padding_top if padding_bottom > 0 else padding_top + person0_box[3] + int(person0_height * bottom_ratio)],
                                                                 target_ratio=_output_width / _output_height if (person0_width / person0_height) < (_output_width / _output_height) else person0_width / person0_height)
 
-                            celery_task.update_state(state='PROGRESS', meta={'progress': 11})
                     except Exception:
                         print(traceback.format_exc())
                         print('preprocess img error')
                     else:
+                        celery_task.update_state(state='PROGRESS', meta={'progress': 20})
+
                         # # 压缩图像质量
                         quality = 80
                         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
@@ -535,15 +533,13 @@ class OperatorSD(Operator):
                                           format='PNG')
 
 
-                celery_task.update_state(state='PROGRESS', meta={'progress': 12})
+                celery_task.update_state(state='PROGRESS', meta={'progress': 30})
 
                 sam_result_tmp_png_fp = []
                 sam_result_gallery = [None, None, None]
                 sam_mask_result = []
                 for dino_idx, dino_prompt in enumerate(_dino_clothing_text_prompt):
-                    sam_result, _ = self.sam.sam_predict(_dino_model_name, dino_prompt,
-                                                                 _box_threshold,
-                                                                 _input_image)
+                    sam_result, _ = self.sam.sam_predict(_dino_model_name, dino_prompt, 0.33, _input_image)
                     if len(sam_result) > 0:
                         if sam_result_gallery[0] is None:
                             sam_result_gallery[0] = sam_result[0]
@@ -555,9 +551,7 @@ class OperatorSD(Operator):
                             sam_result_gallery[2].paste(sam_result[2], (0, 0), sam_result[2])
                         sam_mask_result.append(np.array(sam_result[1]))
 
-                    celery_task.update_state(state='PROGRESS', meta={'progress': 12+5 * (dino_idx + 1)})
-
-                celery_task.update_state(state='PROGRESS', meta={'progress': 30})
+                celery_task.update_state(state='PROGRESS', meta={'progress': 50})
 
                 if sam_result_gallery[0] is None:
                     return {'success': False, 'result': '未检测到服装'}
@@ -705,6 +699,8 @@ class OperatorSD(Operator):
                             False, None, None, False, 50
                             ]
 
+                celery_task.update_state(state='PROGRESS', meta={'progress': 50})
+
                 ok_img_count = 0
                 fuck_img_count = 0
                 ok_res = []
@@ -733,7 +729,6 @@ class OperatorSD(Operator):
                                                   override_settings_texts,
                                                   *sam_args)
 
-                    celery_task.update_state(state='PROGRESS', meta={'progress': 40})
                     self.devices.torch_gc()
                     for res_idx, res_img in enumerate(res[0]):
                         if getattr(res_img, 'already_saved_as', False):
@@ -747,7 +742,6 @@ class OperatorSD(Operator):
                                 res_img = res_img.convert('RGBA')
                                 # sam
                                 sam_bg_result, _ = self.sam.sam_predict(_dino_model_name, 'person', 0.3, res_img)
-                                celery_task.update_state(state='PROGRESS', meta={'progress': 40+res_idx*6})
                                 if len(sam_bg_result) > 0:
                                     sam_bg_tmp_png_fp = []
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
@@ -765,6 +759,8 @@ class OperatorSD(Operator):
                                         return {'success': False, 'result': "fatal error"}
                                     else:
                                         print('detect no person, retry')
+
+                celery_task.update_state(state='PROGRESS', meta={'progress': 70})
 
                     # else:
                 # 背景生成
@@ -852,9 +848,10 @@ class OperatorSD(Operator):
                                                img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
                                                override_settings_texts,
                                                *sam_args)[0][0]
-
-                    celery_task.update_state(state='PROGRESS', meta={'progress': 58 + ok_idx * 8})
                     self.devices.torch_gc()
+
+
+                celery_task.update_state(state='PROGRESS', meta={'progress': 90})
                 #  -------------------------------------------------------------------------------------
                 # storage img
                 img_urls = []
@@ -873,7 +870,6 @@ class OperatorSD(Operator):
                     self.scripts.scripts_postproc.run(pp, args)
 
                     pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=80, lossless=True)
-                    celery_task.update_state(state='PROGRESS', meta={'progress': 82 + ok_idx * 4})
                     # 限制缓存10张
                     cache_list = sorted(os.listdir(dir_path))
                     if len(cache_list) > 10:
@@ -885,7 +881,7 @@ class OperatorSD(Operator):
                     if len(img_urls) < 10:
                         for i in range(10 - len(img_urls)):
                             img_urls.append('')
-                celery_task.update_state(state='PROGRESS', meta={'progress': 96})
+                celery_task.update_state(state='PROGRESS', meta={'progress': 95})
                 return {'success': True, 'result': img_urls}
 
             else:
