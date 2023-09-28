@@ -11,13 +11,12 @@ lora_model_common_dict = [
 
 lora_bg_common_dict = [
     # {'lora_name': 'add_detail', 'weight': 1, 'label': '增加细节'},
-    {'lora_name': 'more_details', 'weight': 1, 'label': '增加细节'},
+    {'lora_name': 'more_details', 'weight': 0.8, 'label': '增加细节'},
     {'lora_name': 'ClothingAdjuster3', 'weight': 1, 'label': '不填加额外衣服'},
 ]
 
 lora_gender_dict = [
     # 女美化眼睛
-    #,<lora:各种女性鞋子 various types of women's shoesV1:1>,shoes
     "<lora:detailed_eye-10:0.1>,1girl",
     # 男美化眼睛
     '<lora:polyhedron_men_eyes:0.1>,1man,1boy'
