@@ -257,7 +257,7 @@ class OperatorSD(Operator):
             'high details',
             '(Realism:1.4)',
             'masterpiece',
-            'extremely detailed,extremely delicate,Amazing,8k wallpaper',
+            'extremely detailed,extremely delicate,Amazing,8k wallpaper,',
         ]
         sd_positive_model_prompts_dict = OrderedDict({
             'age': [
@@ -281,7 +281,7 @@ class OperatorSD(Operator):
                 '(out of frame:1.3)',
                 '' if _viewpoint == 2 else 'posing for a photo,realistic face',
                 '(wearing shoes:1.3)',
-                '(tall:1.3)'
+                '(tall:1.3)',
                 # 'Fixhand',
                 # 'hand101',
                 '(simple background:1.3)',
