@@ -4,7 +4,7 @@ import random
 import string
 import traceback
 import urllib.parse
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import aiofile
 import httpx
 import pytz
@@ -12,7 +12,6 @@ import ujson
 from sanic.response import json as sanic_json, file_stream
 from sanic.views import HTTPMethodView
 from wechatpayv3 import WeChatPayType
-
 from lib.celery_workshop.wokrshop import WorkShop
 from lib.common.common_util import encrypt
 from lib.redis_mq import RedisMQ
@@ -102,10 +101,10 @@ class Pay(HTTPMethodView):
         out_trade_no = datetime.now().strftime('%Y%m%d%H%M%S%f') + '_' + ''.join(
             [random.choice(string.ascii_letters) for c in range(8)])
         description = 'guiju_ai_model'
-        unit_price = 1
         # 分为单位
         charge_points = int(request.form['amount'][0])
-        total_price = charge_points * unit_price * 100 if account['access_level'] != 0 else 1
+        charge_fee = float(request.form['fee'][0])
+        total_price = int(charge_fee * 100) if account['access_level'] != 0 else 1
         code, message = request.app.ctx.wxpay.pay(
             description=description,
             out_trade_no=out_trade_no,
@@ -121,6 +120,27 @@ class Pay(HTTPMethodView):
                                                                                 'out_trade_no': out_trade_no}).execute()
             qrcode_url = ujson.loads(message)['code_url']
         return sanic_json({'success': code == 200, 'qrcode_url': qrcode_url, 'out_trade_no': out_trade_no})
+
+
+class QuertDiscount(HTTPMethodView):
+    async def post(self, request):
+        try:
+            user_id = request.form['user_id'][0]
+            transaction_data = (await request.app.ctx.supabase_client.atable("transaction").select("*").eq("user_id", user_id).eq("is_plus", True).execute())
+            first_charge = len(transaction_data.data) == 0
+
+            res = []
+            if first_charge:
+                res.append(['首次充值享8折优惠', 0.8])
+
+            start_date = date(2023, 10, 1)
+            end_date = date(2023, 10, 17)
+            if start_date <= date.today() <= end_date:
+                res.append(['双十期间全场88折', 0.88])
+            return sanic_json({'success': True, 'result': res})
+        except Exception:
+            print(traceback.format_exc())
+            return sanic_json({'success': False, 'message': 'fatal error'})
 
 
 class QueryPayment(HTTPMethodView):
