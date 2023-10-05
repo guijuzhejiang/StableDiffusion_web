@@ -93,7 +93,7 @@ async def sd_genreate(request: Request, ws):
                                 for index, q in enumerate(queue_list):
                                     if str(task_result) == q['id']:
                                         get_success = True
-                                        buf_result['result'] = f"{index+1}/{len(queue_list)}"
+                                        buf_result['result'] = f"第{index+1}位"
                                         await ws.send(ujson.dumps(buf_result))
                                 else:
                                     if not get_success:
