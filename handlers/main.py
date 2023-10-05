@@ -122,11 +122,11 @@ class Pay(HTTPMethodView):
         return sanic_json({'success': code == 200, 'qrcode_url': qrcode_url, 'out_trade_no': out_trade_no})
 
 
-class QuertDiscount(HTTPMethodView):
+class QueryDiscount(HTTPMethodView):
     async def post(self, request):
         try:
             user_id = request.form['user_id'][0]
-            transaction_data = (await request.app.ctx.supabase_client.atable("transaction").select("*").eq("user_id", user_id).eq("is_plus", True).execute())
+            transaction_data = (await request.app.ctx.supabase_client.atable("transaction").select("*").eq("user_id", user_id).eq("is_plus", True).eq("status", 1).execute())
             first_charge = len(transaction_data.data) == 0
 
             res = []
