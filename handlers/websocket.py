@@ -94,7 +94,10 @@ async def sd_genreate(request: Request, ws):
                             try:
                                 queue_list = await request.app.ctx.redis_session.lrange('celery_task_queue', 0, -1)
                                 if queue_list:
-                                    buf_result['result'] = f"第{queue_list.index[str(task_result)] + 1}位"
+                                    if str(task_result) in queue_list:
+                                        buf_result['result'] = f"第{queue_list.index(str(task_result)) + 1}位"
+                                    else:
+                                        buf_result['result'] = f"..."
                                 else:
                                     buf_result['result'] = f"..."
                                 await ws.send(ujson.dumps(buf_result))
