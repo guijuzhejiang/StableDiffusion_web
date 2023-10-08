@@ -257,7 +257,7 @@ class OperatorSD(Operator):
             'high details',
             '(Realism:1.4)',
             'masterpiece',
-            'extremely detailed,extremely delicate,Amazing,8k wallpaper,',
+            'extremely detailed,extremely delicate,Amazing,8k wallpaper,8k uhd,dramatic scene,Epic composition,raw photo,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,high saturation,poster,',
         ]
         sd_positive_model_prompts_dict = OrderedDict({
             'age': [
