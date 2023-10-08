@@ -44,6 +44,8 @@ if __name__ == '__main__':
                     # init workers && load models
                     workshop.register()
                     running_workshop.append(workshop)
+                    # clear queue
+                    workshop.clear_queue()
 
         while True:
             time.sleep(5)

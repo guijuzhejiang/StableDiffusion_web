@@ -129,6 +129,10 @@ async def sd_genreate(request: Request, ws):
                             buf_result['result'] = 100
                             await ws.send(ujson.dumps(buf_result))
                             break
+
+                        elif task_result.state == 'REVOKED':
+                            break
+
                         await asyncio.sleep(0.5)
                     print('done.')
                     task_result = task_result.result

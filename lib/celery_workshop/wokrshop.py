@@ -21,17 +21,8 @@ class WorkShop(object):
         celery_prefix_name = WorkShop.get_celery_prefix_name(op.__class__.__name__, op.cuda)
         self.celery_app = Celery(f"{celery_prefix_name}_app", broker='amqp://localhost:5672', backend='redis://localhost:6379/0')
 
-    def get_queue_number(self):
-        # count = '...'
-        #
-        # try:
-        #     cl = Client('localhost:15672', 'guest', 'guest')
-        #     if cl.is_alive():
-        #         count = cl.get_queue_depth('/', 'celery')
-        # except HTTPError as e:
-        #     print("Exception: Could not establish to rabbitmq http api: " + str(
-        #         e) + " Check for port, proxy, username/pass configuration errors")
-        #     raise
+    def clear_queue(self):
+        self.celery_app.control.purge()
 
         return 'count'
 
