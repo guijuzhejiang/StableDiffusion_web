@@ -88,7 +88,8 @@ async def sd_genreate(request: Request, ws):
                         elif task_result.state == 'PENDING':
                             buf_result['act'] = 'show_queue'
                             try:
-                                queue_list = task_result.app.control.inspect().reserved()[f'{sd_workshop.op.__name__}_worker']
+                                queue_list = task_result.app.control.inspect().reserved()[f'celery@{sd_workshop.op.__name__}_worker']
+
                                 get_success = False
                                 for index, q in enumerate(queue_list):
                                     if str(task_result) == q['id']:
