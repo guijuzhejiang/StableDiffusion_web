@@ -74,7 +74,7 @@ async def sd_genreate(request: Request, ws):
 
                     # proceed task
                     task_result = sd_workshop(**format_package)
-                    await request.app.ctx.redis_session.lpush('celery_task_queue', str(task_result))
+                    await request.app.ctx.redis_session.rpush('celery_task_queue', str(task_result))
 
                     print('wait')
                     while not task_result.ready():
