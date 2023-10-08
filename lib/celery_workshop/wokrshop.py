@@ -58,7 +58,7 @@ class WorkShop(object):
                 print(app.tasks)
 
                 # , '--pool=eventlet'
-                app.worker_main(argv=['worker', '--loglevel=info', '--concurrency=1', '-P', 'solo', '-Ofair', '-n', f'{op_name}_worker'])
+                app.worker_main(argv=['worker', '--loglevel=info', '--concurrency=1', '-P', 'prefork', '-Ofair', '-n', f'{op_name}_worker'])
             except Exception:
                 print(traceback.format_exc())
                 logging(
