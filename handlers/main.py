@@ -18,7 +18,6 @@ from lib.redis_mq import RedisMQ
 from lib.sanic_util.sanic_jinja2 import SanicJinja2
 from operators import OperatorSD
 from utils.global_vars import CONFIG
-
 sd_workshop = WorkShop(OperatorSD)
 temp_udb = [f'test_{"%03d" % i}' for i in range(1, 11)]
 
@@ -120,6 +119,19 @@ class Pay(HTTPMethodView):
                                                                                 'out_trade_no': out_trade_no}).execute()
             qrcode_url = ujson.loads(message)['code_url']
         return sanic_json({'success': code == 200, 'qrcode_url': qrcode_url, 'out_trade_no': out_trade_no})
+
+
+class RevokeTask(HTTPMethodView):
+    async def post(self, request):
+        try:
+            user_id = request.form['user_id'][0]
+            task_id = request.form['task_id'][0]
+            request.app.ctx.sd_workshop.celery_app.control.revoke(task_id)
+            await request.app.ctx.redis_session.lrem('celery_task_queue', count=1, value=task_id)
+            return sanic_json({'success': True})
+        except Exception:
+            print(traceback.format_exc())
+            return sanic_json({'success': False, 'message': 'fatal error'})
 
 
 class QueryDiscount(HTTPMethodView):

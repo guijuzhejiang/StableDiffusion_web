@@ -9,12 +9,8 @@ import ujson
 import aiofile
 from sanic.request import Request
 from loguru import logger
-from lib.celery_workshop.wokrshop import WorkShop
 from lib.common.common_util import logging
-from operators import OperatorSD
 from utils.global_vars import CONFIG
-
-sd_workshop = WorkShop(OperatorSD)
 
 
 async def sd_genreate(request: Request, ws):
@@ -27,8 +23,10 @@ async def sd_genreate(request: Request, ws):
 
         while True:
             try:
+                flag_send_task = False
                 # recv params
                 raw_msg = await ws.recv()
+
                 package = ujson.loads(raw_msg)
                 params = package['params']
                 format_package = {'mode': [package['mode']], 'user_id': [package['user_id']], 'params': [ujson.dumps(params)], 'input_image': [['']]}
@@ -72,8 +70,10 @@ async def sd_genreate(request: Request, ws):
                             image_data = image_file.read()
                             format_package['input_image'][0].append(image_data)
 
-                    # proceed task
-                    task_result = sd_workshop(**format_package)
+                    # send task
+                    task_result = request.app.ctx.sd_workshop(**format_package)
+                    await ws.send(ujson.dumps({'success': True, 'result': str(task_result), 'act': 'save_task_id', 'type': package['mode']}))
+                    flag_send_task = True
                     await request.app.ctx.redis_session.rpush('celery_task_queue', str(task_result))
 
                     print('wait')
@@ -116,6 +116,7 @@ async def sd_genreate(request: Request, ws):
                                 #         await ws.send(ujson.dumps(buf_result))
 
                             except Exception:
+                                print("fuck1")
                                 logging(
                                     f"[websocket fatal error][{datetime.datetime.now()}]:"
                                     f"{traceback.format_exc()}",
@@ -148,8 +149,11 @@ async def sd_genreate(request: Request, ws):
                 await ws.send(ujson.dumps(task_result))
                 await asyncio.sleep(0.01)
             except asyncio.TimeoutError:
-                pass
+                print("fuck2")
+
     except Exception:
+        print("fuck3")
+
         logging(
             f"[websocket fatal error][{datetime.datetime.now()}]:"
             f"{traceback.format_exc()}",
