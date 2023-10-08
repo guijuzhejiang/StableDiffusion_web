@@ -2,6 +2,7 @@ import importlib
 import logging
 import os
 
+import aioredis
 from sanic import Blueprint
 from sanic import Sanic
 from sanic_cors import CORS
@@ -80,6 +81,8 @@ async def main_process_start(sanic_app, loop):
         key=CONFIG['supabase']['key'],
         debug_enabled=True,
     )
+
+    sanic_app.ctx.redis_session = aioredis.from_url(f"redis://localhost:6379/1", decode_responses=True)
 
 
 class Config:

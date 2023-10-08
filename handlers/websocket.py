@@ -55,6 +55,7 @@ async def sd_genreate(request: Request, ws):
                 buf_result = {'success': True, 'result': None, 'act': None, 'type': package['mode']}
                 if cost_points <= account['balance']:
                     start = datetime.datetime.now()
+
                     # recv image
                     dir_path = os.path.join(CONFIG['storage_dirpath']['user_upload'])
                     async with aiofile.async_open(os.path.join(dir_path, f"{user_id}.png"), 'rb') as file:
@@ -70,8 +71,11 @@ async def sd_genreate(request: Request, ws):
                             # 读取二进制数据
                             image_data = image_file.read()
                             format_package['input_image'][0].append(image_data)
+
                     # proceed task
                     task_result = sd_workshop(**format_package)
+                    await request.app.ctx.redis_session.lpush('celery_task_queue', str(task_result))
+
                     print('wait')
                     while not task_result.ready():
                         print(task_result.state)
@@ -88,18 +92,25 @@ async def sd_genreate(request: Request, ws):
                         elif task_result.state == 'PENDING':
                             buf_result['act'] = 'show_queue'
                             try:
-                                queue_list = task_result.app.control.inspect().reserved()[f'celery@{sd_workshop.op.__name__}_worker']
-
-                                get_success = False
-                                for index, q in enumerate(queue_list):
-                                    if str(task_result) == q['id']:
-                                        get_success = True
-                                        buf_result['result'] = f"第{index+1}位"
-                                        await ws.send(ujson.dumps(buf_result))
+                                queue_list = await request.app.ctx.redis_session.lrange('celery_task_queue', 0, -1)
+                                if queue_list:
+                                    buf_result['result'] = f"第{queue_list.index[str(task_result)] + 1}位"
                                 else:
-                                    if not get_success:
-                                        buf_result['result'] = f"..."
-                                        await ws.send(ujson.dumps(buf_result))
+                                    buf_result['result'] = f"..."
+                                await ws.send(ujson.dumps(buf_result))
+
+                                # queue_list = task_result.app.control.inspect().reserved()[f'celery@{sd_workshop.op.__name__}_worker']
+
+                                # get_success = False
+                                # for index, q in enumerate(queue_list):
+                                #     if str(task_result) == q['id']:
+                                #         get_success = True
+                                #         buf_result['result'] = f"第{index+1}位"
+                                #         await ws.send(ujson.dumps(buf_result))
+                                # else:
+                                #     if not get_success:
+                                #         buf_result['result'] = f"..."
+                                #         await ws.send(ujson.dumps(buf_result))
 
                             except Exception:
                                 logging(

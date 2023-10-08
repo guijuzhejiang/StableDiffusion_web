@@ -1,10 +1,11 @@
 # coding=utf-8
 # @Time : 2023/8/9 上午11:08
 # @File : wokrshop.py
-import os
-import subprocess
 import sys
 from collections import OrderedDict
+
+import redis
+
 from lib.common.NoDaemonProcessPool import NoDaemonProcess
 from celery import Celery
 
@@ -19,6 +20,20 @@ class WorkShop(object):
         self.op = op
         celery_prefix_name = WorkShop.get_celery_prefix_name(op.__class__.__name__, op.cuda)
         self.celery_app = Celery(f"{celery_prefix_name}_app", broker='amqp://localhost:5672', backend='redis://localhost:6379/0')
+
+    def get_queue_number(self):
+        # count = '...'
+        #
+        # try:
+        #     cl = Client('localhost:15672', 'guest', 'guest')
+        #     if cl.is_alive():
+        #         count = cl.get_queue_depth('/', 'celery')
+        # except HTTPError as e:
+        #     print("Exception: Could not establish to rabbitmq http api: " + str(
+        #         e) + " Check for port, proxy, username/pass configuration errors")
+        #     raise
+
+        return 'count'
 
     @staticmethod
     def get_celery_prefix_name(op_name, is_cuda):
@@ -41,12 +56,16 @@ class WorkShop(object):
             try:
                 app = Celery(f"{celery_prefix_name}_app", broker='amqp://localhost:5672', backend='redis://localhost:6379/0')
                 module = getattr(import_module(f'operators'), op_name)
+                redis_client = redis.StrictRedis(host='localhost', port=6379, db=1)
 
                 class ProceedTask(Task):
                     # load model
                     operator = module(index)
                     # task 命名
                     name = module.celery_task_name if hasattr(module, 'celery_task_name') else module.__class__.name
+
+                    def before_start(self, task_id, args, kwargs):
+                        redis_client.lrem('celery_task_queue', count=1, value=task_id)
 
                     def run(self, *args, **kwargs):
                         args_list = list(args)
@@ -58,7 +77,7 @@ class WorkShop(object):
                 print(app.tasks)
 
                 # , '--pool=eventlet'
-                app.worker_main(argv=['worker', '--loglevel=info', '--concurrency=1', '-P', 'prefork', '-Ofair', '-n', f'{op_name}_worker'])
+                app.worker_main(argv=['worker', '--loglevel=info', '--concurrency=1', '-P', 'solo', '-Ofair', '-n', f'{op_name}_worker'])
             except Exception:
                 print(traceback.format_exc())
                 logging(

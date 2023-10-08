@@ -3,6 +3,7 @@ import time
 import traceback
 from io import BytesIO
 
+import redis
 import ujson
 
 from lib.celery_workshop.util import load_workshops
@@ -15,6 +16,10 @@ if __name__ == '__main__':
 
     running_workshop = []
     try:
+        # clear queue
+        redis_client = redis.StrictRedis(host='localhost', port=6379, db=1, decode_responses=True)
+        redis_client.delete('celery_task_queue')
+
         if CONFIG['debug_mode']:
             redis_mq = SyncRedisMQ(CONFIG['redis']['host'], CONFIG['redis']['port'], CONFIG['redis']['redis_mq'])
             workers = {}
