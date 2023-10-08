@@ -10,7 +10,9 @@ class Operator(object):
         print(f"run {self.__class__.__name__}:{sys._getframe().f_code.co_name}")
 
     def update_progress(self, celery_task, p):
-        if celery_task.AsyncResult(celery_task.request.id).state == 'REVOKED':
+        cur_state = celery_task.AsyncResult(celery_task.request.id).state
+        print(f"cur_state: {cur_state}")
+        if cur_state == 'REVOKED':
             celery_task.update_state(state='REVOKED')
             return True
         else:
