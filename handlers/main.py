@@ -126,8 +126,9 @@ class RevokeTask(HTTPMethodView):
         try:
             user_id = request.form['user_id'][0]
             task_id = request.form['task_id'][0]
-            request.app.ctx.sd_workshop.celery_app.control.revoke(task_id, terminate=True)
+            request.app.ctx.sd_workshop.celery_app.control.revoke(task_id)
             await request.app.ctx.redis_session.lrem('celery_task_queue', count=1, value=task_id)
+            await request.app.ctx.redis_session.rpush('celery_task_revoked', task_id)
             return sanic_json({'success': True})
         except Exception:
             print(traceback.format_exc())

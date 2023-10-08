@@ -19,6 +19,7 @@ import urllib.parse
 from collections import OrderedDict
 
 import GPUtil
+import redis
 from PIL import Image
 import copy
 import datetime
@@ -43,6 +44,7 @@ class OperatorSD(Operator):
     cuda = True
     enable = True
     celery_task_name = 'sd_task'
+    redis_client = redis.StrictRedis(host='localhost', port=6379, db=1, decode_responses=True)
 
     def __init__(self, gpu_idx=0):
         os.environ['ACCELERATE'] = 'True'
@@ -364,8 +366,8 @@ class OperatorSD(Operator):
 
             celery_task = args[0]
             # celery_task.update_state(state='PROGRESS', meta={'progress': 1})
-            if self.update_progress(celery_task, 1):
-                return
+            if self.update_progress(celery_task, self.redis_client, 1):
+                return {'success': True}
             # 生成服装模特
             if proceed_mode == 'model':
                 params = ujson.loads(kwargs['params'][0])
@@ -506,8 +508,8 @@ class OperatorSD(Operator):
                         print('preprocess img error')
                     else:
                         # celery_task.update_state(state='PROGRESS', meta={'progress': 20})
-                        if self.update_progress(celery_task, 20):
-                            return
+                        if self.update_progress(celery_task, self.redis_client, 20):
+                            return {'success': True}
 
                             # # 压缩图像质量
                         quality = 80
@@ -538,8 +540,8 @@ class OperatorSD(Operator):
 
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 30})
-                if self.update_progress(celery_task, 30):
-                    return
+                if self.update_progress(celery_task, self.redis_client, 30):
+                    return {'success': True}
 
                 sam_result_tmp_png_fp = []
                 sam_result_gallery = [None, None, None]
@@ -558,8 +560,8 @@ class OperatorSD(Operator):
                         sam_mask_result.append(np.array(sam_result[1]))
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 50})
-                if self.update_progress(celery_task, 50):
-                    return
+                if self.update_progress(celery_task, self.redis_client, 50):
+                    return {'success': True}
 
                 if sam_result_gallery[0] is None:
                     return {'success': False, 'result': '未检测到服装'}
@@ -708,8 +710,8 @@ class OperatorSD(Operator):
                             ]
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 50})
-                if self.update_progress(celery_task, 50):
-                    return
+                if self.update_progress(celery_task, self.redis_client, 50):
+                    return {'success': True}
 
                 ok_img_count = 0
                 fuck_img_count = 0
@@ -771,8 +773,8 @@ class OperatorSD(Operator):
                                         print('detect no person, retry')
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 70})
-                if self.update_progress(celery_task, 70):
-                    return
+                if self.update_progress(celery_task, self.redis_client, 70):
+                    return {'success': True}
 
                     # else:
                 # 背景生成
@@ -864,8 +866,8 @@ class OperatorSD(Operator):
 
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 90})
-                if self.update_progress(celery_task, 90):
-                    return
+                if self.update_progress(celery_task, self.redis_client, 90):
+                    return {'success': True}
                     #  -------------------------------------------------------------------------------------
                 # storage img
                 img_urls = []
@@ -896,8 +898,8 @@ class OperatorSD(Operator):
                         for i in range(10 - len(img_urls)):
                             img_urls.append('')
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 95})
-                if self.update_progress(celery_task, 95):
-                    return
+                if self.update_progress(celery_task, self.redis_client, 95):
+                    return {'success': True}
                 return {'success': True, 'result': img_urls}
 
             else:
@@ -912,8 +914,8 @@ class OperatorSD(Operator):
                 _input_ratio = _input_image_width / _input_image_height
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 10})
-                if self.update_progress(celery_task, 10):
-                    return
+                if self.update_progress(celery_task, self.redis_client, 10):
+                    return {'success': True}
                 if _input_ratio != _output_ratio:
                     padding_height = int(
                         _input_image_width / _output_ratio) if _input_image_width <= _input_image_height else _input_image_height
@@ -1051,8 +1053,8 @@ class OperatorSD(Operator):
                     padding_height = _input_image_height // 8 * 8
                     padding_width = _input_image_width // 8 * 8
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 50})
-                if self.update_progress(celery_task, 50):
-                    return
+                if self.update_progress(celery_task, self.redis_client, 50):
+                    return {'success': True}
                 self.devices.torch_gc()
                 # cnet_res[0][0].save(f'tmp/cnet_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
                 #                   format='PNG')
@@ -1061,8 +1063,8 @@ class OperatorSD(Operator):
                 scales = _output_width / padding_width
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 70})
-                if self.update_progress(celery_task, 70):
-                    return
+                if self.update_progress(celery_task, self.redis_client, 70):
+                    return {'success': True}
 
                 gfpgan_enable = 0
                 codeformer_enable = 1
@@ -1075,8 +1077,8 @@ class OperatorSD(Operator):
                 self.devices.torch_gc()
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 80})
-                if self.update_progress(celery_task, 80):
-                    return
+                if self.update_progress(celery_task, self.redis_client, 80):
+                    return {'success': True}
 
                 dir_path = CONFIG['storage_dirpath']['hires_dir']
                 os.makedirs(dir_path, exist_ok=True)
@@ -1086,8 +1088,8 @@ class OperatorSD(Operator):
                 # pp.image.save(os.path.join(dir_path, img_fn), format="png", quality=100)
                 pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=100, lossless=True)
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 90})
-                if self.update_progress(celery_task, 90):
-                    return
+                if self.update_progress(celery_task, self.redis_client, 90):
+                    return {'success': True}
                 return {'success': True, 'result': [img_fp]}
 
         except Exception:

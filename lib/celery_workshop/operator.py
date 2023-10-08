@@ -9,14 +9,16 @@ class Operator(object):
     def operation(self, *args, **kwargs):
         print(f"run {self.__class__.__name__}:{sys._getframe().f_code.co_name}")
 
-    def update_progress(self, celery_task, p):
-        cur_state = celery_task.AsyncResult(celery_task.request.id).state
-        print(f"cur_state: {cur_state}")
-        if cur_state == 'REVOKED':
+    def update_progress(self, celery_task, redis_client, p):
+        # cur_state = celery_task.AsyncResult(celery_task.request.id).state
+        # print(f"cur_state: {cur_state}")
+        revoked_list = redis_client.lrange('celery_task_revoked', 0, -1)
+        if celery_task.request.id in revoked_list:
             celery_task.update_state(state='REVOKED')
+            redis_client.lrem('celery_task_revoked', count=1, value=celery_task.request.id)
             return True
+
         else:
             celery_task.update_state(state='PROGRESS', meta={'progress': p})
-
             return False
 
