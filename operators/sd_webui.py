@@ -169,7 +169,6 @@ class OperatorSD(Operator):
         print('init done')
 
     def configure_image(self, image, person_pos, target_ratio=0.5, quality=90, padding=8):
-        person_pos = [int(x) for x in person_pos]
         # 将PIL RGBA图像转换为BGR图像
         cv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGBA2BGRA)
 
@@ -181,55 +180,47 @@ class OperatorSD(Operator):
         person_width = person_pos[2] - person_pos[0]
         person_ratio = person_width / person_height
 
+        # 裁剪或扩展
+        # left && top
+        cropped_left = person_pos[0] if person_pos[0] > 0 else 0
+        cropped_top = person_pos[1] if person_pos[1] > 0 else 0
+        cv_image = cv_image[cropped_top:, cropped_left:]
+        cropped_right = person_pos[2] if person_pos[2] < original_width else original_width
+        cropped_bottom = person_pos[3] if person_pos[3] < original_height else original_height
+        cv_image = cv_image[:cropped_bottom, :cropped_right]
+
+        cv_image = cv2.copyMakeBorder(cv_image,
+                                          abs(person_pos[1]) if person_pos[1] < 0 else 0,
+                                          person_pos[3]-original_height if person_pos[3] > original_height else 0,
+                                          abs(person_pos[0]) if person_pos[0] < 0 else 0,
+                                          person_pos[2]-original_width if person_pos[2] > original_width else 0,
+                                          cv2.BORDER_CONSTANT, value=(127, 127, 127))
+
+        cur_height, cur_width = cv_image.shape[:2]
+        cur_ratio = cur_width / cur_height
+
         # 计算应该添加的填充量
-        if person_ratio > target_ratio:
+        if cur_ratio > target_ratio:
             # 需要添加垂直box
-            target_height = int(person_width / target_ratio)
-            remainning_height = original_height - target_height
-            if remainning_height >= 0:
-                top = int((target_height - person_height) / 2)
-                bottom = target_height - person_height - top
+            target_height = int(cur_width / target_ratio)
 
-                if person_pos[1] - top < 0:
-                    padded_image = cv_image[:person_pos[3] + bottom - person_pos[1] + top, person_pos[0]:person_pos[2]]
-
-                else:
-                    padded_image = cv_image[person_pos[1] - top:person_pos[3] + bottom, person_pos[0]:person_pos[2]]
-
-            else:
-                top = int((target_height - original_height) / 2)
-                bottom = target_height - original_height - top
-                padded_image = cv2.copyMakeBorder(cv_image[padding:original_height-padding, :], top+padding, bottom+padding, 0, 0, cv2.BORDER_REPLICATE)
-                padded_image = padded_image[:, person_pos[0]:person_pos[2]]
-                # padded_image = cv_image
+            top = int((target_height - cur_height) / 2)
+            bottom = target_height - cur_height - top
+            padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_CONSTANT, value=(127, 127, 127))
         else:
             # 需要添加水平box
             target_width = int(person_height * target_ratio)
-            remainning_width = original_width - target_width
-            if remainning_width >= 0:
-                left = int((target_width - person_width) / 2)
-                right = target_width - person_width - left
 
-                if person_pos[0] - left < 0:
-                    padded_image = cv_image[person_pos[1]:person_pos[3], :person_pos[2] + right - person_pos[0] + left]
-
-                else:
-                    padded_image = cv_image[person_pos[1]:person_pos[3], person_pos[0] - left:person_pos[2] + right]
-            else:
-                left = int((target_width - original_width) / 2)
-                right = target_width - original_width - left
-                padded_image = cv2.copyMakeBorder(cv_image[:, padding:original_width-padding], 0, 0, left+padding, right+padding, cv2.BORDER_REPLICATE)
-                padded_image = padded_image[person_pos[1]:person_pos[3], :]
-                # padded_image = cv_image
+            left = int((target_width - cur_width) / 2)
+            right = target_width - cur_width - left
+            padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, right, cv2.BORDER_CONSTANT,
+                                              value=(127, 127, 127))
 
         padded_image = cv2.cvtColor(np.array(padded_image), cv2.COLOR_BGRA2RGBA)
         return padded_image
 
     def padding_rgba_image_pil_to_cv(self, original_image, pl, pr, pt, pb, person_box, padding=8):
         original_width, original_height = original_image.size
-        # edge_color = original_image.getpixel((padding, padding))
-        # padded_image = Image.new('RGBA', (original_width + pl + pr, original_height + pt + pb), edge_color)
-        # padded_image.paste(original_image, (pl, pt), mask=original_image)
 
         cv_image = cv2.cvtColor(np.array(original_image), cv2.COLOR_RGBA2BGRA)
         h, w, _ = cv_image.shape
@@ -426,24 +417,19 @@ class OperatorSD(Operator):
                             person0_box = [int(x) for x in person_boxes[0]]
                             person0_width = person0_box[2] - person0_box[0]
                             person0_height = person0_box[3] - person0_box[1]
+                            left_ratio = 0.05
+                            right_ratio = 0.05
                             top_ratio = 0.2
                             bottom_ratio = 0.2
-                            if (person0_box[1] / person0_height) <= top_ratio:
-                                person0_box[1] = 0
-                            else:
-                                person0_box[1] -= top_ratio * person0_height
 
-                            if (_input_image_height - person0_box[3]) / person0_height <= bottom_ratio:
-                                person0_box[3] = _input_image_height
-                            else:
-                                person0_box[3] += bottom_ratio * person0_height
-                            person0_width = person0_box[2] - person0_box[0]
-                            person0_height = person0_box[3] - person0_box[1]
-                            _input_image = self.configure_image(_input_image, person0_box, target_ratio=_output_width / _output_height if (person0_width / person0_height) < (_output_width / _output_height) else person0_width / person0_height)
-
-                            if self.shared.cmd_opts.debug_mode:
-                                cv2.imwrite(f'tmp/person_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
-                                            cv2.cvtColor(np.array(_input_image), cv2.COLOR_RGBA2BGRA))
+                            target_left = person0_box[0] - left_ratio * person0_width
+                            target_left = 0 if target_left <= 0 else target_left
+                            target_top = person0_box[1] - top_ratio * person0_height
+                            target_top = 0 if target_top <= 0 else target_top
+                            target_right = person0_box[2] + right_ratio * person0_width
+                            target_right = _input_image_width if target_right >= _input_image_width else target_right
+                            target_bottom = person0_box[3] + bottom_ratio * person0_height
+                            target_bottom = _input_image_width if target_bottom >= _input_image_height else target_bottom
 
                         # artificial model
                         else:
@@ -485,23 +471,18 @@ class OperatorSD(Operator):
                             print(f"top increase: {person0_height * top_ratio}")
                             print(f"bottom increase: {person0_height * bottom_ratio}")
 
-                            # padding_left = int(person0_width * left_ratio - int(person0_box[0])) if (int(person0_box[0]) / person0_width) < left_ratio else 0
-                            # padding_right = int(person0_width * right_ratio - (_input_image_width - int(person0_box[2]))) if ((_input_image_width - int(person0_box[2])) / person0_width) < right_ratio else 0
-                            padding_left = 0
-                            padding_right = 0
-                            padding_top = int(person0_height * top_ratio - int(person0_box[1])) if (int(
-                                person0_box[1]) / person0_height) < top_ratio else 0
-                            padding_bottom = int(
-                                person0_height * bottom_ratio - (_input_image_height - int(person0_box[3]))) if ((
-                                                                                                                         _input_image_height - int(
-                                                                                                                     person0_box[
-                                                                                                                         3])) / person0_height) < bottom_ratio else 0
+                            target_left = person0_box[0] - left_ratio * person0_width
+                            target_left = 0 if target_left <= 0 else target_left
+                            target_top = person0_box[1] - top_ratio * person0_height
+                            target_top = 0 if target_top <= 0 else target_top
+                            target_right = person0_box[2] + right_ratio * person0_width
+                            target_right = _input_image_width if target_right >= _input_image_width else target_right
+                            target_bottom = person0_box[3] + bottom_ratio * person0_height
+                            target_bottom = _input_image_width if target_bottom >= _input_image_height else target_bottom
 
-                            _input_image = self.padding_rgba_image_pil_to_cv(_input_image, padding_left, padding_right,
-                                                                             padding_top, padding_bottom, person0_box)
-
-                            _input_image = self.configure_image(_input_image, [0 if (int(person0_box[0]) / person0_width) < left_ratio else person0_box[0] - int(person0_width * left_ratio), 0 if padding_top > 0 else person0_box[1] - int(person0_height * top_ratio), _input_image_width if ((_input_image_width - int(person0_box[2])) / person0_width) < right_ratio else padding_left + person0_box[2] + int(person0_width * right_ratio), _input_image_height + padding_bottom + padding_top if padding_bottom > 0 else padding_top + person0_box[3] + int(person0_height * bottom_ratio)],
-                                                                target_ratio=_output_width / _output_height if (person0_width / person0_height) < (_output_width / _output_height) else person0_width / person0_height)
+                        target_width = target_right - target_left
+                        target_height = target_bottom - target_top
+                        _input_image = self.configure_image(_input_image, [target_left, target_top, target_right, target_bottom], target_ratio=_output_width / _output_height if (target_width / target_height) < (_output_width / _output_height) else target_width / target_height)
 
                     except Exception:
                         print(traceback.format_exc())
@@ -526,13 +507,20 @@ class OperatorSD(Operator):
 
                         if check_h > _output_height:
                             tmp_w = int(_output_height * check_w / check_h)
-                            tmp_w = int(tmp_w // 8 * 8)
+                            # tmp_w = int(tmp_w // 8 * 8)
                             _input_image = _input_image.resize((tmp_w, _output_height))
+                            check_w, check_h = _input_image.size
 
-                        else:
-                            tmp_h = int(check_h // 8 * 8)
-                            tmp_w = int(check_w // 8 * 8)
-                            _input_image = _input_image.crop((0, 0, tmp_w, tmp_h))
+                        tmp_h = math.ceil(check_h / 8) * 8
+                        tmp_w = math.ceil(check_w / 8) * 8
+                        left = int((tmp_w - check_w) / 2)
+                        right = tmp_w - check_w - left
+                        top = int((tmp_h - check_h) / 2)
+                        bottom = tmp_h - check_h - top
+                        _input_image = cv2.copyMakeBorder(_input_image, top, bottom, left,
+                                                          right,
+                                                          cv2.BORDER_CONSTANT,
+                                                          value=(127, 127, 127))
 
                     if self.shared.cmd_opts.debug_mode:
                         _input_image.save(f'tmp/resized_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
