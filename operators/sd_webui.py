@@ -168,7 +168,7 @@ class OperatorSD(Operator):
 
         print('init done')
 
-    def configure_image(self, image, person_pos, target_ratio=0.5, quality=90, padding=8):
+    def configure_image(self, image, person_pos, target_ratio=0.5, quality=90, color=(0, 0, 0)):
         person_pos = [int(x) for x in person_pos]
         # 将PIL RGBA图像转换为BGR图像
         cv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGBA2BGRA)
@@ -195,7 +195,7 @@ class OperatorSD(Operator):
                                           person_pos[3]-original_height if person_pos[3] > original_height else 0,
                                           abs(person_pos[0]) if person_pos[0] < 0 else 0,
                                           person_pos[2]-original_width if person_pos[2] > original_width else 0,
-                                          cv2.BORDER_CONSTANT, value=(127, 127, 127))
+                                          cv2.BORDER_CONSTANT, value=color)
 
         cur_height, cur_width = cv_image.shape[:2]
         cur_ratio = cur_width / cur_height
@@ -207,7 +207,7 @@ class OperatorSD(Operator):
 
             top = int((target_height - cur_height) / 2)
             bottom = target_height - cur_height - top
-            padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_CONSTANT, value=(127, 127, 127))
+            padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_CONSTANT, value=color)
         else:
             # 需要添加水平box
             target_width = int(person_height * target_ratio)
@@ -215,7 +215,7 @@ class OperatorSD(Operator):
             left = int((target_width - cur_width) / 2)
             right = target_width - cur_width - left
             padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, right, cv2.BORDER_CONSTANT,
-                                              value=(127, 127, 127))
+                                              value=color)
 
         padded_image = cv2.cvtColor(np.array(padded_image), cv2.COLOR_BGRA2RGBA)
         return padded_image
@@ -460,7 +460,7 @@ class OperatorSD(Operator):
                             return {'success': False, 'result': '未检测到服装'}
                         else:
                             clothing_image = Image.new("RGBA", (_input_image_width, _input_image_height), (127, 127, 127, 0))
-                            mask_image = Image.new("RGBA", (_input_image_width, _input_image_height), (127, 127, 127, 0))
+                            mask_image = Image.new("RGBA", (_input_image_width, _input_image_height), (0, 0, 0, 1))
                             for sam_img, mask_img in zip(sam_images, mask_images):
                                 clothing_image.paste(sam_img, (0, 0), mask=mask_img)
                                 mask_image.paste(mask_img, (0, 0), mask=mask_img)
@@ -529,7 +529,7 @@ class OperatorSD(Operator):
                         target_height = target_bottom - target_top
                         resized_clothing_image = self.configure_image(clothing_image, [target_left, target_top, target_right, target_bottom], target_ratio=_output_width / _output_height if (target_width / target_height) < (_output_width / _output_height) else target_width / target_height)
                         resized_input_image = self.configure_image(_input_image, [target_left, target_top, target_right, target_bottom], target_ratio=_output_width / _output_height if (target_width / target_height) < (_output_width / _output_height) else target_width / target_height)
-                        resized_mask_image = self.configure_image(mask_image, [target_left, target_top, target_right, target_bottom], target_ratio=_output_width / _output_height if (target_width / target_height) < (_output_width / _output_height) else target_width / target_height)
+                        resized_mask_image = self.configure_image(mask_image, [target_left, target_top, target_right, target_bottom], target_ratio=_output_width / _output_height if (target_width / target_height) < (_output_width / _output_height) else target_width / target_height, color=(0, 0, 0))
 
                         if self.update_progress(celery_task, self.redis_client, 30):
                             return {'success': True}
@@ -540,9 +540,9 @@ class OperatorSD(Operator):
                         resized_clothing_image = self.limit_and_compress_image(resized_clothing_image, _output_height)
                         resized_input_image = self.limit_and_compress_image(resized_input_image, _output_height)
                         resized_mask_image = self.limit_and_compress_image(resized_mask_image, _output_height)
-                        new_mask_image = Image.new("RGBA", resized_mask_image.size, (0, 0, 0, 0))
-                        new_mask_image.paste(resized_mask_image, (0, 0), mask=resized_mask_image)
-                        resized_mask_image = new_mask_image
+                        # new_mask_image = Image.new("RGBA", resized_mask_image.size, (0, 0, 0, 1))
+                        # new_mask_image.paste(resized_mask_image, (0, 0))
+                        # resized_mask_image = new_mask_image
 
                         pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
                         sam_result_tmp_png_fp = []
