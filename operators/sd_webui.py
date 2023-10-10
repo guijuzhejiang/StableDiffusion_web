@@ -168,7 +168,7 @@ class OperatorSD(Operator):
 
         print('init done')
 
-    def configure_image(self, image, person_pos, target_ratio=0.5, quality=90, color=(0, 0, 0)):
+    def configure_image(self, image, person_pos, target_ratio=0.5, quality=90, color=(255, 255, 255)):
         person_pos = [int(x) for x in person_pos]
         # 将PIL RGBA图像转换为BGR图像
         cv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGBA2BGRA)
@@ -459,7 +459,7 @@ class OperatorSD(Operator):
                         if person0_box[0] == -1:
                             return {'success': False, 'result': '未检测到服装'}
                         else:
-                            clothing_image = Image.new("RGBA", (_input_image_width, _input_image_height), (0, 0, 0, 1))
+                            clothing_image = Image.new("RGBA", (_input_image_width, _input_image_height), (255, 255, 255, 1))
                             mask_image = Image.new("RGBA", (_input_image_width, _input_image_height), (0, 0, 0, 1))
                             for sam_img, mask_img in zip(sam_images, mask_images):
                                 clothing_image.paste(sam_img, (0, 0), mask=mask_img)
@@ -488,7 +488,7 @@ class OperatorSD(Operator):
                             target_right = target_left + person0_box[2] + right_ratio * person0_width
                             target_right = _input_image_width if target_right >= _input_image_width else target_right
                             target_bottom = target_top + person0_box[3] + bottom_ratio * person0_height
-                            target_bottom = _input_image_width if target_bottom >= _input_image_height else target_bottom
+                            target_bottom = _input_image_height if target_bottom >= _input_image_height else target_bottom
 
                         # artificial model
                         else:
