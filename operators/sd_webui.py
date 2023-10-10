@@ -248,7 +248,7 @@ class OperatorSD(Operator):
         __cv_image = cv2.copyMakeBorder(cv2.cvtColor(np.array(__cv_image), cv2.COLOR_RGBA2BGRA),
                                           top, bottom, left,
                                           right,
-                                          cv2.BORDER_CONSTANT,
+                                          cv2.BORDER_REPLICATE,
                                           value=(127, 127, 127))
         # # 压缩图像质量
         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
@@ -459,7 +459,7 @@ class OperatorSD(Operator):
                         if person0_box[0] == -1:
                             return {'success': False, 'result': '未检测到服装'}
                         else:
-                            clothing_image = Image.new("RGBA", (_input_image_width, _input_image_height), (127, 127, 127, 0))
+                            clothing_image = Image.new("RGBA", (_input_image_width, _input_image_height), (0, 0, 0, 1))
                             mask_image = Image.new("RGBA", (_input_image_width, _input_image_height), (0, 0, 0, 1))
                             for sam_img, mask_img in zip(sam_images, mask_images):
                                 clothing_image.paste(sam_img, (0, 0), mask=mask_img)
