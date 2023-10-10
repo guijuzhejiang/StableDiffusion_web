@@ -544,7 +544,7 @@ class OperatorSD(Operator):
                         pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
                         sam_result_tmp_png_fp = []
                         for resized_img_type, cache_image in zip(["resized_input", "resized_mask", "resized_clothing"],
-                                                                 [resized_input_image, resized_mask_image,
+                                                                 [resized_input_image if _model_mode == 0 else resized_clothing_image, resized_mask_image,
                                                                   resized_clothing_image]):
                             cache_fp = f"tmp/{resized_img_type}_{pic_name}.png"
                             cache_image.save(cache_fp)
@@ -668,7 +668,7 @@ class OperatorSD(Operator):
                 sam_args = [0,
                             adetail_enabled, face_args, hand_args,  # adetail args
                             controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,  # controlnet args
-                            True, False, 0, resized_clothing_image,
+                            True, False, 0, resized_input_image,
                             sam_result_tmp_png_fp,
                             0,  # sam_output_chosen_mask
                             False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
