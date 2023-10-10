@@ -540,6 +540,9 @@ class OperatorSD(Operator):
                         resized_clothing_image = self.limit_and_compress_image(resized_clothing_image, _output_height)
                         resized_input_image = self.limit_and_compress_image(resized_input_image, _output_height)
                         resized_mask_image = self.limit_and_compress_image(resized_mask_image, _output_height)
+                        new_mask_image = Image.new("RGBA", resized_mask_image.size, (0, 0, 0, 0))
+                        new_mask_image.paste(resized_mask_image, (0, 0), mask=resized_mask_image)
+                        resized_mask_image = new_mask_image
 
                         pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
                         sam_result_tmp_png_fp = []
@@ -668,7 +671,7 @@ class OperatorSD(Operator):
                 sam_args = [0,
                             adetail_enabled, face_args, hand_args,  # adetail args
                             controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,  # controlnet args
-                            True, False, 0, resized_input_image,
+                            True, False, 0, resized_input_image if _model_mode==0 else resized_clothing_image,
                             sam_result_tmp_png_fp,
                             0,  # sam_output_chosen_mask
                             False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
