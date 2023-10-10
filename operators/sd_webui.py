@@ -169,6 +169,7 @@ class OperatorSD(Operator):
         print('init done')
 
     def configure_image(self, image, person_pos, target_ratio=0.5, quality=90, padding=8):
+        person_pos = [int(x) for x in person_pos]
         # 将PIL RGBA图像转换为BGR图像
         cv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGBA2BGRA)
 
@@ -472,13 +473,9 @@ class OperatorSD(Operator):
                             print(f"bottom increase: {person0_height * bottom_ratio}")
 
                             target_left = person0_box[0] - left_ratio * person0_width
-                            target_left = 0 if target_left <= 0 else target_left
                             target_top = person0_box[1] - top_ratio * person0_height
-                            target_top = 0 if target_top <= 0 else target_top
                             target_right = person0_box[2] + right_ratio * person0_width
-                            target_right = _input_image_width if target_right >= _input_image_width else target_right
                             target_bottom = person0_box[3] + bottom_ratio * person0_height
-                            target_bottom = _input_image_width if target_bottom >= _input_image_height else target_bottom
 
                         target_width = target_right - target_left
                         target_height = target_bottom - target_top
@@ -488,12 +485,14 @@ class OperatorSD(Operator):
                         print(traceback.format_exc())
                         print('preprocess img error')
                     else:
+                        pass
+
                         # celery_task.update_state(state='PROGRESS', meta={'progress': 20})
                         if self.update_progress(celery_task, self.redis_client, 20):
                             return {'success': True}
 
-                            # # 压缩图像质量
-                        quality = 80
+                        # 转pil
+                        quality = 100
                         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
                         _, jpeg_data = cv2.imencode('.jpg', cv2.cvtColor(np.array(_input_image), cv2.COLOR_RGBA2BGRA),
                                                     encode_param)
@@ -517,11 +516,18 @@ class OperatorSD(Operator):
                         right = tmp_w - check_w - left
                         top = int((tmp_h - check_h) / 2)
                         bottom = tmp_h - check_h - top
-                        _input_image = cv2.copyMakeBorder(_input_image, top, bottom, left,
+                        _input_image = cv2.copyMakeBorder(cv2.cvtColor(np.array(_input_image), cv2.COLOR_RGBA2BGRA),
+                                                          top, bottom, left,
                                                           right,
                                                           cv2.BORDER_CONSTANT,
                                                           value=(127, 127, 127))
-
+                        # # 压缩图像质量
+                        quality = 80
+                        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
+                        _, jpeg_data = cv2.imencode('.jpg', np.array(_input_image),
+                                                    encode_param)
+                        # 将压缩后的图像转换为PIL图像
+                        _input_image = Image.open(io.BytesIO(jpeg_data)).convert('RGBA')
                     if self.shared.cmd_opts.debug_mode:
                         _input_image.save(f'tmp/resized_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
                                           format='PNG')
