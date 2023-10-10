@@ -323,7 +323,7 @@ class OperatorSD(Operator):
             sd_model_positive_prompt += ','.join([i for x in sd_positive_model_prompts_dict.values() for i in x])
 
         # model negative
-        sd_model_negative_prompt = f'mutated hands and fingers,malformed hands,mask,abstraction,distortion,(barefoot:1.3),(extra clothes:1.5),(clothes:1.5),(NSFW:1.8),paintings,sketches,(worst quality:2),(low quality:2),(normal quality:2),clothing,pants,shorts,t-shirt,dress,sleeves,lowres,((monochrome)),((grayscale)),duplicate,morbid,mutilated,poorly drawn face,skin spots,acnes,skin blemishes,age spot,glans,extra fingers,fewer fingers,bad anatomy,bad hands,error,missing fingers,missing arms,missing legs,extra digit,fewer digits,cropped,worst quality,blurry,poorly drawn hands,mutation,deformed,extra limbs,extra arms,extra legs,malformed limbs,too many fingers,long neck,cross-eyed,polar lowres,bad body,gross proportions,fused fingers,bad proportion body to legs,mirrored image,mirrored noise,(bad_prompt_version2:0.8),aged up,old fingers,bad feet,wrong feet bottom render,wrong toes,extra toes,missing toes,weird toes,2 upper,2 lower,2 head,3 hand,3 feet,3 legs,3 arms'
+        sd_model_negative_prompt = f'mutated hands and fingers,malformed hands,mask,text,logo,tattoos,abstraction,distortion,(barefoot:1.3),(extra clothes:1.5),(clothes:1.5),(NSFW:1.8),paintings,sketches,(worst quality:2),(low quality:2),(normal quality:2),clothing,pants,shorts,t-shirt,dress,sleeves,lowres,((monochrome)),((grayscale)),duplicate,morbid,mutilated,poorly drawn face,skin spots,acnes,skin blemishes,age spot,glans,extra fingers,fewer fingers,bad anatomy,bad hands,error,missing fingers,missing arms,missing legs,extra digit,fewer digits,cropped,worst quality,blurry,poorly drawn hands,mutation,deformed,extra limbs,extra arms,extra legs,malformed limbs,too many fingers,long neck,cross-eyed,polar lowres,bad body,gross proportions,fused fingers,bad proportion body to legs,mirrored image,mirrored noise,(bad_prompt_version2:0.8),aged up,old fingers,bad feet,wrong feet bottom render,wrong toes,extra toes,missing toes,weird toes,2 upper,2 lower,2 head,3 hand,3 feet,3 legs,3 arms'
 
         # lora
         if _viewpoint == 2:
@@ -570,7 +570,7 @@ class OperatorSD(Operator):
                 inpaint_color_sketch_orig = None
                 init_img_inpaint = None
                 init_mask_inpaint = None
-                steps = 20
+                steps = 30
                 sampler_index = 18  # sampling method modules/sd_samplers_kdiffusion.py
                 mask_blur = 4
                 mask_alpha = 0
@@ -579,7 +579,7 @@ class OperatorSD(Operator):
                 tiling = False
                 n_iter = 1
                 batch_size = _batch_size
-                cfg_scale = 7
+                cfg_scale = 9
                 image_cfg_scale = 1.5
                 denoising_strength = 1
                 seed = -1.0
