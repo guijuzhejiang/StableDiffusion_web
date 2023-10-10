@@ -156,4 +156,4 @@ def sam_predict(dino_model_name, text_prompt, box_threshold, input_image):
     masks = [masks[1]]
 
     garbage_collect(sam)
-    return create_mask_output(image_np, masks, boxes_filt), sam_predict_status + sam_predict_result
+    return create_mask_output(image_np, masks, boxes_filt), boxes_filt
