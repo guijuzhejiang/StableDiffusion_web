@@ -635,7 +635,7 @@ class OperatorSD(Operator):
 
                 # adetail
                 adetail_enabled = not self.shared.cmd_opts.disable_adetailer
-                face_args = {'ad_model': 'face_yolov8m.pt',
+                face_args = {'ad_model': 'face_yolov8n.pt',
                              'ad_prompt': f'{ad_face_positive_prompt}',
                              'ad_negative_prompt': '2 head,poorly drawn face,ugly,cloned face,blurred faces,irregular face',
                              'ad_confidence': 0.3,
@@ -668,7 +668,7 @@ class OperatorSD(Operator):
                 sam_args = [0,
                             adetail_enabled, face_args, hand_args,  # adetail args
                             controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,  # controlnet args
-                            True, False, 0, resized_input_image,
+                            True, False, 0, resized_clothing_image,
                             sam_result_tmp_png_fp,
                             0,  # sam_output_chosen_mask
                             False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
