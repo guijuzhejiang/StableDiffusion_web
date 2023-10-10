@@ -492,9 +492,9 @@ class OperatorSD(Operator):
                             target_left = 0 if target_left <= 0 else target_left
                             target_top = person0_box[1] - top_ratio * person0_height
                             target_top = 0 if target_top <= 0 else target_top
-                            target_right = person0_box[2] + right_ratio * person0_width
+                            target_right = target_left + person0_box[2] + right_ratio * person0_width
                             target_right = _input_image_width if target_right >= _input_image_width else target_right
-                            target_bottom = person0_box[3] + bottom_ratio * person0_height
+                            target_bottom = target_top + person0_box[3] + bottom_ratio * person0_height
                             target_bottom = _input_image_width if target_bottom >= _input_image_height else target_bottom
 
                         # artificial model
@@ -522,7 +522,7 @@ class OperatorSD(Operator):
 
                             target_left = person0_box[0] - left_ratio * person0_width
                             target_top = person0_box[1] - top_ratio * person0_height
-                            target_right = person0_box[2] + right_ratio * person0_width
+                            target_right = target_left + person0_box[2] + right_ratio * person0_width
                             target_bottom = target_top + person0_box[3] + bottom_ratio * person0_height
 
                         target_width = target_right - target_left
