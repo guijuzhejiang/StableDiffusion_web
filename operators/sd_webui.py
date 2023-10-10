@@ -220,29 +220,43 @@ class OperatorSD(Operator):
         padded_image = cv2.cvtColor(np.array(padded_image), cv2.COLOR_BGRA2RGBA)
         return padded_image
 
-    def padding_rgba_image_pil_to_cv(self, original_image, pl, pr, pt, pb, person_box, padding=8):
-        original_width, original_height = original_image.size
+    def limit_and_compress_image(self, __cv_image, __output_height, quality=80):
+        # 转pil
+        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 100]
+        _, jpeg_data = cv2.imencode('.jpg', cv2.cvtColor(np.array(__cv_image), cv2.COLOR_RGBA2BGRA),
+                                    encode_param)
 
-        cv_image = cv2.cvtColor(np.array(original_image), cv2.COLOR_RGBA2BGRA)
-        h, w, _ = cv_image.shape
+        # 将压缩后的图像转换为PIL图像
+        __cv_image = Image.open(io.BytesIO(jpeg_data)).convert('RGBA')
 
-        padded_image = cv2.copyMakeBorder(cv_image[padding:h - padding, padding:w - padding],
-                                          pt + padding if person_box[1] > 8 else 0,
-                                          pb + padding if 8 <= original_height - person_box[3] else 0,
-                                          pl + padding if person_box[0] > 8 else 0,
-                                          pr + padding if 8 <= original_width - person_box[2] else 0,
-                                          cv2.BORDER_CONSTANT, value=(255, 255, 255))
+        # limit height 768
+        check_w, check_h = __cv_image.size
+        print(f"before:{__cv_image.size}")
 
-        padded_image = cv2.copyMakeBorder(padded_image,
-                                          pt + padding if person_box[1] <= 8 else 0,
-                                          pb + padding if 8 > original_height - person_box[3] else 0,
-                                          pl + padding if person_box[0] <= 8 else 0,
-                                          pr + padding if 8 > original_width - person_box[2] else 0,
+        if check_h > __output_height:
+            tmp_w = int(__output_height * check_w / check_h)
+            # tmp_w = int(tmp_w // 8 * 8)
+            __cv_image = __cv_image.resize((tmp_w, __output_height))
+            check_w, check_h = __cv_image.size
+
+        tmp_h = math.ceil(check_h / 8) * 8
+        tmp_w = math.ceil(check_w / 8) * 8
+        left = int((tmp_w - check_w) / 2)
+        right = tmp_w - check_w - left
+        top = int((tmp_h - check_h) / 2)
+        bottom = tmp_h - check_h - top
+        __cv_image = cv2.copyMakeBorder(cv2.cvtColor(np.array(__cv_image), cv2.COLOR_RGBA2BGRA),
+                                          top, bottom, left,
+                                          right,
                                           cv2.BORDER_CONSTANT,
-                                          value=(255, 255, 255)
-                                          )
-        padded_image = cv2.cvtColor(np.array(padded_image), cv2.COLOR_BGRA2RGBA)
-        return padded_image
+                                          value=(127, 127, 127))
+        # # 压缩图像质量
+        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
+        _, jpeg_data = cv2.imencode('.jpg', np.array(__cv_image),
+                                    encode_param)
+        # 将压缩后的图像转换为PIL图像
+        __cv_image = Image.open(io.BytesIO(jpeg_data)).convert('RGBA')
+        return __cv_image
 
     def get_prompt(self, _age, _viewpoint, _model_type, _place_type, _model_mode=0):
         sd_positive_common_prompts = [
@@ -397,7 +411,7 @@ class OperatorSD(Operator):
                 _box_threshold = 0.35
 
                 if _input_image is None:
-                    return None, None
+                    return {'success': False, 'result': '未接收到图片'}
                 else:
                     origin_image_path = f'tmp/origin_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png'
                     _input_image.save(origin_image_path, format='PNG')
@@ -406,12 +420,63 @@ class OperatorSD(Operator):
                         if self.predict_image(origin_image_path):
                             return {'success': False, 'result': "抱歉，您上传的图像未通过合规性检查，请重新上传。"}
 
+                        if self.update_progress(celery_task, self.redis_client, 10):
+                            return {'success': True}
+
                         _input_image_width, _input_image_height = _input_image.size
 
+                        # 切割衣服
+                        person0_box = [-1, -1, -1, -1]
+                        sam_images = []
+                        mask_images = []
+                        for dino_idx, dino_prompt in enumerate(_dino_clothing_text_prompt):
+                            # person_boxes, _ = self.dino.dino_predict_internal(_input_image, _dino_model_name,
+                            #                                                   dino_prompt, _box_threshold)
+                            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, dino_prompt,
+                                                                            _box_threshold, _input_image.convert('RGBA'))
+
+                            if len(sam_result) > 0:
+                                for idx, im in enumerate(sam_result):
+                                    im.save(
+                                        f'tmp/{dino_idx}_{idx}_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
+                                        format='PNG')
+                                sam_images.append(sam_result[2])
+                                mask_images.append(sam_result[1])
+                                # get max area clothing box
+                                x_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 0 or i == 2]
+                                y_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 1 or i == 3]
+                                box = [min(x_list), min(y_list), max(x_list), max(y_list)]
+                                person0_box = [
+                                    box[0] if person0_box[0] == -1 or box[0] < person0_box[0] else person0_box[0],
+                                    box[1] if person0_box[1] == -1 or box[1] < person0_box[1] else person0_box[1],
+                                    box[2] if person0_box[2] == -1 or box[2] > person0_box[2] else person0_box[2],
+                                    box[3] if person0_box[3] == -1 or box[3] > person0_box[3] else person0_box[3],
+                                ]
+
+                        if self.update_progress(celery_task, self.redis_client, 20):
+                            return {'success': True}
+
+                        if person0_box[0] == -1:
+                            return {'success': False, 'result': '未检测到服装'}
+                        else:
+                            clothing_image = Image.new("RGBA", (_input_image_width, _input_image_height), (127, 127, 127, 0))
+                            mask_image = Image.new("RGBA", (_input_image_width, _input_image_height), (127, 127, 127, 0))
+                            for sam_img, mask_img in zip(sam_images, mask_images):
+                                clothing_image.paste(sam_img, (0, 0), mask=mask_img)
+                                mask_image.paste(mask_img, (0, 0), mask=mask_img)
+
+                            if self.shared.cmd_opts.debug_mode:
+                                clothing_image.save(
+                                    f'tmp/clothing_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
+                                    format='PNG')
+                                mask_image.save(
+                                    f'tmp/mask_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
+                                    format='PNG')
                         # real people
                         if _model_mode == 0:
                             person_boxes, _ = self.dino.dino_predict_internal(_input_image, _dino_model_name, "person",
                                                                     _box_threshold)
+                            # sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "person", 0.33, _input_image)
                             if len(person_boxes) == 0:
                                 return {'success': False, 'result': '未检测到服装'}
 
@@ -434,25 +499,6 @@ class OperatorSD(Operator):
 
                         # artificial model
                         else:
-                            person0_box = [-1, -1, -1, -1]
-                            for dino_idx, dino_prompt in enumerate(_dino_clothing_text_prompt):
-                                person_boxes, _ = self.dino.dino_predict_internal(_input_image, _dino_model_name,
-                                                                    dino_prompt, _box_threshold)
-                                if len(person_boxes) > 0:
-                                    # get max area clothing box
-                                    x_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 0 or i == 2]
-                                    y_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 1 or i == 3]
-                                    box = [min(x_list), min(y_list), max(x_list), max(y_list)]
-                                    person0_box = [
-                                        box[0] if person0_box[0] == -1 or box[0] < person0_box[0] else person0_box[0],
-                                        box[1] if person0_box[1] == -1 or box[1] < person0_box[1] else person0_box[1],
-                                        box[2] if person0_box[2] == -1 or box[2] > person0_box[2] else person0_box[2],
-                                        box[3] if person0_box[3] == -1 or box[3] > person0_box[3] else person0_box[3],
-                                                   ]
-
-                            if person0_box[0] == -1:
-                                return {'success': False, 'result': '未检测到服装'}
-
                             person0_width = person0_box[2] - person0_box[0]
                             person0_height = person0_box[3] - person0_box[1]
                             constant_bottom = 40
@@ -475,107 +521,40 @@ class OperatorSD(Operator):
                             target_left = person0_box[0] - left_ratio * person0_width
                             target_top = person0_box[1] - top_ratio * person0_height
                             target_right = person0_box[2] + right_ratio * person0_width
-                            target_bottom = person0_box[3] + bottom_ratio * person0_height
+                            target_bottom = target_top + person0_box[3] + bottom_ratio * person0_height
 
                         target_width = target_right - target_left
                         target_height = target_bottom - target_top
-                        _input_image = self.configure_image(_input_image, [target_left, target_top, target_right, target_bottom], target_ratio=_output_width / _output_height if (target_width / target_height) < (_output_width / _output_height) else target_width / target_height)
+                        resized_clothing_image = self.configure_image(clothing_image, [target_left, target_top, target_right, target_bottom], target_ratio=_output_width / _output_height if (target_width / target_height) < (_output_width / _output_height) else target_width / target_height)
+                        resized_input_image = self.configure_image(_input_image, [target_left, target_top, target_right, target_bottom], target_ratio=_output_width / _output_height if (target_width / target_height) < (_output_width / _output_height) else target_width / target_height)
+                        resized_mask_image = self.configure_image(mask_image, [target_left, target_top, target_right, target_bottom], target_ratio=_output_width / _output_height if (target_width / target_height) < (_output_width / _output_height) else target_width / target_height)
 
+                        if self.update_progress(celery_task, self.redis_client, 30):
+                            return {'success': True}
                     except Exception:
                         print(traceback.format_exc())
                         print('preprocess img error')
                     else:
-                        pass
+                        resized_clothing_image = self.limit_and_compress_image(resized_clothing_image, _output_height)
+                        resized_input_image = self.limit_and_compress_image(resized_input_image, _output_height)
+                        resized_mask_image = self.limit_and_compress_image(resized_mask_image, _output_height)
 
-                        # celery_task.update_state(state='PROGRESS', meta={'progress': 20})
-                        if self.update_progress(celery_task, self.redis_client, 20):
-                            return {'success': True}
+                        pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
+                        sam_result_tmp_png_fp = []
+                        for resized_img_type, cache_image in zip(["resized_input", "resized_mask", "resized_clothing"],
+                                                                 [resized_input_image, resized_mask_image,
+                                                                  resized_clothing_image]):
+                            cache_fp = f"tmp/{resized_img_type}_{pic_name}.png"
+                            cache_image.save(cache_fp)
+                            sam_result_tmp_png_fp.append({'name': cache_fp})
 
-                        # 转pil
-                        quality = 100
-                        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
-                        _, jpeg_data = cv2.imencode('.jpg', cv2.cvtColor(np.array(_input_image), cv2.COLOR_RGBA2BGRA),
-                                                    encode_param)
-
-                        # 将压缩后的图像转换为PIL图像
-                        _input_image = Image.open(io.BytesIO(jpeg_data)).convert('RGBA')
-
-                        # limit height 768
-                        check_w, check_h = _input_image.size
-                        print(f"before:{_input_image.size}")
-
-                        if check_h > _output_height:
-                            tmp_w = int(_output_height * check_w / check_h)
-                            # tmp_w = int(tmp_w // 8 * 8)
-                            _input_image = _input_image.resize((tmp_w, _output_height))
-                            check_w, check_h = _input_image.size
-
-                        tmp_h = math.ceil(check_h / 8) * 8
-                        tmp_w = math.ceil(check_w / 8) * 8
-                        left = int((tmp_w - check_w) / 2)
-                        right = tmp_w - check_w - left
-                        top = int((tmp_h - check_h) / 2)
-                        bottom = tmp_h - check_h - top
-                        _input_image = cv2.copyMakeBorder(cv2.cvtColor(np.array(_input_image), cv2.COLOR_RGBA2BGRA),
-                                                          top, bottom, left,
-                                                          right,
-                                                          cv2.BORDER_CONSTANT,
-                                                          value=(127, 127, 127))
-                        # # 压缩图像质量
-                        quality = 80
-                        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
-                        _, jpeg_data = cv2.imencode('.jpg', np.array(_input_image),
-                                                    encode_param)
-                        # 将压缩后的图像转换为PIL图像
-                        _input_image = Image.open(io.BytesIO(jpeg_data)).convert('RGBA')
-                    if self.shared.cmd_opts.debug_mode:
-                        _input_image.save(f'tmp/resized_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
-                                          format='PNG')
-
-
-                # celery_task.update_state(state='PROGRESS', meta={'progress': 30})
-                if self.update_progress(celery_task, self.redis_client, 30):
-                    return {'success': True}
-
-                sam_result_tmp_png_fp = []
-                sam_result_gallery = [None, None, None]
-                sam_mask_result = []
-                for dino_idx, dino_prompt in enumerate(_dino_clothing_text_prompt):
-                    sam_result, _ = self.sam.sam_predict(_dino_model_name, dino_prompt, 0.33, _input_image)
-                    if len(sam_result) > 0:
-                        if sam_result_gallery[0] is None:
-                            sam_result_gallery[0] = sam_result[0]
-                            sam_result_gallery[1] = 1
-                            sam_result_gallery[2] = sam_result[2]
                         else:
-                            sam_result_gallery[0].paste(sam_result[0], (0, 0), sam_result[0])
-                            sam_result_gallery[1] = 1
-                            sam_result_gallery[2].paste(sam_result[2], (0, 0), sam_result[2])
-                        sam_mask_result.append(np.array(sam_result[1]))
+                            if self.update_progress(celery_task, self.redis_client, 40):
+                                return {'success': True}
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 50})
                 if self.update_progress(celery_task, self.redis_client, 50):
                     return {'success': True}
-
-                if sam_result_gallery[0] is None:
-                    return {'success': False, 'result': '未检测到服装'}
-                else:
-                    pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
-
-                    merged_mask = None
-                    for idx, mask_res in enumerate(sam_mask_result):
-                        Image.fromarray(mask_res).save(f'tmp/{idx}_mask_{pic_name}.png')
-                        if merged_mask is None:
-                            merged_mask = mask_res
-                        else:
-                            merged_mask |= mask_res
-                    else:
-                        sam_result_gallery[1] = Image.fromarray(merged_mask)
-
-                for idx, sam_mask_img in enumerate(sam_result_gallery):
-                    cache_fp = f"tmp/{idx}_{pic_name}.png"
-                    sam_mask_img.save(cache_fp)
-                    sam_result_tmp_png_fp.append({'name': cache_fp})
 
                 task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
 
@@ -586,7 +565,7 @@ class OperatorSD(Operator):
 
                 prompt_styles = None
                 _input_image_width, _input_image_height = _input_image.size
-                init_img = sam_result_gallery[2]
+                init_img = resized_clothing_image
 
                 sketch = None
                 init_img_with_mask = None
@@ -687,7 +666,7 @@ class OperatorSD(Operator):
                 sam_args = [0,
                             adetail_enabled, face_args, hand_args,  # adetail args
                             controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,  # controlnet args
-                            True, False, 0, _input_image,
+                            True, False, 0, resized_input_image,
                             sam_result_tmp_png_fp,
                             0,  # sam_output_chosen_mask
                             False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
