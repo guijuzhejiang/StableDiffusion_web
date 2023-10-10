@@ -294,7 +294,7 @@ class OperatorSD(Operator):
                 # 'hand101',
                 '(simple background:1.3)',
                 '(plain background:1.3)',
-                'natural skin texture',
+                # 'natural skin texture',
                 # 'beautiful fingers',
                 # 'clear fingernails',
                 # 'realistic hand appearance',
@@ -355,7 +355,7 @@ class OperatorSD(Operator):
                          ','.join(sd_positive_common_prompts),
                          '(no humans:1.3),8k uhd,dramatic scene,Epic composition,raw photo,huge_filesize,highres,magazine cover,high saturation,poster']
         sd_bg_positive_prompt =','.join(bg_prmpt_list)
-        sd_bg_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(overexposure:1.5),(exposure:1.5),paintings,sketches,(worst quality:2),(low quality:2),(normal quality:2),clothing,pants,shorts,t-shirt,dress,sleeves,lowres,((monochrome)),((grayscale)),duplicate,morbid,error,cropped,worst quality,blurry,deformed,mirrored image,mirrored noise,polar lowres'
+        sd_bg_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(overexposure:1.5),(exposure:1.5),paintings,sketches,(worst quality:2),(low quality:2),(normal quality:2),clothing,pants,shorts,t-shirt,dress,sleeves,lowres,((monochrome)),((grayscale)),duplicate,morbid,error,cropped,worst quality,blurry,deformed,mirrored image,mirrored noise,polar lowres'
         # 3 feet,extra long leg,super long leg,wrong feet bottom render
 
         print(f'sd_bg_positive_prompt: {sd_bg_positive_prompt}')
