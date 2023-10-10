@@ -465,13 +465,6 @@ class OperatorSD(Operator):
                                 clothing_image.paste(sam_img, (0, 0), mask=mask_img)
                                 mask_image.paste(mask_img, (0, 0), mask=mask_img)
 
-                            if self.shared.cmd_opts.debug_mode:
-                                clothing_image.save(
-                                    f'tmp/clothing_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
-                                    format='PNG')
-                                mask_image.save(
-                                    f'tmp/mask_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
-                                    format='PNG')
                         # real people
                         if _model_mode == 0:
                             person_boxes, _ = self.dino.dino_predict_internal(_input_image, _dino_model_name, "person",
@@ -569,7 +562,6 @@ class OperatorSD(Operator):
                                                                                                   _model_mode=_model_mode)
 
                 prompt_styles = None
-                _input_image_width, _input_image_height = _input_image.size
                 init_img = resized_clothing_image
 
                 sketch = None
@@ -671,7 +663,7 @@ class OperatorSD(Operator):
                 sam_args = [0,
                             adetail_enabled, face_args, hand_args,  # adetail args
                             controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,  # controlnet args
-                            True, False, 0, resized_input_image if _model_mode==0 else resized_clothing_image,
+                            True, False, 0, resized_input_image if _model_mode == 0 else resized_clothing_image,
                             sam_result_tmp_png_fp,
                             0,  # sam_output_chosen_mask
                             False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
