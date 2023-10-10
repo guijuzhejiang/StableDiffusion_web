@@ -457,14 +457,16 @@ class OperatorSD(Operator):
                             person0_height = person0_box[3] - person0_box[1]
                             constant_bottom = 40
                             constant_top = 40
-                            factor_bottom = 4
-                            factor_top = 4
+                            factor_bottom = 5
+                            factor_top = 5
                             left_ratio = 0.1
                             right_ratio = 0.1
                             # top_ratio = 0.32
                             top_ratio = min(0.35, math.pow(person0_width / person0_height, factor_top) * constant_top)
                             bottom_ratio = min(0.58, math.pow(person0_width / person0_height, factor_bottom) * constant_bottom)
+                            print(f"bottom_ratio1: {math.pow(person0_width / person0_height, factor_bottom) * constant_bottom}")
                             print(f"bottom_ratio: {bottom_ratio}")
+                            print(f"top_ratio1: {math.pow(person0_width / person0_height, factor_top) * constant_top}")
                             print(f"top_ratio: {top_ratio}")
                             print(f"boxes: {person0_box}")
                             print(f"width: {person0_width}")
