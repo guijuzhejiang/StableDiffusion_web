@@ -125,7 +125,7 @@ class SamPredictorHQ(SamPredictor):
                 sparse_prompt_embeddings=sparse_embeddings,
                 dense_prompt_embeddings=dense_embeddings,
                 multimask_output=multimask_output,
-                hq_token_only=True,
+                hq_token_only=False,
                 interm_embeddings=self.interm_features,
             )
 
