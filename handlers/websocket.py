@@ -151,7 +151,7 @@ async def sd_genreate(request: Request, ws):
                     task_result = {'success': False, 'result': "余额不足"}
 
                 await ws.send(ujson.dumps(task_result))
-                await asyncio.sleep(0.01)
+                break
             except asyncio.TimeoutError:
                 print("fuck2")
 
