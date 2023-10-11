@@ -64,7 +64,7 @@ class SamPredictorHQ(SamPredictor):
         point_labels: Optional[torch.Tensor],
         boxes: Optional[torch.Tensor] = None,
         mask_input: Optional[torch.Tensor] = None,
-        multimask_output: bool = True,
+        multimask_output: bool = False,
         return_logits: bool = False,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
@@ -125,9 +125,10 @@ class SamPredictorHQ(SamPredictor):
                 sparse_prompt_embeddings=sparse_embeddings,
                 dense_prompt_embeddings=dense_embeddings,
                 multimask_output=multimask_output,
-                hq_token_only=False,
+                hq_token_only=True,
                 interm_embeddings=self.interm_features,
             )
+
         else:
             low_res_masks, iou_predictions = self.model.mask_decoder(
                 image_embeddings=self.features,
