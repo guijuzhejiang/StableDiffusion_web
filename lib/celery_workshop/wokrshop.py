@@ -82,7 +82,7 @@ class WorkShop(object):
                 print(app.tasks)
 
                 # , '--pool=eventlet'
-                app.worker_main(argv=['worker', '--detach', '--loglevel=info', '--concurrency=1', '-P', 'solo', '-Ofair', '-n', f'{op_name}_worker', '--time-limit=120', '--without-heartbeat', '--without-gossip', '--without-mingle'])
+                app.worker_main(argv=['worker', '--loglevel=info', '--concurrency=1', '-P', 'solo', '-Ofair', '-n', f'{op_name}_worker', '--time-limit=120', '--without-heartbeat', '--without-gossip', '--without-mingle'])
             except Exception:
                 print(traceback.format_exc())
                 logging(
