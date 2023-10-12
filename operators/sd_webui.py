@@ -872,6 +872,23 @@ class OperatorSD(Operator):
                     return {'success': True}
                 return {'success': True, 'result': img_urls}
 
+            elif proceed_mode == 'beautify':
+                # params: {
+                #                 gender: gender,
+                #                 age_weight: ageWeightRef?.current?.inputValue,
+                #                 age_sim: ageSimRef?.current?.inputValue,
+                #                 face_expression: faceExpression,
+                #                 face_sim: faceExpressionSimRef?.current?.inputValue,
+                #                 eye_size: eyeSizeRef?.current?.inputValue,
+                #                 curly_hair: curlyHairRef?.current?.inputValue,
+                #                 muscle: muscleRef?.current?.inputValue,
+                #             }
+                params = ujson.loads(kwargs['params'][0])
+
+
+                if self.update_progress(celery_task, self.redis_client, 10):
+                    return {'success': True}
+
             else:
                 params = ujson.loads(kwargs['params'][0])
                 # _input_image = base64_to_pil(params['input_image'])
