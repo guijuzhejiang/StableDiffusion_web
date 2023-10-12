@@ -19,10 +19,11 @@ async def sd_genreate(request: Request, ws):
         user_id = request.args['user_id'][0]
         # check account
         account = \
-        (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[0]
+        (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data
+        if len(account) <= 0:
+            raise Exception
 
         try:
-            flag_send_task = False
             # recv params
             raw_msg = await ws.recv()
 
@@ -42,6 +43,10 @@ async def sd_genreate(request: Request, ws):
                     cost_points = 16
                 if pixel_sum >= 4681:
                     cost_points = 20
+
+            elif package['mode'] == 'beautify':
+                pass
+
             else:
                 cost_points *= int(int(params['batch_size']))
 
@@ -70,7 +75,6 @@ async def sd_genreate(request: Request, ws):
                 # send task
                 task_result = request.app.ctx.sd_workshop(**format_package)
                 await ws.send(ujson.dumps({'success': True, 'result': str(task_result), 'act': 'save_task_id', 'type': package['mode']}))
-                flag_send_task = True
                 await request.app.ctx.redis_session.rpush('celery_task_queue', str(task_result))
 
                 print('wait')
@@ -98,19 +102,6 @@ async def sd_genreate(request: Request, ws):
                             else:
                                 buf_result['result'] = f"..."
                             await ws.send(ujson.dumps(buf_result))
-
-                            # queue_list = task_result.app.control.inspect().reserved()[f'celery@{sd_workshop.op.__name__}_worker']
-
-                            # get_success = False
-                            # for index, q in enumerate(queue_list):
-                            #     if str(task_result) == q['id']:
-                            #         get_success = True
-                            #         buf_result['result'] = f"第{index+1}位"
-                            #         await ws.send(ujson.dumps(buf_result))
-                            # else:
-                            #     if not get_success:
-                            #         buf_result['result'] = f"..."
-                            #         await ws.send(ujson.dumps(buf_result))
 
                         except Exception:
                             print("fuck1")

@@ -128,7 +128,8 @@ class RevokeTask(HTTPMethodView):
             task_id = request.form['task_id'][0]
             request.app.ctx.sd_workshop.celery_app.control.revoke(task_id)
             await request.app.ctx.redis_session.lrem('celery_task_queue', count=1, value=task_id)
-            await request.app.ctx.redis_session.rpush('celery_task_revoked', task_id)
+            # await request.app.ctx.redis_session.rpush('celery_task_revoked', task_id)
+            await request.app.ctx.redis_session.set(task_id, 'revoke')
             return sanic_json({'success': True})
         except Exception:
             print(traceback.format_exc())
@@ -288,7 +289,7 @@ class FetchUserHistory(HTTPMethodView):
     async def post(self, request):
         try:
             user_id = request.form['user_id'][0]
-            dir_path = os.path.join(CONFIG['storage_dirpath']['user_dir'], user_id)
+            dir_path = os.path.join(CONFIG['storage_dirpath']['user_beauty_dir'] if request.args.get("category") else CONFIG['storage_dirpath']['user_dir'], user_id)
             os.makedirs(dir_path, exist_ok=True)
 
             result = [f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}" for img_fn in sorted(os.listdir(dir_path), reverse=True)]

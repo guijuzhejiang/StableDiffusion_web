@@ -18,8 +18,9 @@ if __name__ == '__main__':
     try:
         # clear queue
         redis_client = redis.StrictRedis(host='localhost', port=6379, db=1, decode_responses=True)
-        redis_client.delete('celery_task_queue')
-        redis_client.delete('celery_task_revoked')
+        # redis_client.delete('celery_task_queue')
+        # redis_client.delete('celery_task_revoked')
+        redis_client.flushdb()
 
         if CONFIG['debug_mode']:
             redis_mq = SyncRedisMQ(CONFIG['redis']['host'], CONFIG['redis']['port'], CONFIG['redis']['redis_mq'])

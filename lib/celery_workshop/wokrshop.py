@@ -57,6 +57,19 @@ class WorkShop(object):
 
                     def before_start(self, task_id, args, kwargs):
                         redis_client.lrem('celery_task_queue', count=1, value=task_id)
+                        # redis_client.set(task_id, 'progress')
+
+                    def on_failure(self, exc, task_id, args, kwargs, einfo):
+                        print("on_failure")
+                        redis_client.set(task_id, 'revoke')
+
+                    def on_retry(self, exc, task_id, args, kwargs, einfo):
+                        print("on_retry")
+                        # redis_client.set(task_id, 'revoke')
+
+                    def on_success(self, retval, task_id, args, kwargs):
+                        print("on_success")
+                        # redis_client.set(task_id, 'revoke')
 
                     def run(self, *args, **kwargs):
                         args_list = list(args)

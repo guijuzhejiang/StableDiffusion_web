@@ -36,7 +36,6 @@ from lib.celery_workshop.operator import Operator
 from utils.global_vars import CONFIG
 
 
-
 class OperatorSD(Operator):
     """ stable diffusion """
     num = len(GPUtil.getGPUs())
@@ -185,10 +184,9 @@ class OperatorSD(Operator):
         # left && top
         cropped_left = person_pos[0] if person_pos[0] > 0 else 0
         cropped_top = person_pos[1] if person_pos[1] > 0 else 0
-        cv_image = cv_image[cropped_top:, cropped_left:]
-        cropped_right = person_pos[2] if person_pos[2] < original_width else original_width
-        cropped_bottom = person_pos[3] if person_pos[3] < original_height else original_height
-        cv_image = cv_image[:cropped_bottom, :cropped_right]
+        cropped_right = person_pos[2] if person_pos[2] <= original_width else original_width
+        cropped_bottom = person_pos[3] if person_pos[3] <= original_height else original_height
+        cv_image = cv_image[cropped_top:cropped_bottom, cropped_left:cropped_right]
 
         cv_image = cv2.copyMakeBorder(cv_image,
                                           abs(person_pos[1]) if person_pos[1] < 0 else 0,
@@ -485,9 +483,9 @@ class OperatorSD(Operator):
                             target_left = 0 if target_left <= 0 else target_left
                             target_top = person0_box[1] - top_ratio * person0_height
                             target_top = 0 if target_top <= 0 else target_top
-                            target_right = target_left + person0_box[2] + right_ratio * person0_width
+                            target_right = person0_box[2] + right_ratio * person0_width
                             target_right = _input_image_width if target_right >= _input_image_width else target_right
-                            target_bottom = target_top + person0_box[3] + bottom_ratio * person0_height
+                            target_bottom = person0_box[3] + bottom_ratio * person0_height
                             target_bottom = _input_image_height if target_bottom >= _input_image_height else target_bottom
 
                         # artificial model
@@ -515,8 +513,8 @@ class OperatorSD(Operator):
 
                             target_left = person0_box[0] - left_ratio * person0_width
                             target_top = person0_box[1] - top_ratio * person0_height
-                            target_right = target_left + person0_box[2] + right_ratio * person0_width
-                            target_bottom = target_top + person0_box[3] + bottom_ratio * person0_height
+                            target_right = person0_box[2] + right_ratio * person0_width
+                            target_bottom = person0_box[3] + bottom_ratio * person0_height
 
                         target_width = target_right - target_left
                         target_height = target_bottom - target_top
@@ -1089,6 +1087,6 @@ class OperatorSD(Operator):
         return {'success': False, 'result': "fatal error"}
 
 
-if __name__ == '__main__':
-    op = OperatorSD()
-    op()
+# if __name__ == '__main__':
+#     op = OperatorSD()
+#     op()
