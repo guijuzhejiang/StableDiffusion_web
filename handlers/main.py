@@ -277,6 +277,7 @@ class Query(HTTPMethodView):
 class ImageProvider(HTTPMethodView):
     async def get(self, request):
         if request.args.get("uid"):
+
             user_id = urllib.parse.unquote(request.args.get("uid"))
             fp = os.path.join(CONFIG['storage_dirpath']['user_dir'], user_id, request.args.get("imgpath"))
         else:

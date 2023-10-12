@@ -904,7 +904,7 @@ class OperatorSD(Operator):
                     sam_result_tmp_png_fp.append({'name': cache_fp})
                 # 性別
                 gender_prompt = ['GS-Girlish', 'GS-Womanly'] if params['gender'] == 'female' else ['GS-Boyish', 'GS-Masculine']
-                gender_prompt = gender_prompt[0] if params['genderIsElder'] == 'young' else gender_prompt[1]
+                gender_prompt = gender_prompt[0] if params['gender_is_elder'] == 'young' else gender_prompt[1]
 
                 denoising_strength = (1-params['gender_sim']) * 0.3 + 0.1
 
@@ -975,7 +975,7 @@ class OperatorSD(Operator):
                              'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
                              'ad_controlnet_guidance_end': 1,
                              'is_api': ()}
-                hand_args = {'ad_model': None,
+                hand_args = {'ad_model': 'None',
                              'ad_prompt': '',
                              'ad_negative_prompt': '',
                              'ad_confidence': 0.3,
@@ -1050,7 +1050,7 @@ class OperatorSD(Operator):
                 args = (
                     0, scales, None, None, True, 'None', 'None', 0, gfpgan_enable, codeformer_enable, 0)
                 self.devices.torch_gc()
-                pp = self.scripts_postprocessing.PostprocessedImage(img2img_res[0].convert("RGB"))
+                pp = self.scripts_postprocessing.PostprocessedImage(img2img_res[0][0].convert("RGB"))
                 self.scripts.scripts_postproc.run(pp, args)
 
                 pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=80,

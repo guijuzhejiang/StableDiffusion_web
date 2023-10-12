@@ -60,7 +60,7 @@ async def sd_genreate(request: Request, ws):
                 dir_path = os.path.join(CONFIG['storage_dirpath']['user_upload'])
                 async with aiofile.async_open(os.path.join(dir_path, f"{user_id}.png"), 'rb') as file:
                     image_data = await file.read()
-                if package['mode'] == 'model':
+                if package['mode'] == 'model' or package['mode'] == 'beautify':
                     format_package['input_image'][0].append(image_data)
                 else:
                     parsed_url = urlparse(package['chosen_image'])
