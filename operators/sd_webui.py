@@ -1061,7 +1061,7 @@ class OperatorSD(Operator):
                     os.remove(os.path.join(dir_path, cache_list[0]))
 
                 for img_fn in sorted(os.listdir(dir_path), reverse=True):
-                    url_fp = f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}"
+                    url_fp = f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category=beauty"
                     img_urls.append(url_fp)
                 if len(img_urls) < 10:
                     for i in range(10 - len(img_urls)):
