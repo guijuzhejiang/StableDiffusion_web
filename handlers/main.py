@@ -279,7 +279,7 @@ class ImageProvider(HTTPMethodView):
         if request.args.get("uid"):
 
             user_id = urllib.parse.unquote(request.args.get("uid"))
-            fp = os.path.join(CONFIG['storage_dirpath']['user_dir'], user_id, request.args.get("imgpath"))
+            fp = os.path.join(CONFIG['storage_dirpath']['user_beauty_dir'] if request.args.get("category") == 'beauty' else CONFIG['storage_dirpath']['user_dir'], user_id, request.args.get("imgpath"))
         else:
             fp = os.path.join(CONFIG['storage_dirpath']['hires_dir'], request.args.get("imgpath"))
 
