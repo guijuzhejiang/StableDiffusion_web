@@ -290,10 +290,11 @@ class FetchUserHistory(HTTPMethodView):
     async def post(self, request):
         try:
             user_id = request.form['user_id'][0]
-            dir_path = os.path.join(CONFIG['storage_dirpath']['user_beauty_dir'] if request.args.get("category") else CONFIG['storage_dirpath']['user_dir'], user_id)
+            category = request.args.get("category")
+            dir_path = os.path.join(CONFIG['storage_dirpath']['user_beauty_dir'] if category else CONFIG['storage_dirpath']['user_dir'], user_id)
             os.makedirs(dir_path, exist_ok=True)
 
-            result = [f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}" for img_fn in sorted(os.listdir(dir_path), reverse=True)]
+            result = [f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={category}" for img_fn in sorted(os.listdir(dir_path), reverse=True)]
             if len(result) < 10:
                 for i in range(10-len(result)):
                     result.append('')
