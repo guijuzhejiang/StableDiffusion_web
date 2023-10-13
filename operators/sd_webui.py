@@ -433,7 +433,7 @@ class OperatorSD(Operator):
         _dino_model_name = "GroundingDINO_SwinB (938MB)"
         if _task_type == 'gender':
             # segment
-            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "face.hair.glasses",
+            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "person",
                                                             0.4, _init_img)
             if len(sam_result) == 0:
                 return {'success': False, 'result': '未检测到人脸'}
@@ -470,7 +470,7 @@ class OperatorSD(Operator):
             print("-------------------gender logger-----------------")
             print(f"sd_positive_prompt: {sd_positive_prompt}")
             print(f"sd_negative_prompt: {sd_negative_prompt}")
-            print(f"dino_prompt: face.hair.glasses")
+            print(f"dino_prompt: person")
             print(f"denoising_strength: {denoising_strength}")
             print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
 
