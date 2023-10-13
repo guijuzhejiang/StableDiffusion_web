@@ -992,7 +992,7 @@ class OperatorSD(Operator):
                 controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
                 controlnet_args_unit3.enabled = False
 
-                task_list = [x for x in params.keys() if isinstance(x, dict) and x['enable']]
+                task_list = [k for k, v in params.items() if isinstance(v, dict) and v['enable']]
                 batch_size = int(params['batch_size'])
                 result_images = []
                 pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
@@ -1215,7 +1215,7 @@ class OperatorSD(Operator):
                             inpainting_fill = 1  # masked content: original
 
                             task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
-                            sd_positive_prompt = f'{str(params[proceed_task]["expression"])}512,(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,character close-up'
+                            sd_positive_prompt = f'({str(params[proceed_task]["expression"])}512:1.3),(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,character close-up'
                             sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
 
                             print("-------------------face_expression logger-----------------")
@@ -1607,7 +1607,7 @@ class OperatorSD(Operator):
                                                            img2img_batch_input_dir,
                                                            img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
                                                            override_settings_texts,
-                                                           *sam_args)[0][0].convert("RGB")
+                                                           *sam_args)[0][0].convert("RGBA")
 
                         if self.update_progress(celery_task, self.redis_client,
                                                 (batch_count+1)*(proceed_idx + 1) * (85 // (batch_size*len(task_list)) )):
