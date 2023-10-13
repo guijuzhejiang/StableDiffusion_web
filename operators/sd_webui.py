@@ -1682,7 +1682,7 @@ class OperatorSD(Operator):
 
                         pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=80, lossless=True)
                     else:
-                        res_img.save(os.path.join(dir_path, img_fn), format="jpeg", quality=80, lossless=True)
+                        res_img.convert("RGB").save(os.path.join(dir_path, img_fn), format="jpeg", quality=80, lossless=True)
 
                     # 限制缓存10张
                     cache_list = sorted(os.listdir(dir_path))
