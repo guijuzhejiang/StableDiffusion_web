@@ -1063,7 +1063,7 @@ class OperatorSD(Operator):
                                    img2img_batch_output_dir,
                                    img2img_batch_inpaint_mask_dir,
                                    override_settings_texts,
-                                   *sam_args)[0][0].convert("RGBA")
+                                   *sam_args)
 
         self.devices.torch_gc()
         return res
@@ -1655,7 +1655,7 @@ class OperatorSD(Operator):
                 for batch_idx in range(batch_size):
                     for proceed_idx, proceed_task in enumerate(proceed_task_list):
                         result_images[batch_idx] = \
-                        self.proceed_human_transform(params, task_list[0], 1, result_images[batch_idx])[0][0].convert(
+                        self.proceed_human_transform(params, proceed_task, 1, result_images[batch_idx])[0][0].convert(
                             "RGBA")
                         if isinstance(result_images, dict):
                             return result_images
