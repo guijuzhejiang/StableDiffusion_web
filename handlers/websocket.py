@@ -79,7 +79,7 @@ async def sd_genreate(request: Request, ws):
 
                 print('wait')
                 while not task_result.ready():
-                    print(task_result.state)
+                    # print(task_result.state)
                     if task_result.state == 'PROGRESS':
                         buf_result['act'] = 'show_progress'
                         if task_result.info is not None:
