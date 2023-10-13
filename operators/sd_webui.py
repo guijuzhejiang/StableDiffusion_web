@@ -1018,7 +1018,9 @@ class OperatorSD(Operator):
                                                                                                                'GS-Masculine']
                             gender_prompt = gender_prompt[0] if params[proceed_task]['is_elder'] == 'young' else gender_prompt[1]
 
-                            denoising_strength = (1 - params[proceed_task]['sim']) * 0.3 + 0.1
+                            denoising_strength_min = 0.05
+                            denoising_strength_max = 0.6
+                            denoising_strength = (1 - params[proceed_task]['sim']) * (denoising_strength_max-denoising_strength_min) + denoising_strength_min
                             steps = 20
                             sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
                             cfg_scale = 10
@@ -1113,7 +1115,10 @@ class OperatorSD(Operator):
                                     sam_result_tmp_png_fp.append({'name': cache_fp})
 
                             # age
-                            denoising_strength = (1 - params[proceed_task]['sim']) * 0.15 + 0.2
+                            denoising_strength_min = 0.2
+                            denoising_strength_max = 0.35
+                            denoising_strength = (1 - params[proceed_task]['sim']) * (
+                                        denoising_strength_max - denoising_strength_min) + denoising_strength_min
                             steps = 20
                             sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
                             cfg_scale = 10
@@ -1212,7 +1217,10 @@ class OperatorSD(Operator):
                                     sam_mask_img.save(cache_fp)
                                     sam_result_tmp_png_fp.append({'name': cache_fp})
                             # face_expression
-                            denoising_strength = (1 - params[proceed_task]['sim']) * 0.1 + 0.3
+                            denoising_strength_min = 0.3
+                            denoising_strength_max = 0.4
+                            denoising_strength = (1 - params[proceed_task]['sim']) * (
+                                    denoising_strength_max - denoising_strength_min) + denoising_strength_min
                             steps = 20
                             sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
                             cfg_scale = 10
