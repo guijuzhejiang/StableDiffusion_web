@@ -948,6 +948,10 @@ class OperatorSD(Operator):
                 img2img_batch_inpaint_mask_dir = ''
                 override_settings_texts = []
 
+                print("-------------------gender logger-----------------")
+                print(f"sd_positive_prompt: {sd_positive_prompt}")
+                print(f"sd_negative_prompt: {sd_negative_prompt}")
+                print(f"denoising_strength: {denoising_strength}")
                 # controlnet args
                 cnet_idx = 1
                 controlnet_args_unit1 = self.scripts.scripts_img2img.alwayson_scripts[
