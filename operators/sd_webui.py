@@ -49,12 +49,17 @@ samplers_k_diffusion = [
     ('DPM fast', 'sample_dpm_fast', ['k_dpm_fast'], {"uses_ensd": True}),
     ('DPM adaptive', 'sample_dpm_adaptive', ['k_dpm_ad'], {"uses_ensd": True}),
     ('LMS Karras', 'sample_lms', ['k_lms_ka'], {'scheduler': 'karras'}),
-    ('DPM2 Karras', 'sample_dpm_2', ['k_dpm_2_ka'], {'scheduler': 'karras', 'discard_next_to_last_sigma': True, "uses_ensd": True, "second_order": True}),
-    ('DPM2 a Karras', 'sample_dpm_2_ancestral', ['k_dpm_2_a_ka'], {'scheduler': 'karras', 'discard_next_to_last_sigma': True, "uses_ensd": True, "second_order": True}),
-    ('DPM++ 2S a Karras', 'sample_dpmpp_2s_ancestral', ['k_dpmpp_2s_a_ka'], {'scheduler': 'karras', "uses_ensd": True, "second_order": True}),
+    ('DPM2 Karras', 'sample_dpm_2', ['k_dpm_2_ka'],
+     {'scheduler': 'karras', 'discard_next_to_last_sigma': True, "uses_ensd": True, "second_order": True}),
+    ('DPM2 a Karras', 'sample_dpm_2_ancestral', ['k_dpm_2_a_ka'],
+     {'scheduler': 'karras', 'discard_next_to_last_sigma': True, "uses_ensd": True, "second_order": True}),
+    ('DPM++ 2S a Karras', 'sample_dpmpp_2s_ancestral', ['k_dpmpp_2s_a_ka'],
+     {'scheduler': 'karras', "uses_ensd": True, "second_order": True}),
     ('DPM++ 2M Karras', 'sample_dpmpp_2m', ['k_dpmpp_2m_ka'], {'scheduler': 'karras'}),
-    ('DPM++ SDE Karras', 'sample_dpmpp_sde', ['k_dpmpp_sde_ka'], {'scheduler': 'karras', "second_order": True, "brownian_noise": True}),
-    ('DPM++ 2M SDE Karras', 'sample_dpmpp_2m_sde', ['k_dpmpp_2m_sde_ka'], {'scheduler': 'karras', "brownian_noise": True}),
+    ('DPM++ SDE Karras', 'sample_dpmpp_sde', ['k_dpmpp_sde_ka'],
+     {'scheduler': 'karras', "second_order": True, "brownian_noise": True}),
+    ('DPM++ 2M SDE Karras', 'sample_dpmpp_2m_sde', ['k_dpmpp_2m_sde_ka'],
+     {'scheduler': 'karras', "brownian_noise": True}),
 ]
 
 
@@ -387,6 +392,679 @@ class OperatorSD(Operator):
 
         return sd_model_positive_prompt, sd_model_negative_prompt, ad_face_positive_prompt, sd_bg_positive_prompt, sd_bg_positive_prompt, sd_bg_negative_prompt
 
+    def proceed_human_transform(self, _params, _task_type, _batch_size, _init_img):
+        prompt_styles = None
+        sketch = None
+        init_img_with_mask = None
+        inpaint_color_sketch = None
+        inpaint_color_sketch_orig = None
+        init_img_inpaint = None
+        init_mask_inpaint = None
+        mask_alpha = 0
+        restore_faces = False
+        tiling = False
+        n_iter = 1
+        image_cfg_scale = 1.5
+        seed = -1.0
+        subseed = -1.0
+        subseed_strength = 0
+        seed_resize_from_h = 0
+        seed_resize_from_w = 0
+        seed_enable_extras = False
+        selected_scale_tab = 0
+        scale_by = 1
+        inpaint_full_res_padding = 32
+        img2img_batch_input_dir = ''
+        img2img_batch_output_dir = ''
+        img2img_batch_inpaint_mask_dir = ''
+        override_settings_texts = []
+        # controlnet args
+        cnet_idx = 1
+        controlnet_args_unit1 = self.scripts.scripts_img2img.alwayson_scripts[
+            cnet_idx].get_default_ui_unit()
+        controlnet_args_unit1.enabled = False
+        controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
+        controlnet_args_unit2.enabled = False
+        controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
+        controlnet_args_unit3.enabled = False
+
+        result_images = []
+        pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
+        _dino_model_name = "GroundingDINO_SwinB (938MB)"
+        if _task_type == 'gender':
+            # segment
+            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "face.hair.glasses",
+                                                            0.4, _init_img)
+            if len(sam_result) == 0:
+                return {'success': False, 'result': '未检测到人脸'}
+
+            else:
+                sam_result_tmp_png_fp = []
+                for idx, sam_mask_img in enumerate(sam_result):
+                    cache_fp = f"tmp/{idx}_{pic_name}.png"
+                    sam_mask_img.save(cache_fp)
+                    sam_result_tmp_png_fp.append({'name': cache_fp})
+            # 性別
+            gender_prompt = ['GS-Girlish', 'GS-Womanly'] if _params[_task_type]['gender'] == 'female' else [
+                'GS-Boyish',
+                'GS-Masculine']
+            gender_prompt = gender_prompt[0] if _params[_task_type]['is_elder'] == 'young' else gender_prompt[1]
+
+            denoising_strength_min = 0.05
+            denoising_strength_max = 0.6
+            denoising_strength = (1 - _params[_task_type]['sim']) * (
+                    denoising_strength_max - denoising_strength_min) + denoising_strength_min
+            steps = 20
+            sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
+            cfg_scale = 10
+            resize_mode = 2  # resize and fill
+            mask_blur = 4
+            inpainting_mask_invert = 0  # inpaint masked
+            inpaint_full_res = 1  # choices=["Whole picture", "Only masked"]
+            inpainting_fill = 1  # masked content original
+
+            task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
+            sd_positive_prompt = f'{gender_prompt},(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,character close-up'
+            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
+
+            print("-------------------gender logger-----------------")
+            print(f"sd_positive_prompt: {sd_positive_prompt}")
+            print(f"sd_negative_prompt: {sd_negative_prompt}")
+            print(f"dino_prompt: face.hair.glasses")
+            print(f"denoising_strength: {denoising_strength}")
+            print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
+
+            # adetail
+            adetail_enabled = True
+            face_args = {'ad_model': 'face_yolov8n.pt',
+                         'ad_prompt': f'',
+                         'ad_negative_prompt': '',
+                         'ad_confidence': 0.3,
+                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_denoising_strength': 0.4,
+                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
+                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
+                         'ad_inpaint_height': 512,
+                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
+                         'ad_cfg_scale': 7,
+                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
+                         'ad_restore_face': False,
+                         'ad_controlnet_model': 'None', 'ad_controlnet_module': 'inpaint_global_harmonious',
+                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
+                         'ad_controlnet_guidance_end': 1,
+                         'is_api': ()}
+            hand_args = {'ad_model': 'None',
+                         'ad_prompt': '',
+                         'ad_negative_prompt': '',
+                         'ad_confidence': 0.3,
+                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_denoising_strength': 0.4,
+                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
+                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
+                         'ad_inpaint_height': 512,
+                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
+                         'ad_cfg_scale': 7,
+                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
+                         'ad_restore_face': False,
+                         'ad_controlnet_model': 'None', 'ad_controlnet_module': 'inpaint_global_harmonious',
+                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
+                         'ad_controlnet_guidance_end': 1,
+                         'is_api': ()}
+            sam_args = [0,
+                        adetail_enabled, face_args, hand_args,  # adetail args
+                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
+                        # controlnet args
+                        True, False, 0, _init_img,
+                        sam_result_tmp_png_fp,
+                        0,  # sam_output_chosen_mask
+                        False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                        '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
+                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
+                        f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
+                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
+                        ['left', 'right', 'up', 'down'],
+                        False, False, 'positive', 'comma', 0, False, False, '',
+                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
+                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None, None,
+                        False,
+                        None, None,
+                        False, None, None, False, 50
+                        ]
+
+        elif _task_type == 'age':
+            # segment
+            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "person",
+                                                            0.5, _init_img)
+            if len(sam_result) == 0:
+                return {'success': False, 'result': '未检测到人体'}
+            else:
+                sam_result_tmp_png_fp = []
+                for idx, sam_mask_img in enumerate(sam_result):
+                    cache_fp = f"tmp/{idx}_{pic_name}.png"
+                    sam_mask_img.save(cache_fp)
+                    sam_result_tmp_png_fp.append({'name': cache_fp})
+
+            # age
+            denoising_strength_min = 0.2
+            denoising_strength_max = 0.35
+            denoising_strength = (1 - _params[_task_type]['sim']) * (
+                    denoising_strength_max - denoising_strength_min) + denoising_strength_min
+            steps = 20
+            sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
+            cfg_scale = 10
+            resize_mode = 0  # just resize
+            mask_blur = 4
+            inpainting_mask_invert = 0  # inpaint masked
+            inpaint_full_res = 1  # choices=["Whole picture", "Only masked"]
+            inpainting_fill = 1  # masked content: original
+
+            task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
+            sd_positive_prompt = f'<lora:age_slider_v20:{str(_params[_task_type]["weight"] * 10 - 5)}>,photographic reality,character close-up,photorealistic,realistic,(best quality:1.2),(high quality:1.2),high details'
+            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
+
+            print("-------------------age logger-----------------")
+            print(f"sd_positive_prompt: {sd_positive_prompt}")
+            print(f"sd_negative_prompt: {sd_negative_prompt}")
+            print(f"dino_prompt: person")
+            print(f"denoising_strength: {denoising_strength}")
+            print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
+
+            # adetail
+            adetail_enabled = True
+            face_args = {'ad_model': 'face_yolov8n.pt',
+                         'ad_prompt': f'',
+                         'ad_negative_prompt': '',
+                         'ad_confidence': 0.3,
+                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
+                         'ad_y_offset': 0,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_denoising_strength': 0.4,
+                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
+                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
+                         'ad_inpaint_height': 512,
+                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
+                         'ad_cfg_scale': 7,
+                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
+                         'ad_restore_face': False,
+                         'ad_controlnet_model': 'None',
+                         'ad_controlnet_module': 'inpaint_global_harmonious',
+                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
+                         'ad_controlnet_guidance_end': 1,
+                         'is_api': ()}
+            hand_args = {'ad_model': 'None',
+                         'ad_prompt': '',
+                         'ad_negative_prompt': '',
+                         'ad_confidence': 0.3,
+                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
+                         'ad_y_offset': 0,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_denoising_strength': 0.4,
+                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
+                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
+                         'ad_inpaint_height': 512,
+                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
+                         'ad_cfg_scale': 7,
+                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
+                         'ad_restore_face': False,
+                         'ad_controlnet_model': 'None',
+                         'ad_controlnet_module': 'inpaint_global_harmonious',
+                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
+                         'ad_controlnet_guidance_end': 1,
+                         'is_api': ()}
+            sam_args = [0,
+                        adetail_enabled, face_args, hand_args,  # adetail args
+                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
+                        # controlnet args
+                        True, False, 0, _init_img,
+                        sam_result_tmp_png_fp,
+                        0,  # sam_output_chosen_mask
+                        False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                        '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
+                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
+                        f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
+                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
+                        ['left', 'right', 'up', 'down'],
+                        False, False, 'positive', 'comma', 0, False, False, '',
+                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
+                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
+                        None,
+                        False,
+                        None, None,
+                        False, None, None, False, 50
+                        ]
+
+        elif _task_type == 'face_expression':
+            # segment
+            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "face.glasses",
+                                                            0.3, _init_img)
+            if len(sam_result) == 0:
+                return {'success': False, 'result': '未检测到人脸'}
+            else:
+                init_img = _init_img
+                sam_result_tmp_png_fp = []
+                for idx, sam_mask_img in enumerate(sam_result):
+                    cache_fp = f"tmp/{idx}_{pic_name}.png"
+                    sam_mask_img.save(cache_fp)
+                    sam_result_tmp_png_fp.append({'name': cache_fp})
+            # face_expression
+            denoising_strength_min = 0.3
+            denoising_strength_max = 0.4
+            denoising_strength = (1 - _params[_task_type]['sim']) * (
+                    denoising_strength_max - denoising_strength_min) + denoising_strength_min
+            steps = 20
+            sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
+            cfg_scale = 10
+            resize_mode = 2  # resize and fill
+            mask_blur = 4
+            inpainting_mask_invert = 0  # inpaint masked
+            inpaint_full_res = 1  # choices=["Whole picture", "Only masked"]
+            inpainting_fill = 1  # masked content: original
+
+            task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
+            sd_positive_prompt = f'({str(_params[_task_type]["expression"])}512:1.3),(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,character close-up'
+            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
+
+            print("-------------------face_expression logger-----------------")
+            print(f"sd_positive_prompt: {sd_positive_prompt}")
+            print(f"sd_negative_prompt: {sd_negative_prompt}")
+            print(f"dino_prompt: face.glasses")
+            print(f"denoising_strength: {denoising_strength}")
+            print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
+
+            # adetail
+            adetail_enabled = False
+            face_args = {'ad_model': 'face_yolov8n.pt',
+                         'ad_prompt': f'',
+                         'ad_negative_prompt': '',
+                         'ad_confidence': 0.3,
+                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
+                         'ad_y_offset': 0,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_denoising_strength': 0.4,
+                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
+                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
+                         'ad_inpaint_height': 512,
+                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
+                         'ad_cfg_scale': 7,
+                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
+                         'ad_restore_face': False,
+                         'ad_controlnet_model': 'None',
+                         'ad_controlnet_module': 'inpaint_global_harmonious',
+                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
+                         'ad_controlnet_guidance_end': 1,
+                         'is_api': ()}
+            hand_args = {'ad_model': 'None',
+                         'ad_prompt': '',
+                         'ad_negative_prompt': '',
+                         'ad_confidence': 0.3,
+                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
+                         'ad_y_offset': 0,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_denoising_strength': 0.4,
+                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
+                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
+                         'ad_inpaint_height': 512,
+                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
+                         'ad_cfg_scale': 7,
+                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
+                         'ad_restore_face': False,
+                         'ad_controlnet_model': 'None',
+                         'ad_controlnet_module': 'inpaint_global_harmonious',
+                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
+                         'ad_controlnet_guidance_end': 1,
+                         'is_api': ()}
+            sam_args = [0,
+                        adetail_enabled, face_args, hand_args,  # adetail args
+                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
+                        # controlnet args
+                        True, False, 0, _init_img,
+                        sam_result_tmp_png_fp,
+                        0,  # sam_output_chosen_mask
+                        False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                        '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
+                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
+                        f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
+                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
+                        ['left', 'right', 'up', 'down'],
+                        False, False, 'positive', 'comma', 0, False, False, '',
+                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
+                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
+                        None,
+                        False,
+                        None, None,
+                        False, None, None, False, 50
+                        ]
+
+        elif _task_type == 'eye_size':
+            # segment
+            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "face.glasses",
+                                                            0.5, _init_img)
+            if len(sam_result) == 0:
+                return {'success': False, 'result': '未检测到人体'}
+            else:
+                sam_result_tmp_png_fp = []
+                for idx, sam_mask_img in enumerate(sam_result):
+                    cache_fp = f"tmp/{idx}_{pic_name}.png"
+                    sam_mask_img.save(cache_fp)
+                    sam_result_tmp_png_fp.append({'name': cache_fp})
+            # eye_size
+            denoising_strength = 0.35
+            steps = 20
+            sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
+            cfg_scale = 10
+            resize_mode = 0  # just resize
+            mask_blur = 4
+            inpainting_mask_invert = 0  # inpaint masked
+            inpaint_full_res = 1  # choices=["Whole picture", "Only masked"]
+            inpainting_fill = 1  # masked content: original
+
+            task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
+            sd_positive_prompt = f"<lora:eye_size_slider_v1:{str(_params[_task_type]['weight'] * 16 - 8)}>,(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,character close-up"
+            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
+
+            print("-------------------eye_size logger-----------------")
+            print(f"sd_positive_prompt: {sd_positive_prompt}")
+            print(f"sd_negative_prompt: {sd_negative_prompt}")
+            print(f"dino_prompt: face.glasses")
+            print(f"denoising_strength: {denoising_strength}")
+            print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
+
+            # adetail
+            adetail_enabled = False
+            face_args = {'ad_model': 'face_yolov8n.pt',
+                         'ad_prompt': f'',
+                         'ad_negative_prompt': '',
+                         'ad_confidence': 0.3,
+                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
+                         'ad_y_offset': 0,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_denoising_strength': 0.4,
+                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
+                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
+                         'ad_inpaint_height': 512,
+                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
+                         'ad_cfg_scale': 7,
+                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
+                         'ad_restore_face': False,
+                         'ad_controlnet_model': 'None',
+                         'ad_controlnet_module': 'inpaint_global_harmonious',
+                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
+                         'ad_controlnet_guidance_end': 1,
+                         'is_api': ()}
+            hand_args = {'ad_model': 'None',
+                         'ad_prompt': '',
+                         'ad_negative_prompt': '',
+                         'ad_confidence': 0.3,
+                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
+                         'ad_y_offset': 0,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_denoising_strength': 0.4,
+                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
+                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
+                         'ad_inpaint_height': 512,
+                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
+                         'ad_cfg_scale': 7,
+                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
+                         'ad_restore_face': False,
+                         'ad_controlnet_model': 'None',
+                         'ad_controlnet_module': 'inpaint_global_harmonious',
+                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
+                         'ad_controlnet_guidance_end': 1,
+                         'is_api': ()}
+            sam_args = [0,
+                        adetail_enabled, face_args, hand_args,  # adetail args
+                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
+                        # controlnet args
+                        True, False, 0, _init_img,
+                        sam_result_tmp_png_fp,
+                        0,  # sam_output_chosen_mask
+                        False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                        '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
+                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
+                        f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
+                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
+                        ['left', 'right', 'up', 'down'],
+                        False, False, 'positive', 'comma', 0, False, False, '',
+                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
+                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
+                        None,
+                        False,
+                        None, None,
+                        False, None, None, False, 50
+                        ]
+
+        elif _task_type == 'curly_hair':
+            # segment
+            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "hair",
+                                                            0.5, _init_img)
+            if len(sam_result) == 0:
+                return {'success': False, 'result': '未检测到人体'}
+            else:
+                sam_result_tmp_png_fp = []
+                for idx, sam_mask_img in enumerate(sam_result):
+                    cache_fp = f"tmp/{idx}_{pic_name}.png"
+                    sam_mask_img.save(cache_fp)
+                    sam_result_tmp_png_fp.append({'name': cache_fp})
+            # curly_hair
+            denoising_strength = 0.8
+            steps = 20
+            sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
+            cfg_scale = 10
+            resize_mode = 0  # just resize
+            mask_blur = 4
+            inpainting_mask_invert = 0  # inpaint masked
+            inpaint_full_res = 1  # choices=["Whole picture", "Only masked"]
+            inpainting_fill = 1  # masked content: original
+
+            task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
+            sd_positive_prompt = f"<lora:curly_hair_slider_v1:{str(_params[_task_type]['weight'] * 16 - 8)}>,fluffy hair,lush hair,{'straight hair,' if int(_params[_task_type]['weight']) == 0 else ''}{'curly hair,' if int(_params[_task_type]['weight']) == 1 else ''}(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo, realistic,character close-up"
+            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
+
+            print("-------------------curly_hair logger-----------------")
+            print(f"sd_positive_prompt: {sd_positive_prompt}")
+            print(f"sd_negative_prompt: {sd_negative_prompt}")
+            print(f"dino_prompt: hair")
+            print(f"denoising_strength: {denoising_strength}")
+            print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
+
+            # adetail
+            adetail_enabled = False
+            face_args = {'ad_model': 'face_yolov8n.pt',
+                         'ad_prompt': f'',
+                         'ad_negative_prompt': '',
+                         'ad_confidence': 0.3,
+                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
+                         'ad_y_offset': 0,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_denoising_strength': 0.4,
+                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
+                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
+                         'ad_inpaint_height': 512,
+                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
+                         'ad_cfg_scale': 7,
+                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
+                         'ad_restore_face': False,
+                         'ad_controlnet_model': 'None',
+                         'ad_controlnet_module': 'inpaint_global_harmonious',
+                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
+                         'ad_controlnet_guidance_end': 1,
+                         'is_api': ()}
+            hand_args = {'ad_model': 'None',
+                         'ad_prompt': '',
+                         'ad_negative_prompt': '',
+                         'ad_confidence': 0.3,
+                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
+                         'ad_y_offset': 0,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_denoising_strength': 0.4,
+                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
+                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
+                         'ad_inpaint_height': 512,
+                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
+                         'ad_cfg_scale': 7,
+                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
+                         'ad_restore_face': False,
+                         'ad_controlnet_model': 'None',
+                         'ad_controlnet_module': 'inpaint_global_harmonious',
+                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
+                         'ad_controlnet_guidance_end': 1,
+                         'is_api': ()}
+            sam_args = [0,
+                        adetail_enabled, face_args, hand_args,  # adetail args
+                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
+                        # controlnet args
+                        True, False, 0, _init_img,
+                        sam_result_tmp_png_fp,
+                        0,  # sam_output_chosen_mask
+                        False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                        '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
+                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
+                        f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
+                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
+                        ['left', 'right', 'up', 'down'],
+                        False, False, 'positive', 'comma', 0, False, False, '',
+                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
+                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
+                        None,
+                        False,
+                        None, None,
+                        False, None, None, False, 50
+                        ]
+
+        elif _task_type == 'muscle':
+            # segment
+            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "breasts.arms.legs.abdomen.shoulder",
+                                                            0.22, _init_img)
+            if len(sam_result) == 0:
+                return {'success': False, 'result': '未检测到人体'}
+            else:
+                sam_result_tmp_png_fp = []
+                for idx, sam_mask_img in enumerate(sam_result):
+                    cache_fp = f"tmp/{idx}_{pic_name}.png"
+                    sam_mask_img.save(cache_fp)
+                    sam_result_tmp_png_fp.append({'name': cache_fp})
+            # muscle
+            denoising_strength = 0.5
+            steps = 20
+            sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
+            cfg_scale = 10
+            resize_mode = 0  # just resize
+            mask_blur = 4
+            inpainting_mask_invert = 0  # inpaint masked
+            inpaint_full_res = 1  # choices=["Whole picture", "Only masked"]
+            inpainting_fill = 1  # masked content: original
+
+            task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
+            sd_positive_prompt = f"<lora:muscle_slider_v1:{str(_params[_task_type]['weight'] * 8 - 3)}>,(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,character close-up"
+            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
+
+            print("-------------------muscle logger-----------------")
+            print(f"sd_positive_prompt: {sd_positive_prompt}")
+            print(f"sd_negative_prompt: {sd_negative_prompt}")
+            print(f"dino_prompt: breasts.arms.legs.abdomen.shoulder")
+            print(f"denoising_strength: {denoising_strength}")
+            print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
+
+            # adetail
+            adetail_enabled = False
+            face_args = {'ad_model': 'face_yolov8n.pt',
+                         'ad_prompt': f'',
+                         'ad_negative_prompt': '',
+                         'ad_confidence': 0.3,
+                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
+                         'ad_y_offset': 0,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_denoising_strength': 0.4,
+                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
+                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
+                         'ad_inpaint_height': 512,
+                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
+                         'ad_cfg_scale': 7,
+                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
+                         'ad_restore_face': False,
+                         'ad_controlnet_model': 'None',
+                         'ad_controlnet_module': 'inpaint_global_harmonious',
+                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
+                         'ad_controlnet_guidance_end': 1,
+                         'is_api': ()}
+            hand_args = {'ad_model': 'None',
+                         'ad_prompt': '',
+                         'ad_negative_prompt': '',
+                         'ad_confidence': 0.3,
+                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
+                         'ad_y_offset': 0,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_denoising_strength': 0.4,
+                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
+                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
+                         'ad_inpaint_height': 512,
+                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
+                         'ad_cfg_scale': 7,
+                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
+                         'ad_restore_face': False,
+                         'ad_controlnet_model': 'None',
+                         'ad_controlnet_module': 'inpaint_global_harmonious',
+                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
+                         'ad_controlnet_guidance_end': 1,
+                         'is_api': ()}
+            sam_args = [0,
+                        adetail_enabled, face_args, hand_args,  # adetail args
+                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
+                        # controlnet args
+                        True, False, 0, _init_img,
+                        sam_result_tmp_png_fp,
+                        0,  # sam_output_chosen_mask
+                        False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                        '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
+                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
+                        f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
+                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
+                        ['left', 'right', 'up', 'down'],
+                        False, False, 'positive', 'comma', 0, False, False, '',
+                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
+                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
+                        None,
+                        False,
+                        None, None,
+                        False, None, None, False, 50
+                        ]
+
+        _input_image_width, _input_image_height = _init_img.size
+        return self.img2img.img2img(task_id,
+                                    0,
+                                    sd_positive_prompt,
+                                    sd_negative_prompt,
+                                    prompt_styles, _init_img,
+                                    sketch,
+                                    init_img_with_mask, inpaint_color_sketch,
+                                    inpaint_color_sketch_orig,
+                                    init_img_inpaint, init_mask_inpaint,
+                                    steps, sampler_index, mask_blur, mask_alpha,
+                                    inpainting_fill,
+                                    restore_faces,
+                                    tiling,
+                                    n_iter,
+                                    _batch_size,  # batch_size
+                                    cfg_scale, image_cfg_scale,
+                                    denoising_strength, seed,
+                                    subseed,
+                                    subseed_strength, seed_resize_from_h,
+                                    seed_resize_from_w,
+                                    seed_enable_extras,
+                                    selected_scale_tab, _input_image_height,
+                                    _input_image_width,
+                                    scale_by,
+                                    resize_mode,
+                                    inpaint_full_res,
+                                    inpaint_full_res_padding, inpainting_mask_invert,
+                                    img2img_batch_input_dir,
+                                    img2img_batch_output_dir,
+                                    img2img_batch_inpaint_mask_dir,
+                                    override_settings_texts,
+                                    *sam_args)[0][0].convert("RGBA")
+
     def __call__(self, *args, **kwargs):
         try:
             print("operation start !!!!!!!!!!!!!!!!!!!!!!!!!!")
@@ -418,7 +1096,6 @@ class OperatorSD(Operator):
                 _output_height = 768
                 _output_width = 512
 
-                _dino_model_name = "GroundingDINO_SwinB (938MB)"
                 # _sam_model_name = 'samhq_vit_h_1b3123.pth'
 
                 # _dino_clothing_text_prompt = 'clothing . pants . shorts . dress . shirt . t-shirt . skirt . underwear . bra . swimsuits . bikini . stocking . chain . bow' if _model_mode == 1 else 'clothing . pants . shorts'
@@ -552,18 +1229,18 @@ class OperatorSD(Operator):
                                                                       [target_left, target_top, target_right,
                                                                        target_bottom],
                                                                       target_ratio=_output_width / _output_height if (
-                                                                                                                                 target_width / target_height) < (
-                                                                                                                                 _output_width / _output_height) else target_width / target_height)
+                                                                                                                             target_width / target_height) < (
+                                                                                                                             _output_width / _output_height) else target_width / target_height)
                         resized_input_image = self.configure_image(_input_image, [target_left, target_top, target_right,
                                                                                   target_bottom],
                                                                    target_ratio=_output_width / _output_height if (
-                                                                                                                              target_width / target_height) < (
-                                                                                                                              _output_width / _output_height) else target_width / target_height)
+                                                                                                                          target_width / target_height) < (
+                                                                                                                          _output_width / _output_height) else target_width / target_height)
                         resized_mask_image = self.configure_image(mask_image, [target_left, target_top, target_right,
                                                                                target_bottom],
                                                                   target_ratio=_output_width / _output_height if (
-                                                                                                                             target_width / target_height) < (
-                                                                                                                             _output_width / _output_height) else target_width / target_height,
+                                                                                                                         target_width / target_height) < (
+                                                                                                                         _output_width / _output_height) else target_width / target_height,
                                                                   color=(0, 0, 0))
 
                         if self.update_progress(celery_task, self.redis_client, 30):
@@ -857,29 +1534,29 @@ class OperatorSD(Operator):
                                 False, None, None, False, 50
                                 ]
                     ok_res[ok_idx] = \
-                    self.img2img.img2img(task_id, 4, sd_bg_positive_prompt, sd_bg_negative_prompt, prompt_styles,
-                                         ok_sam_res[ok_idx],
-                                         sketch,
-                                         init_img_with_mask, inpaint_color_sketch, inpaint_color_sketch_orig,
-                                         init_img_inpaint, init_mask_inpaint,
-                                         steps, sampler_index, mask_blur, mask_alpha, inpainting_fill,
-                                         restore_faces,
-                                         tiling,
-                                         n_iter, batch_size, cfg_scale, image_cfg_scale,
-                                         denoising_strength,
-                                         seed,
-                                         subseed,
-                                         subseed_strength, seed_resize_from_h, seed_resize_from_w,
-                                         seed_enable_extras,
-                                         selected_scale_tab, _output_height, _output_width, scale_by,
-                                         resize_mode,
-                                         # selected_scale_tab, height, width, scale_by, resize_mode,
-                                         inpaint_full_res,
-                                         inpaint_full_res_padding, inpainting_mask_invert,
-                                         img2img_batch_input_dir,
-                                         img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
-                                         override_settings_texts,
-                                         *sam_args)[0][0]
+                        self.img2img.img2img(task_id, 4, sd_bg_positive_prompt, sd_bg_negative_prompt, prompt_styles,
+                                             ok_sam_res[ok_idx],
+                                             sketch,
+                                             init_img_with_mask, inpaint_color_sketch, inpaint_color_sketch_orig,
+                                             init_img_inpaint, init_mask_inpaint,
+                                             steps, sampler_index, mask_blur, mask_alpha, inpainting_fill,
+                                             restore_faces,
+                                             tiling,
+                                             n_iter, batch_size, cfg_scale, image_cfg_scale,
+                                             denoising_strength,
+                                             seed,
+                                             subseed,
+                                             subseed_strength, seed_resize_from_h, seed_resize_from_w,
+                                             seed_enable_extras,
+                                             selected_scale_tab, _output_height, _output_width, scale_by,
+                                             resize_mode,
+                                             # selected_scale_tab, height, width, scale_by, resize_mode,
+                                             inpaint_full_res,
+                                             inpaint_full_res_padding, inpainting_mask_invert,
+                                             img2img_batch_input_dir,
+                                             img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
+                                             override_settings_texts,
+                                             *sam_args)[0][0]
                     self.devices.torch_gc()
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 90})
@@ -948,700 +1625,41 @@ class OperatorSD(Operator):
                 if self.update_progress(celery_task, self.redis_client, 5):
                     return {'success': True}
 
-                person_boxes, _ = self.dino.dino_predict_internal(_input_image, _dino_model_name,
-                                                                  'person', 0.3)
+                person_boxes, _ = self.dino.dino_predict_internal(_input_image, _dino_model_name, 'person', 0.3)
                 if len(person_boxes) == 0:
                     return {'success': False, 'result': '未检测到人物'}
 
                 if self.update_progress(celery_task, self.redis_client, 10):
                     return {'success': True}
 
-                prompt_styles = None
-                sketch = None
-                init_img_with_mask = None
-                inpaint_color_sketch = None
-                inpaint_color_sketch_orig = None
-                init_img_inpaint = None
-                init_mask_inpaint = None
-                mask_alpha = 0
-                restore_faces = False
-                tiling = False
-                n_iter = 1
-                image_cfg_scale = 1.5
-                seed = -1.0
-                subseed = -1.0
-                subseed_strength = 0
-                seed_resize_from_h = 0
-                seed_resize_from_w = 0
-                seed_enable_extras = False
-                selected_scale_tab = 0
-                scale_by = 1
-                inpaint_full_res_padding = 32
-                img2img_batch_input_dir = ''
-                img2img_batch_output_dir = ''
-                img2img_batch_inpaint_mask_dir = ''
-                override_settings_texts = []
-                # controlnet args
-                cnet_idx = 1
-                controlnet_args_unit1 = self.scripts.scripts_img2img.alwayson_scripts[
-                    cnet_idx].get_default_ui_unit()
-                controlnet_args_unit1.enabled = False
-                controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
-                controlnet_args_unit2.enabled = False
-                controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
-                controlnet_args_unit3.enabled = False
-
-                task_list = [k for k, v in params.items() if isinstance(v, dict) and v['enable']]
-                batch_size = int(params['batch_size'])
-                result_images = []
-                pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
                 _input_image = _input_image.convert('RGBA')
+                batch_size = int(params['batch_size'])
+                task_list = [k for k, v in params.items() if isinstance(v, dict) and v['enable']]
 
-                for batch_count in range(batch_size):
-                    buf_result_image = _input_image
-                    for proceed_idx, proceed_task in enumerate(task_list):
-                        if proceed_task == 'gender':
-                            # segment
-                            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "face.hair.glasses",
-                                                                            0.4, buf_result_image)
-                            if len(sam_result) == 0:
-                                return {'success': False, 'result': '未检测到人脸'}
-                            else:
-                                init_img = buf_result_image
-                                sam_result_tmp_png_fp = []
-                                for idx, sam_mask_img in enumerate(sam_result):
-                                    cache_fp = f"tmp/{idx}_{pic_name}.png"
-                                    sam_mask_img.save(cache_fp)
-                                    sam_result_tmp_png_fp.append({'name': cache_fp})
-                            # 性別
-                            gender_prompt = ['GS-Girlish', 'GS-Womanly'] if params[proceed_task]['gender'] == 'female' else ['GS-Boyish',
-                                                                                                               'GS-Masculine']
-                            gender_prompt = gender_prompt[0] if params[proceed_task]['is_elder'] == 'young' else gender_prompt[1]
+                if batch_size > 1:
+                    result_images = [x.convert('RGBA') for x in
+                                     self.proceed_human_transform(params, task_list[0], batch_size, _input_image)[0]]
+                    if isinstance(result_images, dict):
+                        return result_images
+                    proceed_task_list = task_list[1:]
+                else:
+                    result_images = [_input_image]
+                    proceed_task_list = task_list
 
-                            denoising_strength_min = 0.05
-                            denoising_strength_max = 0.6
-                            denoising_strength = (1 - params[proceed_task]['sim']) * (denoising_strength_max-denoising_strength_min) + denoising_strength_min
-                            steps = 20
-                            sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
-                            cfg_scale = 10
-                            resize_mode = 2  # resize and fill
-                            mask_blur = 4
-                            inpainting_mask_invert = 0  # inpaint masked
-                            inpaint_full_res = 1  # choices=["Whole picture", "Only masked"]
-                            inpainting_fill = 1  # masked content original
+                if self.update_progress(celery_task, self.redis_client, 15):
+                    return {'success': True}
 
-                            task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
-                            sd_positive_prompt = f'{gender_prompt},(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,character close-up'
-                            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
-
-                            print("-------------------gender logger-----------------")
-                            print(f"sd_positive_prompt: {sd_positive_prompt}")
-                            print(f"sd_negative_prompt: {sd_negative_prompt}")
-                            print(f"dino_prompt: face.hair.glasses")
-                            print(f"denoising_strength: {denoising_strength}")
-                            print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
-
-                            # adetail
-                            adetail_enabled = True
-                            face_args = {'ad_model': 'face_yolov8n.pt',
-                                         'ad_prompt': f'',
-                                         'ad_negative_prompt': '',
-                                         'ad_confidence': 0.3,
-                                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
-                                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
-                                         'ad_denoising_strength': 0.4,
-                                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
-                                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
-                                         'ad_inpaint_height': 512,
-                                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
-                                         'ad_cfg_scale': 7,
-                                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
-                                         'ad_restore_face': False,
-                                         'ad_controlnet_model': 'None', 'ad_controlnet_module': 'inpaint_global_harmonious',
-                                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
-                                         'ad_controlnet_guidance_end': 1,
-                                         'is_api': ()}
-                            hand_args = {'ad_model': 'None',
-                                         'ad_prompt': '',
-                                         'ad_negative_prompt': '',
-                                         'ad_confidence': 0.3,
-                                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
-                                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
-                                         'ad_denoising_strength': 0.4,
-                                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
-                                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
-                                         'ad_inpaint_height': 512,
-                                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
-                                         'ad_cfg_scale': 7,
-                                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
-                                         'ad_restore_face': False,
-                                         'ad_controlnet_model': 'None', 'ad_controlnet_module': 'inpaint_global_harmonious',
-                                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
-                                         'ad_controlnet_guidance_end': 1,
-                                         'is_api': ()}
-                            sam_args = [0,
-                                        adetail_enabled, face_args, hand_args,  # adetail args
-                                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
-                                        # controlnet args
-                                        True, False, 0, _input_image,
-                                        sam_result_tmp_png_fp,
-                                        0,  # sam_output_chosen_mask
-                                        False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
-                                        '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                                        f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
-                                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
-                                        ['left', 'right', 'up', 'down'],
-                                        False, False, 'positive', 'comma', 0, False, False, '',
-                                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None, None,
-                                        False,
-                                        None, None,
-                                        False, None, None, False, 50
-                                        ]
-
-                        elif proceed_task == 'age':
-                            # segment
-                            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "person",
-                                                                            0.5, buf_result_image)
-                            if len(sam_result) == 0:
-                                return {'success': False, 'result': '未检测到人体'}
-                            else:
-                                init_img = buf_result_image
-                                sam_result_tmp_png_fp = []
-                                for idx, sam_mask_img in enumerate(sam_result):
-                                    cache_fp = f"tmp/{idx}_{pic_name}.png"
-                                    sam_mask_img.save(cache_fp)
-                                    sam_result_tmp_png_fp.append({'name': cache_fp})
-
-                            # age
-                            denoising_strength_min = 0.2
-                            denoising_strength_max = 0.35
-                            denoising_strength = (1 - params[proceed_task]['sim']) * (
-                                        denoising_strength_max - denoising_strength_min) + denoising_strength_min
-                            steps = 20
-                            sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
-                            cfg_scale = 10
-                            resize_mode = 0  # just resize
-                            mask_blur = 4
-                            inpainting_mask_invert = 0  # inpaint masked
-                            inpaint_full_res = 1  # choices=["Whole picture", "Only masked"]
-                            inpainting_fill = 1  # masked content: original
-
-                            task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
-                            sd_positive_prompt = f'<lora:age_slider_v20:{str(params[proceed_task]["weight"]*10-5)}>,photographic reality,character close-up,photorealistic,realistic,(best quality:1.2),(high quality:1.2),high details'
-                            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
-
-                            print("-------------------age logger-----------------")
-                            print(f"sd_positive_prompt: {sd_positive_prompt}")
-                            print(f"sd_negative_prompt: {sd_negative_prompt}")
-                            print(f"dino_prompt: person")
-                            print(f"denoising_strength: {denoising_strength}")
-                            print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
-
-                            # adetail
-                            adetail_enabled = True
-                            face_args = {'ad_model': 'face_yolov8n.pt',
-                                         'ad_prompt': f'',
-                                         'ad_negative_prompt': '',
-                                         'ad_confidence': 0.3,
-                                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
-                                         'ad_y_offset': 0,
-                                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
-                                         'ad_denoising_strength': 0.4,
-                                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
-                                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
-                                         'ad_inpaint_height': 512,
-                                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
-                                         'ad_cfg_scale': 7,
-                                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
-                                         'ad_restore_face': False,
-                                         'ad_controlnet_model': 'None',
-                                         'ad_controlnet_module': 'inpaint_global_harmonious',
-                                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
-                                         'ad_controlnet_guidance_end': 1,
-                                         'is_api': ()}
-                            hand_args = {'ad_model': 'None',
-                                         'ad_prompt': '',
-                                         'ad_negative_prompt': '',
-                                         'ad_confidence': 0.3,
-                                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
-                                         'ad_y_offset': 0,
-                                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
-                                         'ad_denoising_strength': 0.4,
-                                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
-                                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
-                                         'ad_inpaint_height': 512,
-                                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
-                                         'ad_cfg_scale': 7,
-                                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
-                                         'ad_restore_face': False,
-                                         'ad_controlnet_model': 'None',
-                                         'ad_controlnet_module': 'inpaint_global_harmonious',
-                                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
-                                         'ad_controlnet_guidance_end': 1,
-                                         'is_api': ()}
-                            sam_args = [0,
-                                        adetail_enabled, face_args, hand_args,  # adetail args
-                                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
-                                        # controlnet args
-                                        True, False, 0, _input_image,
-                                        sam_result_tmp_png_fp,
-                                        0,  # sam_output_chosen_mask
-                                        False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
-                                        '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                                        f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
-                                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
-                                        ['left', 'right', 'up', 'down'],
-                                        False, False, 'positive', 'comma', 0, False, False, '',
-                                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
-                                        None,
-                                        False,
-                                        None, None,
-                                        False, None, None, False, 50
-                                        ]
-
-                        elif proceed_task == 'face_expression':
-                            # segment
-                            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "face.glasses",
-                                                                            0.3, buf_result_image)
-                            if len(sam_result) == 0:
-                                return {'success': False, 'result': '未检测到人脸'}
-                            else:
-                                init_img = buf_result_image
-                                sam_result_tmp_png_fp = []
-                                for idx, sam_mask_img in enumerate(sam_result):
-                                    cache_fp = f"tmp/{idx}_{pic_name}.png"
-                                    sam_mask_img.save(cache_fp)
-                                    sam_result_tmp_png_fp.append({'name': cache_fp})
-                            # face_expression
-                            denoising_strength_min = 0.3
-                            denoising_strength_max = 0.4
-                            denoising_strength = (1 - params[proceed_task]['sim']) * (
-                                    denoising_strength_max - denoising_strength_min) + denoising_strength_min
-                            steps = 20
-                            sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
-                            cfg_scale = 10
-                            resize_mode = 2  # resize and fill
-                            mask_blur = 4
-                            inpainting_mask_invert = 0  # inpaint masked
-                            inpaint_full_res = 1  # choices=["Whole picture", "Only masked"]
-                            inpainting_fill = 1  # masked content: original
-
-                            task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
-                            sd_positive_prompt = f'({str(params[proceed_task]["expression"])}512:1.3),(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,character close-up'
-                            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
-
-                            print("-------------------face_expression logger-----------------")
-                            print(f"sd_positive_prompt: {sd_positive_prompt}")
-                            print(f"sd_negative_prompt: {sd_negative_prompt}")
-                            print(f"dino_prompt: face.glasses")
-                            print(f"denoising_strength: {denoising_strength}")
-                            print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
-
-                            # adetail
-                            adetail_enabled = False
-                            face_args = {'ad_model': 'face_yolov8n.pt',
-                                         'ad_prompt': f'',
-                                         'ad_negative_prompt': '',
-                                         'ad_confidence': 0.3,
-                                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
-                                         'ad_y_offset': 0,
-                                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
-                                         'ad_denoising_strength': 0.4,
-                                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
-                                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
-                                         'ad_inpaint_height': 512,
-                                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
-                                         'ad_cfg_scale': 7,
-                                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
-                                         'ad_restore_face': False,
-                                         'ad_controlnet_model': 'None',
-                                         'ad_controlnet_module': 'inpaint_global_harmonious',
-                                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
-                                         'ad_controlnet_guidance_end': 1,
-                                         'is_api': ()}
-                            hand_args = {'ad_model': 'None',
-                                         'ad_prompt': '',
-                                         'ad_negative_prompt': '',
-                                         'ad_confidence': 0.3,
-                                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
-                                         'ad_y_offset': 0,
-                                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
-                                         'ad_denoising_strength': 0.4,
-                                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
-                                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
-                                         'ad_inpaint_height': 512,
-                                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
-                                         'ad_cfg_scale': 7,
-                                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
-                                         'ad_restore_face': False,
-                                         'ad_controlnet_model': 'None',
-                                         'ad_controlnet_module': 'inpaint_global_harmonious',
-                                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
-                                         'ad_controlnet_guidance_end': 1,
-                                         'is_api': ()}
-                            sam_args = [0,
-                                        adetail_enabled, face_args, hand_args,  # adetail args
-                                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
-                                        # controlnet args
-                                        True, False, 0, _input_image,
-                                        sam_result_tmp_png_fp,
-                                        0,  # sam_output_chosen_mask
-                                        False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
-                                        '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                                        f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
-                                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
-                                        ['left', 'right', 'up', 'down'],
-                                        False, False, 'positive', 'comma', 0, False, False, '',
-                                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
-                                        None,
-                                        False,
-                                        None, None,
-                                        False, None, None, False, 50
-                                        ]
-
-                        elif proceed_task == 'eye_size':
-                            # segment
-                            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "face.glasses",
-                                                                            0.5, buf_result_image)
-                            if len(sam_result) == 0:
-                                return {'success': False, 'result': '未检测到人体'}
-                            else:
-                                init_img = buf_result_image
-                                sam_result_tmp_png_fp = []
-                                for idx, sam_mask_img in enumerate(sam_result):
-                                    cache_fp = f"tmp/{idx}_{pic_name}.png"
-                                    sam_mask_img.save(cache_fp)
-                                    sam_result_tmp_png_fp.append({'name': cache_fp})
-                            # eye_size
-                            denoising_strength = 0.35
-                            steps = 20
-                            sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
-                            cfg_scale = 10
-                            resize_mode = 0  # just resize
-                            mask_blur = 4
-                            inpainting_mask_invert = 0  # inpaint masked
-                            inpaint_full_res = 1  # choices=["Whole picture", "Only masked"]
-                            inpainting_fill = 1  # masked content: original
-
-                            task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
-                            sd_positive_prompt = f"<lora:eye_size_slider_v1:{str(params[proceed_task]['weight']*16-8)}>,(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,character close-up"
-                            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
-
-                            print("-------------------eye_size logger-----------------")
-                            print(f"sd_positive_prompt: {sd_positive_prompt}")
-                            print(f"sd_negative_prompt: {sd_negative_prompt}")
-                            print(f"dino_prompt: face.glasses")
-                            print(f"denoising_strength: {denoising_strength}")
-                            print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
-
-                            # adetail
-                            adetail_enabled = False
-                            face_args = {'ad_model': 'face_yolov8n.pt',
-                                         'ad_prompt': f'',
-                                         'ad_negative_prompt': '',
-                                         'ad_confidence': 0.3,
-                                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
-                                         'ad_y_offset': 0,
-                                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
-                                         'ad_denoising_strength': 0.4,
-                                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
-                                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
-                                         'ad_inpaint_height': 512,
-                                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
-                                         'ad_cfg_scale': 7,
-                                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
-                                         'ad_restore_face': False,
-                                         'ad_controlnet_model': 'None',
-                                         'ad_controlnet_module': 'inpaint_global_harmonious',
-                                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
-                                         'ad_controlnet_guidance_end': 1,
-                                         'is_api': ()}
-                            hand_args = {'ad_model': 'None',
-                                         'ad_prompt': '',
-                                         'ad_negative_prompt': '',
-                                         'ad_confidence': 0.3,
-                                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
-                                         'ad_y_offset': 0,
-                                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
-                                         'ad_denoising_strength': 0.4,
-                                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
-                                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
-                                         'ad_inpaint_height': 512,
-                                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
-                                         'ad_cfg_scale': 7,
-                                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
-                                         'ad_restore_face': False,
-                                         'ad_controlnet_model': 'None',
-                                         'ad_controlnet_module': 'inpaint_global_harmonious',
-                                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
-                                         'ad_controlnet_guidance_end': 1,
-                                         'is_api': ()}
-                            sam_args = [0,
-                                        adetail_enabled, face_args, hand_args,  # adetail args
-                                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
-                                        # controlnet args
-                                        True, False, 0, _input_image,
-                                        sam_result_tmp_png_fp,
-                                        0,  # sam_output_chosen_mask
-                                        False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
-                                        '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                                        f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
-                                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
-                                        ['left', 'right', 'up', 'down'],
-                                        False, False, 'positive', 'comma', 0, False, False, '',
-                                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
-                                        None,
-                                        False,
-                                        None, None,
-                                        False, None, None, False, 50
-                                        ]
-
-                        elif proceed_task == 'curly_hair':
-                            # segment
-                            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "hair",
-                                                                            0.5, buf_result_image)
-                            if len(sam_result) == 0:
-                                return {'success': False, 'result': '未检测到人体'}
-                            else:
-                                init_img = buf_result_image
-                                sam_result_tmp_png_fp = []
-                                for idx, sam_mask_img in enumerate(sam_result):
-                                    cache_fp = f"tmp/{idx}_{pic_name}.png"
-                                    sam_mask_img.save(cache_fp)
-                                    sam_result_tmp_png_fp.append({'name': cache_fp})
-                            # curly_hair
-                            denoising_strength = 0.8
-                            steps = 20
-                            sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
-                            cfg_scale = 10
-                            resize_mode = 0  # just resize
-                            mask_blur = 4
-                            inpainting_mask_invert = 0  # inpaint masked
-                            inpaint_full_res = 1  # choices=["Whole picture", "Only masked"]
-                            inpainting_fill = 1  # masked content: original
-
-                            task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
-                            sd_positive_prompt = f"<lora:curly_hair_slider_v1:{str(params[proceed_task]['weight']*16-8)}>,fluffy hair,lush hair,{'straight hair,' if int(params[proceed_task]['weight']) == 0 else ''}{'curly hair,' if int(params[proceed_task]['weight']) == 1 else ''}(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo, realistic,character close-up"
-                            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
-
-                            print("-------------------curly_hair logger-----------------")
-                            print(f"sd_positive_prompt: {sd_positive_prompt}")
-                            print(f"sd_negative_prompt: {sd_negative_prompt}")
-                            print(f"dino_prompt: hair")
-                            print(f"denoising_strength: {denoising_strength}")
-                            print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
-
-                            # adetail
-                            adetail_enabled = False
-                            face_args = {'ad_model': 'face_yolov8n.pt',
-                                         'ad_prompt': f'',
-                                         'ad_negative_prompt': '',
-                                         'ad_confidence': 0.3,
-                                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
-                                         'ad_y_offset': 0,
-                                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
-                                         'ad_denoising_strength': 0.4,
-                                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
-                                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
-                                         'ad_inpaint_height': 512,
-                                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
-                                         'ad_cfg_scale': 7,
-                                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
-                                         'ad_restore_face': False,
-                                         'ad_controlnet_model': 'None',
-                                         'ad_controlnet_module': 'inpaint_global_harmonious',
-                                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
-                                         'ad_controlnet_guidance_end': 1,
-                                         'is_api': ()}
-                            hand_args = {'ad_model': 'None',
-                                         'ad_prompt': '',
-                                         'ad_negative_prompt': '',
-                                         'ad_confidence': 0.3,
-                                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
-                                         'ad_y_offset': 0,
-                                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
-                                         'ad_denoising_strength': 0.4,
-                                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
-                                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
-                                         'ad_inpaint_height': 512,
-                                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
-                                         'ad_cfg_scale': 7,
-                                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
-                                         'ad_restore_face': False,
-                                         'ad_controlnet_model': 'None',
-                                         'ad_controlnet_module': 'inpaint_global_harmonious',
-                                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
-                                         'ad_controlnet_guidance_end': 1,
-                                         'is_api': ()}
-                            sam_args = [0,
-                                        adetail_enabled, face_args, hand_args,  # adetail args
-                                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
-                                        # controlnet args
-                                        True, False, 0, _input_image,
-                                        sam_result_tmp_png_fp,
-                                        0,  # sam_output_chosen_mask
-                                        False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
-                                        '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                                        f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
-                                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
-                                        ['left', 'right', 'up', 'down'],
-                                        False, False, 'positive', 'comma', 0, False, False, '',
-                                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
-                                        None,
-                                        False,
-                                        None, None,
-                                        False, None, None, False, 50
-                                        ]
-
-                        elif proceed_task == 'muscle':
-                            # segment
-                            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "breasts.arms.legs.abdomen.shoulder",
-                                                                            0.22, buf_result_image)
-                            if len(sam_result) == 0:
-                                return {'success': False, 'result': '未检测到人体'}
-                            else:
-                                init_img = buf_result_image
-                                sam_result_tmp_png_fp = []
-                                for idx, sam_mask_img in enumerate(sam_result):
-                                    cache_fp = f"tmp/{idx}_{pic_name}.png"
-                                    sam_mask_img.save(cache_fp)
-                                    sam_result_tmp_png_fp.append({'name': cache_fp})
-                            # muscle
-                            denoising_strength = 0.5
-                            steps = 20
-                            sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
-                            cfg_scale = 10
-                            resize_mode = 0  # just resize
-                            mask_blur = 4
-                            inpainting_mask_invert = 0  # inpaint masked
-                            inpaint_full_res = 1  # choices=["Whole picture", "Only masked"]
-                            inpainting_fill = 1  # masked content: original
-
-                            task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
-                            sd_positive_prompt = f"<lora:muscle_slider_v1:{str(params[proceed_task]['weight']*8-3)}>,(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,character close-up"
-                            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
-
-                            print("-------------------muscle logger-----------------")
-                            print(f"sd_positive_prompt: {sd_positive_prompt}")
-                            print(f"sd_negative_prompt: {sd_negative_prompt}")
-                            print(f"dino_prompt: breasts.arms.legs.abdomen.shoulder")
-                            print(f"denoising_strength: {denoising_strength}")
-                            print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
-
-                            # adetail
-                            adetail_enabled = False
-                            face_args = {'ad_model': 'face_yolov8n.pt',
-                                         'ad_prompt': f'',
-                                         'ad_negative_prompt': '',
-                                         'ad_confidence': 0.3,
-                                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
-                                         'ad_y_offset': 0,
-                                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
-                                         'ad_denoising_strength': 0.4,
-                                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
-                                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
-                                         'ad_inpaint_height': 512,
-                                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
-                                         'ad_cfg_scale': 7,
-                                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
-                                         'ad_restore_face': False,
-                                         'ad_controlnet_model': 'None',
-                                         'ad_controlnet_module': 'inpaint_global_harmonious',
-                                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
-                                         'ad_controlnet_guidance_end': 1,
-                                         'is_api': ()}
-                            hand_args = {'ad_model': 'None',
-                                         'ad_prompt': '',
-                                         'ad_negative_prompt': '',
-                                         'ad_confidence': 0.3,
-                                         'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
-                                         'ad_y_offset': 0,
-                                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
-                                         'ad_denoising_strength': 0.4,
-                                         'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
-                                         'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
-                                         'ad_inpaint_height': 512,
-                                         'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
-                                         'ad_cfg_scale': 7,
-                                         'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
-                                         'ad_restore_face': False,
-                                         'ad_controlnet_model': 'None',
-                                         'ad_controlnet_module': 'inpaint_global_harmonious',
-                                         'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
-                                         'ad_controlnet_guidance_end': 1,
-                                         'is_api': ()}
-                            sam_args = [0,
-                                        adetail_enabled, face_args, hand_args,  # adetail args
-                                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
-                                        # controlnet args
-                                        True, False, 0, _input_image,
-                                        sam_result_tmp_png_fp,
-                                        0,  # sam_output_chosen_mask
-                                        False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
-                                        '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                                        f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
-                                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
-                                        ['left', 'right', 'up', 'down'],
-                                        False, False, 'positive', 'comma', 0, False, False, '',
-                                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
-                                        None,
-                                        False,
-                                        None, None,
-                                        False, None, None, False, 50
-                                        ]
-
-                    else:
-                        buf_result_image = self.img2img.img2img(task_id,
-                                                                0,
-                                                                sd_positive_prompt,
-                                                                sd_negative_prompt,
-                                                                prompt_styles, init_img,
-                                                                sketch,
-                                                                init_img_with_mask, inpaint_color_sketch,
-                                                                inpaint_color_sketch_orig,
-                                                                init_img_inpaint, init_mask_inpaint,
-                                                                steps, sampler_index, mask_blur, mask_alpha,
-                                                                inpainting_fill,
-                                                                restore_faces,
-                                                                tiling,
-                                                                n_iter,
-                                                                1,  # batch_size
-                                                                cfg_scale, image_cfg_scale,
-                                                                denoising_strength, seed,
-                                                                subseed,
-                                                                subseed_strength, seed_resize_from_h,
-                                                                seed_resize_from_w,
-                                                                seed_enable_extras,
-                                                                selected_scale_tab, _input_image_height,
-                                                                _input_image_width,
-                                                                scale_by,
-                                                                resize_mode,
-                                                                inpaint_full_res,
-                                                                inpaint_full_res_padding, inpainting_mask_invert,
-                                                                img2img_batch_input_dir,
-                                                                img2img_batch_output_dir,
-                                                                img2img_batch_inpaint_mask_dir,
-                                                                override_settings_texts,
-                                                                *sam_args)[0][0].convert("RGBA")
-
+                for batch_idx in range(batch_size):
+                    for proceed_idx, proceed_task in enumerate(proceed_task_list):
+                        result_images[batch_idx] = \
+                        self.proceed_human_transform(params, task_list[0], 1, result_images[batch_idx])[0][0].convert(
+                            "RGBA")
+                        if isinstance(result_images, dict):
+                            return result_images
                         if self.update_progress(celery_task, self.redis_client,
-                                                (batch_count + 1) * (proceed_idx + 1) * (
-                                                        85 // (batch_size * len(task_list)))):
+                                                (batch_idx + 1) * (proceed_idx + 1) * (
+                                                        80 // (batch_size * len(task_list)))):
                             return {'success': True}
-                        self.devices.torch_gc()
-                        result_images.append(buf_result_image)
 
                 # storage img
                 img_urls = []
@@ -1649,16 +1667,20 @@ class OperatorSD(Operator):
                 os.makedirs(dir_path, exist_ok=True)
                 for res_idx, res_img in enumerate(result_images):
                     img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"
-                    # extra upscaler
-                    scales = 1
-                    gfpgan_enable = 0
-                    codeformer_enable = 1
-                    args = (0, scales, None, None, True, 'None', 'None', 0, gfpgan_enable, codeformer_enable, 0)
-                    self.devices.torch_gc()
-                    pp = self.scripts_postprocessing.PostprocessedImage(res_img.convert("RGB"))
-                    self.scripts.scripts_postproc.run(pp, args)
+                    if 'face_expression' in task_list or 'age' in task_list or 'gender' in task_list:
+                        # extra upscaler
+                        scales = 1
+                        gfpgan_enable = 0
+                        codeformer_enable = 1
+                        args = (0, scales, None, None, True, 'None', 'None', 0, gfpgan_enable, codeformer_enable, 0)
+                        pp = self.scripts_postprocessing.PostprocessedImage(res_img.convert("RGB"))
+                        self.scripts.scripts_postproc.run(pp, args)
+                        self.devices.torch_gc()
 
-                    pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=80, lossless=True)
+                        pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=80, lossless=True)
+                    else:
+                        res_img.save(os.path.join(dir_path, img_fn), format="jpeg", quality=80, lossless=True)
+
                     # 限制缓存10张
                     cache_list = sorted(os.listdir(dir_path))
                     if len(cache_list) > 10:
