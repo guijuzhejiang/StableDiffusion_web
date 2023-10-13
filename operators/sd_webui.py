@@ -33,6 +33,7 @@ import numpy as np
 
 from lora_config import lora_model_dict, lora_gender_dict, lora_model_common_dict, lora_place_dict, lora_bg_common_dict
 from lib.celery_workshop.operator import Operator
+from modules.sd_samplers_kdiffusion import samplers_k_diffusion
 from utils.global_vars import CONFIG
 
 
@@ -1010,7 +1011,9 @@ class OperatorSD(Operator):
                             print("-------------------gender logger-----------------")
                             print(f"sd_positive_prompt: {sd_positive_prompt}")
                             print(f"sd_negative_prompt: {sd_negative_prompt}")
+                            print(f"dino_prompt: face.hair.glasses")
                             print(f"denoising_strength: {denoising_strength}")
+                            print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
 
                             # adetail
                             adetail_enabled = True
@@ -1100,7 +1103,9 @@ class OperatorSD(Operator):
                             print("-------------------age logger-----------------")
                             print(f"sd_positive_prompt: {sd_positive_prompt}")
                             print(f"sd_negative_prompt: {sd_negative_prompt}")
+                            print(f"dino_prompt: person")
                             print(f"denoising_strength: {denoising_strength}")
+                            print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
 
                             # adetail
                             adetail_enabled = True
@@ -1195,7 +1200,9 @@ class OperatorSD(Operator):
                             print("-------------------face_expression logger-----------------")
                             print(f"sd_positive_prompt: {sd_positive_prompt}")
                             print(f"sd_negative_prompt: {sd_negative_prompt}")
+                            print(f"dino_prompt: face.glasses")
                             print(f"denoising_strength: {denoising_strength}")
+                            print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
 
                             # adetail
                             adetail_enabled = False
@@ -1287,10 +1294,12 @@ class OperatorSD(Operator):
                             sd_positive_prompt = f"<lora:eye_size_slider_v1:{str(params[proceed_task]['weight']*16-8)}>,(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,character close-up"
                             sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
 
-                            print("-------------------age logger-----------------")
+                            print("-------------------eye_size logger-----------------")
                             print(f"sd_positive_prompt: {sd_positive_prompt}")
                             print(f"sd_negative_prompt: {sd_negative_prompt}")
+                            print(f"dino_prompt: face.glasses")
                             print(f"denoising_strength: {denoising_strength}")
+                            print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
 
                             # adetail
                             adetail_enabled = False
@@ -1382,10 +1391,12 @@ class OperatorSD(Operator):
                             sd_positive_prompt = f"<lora:curly_hair_slider_v1:{str(params[proceed_task]['weight']*16-8)}>,fluffy hair,lush hair,{'straight hair,' if int(params[proceed_task]['weight']) == 0 else ''}{'curly hair,' if int(params[proceed_task]['weight']) == 1 else ''}(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo, realistic,character close-up"
                             sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
 
-                            print("-------------------age logger-----------------")
+                            print("-------------------curly_hair logger-----------------")
                             print(f"sd_positive_prompt: {sd_positive_prompt}")
                             print(f"sd_negative_prompt: {sd_negative_prompt}")
+                            print(f"dino_prompt: hair")
                             print(f"denoising_strength: {denoising_strength}")
+                            print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
 
                             # adetail
                             adetail_enabled = False
@@ -1477,10 +1488,12 @@ class OperatorSD(Operator):
                             sd_positive_prompt = f"<lora:muscle_slider_v1:{str(params[proceed_task]['weight']*8-3)}>,(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,character close-up"
                             sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
 
-                            print("-------------------age logger-----------------")
+                            print("-------------------muscle logger-----------------")
                             print(f"sd_positive_prompt: {sd_positive_prompt}")
                             print(f"sd_negative_prompt: {sd_negative_prompt}")
+                            print(f"dino_prompt: breasts.arms.legs.abdomen.shoulder")
                             print(f"denoising_strength: {denoising_strength}")
+                            print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
 
                             # adetail
                             adetail_enabled = False
