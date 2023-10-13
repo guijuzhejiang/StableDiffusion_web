@@ -451,7 +451,7 @@ class OperatorSD(Operator):
             gender_prompt = gender_prompt[0] if _params[_task_type]['is_elder'] == 'young' else gender_prompt[1]
 
             denoising_strength_min = 0.05
-            denoising_strength_max = 0.6
+            denoising_strength_max = 0.5
             denoising_strength = (1 - _params[_task_type]['sim']) * (
                     denoising_strength_max - denoising_strength_min) + denoising_strength_min
             steps = 20
@@ -547,8 +547,8 @@ class OperatorSD(Operator):
                     sam_result_tmp_png_fp.append({'name': cache_fp})
 
             # age
-            denoising_strength_min = 0.2
-            denoising_strength_max = 0.35
+            denoising_strength_min = 0.05
+            denoising_strength_max = 0.4
             denoising_strength = (1 - _params[_task_type]['sim']) * (
                     denoising_strength_max - denoising_strength_min) + denoising_strength_min
             steps = 20
@@ -649,7 +649,7 @@ class OperatorSD(Operator):
                     sam_mask_img.save(cache_fp)
                     sam_result_tmp_png_fp.append({'name': cache_fp})
             # face_expression
-            denoising_strength_min = 0.3
+            denoising_strength_min = 0.05
             denoising_strength_max = 0.4
             denoising_strength = (1 - _params[_task_type]['sim']) * (
                     denoising_strength_max - denoising_strength_min) + denoising_strength_min
@@ -935,7 +935,7 @@ class OperatorSD(Operator):
 
         elif _task_type == 'muscle':
             # segment
-            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "breasts.arms.legs.abdomen.shoulder",
+            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "breasts.arms.legs.abdomen",
                                                             0.22, _init_img)
             if len(sam_result) == 0:
                 return {'success': False, 'result': '未检测到人体'}
@@ -963,7 +963,7 @@ class OperatorSD(Operator):
             print("-------------------muscle logger-----------------")
             print(f"sd_positive_prompt: {sd_positive_prompt}")
             print(f"sd_negative_prompt: {sd_negative_prompt}")
-            print(f"dino_prompt: breasts.arms.legs.abdomen.shoulder")
+            print(f"dino_prompt: breasts.arms.legs.abdomen")
             print(f"denoising_strength: {denoising_strength}")
             print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
 
