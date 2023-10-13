@@ -957,7 +957,6 @@ class OperatorSD(Operator):
                     return {'success': True}
 
                 prompt_styles = None
-                init_img = _input_image
                 sketch = None
                 init_img_with_mask = None
                 inpaint_color_sketch = None
@@ -996,8 +995,10 @@ class OperatorSD(Operator):
                 batch_size = int(params['batch_size'])
                 result_images = []
                 pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
+                _input_image = _input_image.convert('RGBA')
+
                 for batch_count in range(batch_size):
-                    buf_result_image = _input_image.convert('RGBA')
+                    buf_result_image = _input_image
                     for proceed_idx, proceed_task in enumerate(task_list):
                         if proceed_task == 'gender':
                             # segment
@@ -1005,11 +1006,13 @@ class OperatorSD(Operator):
                                                                             0.4, buf_result_image)
                             if len(sam_result) == 0:
                                 return {'success': False, 'result': '未检测到人脸'}
-                            sam_result_tmp_png_fp = []
-                            for idx, sam_mask_img in enumerate(sam_result):
-                                cache_fp = f"tmp/{idx}_{pic_name}.png"
-                                sam_mask_img.save(cache_fp)
-                                sam_result_tmp_png_fp.append({'name': cache_fp})
+                            else:
+                                init_img = buf_result_image
+                                sam_result_tmp_png_fp = []
+                                for idx, sam_mask_img in enumerate(sam_result):
+                                    cache_fp = f"tmp/{idx}_{pic_name}.png"
+                                    sam_mask_img.save(cache_fp)
+                                    sam_result_tmp_png_fp.append({'name': cache_fp})
                             # 性別
                             gender_prompt = ['GS-Girlish', 'GS-Womanly'] if params[proceed_task]['gender'] == 'female' else ['GS-Boyish',
                                                                                                                'GS-Masculine']
@@ -1101,11 +1104,14 @@ class OperatorSD(Operator):
                                                                             0.5, buf_result_image)
                             if len(sam_result) == 0:
                                 return {'success': False, 'result': '未检测到人体'}
-                            sam_result_tmp_png_fp = []
-                            for idx, sam_mask_img in enumerate(sam_result):
-                                cache_fp = f"tmp/{idx}_{pic_name}.png"
-                                sam_mask_img.save(cache_fp)
-                                sam_result_tmp_png_fp.append({'name': cache_fp})
+                            else:
+                                init_img = buf_result_image
+                                sam_result_tmp_png_fp = []
+                                for idx, sam_mask_img in enumerate(sam_result):
+                                    cache_fp = f"tmp/{idx}_{pic_name}.png"
+                                    sam_mask_img.save(cache_fp)
+                                    sam_result_tmp_png_fp.append({'name': cache_fp})
+
                             # age
                             denoising_strength = (1 - params[proceed_task]['sim']) * 0.15 + 0.2
                             steps = 20
@@ -1198,12 +1204,14 @@ class OperatorSD(Operator):
                                                                             0.3, buf_result_image)
                             if len(sam_result) == 0:
                                 return {'success': False, 'result': '未检测到人脸'}
-                            sam_result_tmp_png_fp = []
-                            for idx, sam_mask_img in enumerate(sam_result):
-                                cache_fp = f"tmp/{idx}_{pic_name}.png"
-                                sam_mask_img.save(cache_fp)
-                                sam_result_tmp_png_fp.append({'name': cache_fp})
-                            # age
+                            else:
+                                init_img = buf_result_image
+                                sam_result_tmp_png_fp = []
+                                for idx, sam_mask_img in enumerate(sam_result):
+                                    cache_fp = f"tmp/{idx}_{pic_name}.png"
+                                    sam_mask_img.save(cache_fp)
+                                    sam_result_tmp_png_fp.append({'name': cache_fp})
+                            # face_expression
                             denoising_strength = (1 - params[proceed_task]['sim']) * 0.1 + 0.3
                             steps = 20
                             sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
@@ -1295,12 +1303,14 @@ class OperatorSD(Operator):
                                                                             0.5, buf_result_image)
                             if len(sam_result) == 0:
                                 return {'success': False, 'result': '未检测到人体'}
-                            sam_result_tmp_png_fp = []
-                            for idx, sam_mask_img in enumerate(sam_result):
-                                cache_fp = f"tmp/{idx}_{pic_name}.png"
-                                sam_mask_img.save(cache_fp)
-                                sam_result_tmp_png_fp.append({'name': cache_fp})
-                            # age
+                            else:
+                                init_img = buf_result_image
+                                sam_result_tmp_png_fp = []
+                                for idx, sam_mask_img in enumerate(sam_result):
+                                    cache_fp = f"tmp/{idx}_{pic_name}.png"
+                                    sam_mask_img.save(cache_fp)
+                                    sam_result_tmp_png_fp.append({'name': cache_fp})
+                            # eye_size
                             denoising_strength = 0.35
                             steps = 20
                             sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
@@ -1392,12 +1402,14 @@ class OperatorSD(Operator):
                                                                             0.5, buf_result_image)
                             if len(sam_result) == 0:
                                 return {'success': False, 'result': '未检测到人体'}
-                            sam_result_tmp_png_fp = []
-                            for idx, sam_mask_img in enumerate(sam_result):
-                                cache_fp = f"tmp/{idx}_{pic_name}.png"
-                                sam_mask_img.save(cache_fp)
-                                sam_result_tmp_png_fp.append({'name': cache_fp})
-                            # age
+                            else:
+                                init_img = buf_result_image
+                                sam_result_tmp_png_fp = []
+                                for idx, sam_mask_img in enumerate(sam_result):
+                                    cache_fp = f"tmp/{idx}_{pic_name}.png"
+                                    sam_mask_img.save(cache_fp)
+                                    sam_result_tmp_png_fp.append({'name': cache_fp})
+                            # curly_hair
                             denoising_strength = 0.8
                             steps = 20
                             sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
@@ -1489,12 +1501,14 @@ class OperatorSD(Operator):
                                                                             0.22, buf_result_image)
                             if len(sam_result) == 0:
                                 return {'success': False, 'result': '未检测到人体'}
-                            sam_result_tmp_png_fp = []
-                            for idx, sam_mask_img in enumerate(sam_result):
-                                cache_fp = f"tmp/{idx}_{pic_name}.png"
-                                sam_mask_img.save(cache_fp)
-                                sam_result_tmp_png_fp.append({'name': cache_fp})
-                            # age
+                            else:
+                                init_img = buf_result_image
+                                sam_result_tmp_png_fp = []
+                                for idx, sam_mask_img in enumerate(sam_result):
+                                    cache_fp = f"tmp/{idx}_{pic_name}.png"
+                                    sam_mask_img.save(cache_fp)
+                                    sam_result_tmp_png_fp.append({'name': cache_fp})
+                            # muscle
                             denoising_strength = 0.5
                             steps = 20
                             sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
@@ -1580,40 +1594,45 @@ class OperatorSD(Operator):
                                         False, None, None, False, 50
                                         ]
 
+                    else:
                         buf_result_image = self.img2img.img2img(task_id,
-                                                           0,
-                                                           sd_positive_prompt,
-                                                           sd_negative_prompt,
-                                                           prompt_styles, init_img,
-                                                           sketch,
-                                                           init_img_with_mask, inpaint_color_sketch,
-                                                           inpaint_color_sketch_orig,
-                                                           init_img_inpaint, init_mask_inpaint,
-                                                           steps, sampler_index, mask_blur, mask_alpha, inpainting_fill,
-                                                           restore_faces,
-                                                           tiling,
-                                                           n_iter,
-                                                           1, #batch_size
-                                                           cfg_scale, image_cfg_scale,
-                                                           denoising_strength, seed,
-                                                           subseed,
-                                                           subseed_strength, seed_resize_from_h, seed_resize_from_w,
-                                                           seed_enable_extras,
-                                                           selected_scale_tab, _input_image_height, _input_image_width,
-                                                           scale_by,
-                                                           resize_mode,
-                                                           inpaint_full_res,
-                                                           inpaint_full_res_padding, inpainting_mask_invert,
-                                                           img2img_batch_input_dir,
-                                                           img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
-                                                           override_settings_texts,
-                                                           *sam_args)[0][0].convert("RGBA")
+                                                                0,
+                                                                sd_positive_prompt,
+                                                                sd_negative_prompt,
+                                                                prompt_styles, init_img,
+                                                                sketch,
+                                                                init_img_with_mask, inpaint_color_sketch,
+                                                                inpaint_color_sketch_orig,
+                                                                init_img_inpaint, init_mask_inpaint,
+                                                                steps, sampler_index, mask_blur, mask_alpha,
+                                                                inpainting_fill,
+                                                                restore_faces,
+                                                                tiling,
+                                                                n_iter,
+                                                                1,  # batch_size
+                                                                cfg_scale, image_cfg_scale,
+                                                                denoising_strength, seed,
+                                                                subseed,
+                                                                subseed_strength, seed_resize_from_h,
+                                                                seed_resize_from_w,
+                                                                seed_enable_extras,
+                                                                selected_scale_tab, _input_image_height,
+                                                                _input_image_width,
+                                                                scale_by,
+                                                                resize_mode,
+                                                                inpaint_full_res,
+                                                                inpaint_full_res_padding, inpainting_mask_invert,
+                                                                img2img_batch_input_dir,
+                                                                img2img_batch_output_dir,
+                                                                img2img_batch_inpaint_mask_dir,
+                                                                override_settings_texts,
+                                                                *sam_args)[0][0].convert("RGBA")
 
                         if self.update_progress(celery_task, self.redis_client,
-                                                (batch_count+1)*(proceed_idx + 1) * (85 // (batch_size*len(task_list)) )):
+                                                (batch_count + 1) * (proceed_idx + 1) * (
+                                                        85 // (batch_size * len(task_list)))):
                             return {'success': True}
                         self.devices.torch_gc()
-                    else:
                         result_images.append(buf_result_image)
 
                 # storage img
