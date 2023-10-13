@@ -1032,38 +1032,41 @@ class OperatorSD(Operator):
                         ]
 
         _input_image_width, _input_image_height = _init_img.size
-        return self.img2img.img2img(task_id,
-                                    0,
-                                    sd_positive_prompt,
-                                    sd_negative_prompt,
-                                    prompt_styles, _init_img,
-                                    sketch,
-                                    init_img_with_mask, inpaint_color_sketch,
-                                    inpaint_color_sketch_orig,
-                                    init_img_inpaint, init_mask_inpaint,
-                                    steps, sampler_index, mask_blur, mask_alpha,
-                                    inpainting_fill,
-                                    restore_faces,
-                                    tiling,
-                                    n_iter,
-                                    _batch_size,  # batch_size
-                                    cfg_scale, image_cfg_scale,
-                                    denoising_strength, seed,
-                                    subseed,
-                                    subseed_strength, seed_resize_from_h,
-                                    seed_resize_from_w,
-                                    seed_enable_extras,
-                                    selected_scale_tab, _input_image_height,
-                                    _input_image_width,
-                                    scale_by,
-                                    resize_mode,
-                                    inpaint_full_res,
-                                    inpaint_full_res_padding, inpainting_mask_invert,
-                                    img2img_batch_input_dir,
-                                    img2img_batch_output_dir,
-                                    img2img_batch_inpaint_mask_dir,
-                                    override_settings_texts,
-                                    *sam_args)[0][0].convert("RGBA")
+        res = self.img2img.img2img(task_id,
+                                   0,
+                                   sd_positive_prompt,
+                                   sd_negative_prompt,
+                                   prompt_styles, _init_img,
+                                   sketch,
+                                   init_img_with_mask, inpaint_color_sketch,
+                                   inpaint_color_sketch_orig,
+                                   init_img_inpaint, init_mask_inpaint,
+                                   steps, sampler_index, mask_blur, mask_alpha,
+                                   inpainting_fill,
+                                   restore_faces,
+                                   tiling,
+                                   n_iter,
+                                   _batch_size,  # batch_size
+                                   cfg_scale, image_cfg_scale,
+                                   denoising_strength, seed,
+                                   subseed,
+                                   subseed_strength, seed_resize_from_h,
+                                   seed_resize_from_w,
+                                   seed_enable_extras,
+                                   selected_scale_tab, _input_image_height,
+                                   _input_image_width,
+                                   scale_by,
+                                   resize_mode,
+                                   inpaint_full_res,
+                                   inpaint_full_res_padding, inpainting_mask_invert,
+                                   img2img_batch_input_dir,
+                                   img2img_batch_output_dir,
+                                   img2img_batch_inpaint_mask_dir,
+                                   override_settings_texts,
+                                   *sam_args)[0][0].convert("RGBA")
+
+        self.devices.torch_gc()
+        return res
 
     def __call__(self, *args, **kwargs):
         try:
