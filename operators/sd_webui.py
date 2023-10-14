@@ -433,11 +433,10 @@ class OperatorSD(Operator):
         _dino_model_name = "GroundingDINO_SwinB (938MB)"
         if _task_type == 'gender':
             # segment
-            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "person",
-                                                            0.4, _init_img)
+            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "person", 0.4, _init_img)
+
             if len(sam_result) == 0:
                 return {'success': False, 'result': '未检测到人脸'}
-
             else:
                 sam_result_tmp_png_fp = []
                 for idx, sam_mask_img in enumerate(sam_result):
@@ -446,8 +445,7 @@ class OperatorSD(Operator):
                     sam_result_tmp_png_fp.append({'name': cache_fp})
             # 性別
             gender_prompt = ['GS-Girlish', 'GS-Womanly'] if _params[_task_type]['gender'] == 'female' else [
-                'GS-Boyish',
-                'GS-Masculine']
+                'GS-Boyish', 'GS-Masculine']
             gender_prompt = gender_prompt[0] if _params[_task_type]['is_elder'] == 'young' else gender_prompt[1]
 
             denoising_strength_min = 0.05
@@ -465,7 +463,7 @@ class OperatorSD(Operator):
 
             task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
             sd_positive_prompt = f'{gender_prompt},<lora:polyhedron_new_skin_v1.1:0.1>,(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,character close-up'
-            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
+            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions'
 
             print("-------------------gender logger-----------------")
             print(f"sd_positive_prompt: {sd_positive_prompt}")
@@ -562,7 +560,7 @@ class OperatorSD(Operator):
 
             task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
             sd_positive_prompt = f'<lora:age_slider_v20:{str(_params[_task_type]["weight"] * 10 - 5)}>,<lora:polyhedron_new_skin_v1.1:0.1>,photographic reality,character close-up,photorealistic,realistic,(best quality:1.2),(high quality:1.2),high details'
-            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
+            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions'
 
             print("-------------------age logger-----------------")
             print(f"sd_positive_prompt: {sd_positive_prompt}")
@@ -664,7 +662,7 @@ class OperatorSD(Operator):
 
             task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
             sd_positive_prompt = f'({str(_params[_task_type]["expression"])}512:1.3),<lora:polyhedron_new_skin_v1.1:0.1>,(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,character close-up'
-            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
+            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions'
 
             print("-------------------face_expression logger-----------------")
             print(f"sd_positive_prompt: {sd_positive_prompt}")
@@ -762,7 +760,7 @@ class OperatorSD(Operator):
 
             task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
             sd_positive_prompt = f"<lora:eye_size_slider_v1:{str(_params[_task_type]['weight'] * 16 - 8)}>,<lora:polyhedron_new_skin_v1.1:0.1>,(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,character close-up"
-            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
+            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions'
 
             print("-------------------eye_size logger-----------------")
             print(f"sd_positive_prompt: {sd_positive_prompt}")
@@ -860,7 +858,7 @@ class OperatorSD(Operator):
 
             task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
             sd_positive_prompt = f"<lora:curly_hair_slider_v1:{str(_params[_task_type]['weight'] * 16 - 8)}>,fluffy hair,lush hair,{'straight hair,' if int(_params[_task_type]['weight']) == 0 else ''}{'curly hair,' if int(_params[_task_type]['weight']) == 1 else ''}<lora:polyhedron_new_skin_v1.1:0.1>,(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo, realistic,character close-up"
-            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
+            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions'
 
             print("-------------------curly_hair logger-----------------")
             print(f"sd_positive_prompt: {sd_positive_prompt}")
@@ -953,12 +951,12 @@ class OperatorSD(Operator):
             resize_mode = 0  # just resize
             mask_blur = 4
             inpainting_mask_invert = 0  # inpaint masked
-            inpaint_full_res = 1  # choices=["Whole picture", "Only masked"]
+            inpaint_full_res = 0  # choices=["Whole picture", "Only masked"]
             inpainting_fill = 1  # masked content: original
 
             task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
             sd_positive_prompt = f"<lora:muscle_slider_v1:{str(_params[_task_type]['weight'] * 8 - 3)}>,<lora:polyhedron_new_skin_v1.1:0.1>,(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,character close-up"
-            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
+            sd_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions'
 
             print("-------------------muscle logger-----------------")
             print(f"sd_positive_prompt: {sd_positive_prompt}")
