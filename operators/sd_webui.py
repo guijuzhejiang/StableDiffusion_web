@@ -431,7 +431,7 @@ class OperatorSD(Operator):
             sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "person", 0.4, _init_img)
 
             if len(sam_result) == 0:
-                return {'success': False, 'result': '未检测到人脸'}
+                return {'success': False, 'result': '未检测到人体'}
             else:
                 sam_result_tmp_png_fp = []
                 pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
@@ -737,7 +737,7 @@ class OperatorSD(Operator):
             sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "face.glasses",
                                                             0.5, _init_img)
             if len(sam_result) == 0:
-                return {'success': False, 'result': '未检测到人体'}
+                return {'success': False, 'result': '未检测到人脸'}
             else:
                 sam_result_tmp_png_fp = []
                 pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
@@ -834,9 +834,9 @@ class OperatorSD(Operator):
         elif _task_type == 'curly_hair':
             # segment
             sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "hair",
-                                                            0.5, _init_img)
+                                                            0.36, _init_img)
             if len(sam_result) == 0:
-                return {'success': False, 'result': '未检测到人体'}
+                return {'success': False, 'result': '未检测到头发'}
             else:
                 sam_result_tmp_png_fp = []
                 pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
@@ -1636,69 +1636,70 @@ class OperatorSD(Operator):
                 _input_image = _input_image.convert('RGBA')
                 batch_size = int(params['batch_size'])
                 task_list = [k for k, v in params.items() if isinstance(v, dict) and v['enable']]
-
-                if batch_size > 1:
-                    result_images = [x.convert('RGBA') for x in
-                                     self.proceed_human_transform(params, task_list[0], batch_size, _input_image)[0]]
-                    if isinstance(result_images, dict):
-                        return result_images
-                    proceed_task_list = task_list[1:]
-                else:
-                    result_images = [_input_image]
-                    proceed_task_list = task_list
-
-                if self.update_progress(celery_task, self.redis_client, 15):
-                    return {'success': True}
-
-                for batch_idx in range(batch_size):
-                    for proceed_idx, proceed_task in enumerate(proceed_task_list):
-                        result_images[batch_idx] = \
-                        self.proceed_human_transform(params, proceed_task, 1, result_images[batch_idx])[0][0].convert(
-                            "RGBA")
+                res_list = self.proceed_human_transform(params, task_list[0], batch_size, _input_image)
+                if len(res_list) > 0:
+                    if batch_size > 1:
+                        result_images = [x.convert('RGBA') for x in res_list[0]]
                         if isinstance(result_images, dict):
                             return result_images
-                        if self.update_progress(celery_task, self.redis_client,
-                                                (batch_idx + 1) * (proceed_idx + 1) * (
-                                                        80 // (batch_size * len(task_list)))):
-                            return {'success': True}
-
-                # storage img
-                img_urls = []
-                dir_path = os.path.join(CONFIG['storage_dirpath']['user_beauty_dir'], user_id)
-                os.makedirs(dir_path, exist_ok=True)
-                for res_idx, res_img in enumerate(result_images):
-                    img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"
-                    if 'face_expression' in task_list or 'age' in task_list or 'gender' in task_list:
-                        # extra upscaler
-                        scales = 1
-                        gfpgan_enable = 0
-                        codeformer_enable = 1
-                        args = (0, scales, None, None, True, 'None', 'None', 0, gfpgan_enable, codeformer_enable, 0)
-                        pp = self.scripts_postprocessing.PostprocessedImage(res_img.convert("RGB"))
-                        self.scripts.scripts_postproc.run(pp, args)
-                        self.devices.torch_gc()
-
-                        pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=80, lossless=True)
+                        proceed_task_list = task_list[1:]
                     else:
-                        res_img.convert("RGB").save(os.path.join(dir_path, img_fn), format="jpeg", quality=80, lossless=True)
+                        result_images = [_input_image]
+                        proceed_task_list = task_list
 
-                    # 限制缓存10张
-                    cache_list = sorted(os.listdir(dir_path))
-                    if len(cache_list) > 10:
-                        os.remove(os.path.join(dir_path, cache_list[0]))
+                    if self.update_progress(celery_task, self.redis_client, 15):
+                        return {'success': True}
+
+                    for batch_idx in range(batch_size):
+                        for proceed_idx, proceed_task in enumerate(proceed_task_list):
+                            result_images[batch_idx] = \
+                            self.proceed_human_transform(params, proceed_task, 1, result_images[batch_idx])[0][0].convert(
+                                "RGBA")
+                            if isinstance(result_images, dict):
+                                return result_images
+                            if self.update_progress(celery_task, self.redis_client,
+                                                    (batch_idx + 1) * (proceed_idx + 1) * (
+                                                            80 // (batch_size * len(task_list)))):
+                                return {'success': True}
+
+                    # storage img
+                    img_urls = []
+                    dir_path = os.path.join(CONFIG['storage_dirpath']['user_beauty_dir'], user_id)
+                    os.makedirs(dir_path, exist_ok=True)
+                    for res_idx, res_img in enumerate(result_images):
+                        img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"
+                        if 'face_expression' in task_list or 'age' in task_list or 'gender' in task_list:
+                            # extra upscaler
+                            scales = 1
+                            gfpgan_enable = 0
+                            codeformer_enable = 1
+                            args = (0, scales, None, None, True, 'None', 'None', 0, gfpgan_enable, codeformer_enable, 0)
+                            pp = self.scripts_postprocessing.PostprocessedImage(res_img.convert("RGB"))
+                            self.scripts.scripts_postproc.run(pp, args)
+                            self.devices.torch_gc()
+
+                            pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=80, lossless=True)
+                        else:
+                            res_img.convert("RGB").save(os.path.join(dir_path, img_fn), format="jpeg", quality=80, lossless=True)
+
+                        # 限制缓存10张
+                        cache_list = sorted(os.listdir(dir_path))
+                        if len(cache_list) > 10:
+                            os.remove(os.path.join(dir_path, cache_list[0]))
+                    else:
+                        for img_fn in sorted(os.listdir(dir_path), reverse=True):
+                            url_fp = f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category=beauty"
+                            img_urls.append(url_fp)
+                        if len(img_urls) < 10:
+                            for i in range(10 - len(img_urls)):
+                                img_urls.append('')
+
+                    # celery_task.update_state(state='PROGRESS', meta={'progress': 95})
+                    if self.update_progress(celery_task, self.redis_client, 99):
+                        return {'success': True}
+                    return {'success': True, 'result': img_urls}
                 else:
-                    for img_fn in sorted(os.listdir(dir_path), reverse=True):
-                        url_fp = f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category=beauty"
-                        img_urls.append(url_fp)
-                    if len(img_urls) < 10:
-                        for i in range(10 - len(img_urls)):
-                            img_urls.append('')
-
-                # celery_task.update_state(state='PROGRESS', meta={'progress': 95})
-                if self.update_progress(celery_task, self.redis_client, 99):
-                    return {'success': True}
-                return {'success': True, 'result': img_urls}
-
+                    print(f'no sam result!!!!!!!!')
             else:
                 params = ujson.loads(kwargs['params'][0])
                 # _input_image = base64_to_pil(params['input_image'])
