@@ -424,7 +424,7 @@ class OperatorSD(Operator):
         controlnet_args_unit3.enabled = False
 
         result_images = []
-        pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
+
         _dino_model_name = "GroundingDINO_SwinB (938MB)"
         if _task_type == 'gender':
             # segment
@@ -434,6 +434,7 @@ class OperatorSD(Operator):
                 return {'success': False, 'result': '未检测到人脸'}
             else:
                 sam_result_tmp_png_fp = []
+                pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
                 for idx, sam_mask_img in enumerate(sam_result):
                     cache_fp = f"tmp/{idx}_{pic_name}.png"
                     sam_mask_img.save(cache_fp)
@@ -534,6 +535,7 @@ class OperatorSD(Operator):
                 return {'success': False, 'result': '未检测到人体'}
             else:
                 sam_result_tmp_png_fp = []
+                pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
                 for idx, sam_mask_img in enumerate(sam_result):
                     cache_fp = f"tmp/{idx}_{pic_name}.png"
                     sam_mask_img.save(cache_fp)
@@ -635,8 +637,8 @@ class OperatorSD(Operator):
             if len(sam_result) == 0:
                 return {'success': False, 'result': '未检测到人脸'}
             else:
-                init_img = _init_img
                 sam_result_tmp_png_fp = []
+                pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
                 for idx, sam_mask_img in enumerate(sam_result):
                     cache_fp = f"tmp/{idx}_{pic_name}.png"
                     sam_mask_img.save(cache_fp)
@@ -738,6 +740,7 @@ class OperatorSD(Operator):
                 return {'success': False, 'result': '未检测到人体'}
             else:
                 sam_result_tmp_png_fp = []
+                pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
                 for idx, sam_mask_img in enumerate(sam_result):
                     cache_fp = f"tmp/{idx}_{pic_name}.png"
                     sam_mask_img.save(cache_fp)
@@ -836,6 +839,7 @@ class OperatorSD(Operator):
                 return {'success': False, 'result': '未检测到人体'}
             else:
                 sam_result_tmp_png_fp = []
+                pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
                 for idx, sam_mask_img in enumerate(sam_result):
                     cache_fp = f"tmp/{idx}_{pic_name}.png"
                     sam_mask_img.save(cache_fp)
@@ -934,6 +938,7 @@ class OperatorSD(Operator):
                 return {'success': False, 'result': '未检测到人体'}
             else:
                 sam_result_tmp_png_fp = []
+                pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
                 for idx, sam_mask_img in enumerate(sam_result):
                     cache_fp = f"tmp/{idx}_{pic_name}.png"
                     sam_mask_img.save(cache_fp)
@@ -1026,7 +1031,7 @@ class OperatorSD(Operator):
 
         _input_image_width, _input_image_height = _init_img.size
         res = self.img2img.img2img(task_id,
-                                   0,
+                                   4,
                                    sd_positive_prompt,
                                    sd_negative_prompt,
                                    prompt_styles, _init_img,
