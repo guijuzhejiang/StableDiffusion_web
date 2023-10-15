@@ -1633,7 +1633,18 @@ class OperatorSD(Operator):
                 if self.update_progress(celery_task, self.redis_client, 10):
                     return {'success': True}
 
+                # limit 448
+                if min(_input_image_width, _input_image_height) < 448:
+                    if _input_image_width < _input_image_height:
+                        new_width = 448
+                        new_height = int(_input_image_height / _input_image_width * new_width)
+                    else:
+                        new_height = 448
+                        new_width = int(_input_image_width / _input_image_height * new_height)
+                    _input_image = _input_image.resize((new_width, new_height), Image.ANTIALIAS)
+
                 _input_image = _input_image.convert('RGBA')
+                _input_image_width, _input_image_height = _input_image.size
                 batch_size = int(params['batch_size'])
                 task_list = [k for k, v in params.items() if isinstance(v, dict) and v['enable']]
                 res_list = self.proceed_human_transform(params, task_list[0], batch_size, _input_image)
