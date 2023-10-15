@@ -1641,7 +1641,7 @@ class OperatorSD(Operator):
                     else:
                         new_height = 448
                         new_width = int(_input_image_width / _input_image_height * new_height)
-                    _input_image = _input_image.resize((new_width, new_height), Image.ANTIALIAS)
+                    _input_image = _input_image.resize((new_width, new_height))
 
                 _input_image = _input_image.convert('RGBA')
                 _input_image_width, _input_image_height = _input_image.size
