@@ -34,18 +34,25 @@ async def sd_genreate(request: Request, ws):
             # cal prices
             cost_points = 10
             if package['mode'] == 'hires':
-                _output_width = int(params['output_width'])
-                _output_height = int(params['output_height'])
+                if hasattr(params, 'beautify_times'):
+                    cost_points = 10 if int(params['beautify_times']) == 2 else 16
+                else:
+                    _output_width = int(params['output_width'])
+                    _output_height = int(params['output_height'])
 
-                cost_points = 1
-                pixel_sum = _output_width + _output_height
-                if pixel_sum >= 2561:
-                    cost_points = 16
-                if pixel_sum >= 4681:
-                    cost_points = 20
+                    cost_points = 1
+                    pixel_sum = _output_width + _output_height
+                    if pixel_sum >= 2561:
+                        cost_points = 16
+                    if pixel_sum >= 4681:
+                        cost_points = 20
 
             elif package['mode'] == 'beautify':
-                pass
+                batch_size = int(params['batch_size'])
+                if batch_size == 1:
+                    cost_points = 5
+                elif batch_size == 2:
+                    cost_points = 8
 
             else:
                 cost_points *= int(int(params['batch_size']))
@@ -61,7 +68,7 @@ async def sd_genreate(request: Request, ws):
                     parsed_url = urlparse(package['chosen_image'])
                     # 获取查询参数
                     query_params = parse_qs(parsed_url.query)
-                    img_fp = os.path.join(CONFIG['storage_dirpath']['user_dir'], query_params['uid'][0], query_params['imgpath'][0])
+                    img_fp = os.path.join(CONFIG['storage_dirpath']['user_beauty_dir'] if query_params['category'][0] == 'beauty' else CONFIG['storage_dirpath']['user_dir'], query_params['uid'][0], query_params['imgpath'][0])
                     format_package['input_image'] = img_fp
 
                 # send task
