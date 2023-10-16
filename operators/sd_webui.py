@@ -644,7 +644,7 @@ class OperatorSD(Operator):
                     sam_mask_img.save(cache_fp)
                     sam_result_tmp_png_fp.append({'name': cache_fp})
             # face_expression
-            denoising_strength_min = 0.05
+            denoising_strength_min = 0.1
             denoising_strength_max = 0.4
             denoising_strength = (1 - _params[_task_type]['sim']) * (
                     denoising_strength_max - denoising_strength_min) + denoising_strength_min
