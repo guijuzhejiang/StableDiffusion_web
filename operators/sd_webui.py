@@ -932,8 +932,7 @@ class OperatorSD(Operator):
 
         elif _task_type == 'muscle':
             # segment
-            sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, "breasts.arms.legs.abdomen",
-                                                            0.22, _init_img)
+            sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, "breasts.arms.legs.abdomen", 0.31, _init_img)
             if len(sam_result) == 0:
                 return {'success': False, 'result': '未检测到人体'}
             else:
