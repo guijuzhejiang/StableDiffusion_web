@@ -34,7 +34,7 @@ async def sd_genreate(request: Request, ws):
             # cal prices
             cost_points = 10
             if package['mode'] == 'hires':
-                if hasattr(params, 'beautify_times'):
+                if params.get('beautify_times'):
                     cost_points = 10 if int(params['beautify_times']) == 2 else 16
                 else:
                     _output_width = int(params['output_width'])
