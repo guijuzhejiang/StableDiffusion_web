@@ -29,7 +29,7 @@ async def sd_genreate(request: Request, ws):
 
             package = ujson.loads(raw_msg)
             params = package['params']
-            format_package = {'mode': [package['mode']], 'user_id': [package['user_id']], 'params': [ujson.dumps(params)], 'input_image': [['']]}
+            format_package = {'mode': [package['mode']], 'user_id': [package['user_id']], 'params': [ujson.dumps(params)], 'input_image': ''}
 
             # cal prices
             cost_points = 10
@@ -54,23 +54,15 @@ async def sd_genreate(request: Request, ws):
             account = (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[0]
             buf_result = {'success': True, 'result': None, 'act': None, 'type': package['mode']}
             if cost_points <= account['balance']:
-                start = datetime.datetime.now()
-
                 # recv image
-                dir_path = os.path.join(CONFIG['storage_dirpath']['user_upload'])
-                async with aiofile.async_open(os.path.join(dir_path, f"{user_id}.png"), 'rb') as file:
-                    image_data = await file.read()
                 if package['mode'] == 'model' or package['mode'] == 'beautify':
-                    format_package['input_image'][0].append(image_data)
+                    format_package['input_image'] = os.path.join(os.path.join(CONFIG['storage_dirpath']['user_upload']), f"{user_id}.png")
                 else:
                     parsed_url = urlparse(package['chosen_image'])
                     # 获取查询参数
                     query_params = parse_qs(parsed_url.query)
                     img_fp = os.path.join(CONFIG['storage_dirpath']['user_dir'], query_params['uid'][0], query_params['imgpath'][0])
-                    with open(img_fp, "rb") as image_file:
-                        # 读取二进制数据
-                        image_data = image_file.read()
-                        format_package['input_image'][0].append(image_data)
+                    format_package['input_image'] = img_fp
 
                 # send task
                 task_result = request.app.ctx.sd_workshop(**format_package)

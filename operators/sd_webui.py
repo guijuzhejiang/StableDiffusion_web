@@ -76,6 +76,7 @@ class OperatorSD(Operator):
         self.extra_networks = importlib.import_module('modules.extra_networks')
         self.script_callbacks = importlib.import_module('modules.script_callbacks')
         self.dino = importlib.import_module('guiju.segment_anything_util.dino')
+        self.dino_model_name = "GroundingDINO_SwinB (938MB)"
         self.initialize = getattr(importlib.import_module('lib.stable_diffusion.util'), 'initialize')
         self.shared = getattr(importlib.import_module('modules'), 'shared')
         self.ui_tempdir = getattr(importlib.import_module('modules'), 'ui_tempdir')
@@ -425,10 +426,9 @@ class OperatorSD(Operator):
 
         result_images = []
 
-        _dino_model_name = "GroundingDINO_SwinB (938MB)"
         if _task_type == 'gender':
             # segment
-            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "person", 0.4, _init_img)
+            sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, "person", 0.4, _init_img)
 
             if len(sam_result) == 0:
                 return {'success': False, 'result': '未检测到人体'}
@@ -529,7 +529,7 @@ class OperatorSD(Operator):
 
         elif _task_type == 'age':
             # segment
-            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "person",
+            sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, "person",
                                                             0.5, _init_img)
             if len(sam_result) == 0:
                 return {'success': False, 'result': '未检测到人体'}
@@ -632,7 +632,7 @@ class OperatorSD(Operator):
 
         elif _task_type == 'face_expression':
             # segment
-            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "face.glasses",
+            sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, "face.glasses",
                                                             0.3, _init_img)
             if len(sam_result) == 0:
                 return {'success': False, 'result': '未检测到人脸'}
@@ -734,7 +734,7 @@ class OperatorSD(Operator):
 
         elif _task_type == 'eye_size':
             # segment
-            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "face.glasses",
+            sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, "face.glasses",
                                                             0.5, _init_img)
             if len(sam_result) == 0:
                 return {'success': False, 'result': '未检测到人脸'}
@@ -833,7 +833,7 @@ class OperatorSD(Operator):
 
         elif _task_type == 'curly_hair':
             # segment
-            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "hair",
+            sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, "hair",
                                                             0.36, _init_img)
             if len(sam_result) == 0:
                 return {'success': False, 'result': '未检测到头发'}
@@ -932,7 +932,7 @@ class OperatorSD(Operator):
 
         elif _task_type == 'muscle':
             # segment
-            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "breasts.arms.legs.abdomen",
+            sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, "breasts.arms.legs.abdomen",
                                                             0.22, _init_img)
             if len(sam_result) == 0:
                 return {'success': False, 'result': '未检测到人体'}
@@ -1074,16 +1074,24 @@ class OperatorSD(Operator):
             user_id = kwargs['user_id'][0]
 
             celery_task = args[0]
-            # celery_task.update_state(state='PROGRESS', meta={'progress': 1})
+
             if self.update_progress(celery_task, self.redis_client, 1):
                 return {'success': True}
+            if self.predict_image(kwargs['input_image']):
+                return {'success': False, 'result': "抱歉，您上传的图像未通过合规性检查，请重新上传。"}
+            # read image
+            _input_image = Image.open(kwargs['input_image'])
+            _input_image_width, _input_image_height = _input_image.size
+
+            if self.update_progress(celery_task, self.redis_client, 5):
+                return {'success': True}
+
             # 生成服装模特
             if proceed_mode == 'model':
                 params = ujson.loads(kwargs['params'][0])
                 _cloth_part = 0
                 _batch_size = int(params['batch_size'])
                 # _input_image = base64_to_pil(params['input_image'])
-                _input_image = Image.open(io.BytesIO(kwargs['input_image'][0][1]))
                 # _gender = 0 if params['gender'] == 'female' else 1
                 arge_idxs = {v: i for i, v in enumerate(['child', 'youth', 'middlescent'])}
                 _age = arge_idxs[params['age']]
@@ -1119,22 +1127,17 @@ class OperatorSD(Operator):
                     _input_image.save(origin_image_path, format='PNG')
 
                     try:
-                        if self.predict_image(origin_image_path):
-                            return {'success': False, 'result': "抱歉，您上传的图像未通过合规性检查，请重新上传。"}
-
                         if self.update_progress(celery_task, self.redis_client, 10):
                             return {'success': True}
-
-                        _input_image_width, _input_image_height = _input_image.size
 
                         # 切割衣服
                         person0_box = [-1, -1, -1, -1]
                         sam_images = []
                         mask_images = []
                         for dino_idx, dino_prompt in enumerate(_dino_clothing_text_prompt):
-                            # person_boxes, _ = self.dino.dino_predict_internal(_input_image, _dino_model_name,
+                            # person_boxes, _ = self.dino.dino_predict_internal(_input_image, self.dino_model_name,
                             #                                                   dino_prompt, _box_threshold)
-                            sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, dino_prompt,
+                            sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, dino_prompt,
                                                                             _box_threshold,
                                                                             _input_image.convert('RGBA'))
 
@@ -1171,9 +1174,9 @@ class OperatorSD(Operator):
 
                         # real people
                         if _model_mode == 0:
-                            person_boxes, _ = self.dino.dino_predict_internal(_input_image, _dino_model_name, "person",
+                            person_boxes, _ = self.dino.dino_predict_internal(_input_image, self.dino_model_name, "person",
                                                                               _box_threshold)
-                            # sam_result, person_boxes = self.sam.sam_predict(_dino_model_name, "person", 0.33, _input_image)
+                            # sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, "person", 0.33, _input_image)
                             if len(person_boxes) == 0:
                                 return {'success': False, 'result': '未检测到服装'}
 
@@ -1448,7 +1451,7 @@ class OperatorSD(Operator):
                             else:
                                 res_img = res_img.convert('RGBA')
                                 # sam
-                                sam_bg_result, _ = self.sam.sam_predict(_dino_model_name, 'person', 0.3, res_img)
+                                sam_bg_result, _ = self.sam.sam_predict(self.dino_model_name, 'person', 0.3, res_img)
                                 if len(sam_bg_result) > 0:
                                     sam_bg_tmp_png_fp = []
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
@@ -1598,7 +1601,6 @@ class OperatorSD(Operator):
                 return {'success': True, 'result': img_urls}
 
             elif proceed_mode == 'beautify':
-                _dino_model_name = "GroundingDINO_SwinB (938MB)"
                 # params: {
                 #                 gender_enable: genderEnable?.current?.inputValue,
                 #                 age_enable: ageEnable?.current?.inputValue,
@@ -1620,17 +1622,11 @@ class OperatorSD(Operator):
                 #             }
                 params = ujson.loads(kwargs['params'][0])
 
-                _input_image = Image.open(io.BytesIO(kwargs['input_image'][0][1]))
-                _input_image_width, _input_image_height = _input_image.size
-
-                if self.update_progress(celery_task, self.redis_client, 5):
-                    return {'success': True}
-
-                person_boxes, _ = self.dino.dino_predict_internal(_input_image, _dino_model_name, 'person', 0.3)
+                person_boxes, _ = self.dino.dino_predict_internal(_input_image, self.dino_model_name, 'person', 0.3)
                 if len(person_boxes) == 0:
                     return {'success': False, 'result': '未检测到人物'}
 
-                if self.update_progress(celery_task, self.redis_client, 10):
+                if self.update_progress(celery_task, self.redis_client, 40):
                     return {'success': True}
 
                 # limit 448
@@ -1647,31 +1643,29 @@ class OperatorSD(Operator):
                 _input_image_width, _input_image_height = _input_image.size
                 batch_size = int(params['batch_size'])
                 task_list = [k for k, v in params.items() if isinstance(v, dict) and v['enable']]
-                res_list = self.proceed_human_transform(params, task_list[0], batch_size, _input_image)
-                if len(res_list) > 0:
+                result_images = self.proceed_human_transform(params, task_list[0], batch_size, _input_image)
+                if isinstance(result_images, dict):
+                    return result_images
+                else:
                     if batch_size > 1:
-                        result_images = [x.convert('RGBA') for x in res_list[0]]
-                        if isinstance(result_images, dict):
-                            return result_images
+                        result_images = [x.convert('RGBA') for x in result_images[0]]
                         proceed_task_list = task_list[1:]
+
+                        for batch_idx in range(batch_size):
+                            for proceed_idx, proceed_task in enumerate(proceed_task_list):
+                                result_images[batch_idx] = \
+                                    self.proceed_human_transform(params, proceed_task, 1, result_images[batch_idx])[0][
+                                        0].convert(
+                                        "RGBA")
+                                if isinstance(result_images, dict):
+                                    return result_images
+                                if self.update_progress(celery_task, self.redis_client,
+                                                        (batch_idx + 1) * (proceed_idx + 1) * (
+                                                                80 // (batch_size * len(task_list)))):
+                                    return {'success': True}
                     else:
-                        result_images = [_input_image]
-                        proceed_task_list = task_list
-
-                    if self.update_progress(celery_task, self.redis_client, 15):
-                        return {'success': True}
-
-                    for batch_idx in range(batch_size):
-                        for proceed_idx, proceed_task in enumerate(proceed_task_list):
-                            result_images[batch_idx] = \
-                            self.proceed_human_transform(params, proceed_task, 1, result_images[batch_idx])[0][0].convert(
-                                "RGBA")
-                            if isinstance(result_images, dict):
-                                return result_images
-                            if self.update_progress(celery_task, self.redis_client,
-                                                    (batch_idx + 1) * (proceed_idx + 1) * (
-                                                            80 // (batch_size * len(task_list)))):
-                                return {'success': True}
+                        if self.update_progress(celery_task, self.redis_client, 80):
+                            return {'success': True}
 
                     # storage img
                     img_urls = []
@@ -1709,16 +1703,12 @@ class OperatorSD(Operator):
                     if self.update_progress(celery_task, self.redis_client, 99):
                         return {'success': True}
                     return {'success': True, 'result': img_urls}
-                else:
-                    print(f'no sam result!!!!!!!!')
             else:
                 params = ujson.loads(kwargs['params'][0])
                 # _input_image = base64_to_pil(params['input_image'])
-                _input_image = Image.open(io.BytesIO(kwargs['input_image'][0][1]))
                 _output_width = int(params['output_width'])
                 _output_height = int(params['output_height'])
 
-                _input_image_width, _input_image_height = _input_image.size
                 _output_ratio = _output_width / _output_height
                 _input_ratio = _input_image_width / _input_image_height
 
