@@ -529,8 +529,7 @@ class OperatorSD(Operator):
 
         elif _task_type == 'age':
             # segment
-            sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, "person",
-                                                            0.5, _init_img)
+            sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, "person", 0.45, _init_img)
             if len(sam_result) == 0:
                 return {'success': False, 'result': '未检测到人体'}
             else:
