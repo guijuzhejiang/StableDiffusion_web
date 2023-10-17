@@ -1676,7 +1676,7 @@ class OperatorSD(Operator):
                             # extra upscaler
                             scales = 1
                             gfpgan_enable = 0
-                            codeformer_enable = 1
+                            codeformer_enable = 0.5
                             args = (0, scales, None, None, True, 'None', 'None', 0, gfpgan_enable, codeformer_enable, 0)
                             pp = self.scripts_postprocessing.PostprocessedImage(res_img.convert("RGB"))
                             self.scripts.scripts_postproc.run(pp, args)
@@ -1865,8 +1865,8 @@ class OperatorSD(Operator):
                     return {'success': True}
 
                 gfpgan_enable = 0
-                codeformer_enable = 1
-                args = (0, scales, None, None, True, 'ESRGAN_4x', 'None', 0, gfpgan_enable, codeformer_enable, 0)
+                codeformer_enable = 0
+                args = (0, scales, None, None, True, 'ESRGAN_4x', 'None', 0, gfpgan_enable, codeformer_enable, 1)
                 assert cnet_res_img, 'image not selected'
                 self.devices.torch_gc()
                 pp = self.scripts_postprocessing.PostprocessedImage(cnet_res_img.convert("RGB"))
