@@ -854,7 +854,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 infotexts.append(text)
                 if opts.enable_pnginfo:
                     image.info["parameters"] = text
-                output_images.append(image)
+                # output_images.append(image)
 
                 if hasattr(p, 'mask_for_overlay') and p.mask_for_overlay and any([opts.save_mask, opts.save_mask_composite, opts.return_mask, opts.return_mask_composite]):
                     image_mask = p.mask_for_overlay.convert('RGB')

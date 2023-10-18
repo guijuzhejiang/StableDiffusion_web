@@ -437,7 +437,7 @@ class OperatorSD(Operator):
             else:
                 sam_result_tmp_png_fp = []
                 for idx, sam_mask_img in enumerate(sam_result):
-                    cache_fp = f"tmp/mirror_age_{idx}_{pic_name}{'_save' if idx == 2 else ''}.png"
+                    cache_fp = f"tmp/mirror_age_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png"
                     sam_mask_img.save(cache_fp)
                     sam_result_tmp_png_fp.append({'name': cache_fp})
             # 性別
@@ -536,7 +536,7 @@ class OperatorSD(Operator):
             else:
                 sam_result_tmp_png_fp = []
                 for idx, sam_mask_img in enumerate(sam_result):
-                    cache_fp = f"tmp/mirror_age_{idx}_{pic_name}{'_save' if idx == 2 else ''}.png"
+                    cache_fp = f"tmp/mirror_age_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png"
                     sam_mask_img.save(cache_fp)
                     sam_result_tmp_png_fp.append({'name': cache_fp})
 
@@ -638,7 +638,7 @@ class OperatorSD(Operator):
             else:
                 sam_result_tmp_png_fp = []
                 for idx, sam_mask_img in enumerate(sam_result):
-                    cache_fp = f"tmp/face_expression_{idx}_{pic_name}{'_save' if idx == 2 else ''}.png"
+                    cache_fp = f"tmp/face_expression_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png"
                     sam_mask_img.save(cache_fp)
                     sam_result_tmp_png_fp.append({'name': cache_fp})
             # face_expression
@@ -739,7 +739,7 @@ class OperatorSD(Operator):
             else:
                 sam_result_tmp_png_fp = []
                 for idx, sam_mask_img in enumerate(sam_result):
-                    cache_fp = f"tmp/eye_size_{idx}_{pic_name}{'_save' if idx == 2 else ''}.png"
+                    cache_fp = f"tmp/eye_size_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png"
                     sam_mask_img.save(cache_fp)
                     sam_result_tmp_png_fp.append({'name': cache_fp})
             # eye_size
@@ -837,7 +837,7 @@ class OperatorSD(Operator):
             else:
                 sam_result_tmp_png_fp = []
                 for idx, sam_mask_img in enumerate(sam_result):
-                    cache_fp = f"tmp/curly_hair_{idx}_{pic_name}{'_save' if idx == 2 else ''}.png"
+                    cache_fp = f"tmp/curly_hair_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png"
                     sam_mask_img.save(cache_fp)
                     sam_result_tmp_png_fp.append({'name': cache_fp})
             # curly_hair
@@ -934,7 +934,7 @@ class OperatorSD(Operator):
             else:
                 sam_result_tmp_png_fp = []
                 for idx, sam_mask_img in enumerate(sam_result):
-                    cache_fp = f"tmp/muscle_{idx}_{pic_name}{'_save' if idx == 2 else ''}.png"
+                    cache_fp = f"tmp/muscle_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png"
                     sam_mask_img.save(cache_fp)
                     sam_result_tmp_png_fp.append({'name': cache_fp})
             # muscle
@@ -1139,7 +1139,7 @@ class OperatorSD(Operator):
                             if len(sam_result) > 0:
                                 for idx, im in enumerate(sam_result):
                                     im.save(
-                                        f"tmp/model_clothing_{dino_idx}_{idx}_{pic_name}{'_save' if idx == 2 else ''}.png",
+                                        f"tmp/model_clothing_{dino_idx}_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png",
                                         format='PNG')
                                 sam_images.append(sam_result[2])
                                 mask_images.append(sam_result[1])
@@ -1602,6 +1602,9 @@ class OperatorSD(Operator):
                 return {'success': True, 'result': img_urls}
 
             elif proceed_mode == 'beautify':
+                pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
+                origin_image_path = f'tmp/mirror_origin_{pic_name}.png'
+                _input_image.save(origin_image_path, format='PNG')
                 # params: {
                 #                 gender_enable: genderEnable?.current?.inputValue,
                 #                 age_enable: ageEnable?.current?.inputValue,
@@ -1704,6 +1707,11 @@ class OperatorSD(Operator):
                     # celery_task.update_state(state='PROGRESS', meta={'progress': 95})
                     if self.update_progress(celery_task, self.redis_client, 99):
                         return {'success': True}
+                    else:
+                        # clear images
+                        for cache_img_fp in glob.glob(f'tmp/*{pic_name}'):
+                            if '_save' not in cache_img_fp:
+                                os.remove(cache_img_fp)
                     return {'success': True, 'result': img_urls}
             else:
                 params = ujson.loads(kwargs['params'][0])
