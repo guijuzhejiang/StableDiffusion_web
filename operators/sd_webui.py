@@ -1124,7 +1124,7 @@ class OperatorSD(Operator):
                     return {'success': False, 'result': '未接收到图片'}
                 else:
                     pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
-                    origin_image_path = f'tmp/model_origin_{pic_name}.png'
+                    origin_image_path = f'tmp/model_origin_{pic_name}_save.png'
                     _input_image.save(origin_image_path, format='PNG')
 
                     try:
@@ -1456,7 +1456,7 @@ class OperatorSD(Operator):
                                 if len(sam_bg_result) > 0:
                                     sam_bg_tmp_png_fp = []
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
-                                        cache_fp = f"tmp/model_{idx}_{pic_name}_bg_{res_idx}.png"
+                                        cache_fp = f"tmp/model_only_personseg_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png"
                                         sam_mask_img.save(cache_fp)
                                         sam_bg_tmp_png_fp.append({'name': cache_fp})
                                     else:
@@ -1612,7 +1612,7 @@ class OperatorSD(Operator):
 
             elif proceed_mode == 'beautify':
                 pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
-                origin_image_path = f'tmp/mirror_origin_{pic_name}.png'
+                origin_image_path = f'tmp/mirror_origin_{pic_name}_save.png'
                 _input_image.save(origin_image_path, format='PNG')
                 # params: {
                 #                 gender_enable: genderEnable?.current?.inputValue,
