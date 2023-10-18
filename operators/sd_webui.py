@@ -1478,6 +1478,9 @@ class OperatorSD(Operator):
                     # else:
                 # 背景生成
                 for ok_idx, ok_model_res in enumerate(ok_res):
+                    cache_fp = f"tmp/model_only_{ok_idx}_{pic_name}.png"
+                    ok_model_res.save(cache_fp)
+
                     task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
                     steps = 20
                     sampler_index = 18  # sampling method modules/sd_samplers_kdiffusion.py
