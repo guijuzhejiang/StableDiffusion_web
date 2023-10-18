@@ -124,7 +124,7 @@ def sam_predict(dino_model_name, text_prompt, box_threshold, input_image):
             point_coords=None,
             point_labels=None,
             boxes=transformed_boxes.to(device),
-            multimask_output=False)
+            multimask_output=True)
         masks = masks.permute(1, 0, 2, 3).cpu().numpy()
 
     else:
@@ -144,7 +144,7 @@ def sam_predict(dino_model_name, text_prompt, box_threshold, input_image):
             point_coords=point_coords if len(point_coords) > 0 else None,
             point_labels=point_labels if len(point_coords) > 0 else None,
             box=box,
-            multimask_output=False)
+            multimask_output=True)
         masks = masks[:, None, ...]
 
     # 连同区域数量最少
@@ -153,7 +153,7 @@ def sam_predict(dino_model_name, text_prompt, box_threshold, input_image):
     # if len(masks) > 1:
     #     masks = [masks[np.argmax([np.count_nonzero(m) for m in masks])]]
     # first
-    # masks = [masks[1]]
+    masks = [masks[1]]
 
     garbage_collect(sam)
     return create_mask_output(image_np, masks, boxes_filt), boxes_filt
