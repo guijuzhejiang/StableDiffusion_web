@@ -31,7 +31,7 @@ txt2img_width: gr.Slider = None
 txt2img_height: gr.Slider = None
 img2img_width: gr.Slider = None
 img2img_height: gr.Slider = None
-sam_model_name='sam_hq_vit_h.pth'
+sam_model_name='sam_hq_vit_l.pth'
 
 
 def clear_sam_cache():

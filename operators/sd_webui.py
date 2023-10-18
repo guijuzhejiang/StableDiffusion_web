@@ -1265,7 +1265,7 @@ class OperatorSD(Operator):
                                                                      resized_input_image if _model_mode == 0 else resized_clothing_image,
                                                                      resized_mask_image,
                                                                      resized_clothing_image]):
-                            cache_fp = f"tmp/model_{resized_img_type}_{pic_name}{'_save' if resized_img_type == 'resized_clothing' else ''}.png"
+                            cache_fp = f"tmp/model_{resized_img_type}_{pic_name}{'_save' if resized_img_type == 'resized_clothing' or resized_img_type == 'resized_input' else ''}.png"
                             cache_image.save(cache_fp)
                             sam_result_tmp_png_fp.append({'name': cache_fp})
 
