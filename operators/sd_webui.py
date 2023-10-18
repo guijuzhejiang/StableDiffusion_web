@@ -1114,7 +1114,7 @@ class OperatorSD(Operator):
                 # _dino_clothing_text_prompt = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear'
                 _dino_clothing_text_prompt = [
                     'clothing . pants . dress . shirt . t-shirt',
-                    'bra . bikini . bowtie . stocking . chain . underwear',
+                    'bra . bikini . bowtie . chain . underwear',
                 ]
                 # _dino_clothing_text_prompt_0 = 'clothing . pants . short . dress . shirt . t-shirt . skirt . underwear'
                 # _dino_clothing_text_prompt_1 = 'bra . bikini . bowtie . stocking . chain'
