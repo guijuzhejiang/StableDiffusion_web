@@ -1478,7 +1478,7 @@ class OperatorSD(Operator):
                     # else:
                 # 背景生成
                 for ok_idx, ok_model_res in enumerate(ok_res):
-                    cache_fp = f"tmp/model_only_{ok_idx}_{pic_name}.png"
+                    cache_fp = f"tmp/model_only_{ok_idx}_{pic_name}_save.png"
                     ok_model_res.save(cache_fp)
 
                     task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
