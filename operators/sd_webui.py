@@ -327,7 +327,7 @@ class OperatorSD(Operator):
                 # 正面
                 'light smile,looking at viewer,beautiful detailed face,beautiful detailed nose,beautiful detailed eyes',
                 # 侧面
-                f'{"" if lora_model_dict[_model_type]["gender"] == 1 else "<lora:sideface_v1.0:0.6>,sideface,"}facing to the side,,a side portrait photo of a people,(looking to the side:1.5)',
+                f'{"" if lora_model_dict[_model_type]["gender"] == 1 else "<lora:sideface_v1.0:0.6>,sideface,"}facing to the side,a side portrait photo of a people,(looking to the side:1.5)',
                 # 反面
                 '(a person with their back to the camera:1.5)'
             ]
