@@ -1086,6 +1086,8 @@ class OperatorSD(Operator):
             if self.update_progress(celery_task, self.redis_client, 5):
                 return {'success': True}
 
+            pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
+
             # 生成服装模特
             if proceed_mode == 'model':
                 params = ujson.loads(kwargs['params'][0])
@@ -1123,7 +1125,6 @@ class OperatorSD(Operator):
                 if _input_image is None:
                     return {'success': False, 'result': '未接收到图片'}
                 else:
-                    pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
                     origin_image_path = f'tmp/model_origin_{pic_name}_save.png'
                     _input_image.save(origin_image_path, format='PNG')
 
@@ -1257,11 +1258,7 @@ class OperatorSD(Operator):
                         resized_clothing_image = self.limit_and_compress_image(resized_clothing_image, _output_height)
                         resized_input_image = self.limit_and_compress_image(resized_input_image, _output_height)
                         resized_mask_image = self.limit_and_compress_image(resized_mask_image, _output_height)
-                        # new_mask_image = Image.new("RGBA", resized_mask_image.size, (0, 0, 0, 1))
-                        # new_mask_image.paste(resized_mask_image, (0, 0))
-                        # resized_mask_image = new_mask_image
 
-                        pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
                         sam_result_tmp_png_fp = []
                         for resized_img_type, cache_image in zip(["resized_input", "resized_mask", "resized_clothing"],
                                                                  [
@@ -1456,7 +1453,7 @@ class OperatorSD(Operator):
                                 if len(sam_bg_result) > 0:
                                     sam_bg_tmp_png_fp = []
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
-                                        cache_fp = f"tmp/model_only_personseg_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png"
+                                        cache_fp = f"tmp/model_only_person_seg_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png"
                                         sam_mask_img.save(cache_fp)
                                         sam_bg_tmp_png_fp.append({'name': cache_fp})
                                     else:
@@ -1611,7 +1608,6 @@ class OperatorSD(Operator):
                 return {'success': True, 'result': img_urls}
 
             elif proceed_mode == 'beautify':
-                pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
                 origin_image_path = f'tmp/mirror_origin_{pic_name}_save.png'
                 _input_image.save(origin_image_path, format='PNG')
                 # params: {
