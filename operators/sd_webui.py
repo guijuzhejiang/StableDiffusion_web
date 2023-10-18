@@ -10,6 +10,7 @@
 '''
 
 # import lib
+import glob
 import io
 import importlib
 import json
@@ -425,6 +426,7 @@ class OperatorSD(Operator):
         controlnet_args_unit3.enabled = False
 
         result_images = []
+        pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
 
         if _task_type == 'gender':
             # segment
@@ -434,9 +436,8 @@ class OperatorSD(Operator):
                 return {'success': False, 'result': '未检测到人体'}
             else:
                 sam_result_tmp_png_fp = []
-                pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
                 for idx, sam_mask_img in enumerate(sam_result):
-                    cache_fp = f"tmp/{idx}_{pic_name}.png"
+                    cache_fp = f"tmp/mirror_age_{idx}_{pic_name}{'_save' if idx == 2 else ''}.png"
                     sam_mask_img.save(cache_fp)
                     sam_result_tmp_png_fp.append({'name': cache_fp})
             # 性別
@@ -534,9 +535,8 @@ class OperatorSD(Operator):
                 return {'success': False, 'result': '未检测到人体'}
             else:
                 sam_result_tmp_png_fp = []
-                pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
                 for idx, sam_mask_img in enumerate(sam_result):
-                    cache_fp = f"tmp/{idx}_{pic_name}.png"
+                    cache_fp = f"tmp/mirror_age_{idx}_{pic_name}{'_save' if idx == 2 else ''}.png"
                     sam_mask_img.save(cache_fp)
                     sam_result_tmp_png_fp.append({'name': cache_fp})
 
@@ -637,9 +637,8 @@ class OperatorSD(Operator):
                 return {'success': False, 'result': '未检测到人脸'}
             else:
                 sam_result_tmp_png_fp = []
-                pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
                 for idx, sam_mask_img in enumerate(sam_result):
-                    cache_fp = f"tmp/{idx}_{pic_name}.png"
+                    cache_fp = f"tmp/face_expression_{idx}_{pic_name}{'_save' if idx == 2 else ''}.png"
                     sam_mask_img.save(cache_fp)
                     sam_result_tmp_png_fp.append({'name': cache_fp})
             # face_expression
@@ -739,9 +738,8 @@ class OperatorSD(Operator):
                 return {'success': False, 'result': '未检测到人脸'}
             else:
                 sam_result_tmp_png_fp = []
-                pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
                 for idx, sam_mask_img in enumerate(sam_result):
-                    cache_fp = f"tmp/{idx}_{pic_name}.png"
+                    cache_fp = f"tmp/eye_size_{idx}_{pic_name}{'_save' if idx == 2 else ''}.png"
                     sam_mask_img.save(cache_fp)
                     sam_result_tmp_png_fp.append({'name': cache_fp})
             # eye_size
@@ -838,9 +836,8 @@ class OperatorSD(Operator):
                 return {'success': False, 'result': '未检测到头发'}
             else:
                 sam_result_tmp_png_fp = []
-                pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
                 for idx, sam_mask_img in enumerate(sam_result):
-                    cache_fp = f"tmp/{idx}_{pic_name}.png"
+                    cache_fp = f"tmp/curly_hair_{idx}_{pic_name}{'_save' if idx == 2 else ''}.png"
                     sam_mask_img.save(cache_fp)
                     sam_result_tmp_png_fp.append({'name': cache_fp})
             # curly_hair
@@ -936,9 +933,8 @@ class OperatorSD(Operator):
                 return {'success': False, 'result': '未检测到人体'}
             else:
                 sam_result_tmp_png_fp = []
-                pic_name = ''.join([random.choice(string.ascii_letters) for c in range(15)])
                 for idx, sam_mask_img in enumerate(sam_result):
-                    cache_fp = f"tmp/{idx}_{pic_name}.png"
+                    cache_fp = f"tmp/muscle_{idx}_{pic_name}{'_save' if idx == 2 else ''}.png"
                     sam_mask_img.save(cache_fp)
                     sam_result_tmp_png_fp.append({'name': cache_fp})
             # muscle
@@ -1121,7 +1117,8 @@ class OperatorSD(Operator):
                 if _input_image is None:
                     return {'success': False, 'result': '未接收到图片'}
                 else:
-                    origin_image_path = f'tmp/origin_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png'
+                    pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
+                    origin_image_path = f'tmp/model_origin_{pic_name}.png'
                     _input_image.save(origin_image_path, format='PNG')
 
                     try:
@@ -1142,7 +1139,7 @@ class OperatorSD(Operator):
                             if len(sam_result) > 0:
                                 for idx, im in enumerate(sam_result):
                                     im.save(
-                                        f'tmp/{dino_idx}_{idx}_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
+                                        f"tmp/model_clothing_{dino_idx}_{idx}_{pic_name}{'_save' if idx == 2 else ''}.png",
                                         format='PNG')
                                 sam_images.append(sam_result[2])
                                 mask_images.append(sam_result[1])
@@ -1265,7 +1262,7 @@ class OperatorSD(Operator):
                                                                      resized_input_image if _model_mode == 0 else resized_clothing_image,
                                                                      resized_mask_image,
                                                                      resized_clothing_image]):
-                            cache_fp = f"tmp/{resized_img_type}_{pic_name}.png"
+                            cache_fp = f"tmp/model_{resized_img_type}_{pic_name}{'_save' if resized_img_type == 'resized_clothing' else ''}.png"
                             cache_image.save(cache_fp)
                             sam_result_tmp_png_fp.append({'name': cache_fp})
 
@@ -1453,7 +1450,7 @@ class OperatorSD(Operator):
                                 if len(sam_bg_result) > 0:
                                     sam_bg_tmp_png_fp = []
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
-                                        cache_fp = f"tmp/{idx}_{pic_name}_bg_{res_idx}.png"
+                                        cache_fp = f"tmp/model_{idx}_{pic_name}_bg_{res_idx}.png"
                                         sam_mask_img.save(cache_fp)
                                         sam_bg_tmp_png_fp.append({'name': cache_fp})
                                     else:
@@ -1596,6 +1593,12 @@ class OperatorSD(Operator):
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 95})
                 if self.update_progress(celery_task, self.redis_client, 95):
                     return {'success': True}
+                else:
+                    # clear images
+                    for cache_img_fp in glob.glob(f'tmp/*{pic_name}'):
+                        if '_save' not in cache_img_fp:
+                            os.remove(cache_img_fp)
+
                 return {'success': True, 'result': img_urls}
 
             elif proceed_mode == 'beautify':
