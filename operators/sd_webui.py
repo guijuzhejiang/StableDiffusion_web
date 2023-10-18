@@ -1058,6 +1058,12 @@ class OperatorSD(Operator):
                                    *sam_args)
 
         self.devices.torch_gc()
+
+        # clear images
+        for cache_img_fp in glob.glob(f'tmp/*{pic_name}*'):
+            if '_save' not in cache_img_fp:
+                os.remove(cache_img_fp)
+
         return res
 
     def __call__(self, *args, **kwargs):
@@ -1595,7 +1601,7 @@ class OperatorSD(Operator):
                     return {'success': True}
                 else:
                     # clear images
-                    for cache_img_fp in glob.glob(f'tmp/*{pic_name}'):
+                    for cache_img_fp in glob.glob(f'tmp/*{pic_name}*'):
                         if '_save' not in cache_img_fp:
                             os.remove(cache_img_fp)
 
@@ -1707,11 +1713,7 @@ class OperatorSD(Operator):
                     # celery_task.update_state(state='PROGRESS', meta={'progress': 95})
                     if self.update_progress(celery_task, self.redis_client, 99):
                         return {'success': True}
-                    else:
-                        # clear images
-                        for cache_img_fp in glob.glob(f'tmp/*{pic_name}'):
-                            if '_save' not in cache_img_fp:
-                                os.remove(cache_img_fp)
+
                     return {'success': True, 'result': img_urls}
             else:
                 params = ujson.loads(kwargs['params'][0])
