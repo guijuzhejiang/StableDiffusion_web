@@ -1,5 +1,5 @@
 {
-    "samples_save": false,
+    "samples_save": true,
     "samples_format": "png",
     "samples_filename_pattern": "",
     "save_images_add_number": true,
