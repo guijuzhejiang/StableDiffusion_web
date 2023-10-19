@@ -1259,13 +1259,15 @@ class OperatorSD(Operator):
                         resized_input_image = self.limit_and_compress_image(resized_input_image, _output_height)
                         resized_mask_image = self.limit_and_compress_image(resized_mask_image, _output_height)
 
+                        resized_input_image.save(f"tmp/model_resized_input_{pic_name}_save.png")
+                        resized_clothing_image.save(f"tmp/model_resized_clothing_{pic_name}_save.png")
                         sam_result_tmp_png_fp = []
                         for resized_img_type, cache_image in zip(["resized_input", "resized_mask", "resized_clothing"],
                                                                  [
                                                                      resized_input_image if _model_mode == 0 else resized_clothing_image,
                                                                      resized_mask_image,
                                                                      resized_clothing_image]):
-                            cache_fp = f"tmp/model_{resized_img_type}_{pic_name}{'_save' if resized_img_type == 'resized_clothing' or resized_img_type == 'resized_input' else ''}.png"
+                            cache_fp = f"tmp/model_{resized_img_type}_{pic_name}.png"
                             cache_image.save(cache_fp)
                             sam_result_tmp_png_fp.append({'name': cache_fp})
 
@@ -1453,7 +1455,7 @@ class OperatorSD(Operator):
                                 if len(sam_bg_result) > 0:
                                     sam_bg_tmp_png_fp = []
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
-                                        cache_fp = f"tmp/model_only_person_seg_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png"
+                                        cache_fp = f"tmp/model_only_person_seg_{res_idx}_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png"
                                         sam_mask_img.save(cache_fp)
                                         sam_bg_tmp_png_fp.append({'name': cache_fp})
                                     else:
