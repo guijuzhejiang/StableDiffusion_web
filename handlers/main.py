@@ -99,11 +99,11 @@ class Pay(HTTPMethodView):
         # 以native下单为例，下单成功后即可获取到'code_url'，将'code_url'转换为二维码，并用微信扫码即可进行支付测试。
         out_trade_no = datetime.now().strftime('%Y%m%d%H%M%S%f') + '_' + ''.join(
             [random.choice(string.ascii_letters) for c in range(8)])
-        description = 'guiju_ai_model'
         # 分为单位
         charge_points = int(request.form['amount'][0])
         charge_fee = float(request.form['fee'][0])
         total_price = int(charge_fee * 100) if account['access_level'] != 0 else 1
+        description = f'收银台(充值{charge_points}点)'
         code, message = request.app.ctx.wxpay.pay(
             description=description,
             out_trade_no=out_trade_no,
