@@ -35,7 +35,7 @@ async def sd_genreate(request: Request, ws):
             cost_points = 10
             if package['mode'] == 'hires':
                 if params.get('beautify_times'):
-                    cost_points = 10 if int(params['beautify_times']) == 2 else 16
+                    cost_points = 5 if int(params['beautify_times']) == 2 else 10
                 else:
                     _output_width = int(params['output_width'])
                     _output_height = int(params['output_height'])
