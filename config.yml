@@ -18,6 +18,7 @@ redis:
 storage_dirpath:
   user_dir: outputs/img2img-images/user_history
   user_beauty_dir: outputs/img2img-images/user_beauty_history
+  user_hair_dir: outputs/img2img-images/user_hair_history
   user_upload: outputs/img2img-images/user_upload
   hires_dir: outputs/img2img-images/hires
   lora_model_dir: /home/ray/Workspace/file/素材/头像/224/
@@ -47,5 +48,5 @@ wechatlogin:
   secret: 549d9da20952e20ed5cd86ec81303640
 supabase:
   key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogInNlcnZpY2Vfcm9sZSIsCiAgImlzcyI6ICJzdXBhYmFzZSIsCiAgImlhdCI6IDE2OTU4MzA0MDAsCiAgImV4cCI6IDE4NTM2ODMyMDAKfQ.QanqKpEYyjqgvl1ElcWw7JJAvUEzIC0e0w1pFfPOITE"
-#  url: "https://www.guijutech.com:8888"
-  url: "http://127.0.0.1:8888"
+  url: "https://www.guijutech.com:8888"
+#  url: "http://127.0.0.1:8888"

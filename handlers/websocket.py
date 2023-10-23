@@ -54,6 +54,12 @@ async def sd_genreate(request: Request, ws):
                 elif batch_size == 2:
                     cost_points = 8
 
+            elif package['mode'] == 'haircut':
+                batch_size = int(params['batch_size'])
+                if batch_size == 1:
+                    cost_points = 5
+                elif batch_size == 2:
+                    cost_points = 8
             else:
                 cost_points *= int(int(params['batch_size']))
 
@@ -62,13 +68,21 @@ async def sd_genreate(request: Request, ws):
             buf_result = {'success': True, 'result': None, 'act': None, 'type': package['mode']}
             if cost_points <= account['balance']:
                 # recv image
-                if package['mode'] == 'model' or package['mode'] == 'beautify':
-                    format_package['input_image'] = os.path.join(os.path.join(CONFIG['storage_dirpath']['user_upload']), f"{user_id}.png")
+                if package['mode'] == 'model' or package['mode'] == 'beautify' or package['mode'] == 'hair':
+                    format_package['input_image'] = os.path.join(CONFIG['storage_dirpath']['user_upload'], f"{user_id}.png")
                 else:
                     parsed_url = urlparse(package['chosen_image'])
                     # 获取查询参数
                     query_params = parse_qs(parsed_url.query)
-                    img_fp = os.path.join(CONFIG['storage_dirpath']['user_beauty_dir'] if query_params['category'][0] == 'beauty' else CONFIG['storage_dirpath']['user_dir'], query_params['uid'][0], query_params['imgpath'][0])
+
+                    category = query_params['category'][0]
+                    if category == 'hair':
+                        dir_storage_path = CONFIG['storage_dirpath']['user_hair_dir']
+                    elif category == 'beauty':
+                        dir_storage_path = CONFIG['storage_dirpath']['user_beauty_dir']
+                    else:
+                        dir_storage_path = CONFIG['storage_dirpath']['user_dir']
+                    img_fp = os.path.join(dir_storage_path, query_params['uid'][0], query_params['imgpath'][0])
                     format_package['input_image'] = img_fp
 
                 # send task

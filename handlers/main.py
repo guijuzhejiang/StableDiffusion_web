@@ -277,9 +277,18 @@ class Query(HTTPMethodView):
 class ImageProvider(HTTPMethodView):
     async def get(self, request):
         if request.args.get("uid"):
-
             user_id = urllib.parse.unquote(request.args.get("uid"))
-            fp = os.path.join(CONFIG['storage_dirpath']['user_beauty_dir'] if request.args.get("category") == 'beauty' else CONFIG['storage_dirpath']['user_dir'], user_id, request.args.get("imgpath"))
+
+            category = request.args.get("category")
+            if category == 'hair':
+                dir_storage_path = CONFIG['storage_dirpath']['user_hair_dir']
+            elif category == 'beauty':
+                dir_storage_path = CONFIG['storage_dirpath']['user_beauty_dir']
+            else:
+                dir_storage_path = CONFIG['storage_dirpath']['user_dir']
+            dir_user_path = os.path.join(dir_storage_path, user_id)
+
+            fp = os.path.join(dir_user_path, request.args.get("imgpath"))
         else:
             fp = os.path.join(CONFIG['storage_dirpath']['hires_dir'], request.args.get("imgpath"))
 
@@ -291,10 +300,16 @@ class FetchUserHistory(HTTPMethodView):
         try:
             user_id = request.form['user_id'][0]
             category = request.args.get("category")
-            dir_path = os.path.join(CONFIG['storage_dirpath']['user_beauty_dir'] if category else CONFIG['storage_dirpath']['user_dir'], user_id)
-            os.makedirs(dir_path, exist_ok=True)
+            if category == 'hair':
+                dir_storage_path = CONFIG['storage_dirpath']['user_hair_dir']
+            elif category == 'beauty':
+                dir_storage_path = CONFIG['storage_dirpath']['user_beauty_dir']
+            else:
+                dir_storage_path = CONFIG['storage_dirpath']['user_dir']
+            dir_user_path = os.path.join(dir_storage_path, user_id)
+            os.makedirs(dir_user_path, exist_ok=True)
 
-            result = [f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={category}" for img_fn in sorted(os.listdir(dir_path), reverse=True)]
+            result = [f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={category}" for img_fn in sorted(os.listdir(dir_user_path), reverse=True)]
             if len(result) < 10:
                 for i in range(10-len(result)):
                     result.append('')

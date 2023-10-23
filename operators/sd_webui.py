@@ -32,7 +32,8 @@ import ujson
 import cv2
 import numpy as np
 
-from lora_config import lora_model_dict, lora_gender_dict, lora_model_common_dict, lora_place_dict, lora_bg_common_dict
+from lora_config import lora_model_dict, lora_gender_dict, lora_model_common_dict, lora_place_dict, lora_bg_common_dict, \
+    lora_haircut_common_dict, lora_haircut_male_dict, lora_haircut_female_dict, lora_hair_color_dict
 from lib.celery_workshop.operator import Operator
 from utils.global_vars import CONFIG
 
@@ -89,6 +90,7 @@ class OperatorSD(Operator):
         self.scripts = getattr(importlib.import_module('modules'), 'scripts')
         self.sd_models = getattr(importlib.import_module('modules'), 'sd_models')
         self.sam = importlib.import_module('guiju.segment_anything_util.sam')
+        self.sam_h = importlib.import_module('guiju.segment_anything_util.sam_h')
         # self.sam_predict = importlib.import_module('guiju.segment_anything_util.sam.sam_predict')
         self.predict_image = getattr(importlib.import_module('guiju.predictor_opennsfw2'), 'predict_image')
         self.logging = getattr(importlib.import_module('lib.common.common_util'), 'logging')
@@ -110,6 +112,7 @@ class OperatorSD(Operator):
         # init
         self.initialize()
         self.sam.sam = self.sam.init_sam_model()
+        self.sam_h.sam = self.sam_h.init_sam_model()
         dino_model, dino_name = self.dino.load_dino_model2("GroundingDINO_SwinB (938MB)")
         self.dino.dino_model_cache[dino_name] = dino_model
 
@@ -1066,6 +1069,200 @@ class OperatorSD(Operator):
 
         return res
 
+
+    def proceed_hair(self, _selected_index, _task_type, _batch_size, _init_img, _pic_name, return_list=True, gender='male'):
+        # common
+        prompt_styles = None
+        sketch = None
+        init_img_with_mask = None
+        inpaint_color_sketch = None
+        inpaint_color_sketch_orig = None
+        init_img_inpaint = None
+        init_mask_inpaint = None
+        mask_alpha = 0
+        restore_faces = False
+        tiling = False
+        n_iter = 1
+        image_cfg_scale = 1.5
+        seed = -1.0
+        subseed = -1.0
+        subseed_strength = 0
+        seed_resize_from_h = 0
+        seed_resize_from_w = 0
+        seed_enable_extras = False
+        selected_scale_tab = 0
+        scale_by = 1
+        inpaint_full_res_padding = 32
+        img2img_batch_input_dir = ''
+        img2img_batch_output_dir = ''
+        img2img_batch_inpaint_mask_dir = ''
+        override_settings_texts = []
+        # controlnet args
+        cnet_idx = 1
+        controlnet_args_unit1 = self.scripts.scripts_img2img.alwayson_scripts[
+            cnet_idx].get_default_ui_unit()
+        controlnet_args_unit1.enabled = False
+        controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
+        controlnet_args_unit2.enabled = False
+        controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
+        controlnet_args_unit3.enabled = False
+
+        adetail_enabled = False
+        face_args = {'ad_model': 'face_yolov8n.pt',
+                     'ad_prompt': f'',
+                     'ad_negative_prompt': '',
+                     'ad_confidence': 0.3,
+                     'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
+                     'ad_y_offset': 0,
+                     'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                     'ad_denoising_strength': 0.4,
+                     'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
+                     'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
+                     'ad_inpaint_height': 512,
+                     'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
+                     'ad_cfg_scale': 7,
+                     'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
+                     'ad_restore_face': False,
+                     'ad_controlnet_model': 'None',
+                     'ad_controlnet_module': 'inpaint_global_harmonious',
+                     'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
+                     'ad_controlnet_guidance_end': 1,
+                     'is_api': ()}
+        hand_args = {'ad_model': 'None',
+                     'ad_prompt': '',
+                     'ad_negative_prompt': '',
+                     'ad_confidence': 0.3,
+                     'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
+                     'ad_y_offset': 0,
+                     'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                     'ad_denoising_strength': 0.4,
+                     'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
+                     'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
+                     'ad_inpaint_height': 512,
+                     'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
+                     'ad_cfg_scale': 7,
+                     'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
+                     'ad_restore_face': False,
+                     'ad_controlnet_model': 'None',
+                     'ad_controlnet_module': 'inpaint_global_harmonious',
+                     'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
+                     'ad_controlnet_guidance_end': 1,
+                     'is_api': ()}
+
+        cfg_scale = 10
+        mask_blur = 4
+        resize_mode = 0  # just resize
+        sampler_index = 15
+        inpaint_full_res = 1  # choices=["Whole picture", "Only masked"]
+        inpainting_fill = 1  # masked content original
+        denoising_strength = 1
+        steps = 20
+
+        if _task_type == 'haircut':
+            # 切割face.glasses
+            sam_result, person_boxes = self.sam_h.sam_predict(self.dino_model_name, 'face.glasses',
+                                                              0.5,
+                                                              _init_img.convert('RGBA'))
+        else:
+            # 切割hair
+            sam_result, person_boxes = self.sam_h.sam_predict(self.dino_model_name, 'hair',
+                                                              0.5,
+                                                              _init_img.convert('RGBA'))
+        sam_result_tmp_png_fp = []
+        if len(sam_result) > 0:
+            for idx, im in enumerate(sam_result):
+                cache_fp = f"tmp/hair_{_task_type}_{idx}_{_pic_name}{'_save' if idx == 0 else ''}.png"
+                im.save(cache_fp, format='PNG')
+                sam_result_tmp_png_fp.append({'name': cache_fp})
+            else:
+                sam_result_tmp_png_fp[0] = sam_result_tmp_png_fp[-1]
+
+        else:
+            return {'success': False, 'result': '未检测人脸或头发'}
+
+        # img2img
+        inpainting_mask_invert = 1 if _task_type == 'haircut' else 0  # 0: inpaint masked 1: inpaint not masked
+        task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
+
+        if _task_type == 'haircut':
+            sd_positive_prompt = ','.join([lora_haircut_male_dict[_selected_index]['prompt'] if gender == 'male' else
+                                           lora_haircut_female_dict[_selected_index]['prompt'],
+                                           lora_haircut_common_dict['positive_prompt'], '(black hair:1.3)'])
+            sd_negative_prompt = lora_haircut_common_dict['negative_prompt']
+        else:
+            sd_positive_prompt = lora_hair_color_dict[_selected_index]['prompt']
+            sd_negative_prompt = lora_haircut_common_dict['negative_prompt']
+
+        print(f"-------------------{_task_type} logger-----------------")
+        print(f"sd_positive_prompt: {sd_positive_prompt}")
+        print(f"sd_negative_prompt: {sd_negative_prompt}")
+        print(f"dino_prompt: {'face.glasses' if _task_type=='haircut' else 'hair'}")
+        print(f"denoising_strength: {denoising_strength}")
+        print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
+
+        sam_args = [0,
+                    adetail_enabled, face_args, hand_args,  # adetail args
+                    controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
+                    # controlnet args
+                    True, False, 0, _init_img,
+                    sam_result_tmp_png_fp,
+                    0,  # sam_output_chosen_mask
+                    False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                    '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
+                    True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
+                    '',
+                    128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
+                    ['left', 'right', 'up', 'down'],
+                    False, False, 'positive', 'comma', 0, False, False, '',
+                    '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
+                    64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
+                    None,
+                    False,
+                    None, None,
+                    False, None, None, False, 50
+                    ]
+
+        _input_image_width, _input_image_height = _init_img.size
+        res = self.img2img.img2img(task_id,
+                                            4,
+                                            sd_positive_prompt,
+                                            sd_negative_prompt,
+                                            prompt_styles, _init_img,
+                                            sketch,
+                                            init_img_with_mask, inpaint_color_sketch,
+                                            inpaint_color_sketch_orig,
+                                            init_img_inpaint, init_mask_inpaint,
+                                            steps, sampler_index, mask_blur, mask_alpha,
+                                            inpainting_fill,
+                                            restore_faces,
+                                            tiling,
+                                            n_iter,
+                                            _batch_size,  # batch_size
+                                            cfg_scale, image_cfg_scale,
+                                            denoising_strength, seed,
+                                            subseed,
+                                            subseed_strength, seed_resize_from_h,
+                                            seed_resize_from_w,
+                                            seed_enable_extras,
+                                            selected_scale_tab, _input_image_height,
+                                            _input_image_width,
+                                            scale_by,
+                                            resize_mode,
+                                            inpaint_full_res,
+                                            inpaint_full_res_padding, inpainting_mask_invert,
+                                            img2img_batch_input_dir,
+                                            img2img_batch_output_dir,
+                                            img2img_batch_inpaint_mask_dir,
+                                            override_settings_texts,
+                                            *sam_args)
+
+        self.devices.torch_gc()
+
+        if return_list:
+            return [x.convert('RGBA') for x in res[0]]
+        else:
+            return res[0][0].convert('RGBA')
+
     def __call__(self, *args, **kwargs):
         try:
             print("operation start !!!!!!!!!!!!!!!!!!!!!!!!!!")
@@ -1088,8 +1285,95 @@ class OperatorSD(Operator):
 
             pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
 
+            if proceed_mode == 'hair':
+                params = ujson.loads(kwargs['params'][0])
+                _batch_size = int(params['batch_size'])
+                _haircut_style = int(params['haircut'])
+                _hair_color = int(params['hair_color'])
+                _haircut_enable = bool(params['haircut_enable'])
+                _hair_color_enable = bool(params['hair_color_enable'])
+                _gender = str(params['gender'])
+
+                if _input_image is None:
+                    return {'success': False, 'result': '未接收到图片'}
+                else:
+                    origin_image_path = f'tmp/hair_origin_{pic_name}_save.png'
+                    _input_image.save(origin_image_path, format='PNG')
+
+                    # limit 448
+                    if min(_input_image_width, _input_image_height) < 448:
+                        if _input_image_width < _input_image_height:
+                            new_width = 448
+                            new_height = int(_input_image_height / _input_image_width * new_width)
+                        else:
+                            new_height = 448
+                            new_width = int(_input_image_width / _input_image_height * new_height)
+                        _input_image = _input_image.resize((new_width, new_height))
+
+                    _input_image = _input_image.convert('RGBA')
+                    _input_image_width, _input_image_height = _input_image.size
+
+                    if self.update_progress(celery_task, self.redis_client, 10):
+                        return {'success': True}
+
+                    hair_result = []
+                    # haircut
+                    if _haircut_enable:
+                        hair_result = self.proceed_hair(_haircut_style, 'haircut', _batch_size, _input_image, pic_name, return_list=True, gender=_gender)
+                        if isinstance(hair_result, dict):
+                            return hair_result
+
+                    if self.update_progress(celery_task, self.redis_client, 50):
+                        return {'success': True}
+
+                    # hair color
+                    if _hair_color_enable:
+                        if _haircut_enable:
+                            for index, haircut_res in enumerate(hair_result):
+                                hair_color_res = self.proceed_hair(_hair_color, 'hair_color', 1, haircut_res, pic_name, return_list=False)
+                                if isinstance(hair_color_res, dict):
+                                    return hair_color_res
+                                else:
+                                    hair_result[index] = hair_color_res
+
+                        else:
+                            hair_result = self.proceed_hair(_hair_color, 'hair_color', _batch_size, _input_image, pic_name, return_list=True)
+                            if isinstance(hair_result, dict):
+                                return hair_result
+
+                    # storage img
+                    img_urls = []
+                    dir_path = os.path.join(CONFIG['storage_dirpath']['user_hair_dir'], user_id)
+                    os.makedirs(dir_path, exist_ok=True)
+                    for res_idx, res_img in enumerate(hair_result):
+                        img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"
+                        res_img.convert("RGB").save(os.path.join(dir_path, img_fn), format="jpeg", quality=80, lossless=True)
+
+                        # 限制缓存10张
+                        cache_list = sorted(os.listdir(dir_path))
+                        if len(cache_list) > 10:
+                            os.remove(os.path.join(dir_path, cache_list[0]))
+                    else:
+                        for img_fn in sorted(os.listdir(dir_path), reverse=True):
+                            url_fp = f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category=hair"
+                            img_urls.append(url_fp)
+                        if len(img_urls) < 10:
+                            for i in range(10 - len(img_urls)):
+                                img_urls.append('')
+
+                    # celery_task.update_state(state='PROGRESS', meta={'progress': 95})
+                    if self.update_progress(celery_task, self.redis_client, 90):
+                        return {'success': True}
+                    else:
+                        # clear images
+                        for cache_img_fp in glob.glob(f'tmp/*{pic_name}*'):
+                            if '_save' not in cache_img_fp:
+                                os.remove(cache_img_fp)
+
+                    return {'success': True, 'result': img_urls}
+
             # 生成服装模特
-            if proceed_mode == 'model':
+            elif proceed_mode == 'model':
                 params = ujson.loads(kwargs['params'][0])
                 _cloth_part = 0
                 _batch_size = int(params['batch_size'])
