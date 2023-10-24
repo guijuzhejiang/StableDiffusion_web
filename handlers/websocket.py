@@ -33,35 +33,39 @@ async def sd_genreate(request: Request, ws):
 
             # cal prices
             cost_points = 10
+            batch_size = int(params['batch_size'])
             if package['mode'] == 'hires':
-                if params.get('beautify_times'):
-                    cost_points = 5 if int(params['beautify_times']) == 2 else 10
+                if params.get('hires_times'):
+                    cost_points = 5 if int(params['hires_times']) == 2 else 10
                 else:
                     _output_width = int(params['output_width'])
                     _output_height = int(params['output_height'])
 
-                    cost_points = 1
+                    cost_points = 5
                     pixel_sum = _output_width + _output_height
                     if pixel_sum >= 2561:
-                        cost_points = 16
+                        cost_points = 10
                     if pixel_sum >= 4681:
-                        cost_points = 20
+                        cost_points = 15
 
             elif package['mode'] == 'beautify':
-                batch_size = int(params['batch_size'])
                 if batch_size == 1:
                     cost_points = 5
                 elif batch_size == 2:
                     cost_points = 8
 
             elif package['mode'] == 'haircut':
-                batch_size = int(params['batch_size'])
                 if batch_size == 1:
                     cost_points = 5
                 elif batch_size == 2:
                     cost_points = 8
             else:
-                cost_points *= int(int(params['batch_size']))
+                if batch_size == 1:
+                    cost_points = 10
+                elif batch_size == 2:
+                    cost_points = 15
+                else:
+                    cost_points = 18
 
             # check balance
             account = (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[0]

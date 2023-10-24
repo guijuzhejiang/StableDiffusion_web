@@ -2001,6 +2001,7 @@ class OperatorSD(Operator):
 
                     return {'success': True, 'result': img_urls}
             else:
+                # hires
                 params = ujson.loads(kwargs['params'][0])
                 # _input_image = base64_to_pil(params['input_image'])
                 _output_width = int(params['output_width'])
