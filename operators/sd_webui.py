@@ -1071,6 +1071,8 @@ class OperatorSD(Operator):
 
 
     def proceed_hair(self, _selected_index, _task_type, _batch_size, _init_img, _pic_name, return_list=True, gender='male'):
+        uid_name = ''.join([random.choice(string.ascii_letters) for c in range(4)])
+
         # common
         prompt_styles = None
         sketch = None
@@ -1171,7 +1173,7 @@ class OperatorSD(Operator):
         sam_result_tmp_png_fp = []
         if len(sam_result) > 0:
             for idx, im in enumerate(sam_result):
-                cache_fp = f"tmp/hair_{_task_type}_{idx}_{_pic_name}{'_save' if idx == 0 else ''}.png"
+                cache_fp = f"tmp/hair_{_task_type}_{idx}_{uid_name}_{_pic_name}{'_save' if idx == 0 else ''}.png"
                 im.save(cache_fp, format='PNG')
                 sam_result_tmp_png_fp.append({'name': cache_fp})
             else:
