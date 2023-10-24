@@ -1303,7 +1303,7 @@ class OperatorSD(Operator):
                     _input_image.save(origin_image_path, format='PNG')
 
                     # preprocess
-                    sam_result, person_boxes = self.sam_h.sam_predict(self.dino_model_name, 'head',
+                    sam_result, person_boxes = self.sam_h.sam_predict(self.dino_model_name, 'head.hair',
                                                                       0.4,
                                                                       _input_image.convert('RGBA'))
                     if len(sam_result) == 0:
