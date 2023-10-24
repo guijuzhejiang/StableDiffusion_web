@@ -314,7 +314,7 @@ lora_place_dict = {
 
 # 头发
 lora_haircut_common_dict = {
-    'positive_prompt': 'fluffy hair,lush hair,(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo, realistic,character close-up,<lora:more_details:1>,(white shirt:1.3),(simple background:1.3),(white background:1.3)',
+    'positive_prompt': 'fluffy hair,lush hair,(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo, realistic,character close-up,<lora:more_details:1>,(black shirt:1.3),(simple background:1.3)',
     'negative_prompt': '(jewelry:1.5),(NSFW:1.8),(hands),(feet),(shoes),(mask),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(humans:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
 }
 
