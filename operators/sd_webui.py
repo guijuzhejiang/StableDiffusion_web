@@ -1330,11 +1330,15 @@ class OperatorSD(Operator):
                     if _hair_color_enable:
                         if _haircut_enable:
                             for index, haircut_res in enumerate(hair_result):
+                                cache_fp = f"tmp/hair_haircut_res_{index}_{pic_name}_save.png"
+                                haircut_res.save(cache_fp)
+
                                 hair_color_res = self.proceed_hair(_hair_color, 'hair_color', 1, haircut_res, pic_name, return_list=False)
                                 if isinstance(hair_color_res, dict):
                                     return hair_color_res
                                 else:
                                     hair_result[index] = hair_color_res
+
 
                         else:
                             hair_result = self.proceed_hair(_hair_color, 'hair_color', _batch_size, _input_image, pic_name, return_list=True)
