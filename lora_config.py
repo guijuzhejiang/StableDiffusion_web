@@ -346,7 +346,7 @@ lora_haircut_male_dict = {
     8: {'label': '半寸头',
         'prompt': '<lora:half_buzzcut_hairstyle:0.5>,(half_buzzcut_hairstyle:1.3)',
         },
-    9: {'label': '刘海微卷短发',
+    9: {'label': '无刘海短发',
         'prompt': '<lora:SBobHaircut:0.8>,short hair',
         },
     10: {'label': '大卷短发',
@@ -403,6 +403,7 @@ lora_haircut_female_dict = {
     12: {'label': '短发',
         'prompt': '<lora:pixie_hairstyle-05:0.5>,(pixie_hairstyle:1.3)',
         },
+    #delete
     13: {'label': '长直发',
         'prompt': '<lora:long_hime_cut_hairstyle:0.5>,(long_hime_cut_hairstyle:1.3)',
         },
@@ -424,9 +425,11 @@ lora_haircut_female_dict = {
     19: {'label': '偏分',
         'prompt': '<lora:a_line_hairstyle:0.5>,(a_line_haircut:1.3)',
         },
+#delete
     20: {'label': '侧掠式',
         'prompt': '<lora:side_swept_hair-05:0.5>,(ponytail:1.3)',
         },
+#delete
     21: {'label': '半马尾',
         'prompt': '<lora:half_ponytail_hairstyle-10:0.5>,(half_ponytail_hairstyle:1.3)',
         },
@@ -439,7 +442,7 @@ lora_haircut_female_dict = {
     24: {'label': '长马尾',
         'prompt': '<lora:long_ponytail_hairstyle:0.5>,(long_ponytail_hairstyle:1.3)',
         },
-    25: {'label': '刘海微卷短发',
+    25: {'label': '无刘海短发',
         'prompt': '<lora:SBobHaircut:0.8>,short hair',
         },
     26: {'label': '大卷短发',
