@@ -1168,7 +1168,7 @@ class OperatorSD(Operator):
         else:
             # 切割hair
             sam_result, person_boxes = self.sam_h.sam_predict(self.dino_model_name, 'hair',
-                                                              0.5,
+                                                              0.4,
                                                               _init_img.convert('RGBA'))
         sam_result_tmp_png_fp = []
         if len(sam_result) > 0:
@@ -1180,7 +1180,7 @@ class OperatorSD(Operator):
                 sam_result_tmp_png_fp[0] = sam_result_tmp_png_fp[-1]
 
         else:
-            return {'success': False, 'result': '未检测人脸或头发'}
+            return {'success': False, 'result': f'未检测到{"人脸" if _task_type=="haircut" else "头发"}'}
 
         # img2img
         inpainting_mask_invert = 1 if _task_type == 'haircut' else 0  # 0: inpaint masked 1: inpaint not masked
@@ -1357,9 +1357,9 @@ class OperatorSD(Operator):
                         _input_image = _input_image.crop(person_box)
                         _input_image_width, _input_image_height = _input_image.size
                         # limit 512
-                        max_edge = max(_input_image_width, _input_image_height)
-                        max_index = [_input_image_width, _input_image_height].index(max_edge)
-                        if max_index == 0:
+                        min_edge = min(_input_image_width, _input_image_height)
+                        min_index = [_input_image_width, _input_image_height].index(min_edge)
+                        if min_index == 0:
                             _input_image = _input_image.resize((512, int(_input_image_height/_input_image_width*512)))
                         else:
                             _input_image = _input_image.resize((int(_input_image_width/_input_image_height*512), 512))
