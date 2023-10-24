@@ -1155,7 +1155,7 @@ class OperatorSD(Operator):
         mask_blur = 4
         resize_mode = 0  # just resize
         sampler_index = 15
-        inpaint_full_res = 1  # choices=["Whole picture", "Only masked"]
+        inpaint_full_res = 0 if _task_type == 'haircut' else 1 # choices=["Whole picture", "Only masked"]
         inpainting_fill = 1  # masked content original
         denoising_strength = 1
         steps = 20
