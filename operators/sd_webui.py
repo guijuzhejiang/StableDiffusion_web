@@ -1201,7 +1201,7 @@ class OperatorSD(Operator):
             controlnet_args_unit1.guidance_start = 0  # ending control step
             controlnet_args_unit1.image = None
             controlnet_args_unit1.low_vram = False
-            controlnet_args_unit1.model = 'control_v11p_sd15_canny'
+            controlnet_args_unit1.model = 't2iadapter_canny_sd14v1'
             controlnet_args_unit1.module = 'canny'
             controlnet_args_unit1.pixel_perfect = True
             controlnet_args_unit1.resize_mode = 'Resize and Fill'
