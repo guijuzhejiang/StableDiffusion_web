@@ -1303,7 +1303,7 @@ class OperatorSD(Operator):
                     _input_image.save(origin_image_path, format='PNG')
 
                     # preprocess
-                    sam_result, person_boxes = self.sam_h.sam_predict(self.dino_model_name, 'person',
+                    sam_result, person_boxes = self.sam_h.sam_predict(self.dino_model_name, 'head',
                                                                       0.4,
                                                                       _input_image.convert('RGBA'))
                     if len(sam_result) == 0:
@@ -1315,6 +1315,24 @@ class OperatorSD(Operator):
                         person_box = [min(x_list), min(y_list), max(x_list), max(y_list)]
                         person_width = person_box[2] - person_box[0]
                         person_height = person_box[3] - person_box[1]
+                        person_box[0] = person_box[0] - int(person_width*0.2)
+                        if person_box[0] < 0:
+                            person_box[0] = 0
+                        person_box[1] = person_box[1] - int(person_height*0.2)
+                        if person_box[1] < 0:
+                            person_box[1] = 0
+                        person_box[2] = person_box[2] + int(person_width*0.2)
+                        if person_box[2] > _input_image_width:
+                            person_box[2] = _input_image_width
+                        person_box[3] = person_box[3] + int(person_height*0.2)
+                        if person_box[3] > _input_image_height:
+                            person_box[3] = _input_image_height
+
+                        person_width = person_box[2] - person_box[0]
+                        person_height = person_box[3] - person_box[1]
+                        if person_box[3] > _input_image_height:
+                            person_box[3] = _input_image_height
+
                         if person_width < person_height:
                             padding_left = int((person_height-person_width) / 2)
                             person_box[0] = person_box[0] - padding_left
@@ -1342,9 +1360,9 @@ class OperatorSD(Operator):
                         max_edge = max(_input_image_width, _input_image_height)
                         max_index = [_input_image_width, _input_image_height].index(max_edge)
                         if max_index == 0:
-                            _input_image = _input_image.resize((512, _input_image_height/_input_image_width*512))
+                            _input_image = _input_image.resize((512, int(_input_image_height/_input_image_width*512)))
                         else:
-                            _input_image = _input_image.resize((_input_image_width/_input_image_height*512, 512))
+                            _input_image = _input_image.resize((int(_input_image_width/_input_image_height*512), 512))
 
                         cache_fp = f"tmp/hair_resized_{pic_name}_save.png"
                         _input_image.save(cache_fp)
