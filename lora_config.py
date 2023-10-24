@@ -312,9 +312,9 @@ lora_place_dict = {
          },
 }
 
-# 头发
+# 头发 fluffy hair,lush hair,
 lora_haircut_common_dict = {
-    'positive_prompt': 'fluffy hair,lush hair,(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo, realistic,character close-up,<lora:more_details:1>,(black shirt:1.3),(simple background:1.3)',
+    'positive_prompt': 'lush hair,(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo, realistic,character close-up,<lora:more_details:1>,(black shirt:1.3),(simple background:1.3)',
     'negative_prompt': '(jewelry:1.5),(NSFW:1.8),(hands:1.3),(feet:1.3),(shoes:1.3),(mask:1.3),(glove:1.3),(fingers:1.3),(legs),(toes:1.3),(digits:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
 }
 
@@ -349,10 +349,10 @@ lora_haircut_male_dict = {
     9: {'label': '刘海微卷短发',
         'prompt': '<lora:SBobHaircut:0.8>,short hair',
         },
-    10: {'label': '锁骨卷发',
+    10: {'label': '大卷短发',
         'prompt': '<lora:wolf_cut:0.8>,wolf_cut',
         },
-    11: {'label': '中分短卷',
+    11: {'label': '小卷短发',
         'prompt': '<lora:wavy_centerparted:1>,wavy_centerparted',
         },
     12: {'label': '蘑菇頭',
@@ -442,10 +442,10 @@ lora_haircut_female_dict = {
     25: {'label': '刘海微卷短发',
         'prompt': '<lora:SBobHaircut:0.8>,short hair',
         },
-    26: {'label': '锁骨卷发',
+    26: {'label': '大卷短发',
         'prompt': '<lora:wolf_cut:0.8>,wolf_cut',
         },
-    27: {'label': '中分短卷',
+    27: {'label': '小卷短发',
         'prompt': '<lora:wavy_centerparted:1>,wavy_centerparted',
         },
     28: {'label': '蘑菇頭',
