@@ -1191,7 +1191,9 @@ class OperatorSD(Operator):
                                            lora_haircut_common_dict['positive_prompt']])
             sd_negative_prompt = lora_haircut_common_dict['negative_prompt']
         else:
-            sd_positive_prompt = lora_hair_color_dict[_selected_index]['prompt']
+            # sd_positive_prompt = lora_hair_color_dict[_selected_index]['prompt']
+            sd_positive_prompt = ','.join(['(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo, realistic,',
+                                           lora_haircut_common_dict['positive_prompt']])
             sd_negative_prompt = lora_haircut_common_dict['negative_prompt']
 
             controlnet_args_unit1.enabled = True
