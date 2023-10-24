@@ -1302,15 +1302,60 @@ class OperatorSD(Operator):
                     origin_image_path = f'tmp/hair_origin_{pic_name}_save.png'
                     _input_image.save(origin_image_path, format='PNG')
 
-                    # limit 448
-                    if min(_input_image_width, _input_image_height) < 448:
-                        if _input_image_width < _input_image_height:
-                            new_width = 448
-                            new_height = int(_input_image_height / _input_image_width * new_width)
+                    # preprocess
+                    sam_result, person_boxes = self.sam_h.sam_predict(self.dino_model_name, 'person',
+                                                                      0.4,
+                                                                      _input_image.convert('RGBA'))
+                    if len(sam_result) == 0:
+                        return {'success': False, 'result': '未检测到人脸'}
+                    else:
+                        # get max area clothing box
+                        x_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 0 or i == 2]
+                        y_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 1 or i == 3]
+                        person_box = [min(x_list), min(y_list), max(x_list), max(y_list)]
+                        person_width = person_box[2] - person_box[0]
+                        person_height = person_box[3] - person_box[1]
+                        if person_width < person_height:
+                            padding_left = int((person_height-person_width) / 2)
+                            person_box[0] = person_box[0] - padding_left
+                            if person_box[0] < 0:
+                                person_box[0] = 0
+                            padding_right = person_height - person_width - padding_left
+                            person_box[2] = person_box[2] + padding_right
+                            if person_box[2] > _input_image_width:
+                                person_box[2] = _input_image_width
+
+                        if person_width > person_height:
+                            padding_top = int((person_width-person_height) / 2)
+                            person_box[1] = person_box[1] - padding_top
+                            if person_box[1] < 0:
+                                person_box[1] = 0
+                            padding_bottom = person_width-person_height - padding_top
+                            person_box[3] = person_box[3] + padding_bottom
+                            if person_box[3] > _input_image_height:
+                                person_box[3] = _input_image_height
+
+                        # crop
+                        _input_image = _input_image.crop(person_box)
+                        _input_image_width, _input_image_height = _input_image.size
+                        # limit 512
+                        max_edge = max(_input_image_width, _input_image_height)
+                        max_index = [_input_image_width, _input_image_height].index(max_edge)
+                        if max_index == 0:
+                            _input_image = _input_image.resize((512, _input_image_height/_input_image_width*512))
                         else:
-                            new_height = 448
-                            new_width = int(_input_image_width / _input_image_height * new_height)
-                        _input_image = _input_image.resize((new_width, new_height))
+                            _input_image = _input_image.resize((_input_image_width/_input_image_height*512, 512))
+
+                        cache_fp = f"tmp/hair_resized_{pic_name}_save.png"
+                        _input_image.save(cache_fp)
+                        # if min(_input_image_width, _input_image_height) < 512:
+                        #     if _input_image_width < _input_image_height:
+                        #         new_width = 448
+                        #         new_height = int(_input_image_height / _input_image_width * new_width)
+                        #     else:
+                        #         new_height = 448
+                        #         new_width = int(_input_image_width / _input_image_height * new_height)
+                        #     _input_image = _input_image.resize((new_width, new_height))
 
                     _input_image = _input_image.convert('RGBA')
                     _input_image_width, _input_image_height = _input_image.size
