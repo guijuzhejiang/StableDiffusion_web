@@ -1188,7 +1188,7 @@ class OperatorSD(Operator):
         if _task_type == 'haircut':
             sd_positive_prompt = ','.join([lora_haircut_male_dict[_selected_index]['prompt'] if gender == 'male' else
                                            lora_haircut_female_dict[_selected_index]['prompt'],
-                                           lora_haircut_common_dict['positive_prompt'], '(black hair:1.3)'])
+                                           lora_haircut_common_dict['positive_prompt']])
             sd_negative_prompt = lora_haircut_common_dict['negative_prompt']
         else:
             sd_positive_prompt = lora_hair_color_dict[_selected_index]['prompt']
