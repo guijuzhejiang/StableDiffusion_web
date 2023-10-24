@@ -1103,7 +1103,6 @@ class OperatorSD(Operator):
         cnet_idx = 1
         controlnet_args_unit1 = self.scripts.scripts_img2img.alwayson_scripts[
             cnet_idx].get_default_ui_unit()
-        controlnet_args_unit1.enabled = False
         controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
         controlnet_args_unit2.enabled = False
         controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
@@ -1157,7 +1156,7 @@ class OperatorSD(Operator):
         sampler_index = 15
         inpaint_full_res = 0 if _task_type == 'haircut' else 1 # choices=["Whole picture", "Only masked"]
         inpainting_fill = 1  # masked content original
-        denoising_strength = 1
+        denoising_strength = 1 if _task_type == 'haircut' else 0.8
         steps = 20
 
         if _task_type == 'haircut':
@@ -1195,12 +1194,30 @@ class OperatorSD(Operator):
             sd_positive_prompt = lora_hair_color_dict[_selected_index]['prompt']
             sd_negative_prompt = lora_haircut_common_dict['negative_prompt']
 
+            controlnet_args_unit1.enabled = True
+            controlnet_args_unit1.batch_images = ''
+            controlnet_args_unit1.control_mode = 'Balanced'
+            controlnet_args_unit1.guidance_end = 1
+            controlnet_args_unit1.guidance_start = 0  # ending control step
+            controlnet_args_unit1.image = None
+            controlnet_args_unit1.low_vram = False
+            controlnet_args_unit1.model = 'control_v11p_sd15_canny'
+            controlnet_args_unit1.module = 'canny'
+            controlnet_args_unit1.pixel_perfect = True
+            controlnet_args_unit1.resize_mode = 'Resize and Fill'
+            controlnet_args_unit1.processor_res = 512
+            controlnet_args_unit1.threshold_a = 64
+            controlnet_args_unit1.threshold_b = 64
+            controlnet_args_unit1.weight = 1
+
         print(f"-------------------{_task_type} logger-----------------")
         print(f"sd_positive_prompt: {sd_positive_prompt}")
         print(f"sd_negative_prompt: {sd_negative_prompt}")
         print(f"dino_prompt: {'face.glasses' if _task_type=='haircut' else 'hair'}")
         print(f"denoising_strength: {denoising_strength}")
         print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
+
+
 
         sam_args = [0,
                     adetail_enabled, face_args, hand_args,  # adetail args
