@@ -426,10 +426,7 @@ lora_haircut_female_dict = {
     23: {'label': '微卷短发',
         'prompt': '<lora:wolf_cut:0.8>,wolf_cut',
         },
-    24: {'label': '小卷短发',
-        'prompt': '<lora:wavy_centerparted:1>,wavy_centerparted',
-        },
-    25: {'label': '大卷短发',
+    24: {'label': '大卷短发',
         'prompt': '<lora:wavy_bangs:1>,wavy_bangs',
         },
 }
