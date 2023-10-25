@@ -1325,7 +1325,7 @@ class OperatorSD(Operator):
                     _input_image.save(origin_image_path, format='PNG')
 
                     # preprocess
-                    sam_result, person_boxes = self.sam_h.sam_predict(self.dino_model_name, 'face.hair',
+                    sam_result, person_boxes = self.sam_h.sam_predict(self.dino_model_name, 'face',
                                                                       0.4,
                                                                       _input_image.convert('RGBA'))
                     if len(sam_result) == 0:
@@ -1337,16 +1337,16 @@ class OperatorSD(Operator):
                         person_box = [min(x_list), min(y_list), max(x_list), max(y_list)]
                         person_width = person_box[2] - person_box[0]
                         person_height = person_box[3] - person_box[1]
-                        person_box[0] = person_box[0] - int(person_width*0.15)
+                        person_box[0] = person_box[0] - int(person_width*0.6)
                         if person_box[0] < 0:
                             person_box[0] = 0
-                        person_box[1] = person_box[1] - int(person_height*0.15)
+                        person_box[1] = person_box[1] - int(person_height*0.5)
                         if person_box[1] < 0:
                             person_box[1] = 0
-                        person_box[2] = person_box[2] + int(person_width*0.15)
+                        person_box[2] = person_box[2] + int(person_width*0.6)
                         if person_box[2] >= _input_image_width:
                             person_box[2] = _input_image_width-1
-                        person_box[3] = person_box[3] + int(person_height*0.5)
+                        person_box[3] = person_box[3] + int(person_height*0.7)
                         if person_box[3] >= _input_image_height:
                             person_box[3] = _input_image_height-1
 
