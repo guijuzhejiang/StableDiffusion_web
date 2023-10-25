@@ -318,10 +318,10 @@ lora_haircut_common_dict = {
 }
 
 lora_haircut_male_dict = {
-    0: {'label': '短发脏辫',
+    0: {'label': '短脏辫',
         'prompt': '<lora:short_dreads_hairstyle:0.5>,(short_dreads_hairstyle:1.3)',
         },
-    1: {'label': '长发脏辫',
+    1: {'label': '长脏辫',
         'prompt': '<lora:dreads_hairstyle:0.5>,(dreads_hairstyle:1.3)',
         },
     2: {'label': '冲天发',
@@ -354,10 +354,10 @@ lora_haircut_male_dict = {
 }
 
 lora_haircut_female_dict = {
-    0: {'label': '短发脏辫',
+    0: {'label': '短脏辫',
         'prompt': '<lora:short_dreads_hairstyle:0.5>,(short_dreads_hairstyle:1.3)',
         },
-    1: {'label': '长发脏辫',
+    1: {'label': '长脏辫',
         'prompt': '<lora:dreads_hairstyle:0.5>,(dreads_hairstyle:1.3)',
         },
     2: {'label': '中分',
