@@ -1349,8 +1349,8 @@ class OperatorSD(Operator):
 
                         person_width = person_box[2] - person_box[0]
                         person_height = person_box[3] - person_box[1]
-                        # if person_box[3] > _input_image_height:
-                        #     person_box[3] = _input_image_height
+                        if person_box[3] > _input_image_height:
+                            person_box[3] = _input_image_height
 
                         if person_width < person_height:
                             padding_left = int((person_height-person_width) / 2)
