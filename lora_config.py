@@ -414,7 +414,7 @@ lora_haircut_female_dict = {
     19: {'label': '超长直发',
         'prompt': '<lora:very_long_hair-10:0.5>,(very_long_hair:1.3)',
         },
-    20: {'label': '半寸头',
+    20: {'label': '寸鬓',
         'prompt': '<lora:half_buzzcut_hairstyle:0.5>,(half_buzzcut_hairstyle:1.3)',
         },
     21: {'label': '长马尾',
