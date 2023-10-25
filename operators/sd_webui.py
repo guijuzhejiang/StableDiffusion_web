@@ -1169,6 +1169,9 @@ class OperatorSD(Operator):
             sam_result, person_boxes = self.sam_h.sam_predict(self.dino_model_name, 'hair',
                                                               0.4,
                                                               _init_img.convert('RGBA'))
+
+        _init_img = sam_result[2].convert('RGBA')
+
         sam_result_tmp_png_fp = []
         if len(sam_result) > 0:
             for idx, im in enumerate(sam_result):
