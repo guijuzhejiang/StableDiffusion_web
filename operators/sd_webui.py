@@ -1170,7 +1170,7 @@ class OperatorSD(Operator):
                                                               0.4,
                                                               _init_img.convert('RGBA'))
 
-        _init_img = sam_result[2].convert('RGBA')
+        # _init_img = sam_result[2].convert('RGBA')
 
         sam_result_tmp_png_fp = []
         if len(sam_result) > 0:
@@ -1350,28 +1350,28 @@ class OperatorSD(Operator):
                         if person_box[3] >= _input_image_height:
                             person_box[3] = _input_image_height-1
 
-                        person_width = person_box[2] - person_box[0]
-                        person_height = person_box[3] - person_box[1]
-
-                        if person_width < person_height:
-                            padding_left = int((person_height-person_width) / 2)
-                            person_box[0] = person_box[0] - padding_left
-                            if person_box[0] < 0:
-                                person_box[0] = 0
-                            padding_right = person_height - person_width - padding_left
-                            person_box[2] = person_box[2] + padding_right
-                            if person_box[2] > _input_image_width:
-                                person_box[2] = _input_image_width
-
-                        if person_width > person_height:
-                            padding_top = int((person_width-person_height) / 2)
-                            person_box[1] = person_box[1] - padding_top
-                            if person_box[1] < 0:
-                                person_box[1] = 0
-                            padding_bottom = person_width-person_height - padding_top
-                            person_box[3] = person_box[3] + padding_bottom
-                            if person_box[3] > _input_image_height:
-                                person_box[3] = _input_image_height
+                        # 正方形
+                        # person_width = person_box[2] - person_box[0]
+                        # person_height = person_box[3] - person_box[1]
+                        # if person_width < person_height:
+                        #     padding_left = int((person_height-person_width) / 2)
+                        #     person_box[0] = person_box[0] - padding_left
+                        #     if person_box[0] < 0:
+                        #         person_box[0] = 0
+                        #     padding_right = person_height - person_width - padding_left
+                        #     person_box[2] = person_box[2] + padding_right
+                        #     if person_box[2] > _input_image_width:
+                        #         person_box[2] = _input_image_width
+                        #
+                        # if person_width > person_height:
+                        #     padding_top = int((person_width-person_height) / 2)
+                        #     person_box[1] = person_box[1] - padding_top
+                        #     if person_box[1] < 0:
+                        #         person_box[1] = 0
+                        #     padding_bottom = person_width-person_height - padding_top
+                        #     person_box[3] = person_box[3] + padding_bottom
+                        #     if person_box[3] > _input_image_height:
+                        #         person_box[3] = _input_image_height
 
                         # crop
                         _input_image = _input_image.crop(person_box)
