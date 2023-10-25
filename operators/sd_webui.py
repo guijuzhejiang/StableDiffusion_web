@@ -1346,7 +1346,7 @@ class OperatorSD(Operator):
                         person_box[2] = person_box[2] + int(person_width*0.15)
                         if person_box[2] >= _input_image_width:
                             person_box[2] = _input_image_width-1
-                        person_box[3] = person_box[3] + int(person_height*0.6)
+                        person_box[3] = person_box[3] + int(person_height*0.5)
                         if person_box[3] >= _input_image_height:
                             person_box[3] = _input_image_height-1
 
