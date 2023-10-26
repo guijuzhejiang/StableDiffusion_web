@@ -147,10 +147,10 @@ class QueryDiscount(HTTPMethodView):
             if first_charge:
                 res.append(['首次充值享8折优惠', 0.8])
 
-            # start_date = date(2023, 10, 1)
-            # end_date = date(2023, 10, 17)
-            # if start_date <= date.today() <= end_date:
-            #     res.append(['双十期间全场88折', 0.88])
+            start_date = date(2023, 10, 25)
+            end_date = date(2023, 11, 12)
+            if start_date <= date.today() <= end_date:
+                res.append(['双十一期间全场88折', 0.8])
             return sanic_json({'success': True, 'result': res})
         except Exception:
             print(traceback.format_exc())
