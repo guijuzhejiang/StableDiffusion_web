@@ -151,6 +151,10 @@ class QueryDiscount(HTTPMethodView):
             end_date = date(2023, 11, 12)
             if start_date <= date.today() <= end_date:
                 res.append(['双十一期间全场8折', 0.8])
+
+            if len(res) > 1:
+                res.append(['多个折扣可叠加', 1])
+
             return sanic_json({'success': True, 'result': res})
         except Exception:
             print(traceback.format_exc())
