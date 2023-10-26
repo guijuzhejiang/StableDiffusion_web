@@ -1151,7 +1151,7 @@ class OperatorSD(Operator):
                      'is_api': ()}
 
         cfg_scale = 10
-        mask_blur = 4
+        mask_blur = 20
         resize_mode = 0  # just resize
         sampler_index = 15
         inpaint_full_res = 0 if _task_type == 'haircut' else 1 # choices=["Whole picture", "Only masked"]
