@@ -1326,7 +1326,7 @@ class OperatorSD(Operator):
 
                     # preprocess
                     sam_result, person_boxes = self.sam_h.sam_predict(self.dino_model_name, 'face',
-                                                                      0.4,
+                                                                      0.43,
                                                                       _input_image.convert('RGBA'))
                     if len(sam_result) == 0:
                         return {'success': False, 'result': '未检测到人脸'}
