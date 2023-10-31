@@ -275,7 +275,7 @@ class Query(HTTPMethodView):
 
             return sanic_json({'success': code == 200, 'balance': account['balance']+pre_charge_amount})
         else:
-            return sanic_json({'balance': account['balance']+pre_charge_amount})
+            return sanic_json({'success': True, 'balance': account['balance']+pre_charge_amount})
 
 
 class ImageProvider(HTTPMethodView):

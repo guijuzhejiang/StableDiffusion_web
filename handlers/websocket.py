@@ -6,7 +6,6 @@ import traceback
 from urllib.parse import urlparse, parse_qs
 
 import ujson
-import aiofile
 from sanic.request import Request
 from loguru import logger
 from lib.common.common_util import logging
@@ -55,7 +54,7 @@ async def sd_genreate(request: Request, ws):
                 elif batch_size == 2:
                     cost_points = 8
 
-            elif package['mode'] == 'haircut':
+            elif package['mode'] == 'hair':
                 batch_size = int(params['batch_size'])
 
                 if batch_size == 1:
