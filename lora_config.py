@@ -280,22 +280,22 @@ lora_place_dict = {
         'prompt': 'sunset_scenery_background,<lora:SunsetScenery_v1:0.6>,sunset,outdoor,professional nature photography,calm atmosphere,landscape',
         },
     10: {'label': '花团锦簇',
-         'prompt': '<lora:乐章五部曲-林V1:1>,blue sky,outdoor, tree,nice bokeh professional nature photography,Cute landscape,calm atmosphere,peaceful theme,sen,nature,flowers',
+         'prompt': '<lora:乐章五部曲-林V1:1>,blue sky,outdoor,tree,nice bokeh professional nature photography,Cute landscape,calm atmosphere,peaceful theme,sen,nature,flowers',
          },
     11: {'label': '向日葵海',
-         'prompt': 'sunflower_background,<lora:Sunflower_v1:0.4>,outdoor,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme',
+         'prompt': 'sunflower_background,<lora:Sunflower_v1:0.4>,outdoor,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme',
          },
     12: {'label': '沙滩',
-         'prompt': 'beach,<lora:Taketomijima:1>,outdoor,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme',
+         'prompt': 'beach,<lora:Taketomijima:1>,outdoor,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme',
          },
     13: {'label': '夏威夷热',
-         'prompt': 'tropical_tiki_retreat,<lora:tropical_tiki_retreat-10:1>,outdoor,nice bokeh professional nature photography,calm atmosphere, landscape,peaceful theme,Exotic, Hawaiian, aloha',
+         'prompt': 'tropical_tiki_retreat,<lora:tropical_tiki_retreat-10:1>,outdoor,nice bokeh professional nature photography,calm atmosphere,landscape,peaceful theme,Exotic,Hawaiian,aloha',
          },
     14: {'label': '水族馆',
          'prompt': 'aquarium,<lora:Aquarium-v1.0:0.8>',
          },
     15: {'label': '地铁',
-         'prompt': 'e235, train interior,<lora:E235_V5:1>',
+         'prompt': 'e235,train interior,<lora:E235_V5:1>',
          },
     # 16: {'label': '试衣间',
     #      'prompt': 'fittingroom,<lora:fittingroomselfie:1>',
@@ -307,14 +307,14 @@ lora_place_dict = {
          'prompt': 'ryokan,scenery,table,indoors,television,window,chair,cup,ceiling light,lamp,flower pot,sunlight,<lora:ryokan:0.8>',
          },
     18: {'label': '体育馆',
-         'prompt': 'school gym,reflective floor,stage, scenery, indoors, wooden floor,<lora:school_gym_v0.1:1>',
+         'prompt': 'school gym,reflective floor,stage,scenery,indoors,wooden floor,<lora:school_gym_v0.1:1>',
          },
 }
 
 # 头发 fluffy hair,lush hair,
 lora_haircut_common_dict = {
-    'positive_prompt': '(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo, realistic,character close-up,<lora:more_details:1>,(black shirt:1.3),(simple background:1.3),(no hands:1.3)',
-    'negative_prompt': '(jewelry:1.5),(earrings:1.5),(stud earrings:1.5),(NSFW:1.8),(hands:1.5),(feet:1.3),(shoes:1.3),(mask:1.3),(glove:1.3),(fingers:1.3),(legs),(toes:1.3),(digits:1.3),bad_picturesm, EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2), ((monochrome)), ((grayscale)), sketches, bad anatomy, DeepNegative, {Multiple people},text, error, cropped, blurry, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions,humans'
+    'positive_prompt': '(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,character close-up,<lora:more_details:1>,(black shirt:1.3),(simple background:1.3)',
+    'negative_prompt': '(jewelry:1.5),(earrings:1.5),(stud earrings:1.5),(NSFW:1.8),(hands:1.5),(feet:1.3),(shoes:1.3),(mask:1.3),(glove:1.3),(fingers:1.3),(legs),(toes:1.3),(digits:1.3),bad_picturesm,EasyNegative,easynegative,ng_deepnegative_v1_75t,verybadimagenegative_v1.3,(worst quality:2),(low quality:2),(normal quality:2),((monochrome)),((grayscale)),sketches,bad anatomy,DeepNegative,{Multiple people},text,error,cropped,blurry,mutation,deformed,jpeg artifacts,polar lowres,bad proportions,gross proportions,humans'
 }
 
 lora_haircut_male_dict = {
