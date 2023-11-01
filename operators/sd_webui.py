@@ -1222,7 +1222,8 @@ class OperatorSD(Operator):
         print(f"denoising_strength: {denoising_strength}")
         print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
 
-
+        # 参考原图
+        _init_img = sam_result[2]
 
         sam_args = [0,
                     adetail_enabled, face_args, hand_args,  # adetail args
