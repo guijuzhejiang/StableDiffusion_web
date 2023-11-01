@@ -1331,6 +1331,10 @@ class OperatorSD(Operator):
                     if len(sam_result) == 0:
                         return {'success': False, 'result': '未检测到人脸'}
                     else:
+                        for idx, im in enumerate(sam_result):
+                            im.save(
+                                f"tmp/hair_face_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png",
+                                format='PNG')
                         # get max area clothing box
                         x_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 0 or i == 2]
                         y_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 1 or i == 3]
@@ -1380,12 +1384,20 @@ class OperatorSD(Operator):
 
                         # crop
                         if need_padding:
+                            # _input_image = _input_image.crop(person_box)
                             new_image_width = new_person_box[2] - new_person_box[0]
                             new_image_height = new_person_box[3] - new_person_box[1]
                             new_canvas = Image.new("RGBA", (new_image_width, new_image_height), (127, 127, 127, 1))
 
                             origin_box_x = abs(new_person_box[0]) if new_person_box[0] < 0 else 0
                             origin_box_y = abs(new_person_box[1]) if new_person_box[1] < 0 else 0
+
+                            if new_person_box[0] >= 0 or new_person_box[1] >= 0:
+                                _input_image = _input_image.crop([0 if new_person_box[0] < 0 else new_person_box[0],
+                                                                  0 if new_person_box[1] < 0 else new_person_box[1],
+                                                                  _input_image_width-1,
+                                                                  _input_image_height-1])
+
                             new_canvas.paste(_input_image, (origin_box_x, origin_box_y))
                             _input_image = new_canvas
                         else:
