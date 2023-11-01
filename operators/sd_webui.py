@@ -1349,7 +1349,7 @@ class OperatorSD(Operator):
                         #     need_padding = True
                         #     # person_box[0] = 0
 
-                        new_person_box[1] = person_box[1] - int(person_height*0.8)
+                        new_person_box[1] = person_box[1] - int(person_height*0.7)
                         # if person_box[1] < 0:
                         #     person_box[1] = 0
                         new_person_box[2] = person_box[2] + int(person_width*0.6)
