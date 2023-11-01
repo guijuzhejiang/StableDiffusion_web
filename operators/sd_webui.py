@@ -1223,7 +1223,7 @@ class OperatorSD(Operator):
         print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
 
         # 不参考原图，参考分割图
-        _init_img = sam_result[2]
+        # _init_img = sam_result[2]
 
         sam_args = [0,
                     adetail_enabled, face_args, hand_args,  # adetail args
