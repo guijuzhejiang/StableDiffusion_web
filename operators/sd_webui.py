@@ -1388,7 +1388,7 @@ class OperatorSD(Operator):
                             # _input_image = _input_image.crop(person_box)
                             new_image_width = new_person_box[2] - new_person_box[0]
                             new_image_height = new_person_box[3] - new_person_box[1]
-                            new_canvas = Image.new("RGBA", (new_image_width, new_image_height), (127, 127, 127, 1))
+                            new_canvas = Image.new("RGB", (new_image_width, new_image_height), (127, 127, 127))
 
                             origin_box_x = abs(new_person_box[0]) if new_person_box[0] < 0 else 0
                             origin_box_y = abs(new_person_box[1]) if new_person_box[1] < 0 else 0
