@@ -1344,9 +1344,10 @@ class OperatorSD(Operator):
                         return {'success': False, 'result': '检测到多个人脸，请上传一张单人照'}
                     else:
                         # save cache face img
-                        draw = ImageDraw.Draw(_input_image)
+                        cache_image = _input_image.copy()
+                        draw = ImageDraw.Draw(cache_image)
                         draw.rectangle(person_boxes[0], fill="red")
-                        draw.save(f"tmp/hair_face_{pic_name}_save.png")
+                        cache_image.save(f"tmp/hair_face_{pic_name}_save.png")
 
                         # get max area clothing box
                         # x_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 0 or i == 2]
