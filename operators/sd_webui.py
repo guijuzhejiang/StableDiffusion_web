@@ -1346,7 +1346,7 @@ class OperatorSD(Operator):
                         # save cache face img
                         cache_image = _input_image.copy()
                         draw = ImageDraw.Draw(cache_image)
-                        draw.rectangle(person_boxes[0], fill="red")
+                        draw.rectangle(person_boxes[0], outline='red', width=5)
                         cache_image.save(f"tmp/hair_face_{pic_name}_save.png")
 
                         # get max area clothing box
