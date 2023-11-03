@@ -21,7 +21,7 @@ from collections import OrderedDict
 
 import GPUtil
 import redis
-from PIL import Image
+from PIL import Image, ImageDraw
 import copy
 import datetime
 import math
@@ -112,7 +112,8 @@ class OperatorSD(Operator):
         # init
         self.initialize()
         self.sam.sam = self.sam.init_sam_model()
-        self.sam_h.sam = self.sam_h.init_sam_model()
+        # self.sam_h.sam = self.sam_h.init_sam_model()
+        self.facer = getattr(importlib.import_module('guiju.facer_parsing.facer_parsing'), 'FaceParsing')()
         dino_model, dino_name = self.dino.load_dino_model2("GroundingDINO_SwinB (938MB)")
         self.dino.dino_model_cache[dino_name] = dino_model
 
@@ -1161,28 +1162,34 @@ class OperatorSD(Operator):
 
         if _task_type == 'haircut':
             # 切割face.glasses
-            sam_result, person_boxes = self.sam_h.sam_predict(self.dino_model_name, 'face.glasses',
-                                                              0.5,
-                                                              _init_img.convert('RGBA'))
+            # sam_result, person_boxes = self.sam_h.sam_predict(self.dino_model_name, 'face.glasses',
+            #                                                   0.5,
+            #                                                   _init_img.convert('RGBA'))
+            sam_result = self.facer(_init_img, keep='face')
+
+
         else:
             # 切割hair
-            sam_result, person_boxes = self.sam_h.sam_predict(self.dino_model_name, 'hair',
-                                                              0.4,
-                                                              _init_img.convert('RGBA'))
-
+            # sam_result, person_boxes = self.sam_h.sam_predict(self.dino_model_name, 'hair',
+            #                                                   0.4,
+            #                                                   _init_img.convert('RGBA'))
+            sam_result = self.facer(_init_img, keep='hair')
         # _init_img = sam_result[2].convert('RGBA')
 
         sam_result_tmp_png_fp = []
-        if len(sam_result) > 0:
-            for idx, im in enumerate(sam_result):
-                cache_fp = f"tmp/hair_{_task_type}_{idx}_{uid_name}_{_pic_name}{'_save' if idx == 0 else ''}.png"
-                im.save(cache_fp, format='PNG')
+        if sam_result is not None:
+            for idx in range(3):
+                cache_fp = f"tmp/hair_{_task_type}_{idx}_{uid_name}_{_pic_name}{'_save' if idx == 1 else ''}.png"
+                if idx == 1:
+                    sam_result.save(cache_fp, format='PNG')
+                else:
+                    _init_img.save(cache_fp, format='PNG')
                 sam_result_tmp_png_fp.append({'name': cache_fp})
             else:
                 sam_result_tmp_png_fp[0] = sam_result_tmp_png_fp[-1]
 
         else:
-            return {'success': False, 'result': f'未检测到{"人脸" if _task_type=="haircut" else "头发"}'}
+            return {'success': False, 'result': f'未切割到{"人脸" if _task_type=="haircut" else "头发"}'}
 
         # img2img
         inpainting_mask_invert = 1 if _task_type == 'haircut' else 0  # 0: inpaint masked 1: inpaint not masked
@@ -1326,20 +1333,28 @@ class OperatorSD(Operator):
                     _input_image.save(origin_image_path, format='PNG')
 
                     # preprocess
-                    sam_result, person_boxes = self.sam_h.sam_predict(self.dino_model_name, 'face',
-                                                                      0.43,
-                                                                      _input_image.convert('RGBA'))
-                    if len(sam_result) == 0:
+                    # sam_result, person_boxes = self.sam_h.sam_predict(self.dino_model_name, 'face',
+                    #                                                   0.43,
+                    #                                                   _input_image.convert('RGBA'))
+
+                    person_boxes = self.facer.detect_face(_input_image)
+                    if len(person_boxes) == 0:
                         return {'success': False, 'result': '未检测到人脸'}
+                    elif len(person_boxes) > 1:
+                        return {'success': False, 'result': '检测到多个人脸，请上传一张单人照'}
                     else:
-                        for idx, im in enumerate(sam_result):
-                            im.save(
-                                f"tmp/hair_face_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png",
-                                format='PNG')
+                        # save cache face img
+                        draw = ImageDraw.Draw(_input_image)
+                        draw.rectangle(person_boxes[0], fill="red")
+                        draw.save(f"tmp/hair_face_{pic_name}_save.png")
+
                         # get max area clothing box
-                        x_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 0 or i == 2]
-                        y_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 1 or i == 3]
-                        person_box = [min(x_list), min(y_list), max(x_list), max(y_list)]
+                        # x_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 0 or i == 2]
+                        # y_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 1 or i == 3]
+                        # person_box = [min(x_list), min(y_list), max(x_list), max(y_list)]
+                        # person_width = person_box[2] - person_box[0]
+                        # person_height = person_box[3] - person_box[1]
+                        person_box = person_boxes[0]
                         person_width = person_box[2] - person_box[0]
                         person_height = person_box[3] - person_box[1]
 
