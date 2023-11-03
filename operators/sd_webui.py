@@ -635,16 +635,24 @@ class OperatorSD(Operator):
 
         elif _task_type == 'face_expression':
             # segment
-            sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, "face.glasses",
-                                                            0.3, _init_img)
-            if len(sam_result) == 0:
+            # sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, "face.glasses",
+            #                                                 0.3, _init_img)
+            sam_result = self.facer(_init_img, keep='face')
+            if sam_result is None:
                 return {'success': False, 'result': '未检测到人脸'}
             else:
                 sam_result_tmp_png_fp = []
-                for idx, sam_mask_img in enumerate(sam_result):
-                    cache_fp = f"tmp/face_expression_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png"
-                    sam_mask_img.save(cache_fp)
+                for idx in range(3):
+                    cache_fp = f"tmp/face_expression_{idx}_{pic_name}{'_save' if idx == 1 else ''}.png"
+                    if idx == 1:
+                        sam_result.save(cache_fp, format='PNG')
+                    else:
+                        _init_img.save(cache_fp, format='PNG')
                     sam_result_tmp_png_fp.append({'name': cache_fp})
+                # for idx, sam_mask_img in enumerate(sam_result):
+                #     cache_fp = f"tmp/face_expression_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png"
+                #     sam_mask_img.save(cache_fp)
+                #     sam_result_tmp_png_fp.append({'name': cache_fp})
             # face_expression
             denoising_strength_min = 0.1
             denoising_strength_max = 0.4
@@ -834,16 +842,25 @@ class OperatorSD(Operator):
 
         elif _task_type == 'curly_hair':
             # segment
-            sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, "hair",
-                                                            0.36, _init_img)
-            if len(sam_result) == 0:
+            # sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, "hair",
+            #                                                 0.36, _init_img)
+            sam_result = self.facer(_init_img, keep='hair')
+            if sam_result is None:
                 return {'success': False, 'result': '未检测到头发'}
             else:
                 sam_result_tmp_png_fp = []
-                for idx, sam_mask_img in enumerate(sam_result):
-                    cache_fp = f"tmp/curly_hair_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png"
-                    sam_mask_img.save(cache_fp)
+                # for idx, sam_mask_img in enumerate(sam_result):
+                #     cache_fp = f"tmp/curly_hair_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png"
+                #     sam_mask_img.save(cache_fp)
+                #     sam_result_tmp_png_fp.append({'name': cache_fp})
+                for idx in range(3):
+                    cache_fp = f"tmp/curly_hair_{idx}_{pic_name}{'_save' if idx == 1 else ''}.png"
+                    if idx == 1:
+                        sam_result.save(cache_fp, format='PNG')
+                    else:
+                        _init_img.save(cache_fp, format='PNG')
                     sam_result_tmp_png_fp.append({'name': cache_fp})
+
             # curly_hair
             denoising_strength = 0.8
             steps = 20
