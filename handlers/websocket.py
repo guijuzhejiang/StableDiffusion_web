@@ -157,7 +157,7 @@ async def sd_genreate(request: Request, ws):
                         {"balance": account['balance'] - cost_points}).eq("id", user_id).execute()).data
 
             else:
-                task_result = {'success': False, 'result': "余额不足"}
+                task_result = {'success': False, 'result': "backend.api.error.insufficient-balance"}
 
             await ws.send(ujson.dumps(task_result))
 
@@ -171,4 +171,4 @@ async def sd_genreate(request: Request, ws):
             f"[websocket fatal error][{datetime.datetime.now()}]:"
             f"{traceback.format_exc()}",
             f"logs/error.log", print_msg=True)
-        await ws.send(ujson.dumps({'success': False, 'result': "fatal error"}))
+        await ws.send(ujson.dumps({'success': False, 'result': "backend.api.error.default"}))

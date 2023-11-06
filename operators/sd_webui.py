@@ -437,7 +437,9 @@ class OperatorSD(Operator):
             sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, "person", 0.4, _init_img)
 
             if len(sam_result) == 0:
-                return {'success': False, 'result': '未检测到人体'}
+                # return {'success': False, 'result': '未检测到人体'}
+                return {'success': False, 'result': 'backend.magic-mirror.error.no-body'}
+
             else:
                 sam_result_tmp_png_fp = []
                 for idx, sam_mask_img in enumerate(sam_result):
@@ -536,7 +538,9 @@ class OperatorSD(Operator):
             # segment
             sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, "person", 0.45, _init_img)
             if len(sam_result) == 0:
-                return {'success': False, 'result': '未检测到人体'}
+                # return {'success': False, 'result': '未检测到人体'}
+                return {'success': False, 'result': 'backend.magic-mirror.error.no-body'}
+
             else:
                 sam_result_tmp_png_fp = []
                 for idx, sam_mask_img in enumerate(sam_result):
@@ -639,7 +643,9 @@ class OperatorSD(Operator):
             #                                                 0.3, _init_img)
             sam_result = self.facer(_init_img, keep='face')
             if sam_result is None:
-                return {'success': False, 'result': '未检测到人脸'}
+                # return {'success': False, 'result': '未检测到人脸'}
+                return {'success': False, 'result': 'backend.magic-mirror.error.no-face'}
+
             else:
                 sam_result_tmp_png_fp = []
                 for idx in range(3):
@@ -846,7 +852,9 @@ class OperatorSD(Operator):
             #                                                 0.36, _init_img)
             sam_result = self.facer(_init_img, keep='hair')
             if sam_result is None:
-                return {'success': False, 'result': '未检测到头发'}
+                # return {'success': False, 'result': '未检测到头发'}
+                return {'success': False, 'result': 'backend.magic-mirror.error.no-hair'}
+
             else:
                 sam_result_tmp_png_fp = []
                 # for idx, sam_mask_img in enumerate(sam_result):
@@ -951,7 +959,9 @@ class OperatorSD(Operator):
             # segment
             sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, "breasts.arms.legs.abdomen", 0.31, _init_img)
             if len(sam_result) == 0:
-                return {'success': False, 'result': '未检测到人体'}
+                # return {'success': False, 'result': '未检测到人体'}
+                return {'success': False, 'result': 'backend.magic-mirror.error.no-body'}
+
             else:
                 sam_result_tmp_png_fp = []
                 for idx, sam_mask_img in enumerate(sam_result):
@@ -1206,7 +1216,8 @@ class OperatorSD(Operator):
                 sam_result_tmp_png_fp[0] = sam_result_tmp_png_fp[-1]
 
         else:
-            return {'success': False, 'result': f'未切割到{"人脸" if _task_type=="haircut" else "头发"}'}
+            # return {'success': False, 'result': f'未切割到{"人脸" if _task_type=="haircut" else "头发"}'}
+            return {'success': False, 'result': f'backend.magic-mirror.error.no-{"face" if _task_type=="haircut" else "hair"}'}
 
         # img2img
         inpainting_mask_invert = 1 if _task_type == 'haircut' else 0  # 0: inpaint masked 1: inpaint not masked
@@ -1324,7 +1335,9 @@ class OperatorSD(Operator):
             if self.update_progress(celery_task, self.redis_client, 1):
                 return {'success': True}
             if self.predict_image(kwargs['input_image']):
-                return {'success': False, 'result': "抱歉，您上传的图像未通过合规性检查，请重新上传。"}
+                # return {'success': False, 'result': "抱歉，您上传的图像未通过合规性检查，请重新上传。"}
+                return {'success': False, 'result': 'backend.check.error.nsfw'}
+
             # read image
             _input_image = Image.open(kwargs['input_image'])
             _input_image_width, _input_image_height = _input_image.size
@@ -1344,7 +1357,9 @@ class OperatorSD(Operator):
                 _gender = str(params['gender'])
 
                 if _input_image is None:
-                    return {'success': False, 'result': '未接收到图片'}
+                    # return {'success': False, 'result': '未接收到图片'}
+                    return {'success': False, 'result': 'backend.check.error.no-image'}
+
                 else:
                     origin_image_path = f'tmp/hair_origin_{pic_name}_save.png'
                     _input_image.save(origin_image_path, format='PNG')
@@ -1356,9 +1371,13 @@ class OperatorSD(Operator):
 
                     person_boxes = self.facer.detect_face(_input_image)
                     if len(person_boxes) == 0:
-                        return {'success': False, 'result': '未检测到人脸'}
+                        # return {'success': False, 'result': '未检测到人脸'}
+                        return {'success': False, 'result': 'backend.magic-hair.error.no-face'}
+
                     elif len(person_boxes) > 1:
-                        return {'success': False, 'result': '检测到多个人脸，请上传一张单人照'}
+                        # return {'success': False, 'result': '检测到多个人脸，请上传一张单人照'}
+                        return {'success': False, 'result': 'backend.magic-hair.error.multi-face'}
+
                     else:
                         # save cache face img
                         cache_image = _input_image.copy()
@@ -1561,7 +1580,9 @@ class OperatorSD(Operator):
                 _box_threshold = 0.35
 
                 if _input_image is None:
-                    return {'success': False, 'result': '未接收到图片'}
+                    # return {'success': False, 'result': '未接收到图片'}
+                    return {'success': False, 'result': 'backend.check.error.no-image'}
+
                 else:
                     origin_image_path = f'tmp/model_origin_{pic_name}_save.png'
                     _input_image.save(origin_image_path, format='PNG')
@@ -1603,7 +1624,9 @@ class OperatorSD(Operator):
                             return {'success': True}
 
                         if person0_box[0] == -1:
-                            return {'success': False, 'result': '未检测到服装'}
+                            # return {'success': False, 'result': '未检测到服装'}
+                            return {'success': False, 'result': 'backend.magic-closet.error.no-cloth'}
+
                         else:
                             clothing_image = Image.new("RGBA", (_input_image_width, _input_image_height),
                                                        (255, 255, 255, 1))
@@ -1618,7 +1641,8 @@ class OperatorSD(Operator):
                                                                               _box_threshold)
                             # sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, "person", 0.33, _input_image)
                             if len(person_boxes) == 0:
-                                return {'success': False, 'result': '未检测到服装'}
+                                # return {'success': False, 'result': '未检测到服装'}
+                                return {'success': False, 'result': 'backend.magic-closet.error.no-cloth'}
 
                             person0_box = [int(x) for x in person_boxes[0]]
                             person0_width = person0_box[2] - person0_box[0]
@@ -1883,7 +1907,9 @@ class OperatorSD(Operator):
                             if self.predict_image(res_img.already_saved_as):
                                 fuck_img_count += 1
                                 if fuck_img_count > 10:
-                                    return {'success': False, 'result': "生成失败次数过多"}
+                                    # return {'success': False, 'result': "生成失败次数过多"}
+                                    return {'success': False, 'result': 'backend.generate.error.re-try'}
+
                                 else:
                                     print('detect nsfw, retry')
                             else:
@@ -1904,7 +1930,8 @@ class OperatorSD(Operator):
                                 else:
                                     fuck_img_count += 1
                                     if fuck_img_count > 10:
-                                        return {'success': False, 'result': "fatal error"}
+                                        # return {'success': False, 'result': "fatal error"}
+                                        return {'success': False, 'result': "backend.generate.error.failed"}
                                     else:
                                         print('detect no person, retry')
 
@@ -2073,7 +2100,7 @@ class OperatorSD(Operator):
 
                 person_boxes, _ = self.dino.dino_predict_internal(_input_image, self.dino_model_name, 'person', 0.3)
                 if len(person_boxes) == 0:
-                    return {'success': False, 'result': '未检测到人物'}
+                    return {'success': False, 'result': 'backend.magic-mirror.error.no-body'}
 
                 if self.update_progress(celery_task, self.redis_client, 40):
                     return {'success': True}
@@ -2350,7 +2377,7 @@ class OperatorSD(Operator):
                 f"{traceback.format_exc()}",
                 f"logs/error.log")
 
-        return {'success': False, 'result': "fatal error"}
+        return {'success': False, 'result': 'backend.generate.error.failed'}
 
 # if __name__ == '__main__':
 #     op = OperatorSD()

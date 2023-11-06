@@ -76,10 +76,10 @@ class SDGenertae(HTTPMethodView):
                             {"balance": account['balance'] - cost_points}).eq("id", user_id).execute()).data
 
                 else:
-                    task_result = {'success': False, 'result': "余额不足"}
+                    task_result = {'success': False, 'result': "backend.balance.error.insufficient-balance"}
         except Exception:
             print(traceback.format_exc())
-            task_result = {'success': False, 'result': "fatal error"}
+            task_result = {'success': False, 'result': "backend.api.error.default"}
 
         return sanic_json(task_result)
 
@@ -133,7 +133,7 @@ class RevokeTask(HTTPMethodView):
             return sanic_json({'success': True})
         except Exception:
             print(traceback.format_exc())
-            return sanic_json({'success': False, 'message': 'fatal error'})
+            return sanic_json({'success': False, 'message': 'backend.api.error.default'})
 
 
 class QueryDiscount(HTTPMethodView):
@@ -158,7 +158,7 @@ class QueryDiscount(HTTPMethodView):
             return sanic_json({'success': True, 'result': res})
         except Exception:
             print(traceback.format_exc())
-            return sanic_json({'success': False, 'message': 'fatal error'})
+            return sanic_json({'success': False, 'message': 'backend.api.error.default'})
 
 
 class QueryPayment(HTTPMethodView):
@@ -221,7 +221,7 @@ class WeChatLogin(HTTPMethodView):
                                                                                                password=password)
                         except Exception:
                             print(str(traceback.format_exc()))
-                            return sanic_json({'success': False, 'message': "注册失败"})
+                            return sanic_json({'success': False, 'message': "backend.api.error.register"})
 
                     # 成功返回
                     return sanic_json({'success': True, 'user': result_user})
@@ -230,7 +230,7 @@ class WeChatLogin(HTTPMethodView):
                     return sanic_json({'success': False, 'message': "登录失败"})
         except Exception:
             print(str(traceback.format_exc()))
-            return sanic_json({'success': False, 'message': "登录失败"})
+            return sanic_json({'success': False, 'message': "backend.api.error.default"})
 
 
 class Query(HTTPMethodView):
@@ -320,7 +320,7 @@ class FetchUserHistory(HTTPMethodView):
 
         except Exception:
             print(traceback.format_exc())
-            return sanic_json({'success': False, 'result': '获取历史记录失败'})
+            return sanic_json({'success': False, 'result': 'backend.api.error.history'})
         else:
             return sanic_json({'success': True, 'result': result})
 
@@ -339,7 +339,7 @@ class UserUpload(HTTPMethodView):
 
         except Exception:
             print(traceback.format_exc())
-            return sanic_json({'success': False, 'result': '上传图片失败'})
+            return sanic_json({'success': False, 'result': 'backend.api.error.upload'})
         else:
             return sanic_json({'success': True})
 
