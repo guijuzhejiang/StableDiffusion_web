@@ -312,7 +312,7 @@ class OperatorSD(Operator):
                 'realistic hand',
                 'detailed foot',
                 'realistic body',
-                '(out of frame:1.3)',
+                # '(out of frame:1.3)',
                 '' if _viewpoint == 2 else 'posing for a photo,realistic face',
                 'wearing shoes',
                 '(tall:1.3)',
