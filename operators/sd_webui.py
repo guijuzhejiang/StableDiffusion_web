@@ -1986,7 +1986,7 @@ class OperatorSD(Operator):
                             # bottom_ratio = min(0.58, math.pow(person0_width / person0_height,
                             #                                   factor_bottom) * constant_bottom)
                             top_ratio = 0.6
-                            bottom_ratio = 0.9
+                            bottom_ratio = 0.8
                             print(
                                 f"bottom_ratio1: {math.pow(person0_width / person0_height, factor_bottom) * constant_bottom}")
                             print(f"bottom_ratio: {bottom_ratio}")
@@ -2228,11 +2228,15 @@ class OperatorSD(Operator):
                                 res_img = res_img.convert('RGBA')
                                 # sam
                                 sam_bg_result, person_boxes = self.sam.sam_predict(self.dino_model_name, 'person', 0.3, res_img)
-                                person_box = [int(x) for x in person_boxes[idx]]
 
                                 if len(sam_bg_result) > 0:
                                     sam_bg_tmp_png_fp = []
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
+                                        person_box = [int(x) for x in person_boxes[idx]]
+                                        person_box[0] = 0 if person_box[0]-64 < 0 else person_box[0]-64
+                                        person_box[1] = 0 if person_box[1]-64 < 0 else person_box[1]-64
+                                        person_box[2] = 511 if person_box[2]+64 > 511 else person_box[2]+64
+                                        person_box[3] = 767 if person_box[3]+64 > 767 else person_box[3]+64
                                         sam_bg_result[idx] = sam_bg_result[idx].crop(person_box)
                                         cache_fp = f"tmp/model_only_person_seg_{res_idx}_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png"
                                         sam_mask_img.save(cache_fp)
