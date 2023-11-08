@@ -2228,11 +2228,11 @@ class OperatorSD(Operator):
                                 res_img = res_img.convert('RGBA')
                                 # sam
                                 sam_bg_result, person_boxes = self.sam.sam_predict(self.dino_model_name, 'person', 0.3, res_img)
+                                person_box = [int(x) for x in person_boxes[0]]
 
                                 if len(sam_bg_result) > 0:
                                     sam_bg_tmp_png_fp = []
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
-                                        person_box = [int(x) for x in person_boxes[idx]]
                                         person_box[0] = 0 if person_box[0]-64 < 0 else person_box[0]-64
                                         person_box[1] = 0 if person_box[1]-64 < 0 else person_box[1]-64
                                         person_box[2] = 511 if person_box[2]+64 > 511 else person_box[2]+64
