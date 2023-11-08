@@ -57,3 +57,39 @@ class FaceParsing:
             return [[int(i) for i in x] for x in res['rects'].cpu().numpy().tolist()]
         else:
             return []
+
+    def detect_head(self, _input_pil_image, return_rect=True):
+        image = facer.hwc2bchw(torch.from_numpy(np.array(_input_pil_image.convert('RGB')))).to(
+            device=self.device)  # image: 1 x 3 x h x w
+
+        with torch.inference_mode():
+            faces = self.face_detector(image)
+            if faces:
+                faces = self.face_parser(image, faces)
+                if len(faces['rects']) > 1:
+                    return [1, 2, 4]
+            else:
+                return []
+
+        seg_logits = faces['seg']['logits'][0]
+        seg_probs = seg_logits.softmax(dim=0)
+        seg_labels = seg_probs.argmax(dim=0).cpu().numpy()
+
+        if return_rect:
+            row_min, col_min = np.where(seg_labels)[1].min(), np.where(seg_labels)[0].min()
+            row_max, col_max = np.where(seg_labels)[1].max(), np.where(seg_labels)[0].max()
+
+            return [[row_min, col_min, row_max, col_max]]
+
+        else:
+            width, height = seg_labels.shape[1], seg_labels.shape[0]
+            image = Image.new("L", (width, height), 0)
+            for y in range(height):
+                for x in range(width):
+                    if seg_labels[y, x] != 0:
+                        image.putpixel((x, y), 255)  # 0表示黑色
+            return image
+
+
+if __name__ == '__main__':
+    print(FaceParsing().detect_head(Image.open('/home/ray/Downloads/sample13.jpg'), return_rect=True))
