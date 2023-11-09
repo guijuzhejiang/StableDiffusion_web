@@ -2233,7 +2233,7 @@ class OperatorSD(Operator):
 
                                 if len(sam_bg_result) > 0:
                                     sam_bg_tmp_png_fp = []
-                                    top_down_space = 128
+                                    top_down_space = 64
                                     left_right_space = 32
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
                                         _tmp_image_width, _tmp_image_height = sam_mask_img.size
