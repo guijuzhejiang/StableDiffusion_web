@@ -291,7 +291,7 @@ class OperatorSD(Operator):
             'high details',
             '(Realism:1.4)',
             'masterpiece',
-            'extremely detailed,extremely delicate,Amazing,8k wallpaper,',
+            'extremely detailed,extremely delicate,Amazing,8k quality,',
         ]
         sd_positive_model_prompts_dict = OrderedDict({
             'age': [
@@ -305,6 +305,7 @@ class OperatorSD(Operator):
             ],
             'common': [
                 '(full body:1.5)',
+                # 'a person',
                 'correct body proportions,good figure',
                 'detailed fingers',
                 'realistic fingers',
@@ -385,7 +386,7 @@ class OperatorSD(Operator):
                          ','.join(sd_positive_common_prompts),
                          '(no humans:1.3),8k uhd,dramatic scene,Epic composition,raw photo,huge_filesize,highres,magazine cover,high saturation,poster']
         sd_bg_positive_prompt = ','.join(bg_prmpt_list)
-        sd_bg_negative_prompt = '(NSFW:1.8),(hands),(feet),(shoes),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(overexposure:1.5),(exposure:1.5),paintings,sketches,(worst quality:2),(low quality:2),(normal quality:2),clothing,pants,shorts,t-shirt,dress,sleeves,lowres,((monochrome)),((grayscale)),duplicate,morbid,error,cropped,worst quality,blurry,deformed,mirrored image,mirrored noise,polar lowres'
+        sd_bg_negative_prompt = '(NSFW:1.8),(person:1.4),(hands),(feet),(shoes),(glove),(fingers:1.3),(arms),(legs),(toes:1.3),(digits:1.3),(overexposure:1.5),(exposure:1.5),paintings,sketches,(worst quality:2),(low quality:2),(normal quality:2),clothing,pants,shorts,t-shirt,dress,sleeves,lowres,((monochrome)),((grayscale)),duplicate,morbid,error,cropped,worst quality,blurry,deformed,mirrored image,mirrored noise,polar lowres'
         # 3 feet,extra long leg,super long leg,wrong feet bottom render
 
         print(f'sd_bg_positive_prompt: {sd_bg_positive_prompt}')
@@ -1979,13 +1980,13 @@ class OperatorSD(Operator):
                             constant_top = 40
                             factor_bottom = 5
                             factor_top = 5
-                            left_ratio = 0.2
-                            right_ratio = 0.2
+                            left_ratio = 0.05
+                            right_ratio = 0.05
                             # top_ratio = 0.32
                             # top_ratio = min(0.35, math.pow(person0_width / person0_height, factor_top) * constant_top)
                             # bottom_ratio = min(0.58, math.pow(person0_width / person0_height,
                             #                                   factor_bottom) * constant_bottom)
-                            top_ratio = 0.6
+                            top_ratio = 0.5
                             bottom_ratio = 0.8
                             print(
                                 f"bottom_ratio1: {math.pow(person0_width / person0_height, factor_bottom) * constant_bottom}")
@@ -2233,13 +2234,27 @@ class OperatorSD(Operator):
                                 if len(sam_bg_result) > 0:
                                     sam_bg_tmp_png_fp = []
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
-                                        person_box[0] = 0 if person_box[0]-64 < 0 else person_box[0]-64
-                                        person_box[1] = 0 if person_box[1]-64 < 0 else person_box[1]-64
-                                        person_box[2] = 511 if person_box[2]+64 > 511 else person_box[2]+64
-                                        person_box[3] = 767 if person_box[3]+64 > 767 else person_box[3]+64
-                                        sam_bg_result[idx] = sam_bg_result[idx].crop(person_box)
+                                        _tmp_image_width, _tmp_image_height = sam_mask_img.size
+
+                                        person_box[0] = 0 if person_box[0]-32 < 0 else person_box[0]-32
+                                        person_box[1] = 0 if person_box[1]-128 < 0 else person_box[1]-128
+                                        person_box[2] = _tmp_image_width-1 if person_box[2]+32 > _tmp_image_width else person_box[2]+32
+                                        person_box[3] = _tmp_image_height-1 if person_box[3]+128 > _tmp_image_height-1 else person_box[3]+128
+                                        sam_bg_result[idx] = sam_mask_img.crop(person_box)
+                                        # sam_bg_result[idx] = self.configure_image(sam_bg_result[idx],
+                                        #                                               [0,0,_tmp_image_width-1,_tmp_image_height-1],
+                                        #                                               target_ratio=_output_width / _output_height)
+                                        # # 转pil
+                                        # encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 100]
+                                        # _, jpeg_data = cv2.imencode('.jpg', cv2.cvtColor(np.array(sam_bg_result[idx]),
+                                        #                                                  cv2.COLOR_RGBA2BGRA),
+                                        #                             encode_param)
+
+                                        # # 将压缩后的图像转换为PIL图像
+                                        # sam_bg_result[idx] = Image.open(io.BytesIO(jpeg_data)).convert('RGBA')
+
                                         cache_fp = f"tmp/model_only_person_seg_{res_idx}_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png"
-                                        sam_mask_img.save(cache_fp)
+                                        sam_bg_result[idx].save(cache_fp)
                                         sam_bg_tmp_png_fp.append({'name': cache_fp})
                                     else:
                                         sam_bg_tmp_png_fp_list.append(sam_bg_tmp_png_fp)
