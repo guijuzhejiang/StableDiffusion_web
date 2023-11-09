@@ -2234,7 +2234,7 @@ class OperatorSD(Operator):
 
                                 if len(sam_bg_result) > 0:
                                     sam_bg_tmp_png_fp = []
-                                    top_down_space = 32
+                                    top_down_space = 20
                                     left_right_space = 32
 
                                     person_box[0] = person_box[0] - left_right_space
@@ -2252,7 +2252,6 @@ class OperatorSD(Operator):
                                     person_box[3] = person_box[3] + top_down_space
                                     if person_box[3] > _output_model_height:
                                         person_box[3] = _output_model_height
-
 
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
                                         person_img = sam_mask_img.crop(person_box)
