@@ -1986,10 +1986,9 @@ class OperatorSD(Operator):
                             # top_ratio = min(0.35, math.pow(person0_width / person0_height, factor_top) * constant_top)
                             # bottom_ratio = min(0.58, math.pow(person0_width / person0_height,
                             #                                   factor_bottom) * constant_bottom)
-                            top_ratio = 0.45
-                            bottom_ratio = 0.65
-                            print(
-                                f"bottom_ratio1: {math.pow(person0_width / person0_height, factor_bottom) * constant_bottom}")
+                            top_ratio = 0.5
+                            bottom_ratio = 0.7
+                            print(f"bottom_ratio1: {math.pow(person0_width / person0_height, factor_bottom) * constant_bottom}")
                             print(f"bottom_ratio: {bottom_ratio}")
                             print(f"top_ratio1: {math.pow(person0_width / person0_height, factor_top) * constant_top}")
                             print(f"top_ratio: {top_ratio}")
