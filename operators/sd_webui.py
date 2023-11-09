@@ -1872,8 +1872,8 @@ class OperatorSD(Operator):
                 _model_type = int(params['model_type'])  # 模特类型
                 _place_type = int(params['place_type'])  # 背景
 
-                _output_model_height = 768
-                _output_model_width = 384
+                _output_model_height = 800
+                _output_model_width = 400
                 _output_final_height = 768
                 _output_final_width = 512
 
