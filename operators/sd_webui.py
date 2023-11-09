@@ -2246,7 +2246,6 @@ class OperatorSD(Operator):
                                         # 计算高宽缩放比例
                                         scale = (_output_model_height - top_down_space*2) / person_height
                                         # scale_w = (_output_model_width - left_right_space*2) / person_width
-                                        #
                                         # # 取最小比例作为等比缩放比例
                                         # scale = min(scale_h, scale_w)
 
@@ -2263,6 +2262,9 @@ class OperatorSD(Operator):
 
                                     target_resize = [target_rect[2] - target_rect[0], target_rect[3],
                                                      target_rect[1]]
+
+                                    target_rect[0] = target_rect[0] + int((_output_final_width - _output_model_width) / 2)
+                                    target_rect[1] = target_rect[1] + int((_output_final_height - _output_model_height) / 2)
 
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
                                         person_img = sam_mask_img.crop(person_box)
