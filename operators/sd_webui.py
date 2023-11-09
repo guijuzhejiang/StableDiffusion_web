@@ -2234,66 +2234,81 @@ class OperatorSD(Operator):
 
                                 if len(sam_bg_result) > 0:
                                     sam_bg_tmp_png_fp = []
-                                    top_down_space = 64
+                                    top_down_space = 32
                                     left_right_space = 32
+
+                                    person_box[0] = person_box[0] - left_right_space
+                                    if person_box[0] < 0:
+                                        person_box[0] = 0
+
+                                    person_box[1] = person_box[1] - top_down_space
+                                    if person_box[1] < 0:
+                                        person_box[1] = 0
+
+                                    person_box[2] = person_box[2] + left_right_space
+                                    if person_box[2] > _output_model_width:
+                                        person_box[2] = _output_model_width
+
+                                    person_box[3] = person_box[3] + top_down_space
+                                    if person_box[3] > _output_model_height:
+                                        person_box[3] = _output_model_height
+
+
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
                                         person_img = sam_mask_img.crop(person_box)
                                         person_width, person_height = person_img.size
-
-                                        if person_box[1] <= 4 or person_box[3] >= _output_final_height - 4:
-                                            new_canvas = Image.new("RGB", (_output_final_width, _output_final_height),
-                                                                   (255, 255, 255))
-                                            new_canvas.paste(person_img, (int((512 - person_width)/2), 0))
-
-                                        elif person_box[1] < top_down_space:
-                                            new_canvas = Image.new("RGB", (_output_final_width, _output_final_height),
-                                                                   (255, 255, 255))
-                                            new_y1 = top_down_space
-                                            new_y2 = person_box[3] + top_down_space - person_box[1]
-                                            if new_y2 > _output_final_height-top_down_space:
-                                                new_y2 = _output_model_height - top_down_space
-
-                                            new_height = new_y2-new_y1
-                                            new_width = int(_output_final_width/_output_final_height*new_height)
-                                            person_img = person_img.resize((new_width, new_height))
-                                            new_canvas.paste(person_img, (int((_output_final_width - new_width) / 2), new_y1))
-                                        elif _output_final_height-person_box[3]<top_down_space:
-                                            new_canvas = Image.new("RGB", (_output_final_width, _output_final_height),
-                                                                   (255, 255, 255))
-                                            new_y2 = _output_final_height - top_down_space
-                                            new_y1 = person_box[1] - (person_box[3] - new_y2)
-
-                                            if new_y1 < top_down_space:
-                                                new_y1 = top_down_space
-
-                                            new_height = new_y2 - new_y1
-                                            new_width = int(_output_final_width / _output_final_height * new_height)
-                                            person_img = person_img.resize((new_width, new_height))
-                                            new_canvas.paste(person_img,
-                                                             (int((_output_final_width - new_width) / 2), new_y1))
-
-
-                                            sam_bg_result[idx] = new_canvas
-
+                                        resized_person_img = person_img.resize((int(person_width/person_height*_output_final_height), _output_final_height))
+                                        if idx == 1:
+                                            new_canvas = Image.new("RGBA", (_output_final_width, _output_final_height),
+                                                                   (0, 0, 0, 255))
                                         else:
-                                            new_canvas = Image.new("RGB", (_output_final_width, _output_final_height),
-                                                                   (255, 255, 255))
-                                            new_canvas.paste(person_img,
-                                                             (int((_output_final_width - person_box[2]+person_box[0]) / 2), person_box[0]))
+                                            new_canvas = Image.new("RGBA", (_output_final_width, _output_final_height),
+                                                                   (255, 255, 255, 0))
+                                        new_canvas.paste(resized_person_img, (int((512 - resized_person_img.size[0]) / 2), 0))
+                                        sam_bg_result[idx] = new_canvas
 
-                                            sam_bg_result[idx] = new_canvas
-
-                                        # sam_bg_result[idx] = self.configure_image(sam_bg_result[idx],
-                                        #                                               [0,0,_tmp_image_width-1,_tmp_image_height-1],
-                                        #                                               target_ratio=_output_width / _output_height)
-                                        # # 转pil
-                                        # encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 100]
-                                        # _, jpeg_data = cv2.imencode('.jpg', cv2.cvtColor(np.array(sam_bg_result[idx]),
-                                        #                                                  cv2.COLOR_RGBA2BGRA),
-                                        #                             encode_param)
-
-                                        # # 将压缩后的图像转换为PIL图像
-                                        # sam_bg_result[idx] = Image.open(io.BytesIO(jpeg_data)).convert('RGBA')
+                                        # if person_box[1] <= 4 or person_box[3] >= _output_final_height - 4:
+                                        #     new_canvas = Image.new("RGB", (_output_final_width, _output_final_height),
+                                        #                            (255, 255, 255))
+                                        #     new_canvas.paste(person_img, (int((512 - person_width)/2), 0))
+                                        #
+                                        # elif person_box[1] < top_down_space:
+                                        #     new_canvas = Image.new("RGB", (_output_final_width, _output_final_height),
+                                        #                            (255, 255, 255))
+                                        #     new_y1 = top_down_space
+                                        #     new_y2 = person_box[3] + top_down_space - person_box[1]
+                                        #     if new_y2 > _output_final_height-top_down_space:
+                                        #         new_y2 = _output_model_height - top_down_space
+                                        #
+                                        #     new_height = new_y2-new_y1
+                                        #     new_width = int(_output_final_width/_output_final_height*new_height)
+                                        #     person_img = person_img.resize((new_width, new_height))
+                                        #     new_canvas.paste(person_img, (int((_output_final_width - new_width) / 2), new_y1))
+                                        # elif _output_final_height-person_box[3]<top_down_space:
+                                        #     new_canvas = Image.new("RGB", (_output_final_width, _output_final_height),
+                                        #                            (255, 255, 255))
+                                        #     new_y2 = _output_final_height - top_down_space
+                                        #     new_y1 = person_box[1] - (person_box[3] - new_y2)
+                                        #
+                                        #     if new_y1 < top_down_space:
+                                        #         new_y1 = top_down_space
+                                        #
+                                        #     new_height = new_y2 - new_y1
+                                        #     new_width = int(_output_final_width / _output_final_height * new_height)
+                                        #     person_img = person_img.resize((new_width, new_height))
+                                        #     new_canvas.paste(person_img,
+                                        #                      (int((_output_final_width - new_width) / 2), new_y1))
+                                        #
+                                        #
+                                        #     sam_bg_result[idx] = new_canvas
+                                        #
+                                        # else:
+                                        #     new_canvas = Image.new("RGB", (_output_final_width, _output_final_height),
+                                        #                            (255, 255, 255))
+                                        #     new_canvas.paste(sam_mask_img,
+                                        #                      (int((_output_final_width - sam_mask_img.size[0]) / 2), 0))
+                                        #
+                                        #     sam_bg_result[idx] = new_canvas
 
                                         cache_fp = f"tmp/model_only_person_seg_{res_idx}_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png"
                                         sam_bg_result[idx].save(cache_fp)
@@ -2319,8 +2334,8 @@ class OperatorSD(Operator):
                     # else:
                 # 背景生成
                 for ok_idx, ok_model_res in enumerate(ok_res):
-                    cache_fp = f"tmp/model_only_{ok_idx}_{pic_name}_save.png"
-                    ok_model_res.save(cache_fp)
+                    # cache_fp = f"tmp/model_only_{ok_idx}_{pic_name}_save.png"
+                    # ok_model_res.save(cache_fp)
 
                     task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
                     steps = 20
@@ -2397,7 +2412,7 @@ class OperatorSD(Operator):
                                              subseed,
                                              subseed_strength, seed_resize_from_h, seed_resize_from_w,
                                              seed_enable_extras,
-                                             selected_scale_tab, _output_model_height, _output_model_width, scale_by,
+                                             selected_scale_tab, _output_final_height, _output_final_width, scale_by,
                                              resize_mode,
                                              # selected_scale_tab, height, width, scale_by, resize_mode,
                                              inpaint_full_res,
