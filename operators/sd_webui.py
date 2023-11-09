@@ -2279,7 +2279,7 @@ class OperatorSD(Operator):
                                             new_canvas = Image.new("RGB", (_output_final_width, _output_final_height),
                                                                    (255, 255, 255))
                                             new_canvas.paste(person_img,
-                                                             (int((_output_final_width - new_width) / 2), new_y1))
+                                                             (int((_output_final_width - person_box[2]+person_box[0]) / 2), person_box[0]))
 
                                             sam_bg_result[idx] = new_canvas
 
@@ -2397,7 +2397,7 @@ class OperatorSD(Operator):
                                              subseed,
                                              subseed_strength, seed_resize_from_h, seed_resize_from_w,
                                              seed_enable_extras,
-                                             selected_scale_tab, _output_height, _output_width, scale_by,
+                                             selected_scale_tab, _output_model_height, _output_model_width, scale_by,
                                              resize_mode,
                                              # selected_scale_tab, height, width, scale_by, resize_mode,
                                              inpaint_full_res,
