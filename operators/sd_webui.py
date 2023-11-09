@@ -2275,6 +2275,14 @@ class OperatorSD(Operator):
 
                                             sam_bg_result[idx] = new_canvas
 
+                                        else:
+                                            new_canvas = Image.new("RGB", (_output_final_width, _output_final_height),
+                                                                   (255, 255, 255))
+                                            new_canvas.paste(person_img,
+                                                             (int((_output_final_width - new_width) / 2), new_y1))
+
+                                            sam_bg_result[idx] = new_canvas
+
                                         # sam_bg_result[idx] = self.configure_image(sam_bg_result[idx],
                                         #                                               [0,0,_tmp_image_width-1,_tmp_image_height-1],
                                         #                                               target_ratio=_output_width / _output_height)
