@@ -1872,8 +1872,10 @@ class OperatorSD(Operator):
                 _model_type = int(params['model_type'])  # 模特类型
                 _place_type = int(params['place_type'])  # 背景
 
-                _output_height = 768
-                _output_width = 384
+                _output_model_height = 768
+                _output_model_width = 384
+                _output_final_height = 768
+                _output_final_width = 512
 
                 # _sam_model_name = 'samhq_vit_h_1b3123.pth'
 
@@ -2008,19 +2010,19 @@ class OperatorSD(Operator):
                         resized_clothing_image = self.configure_image(clothing_image,
                                                                       [target_left, target_top, target_right,
                                                                        target_bottom],
-                                                                      target_ratio=_output_width / _output_height if (
+                                                                      target_ratio=_output_model_width / _output_model_height if (
                                                                                                                              target_width / target_height) < (
-                                                                                                                             _output_width / _output_height) else target_width / target_height)
+                                                                                                                             _output_model_width / _output_model_height) else target_width / target_height)
                         resized_input_image = self.configure_image(_input_image, [target_left, target_top, target_right,
                                                                                   target_bottom],
-                                                                   target_ratio=_output_width / _output_height if (
+                                                                   target_ratio=_output_model_width / _output_model_height if (
                                                                                                                           target_width / target_height) < (
-                                                                                                                          _output_width / _output_height) else target_width / target_height)
+                                                                                                                          _output_model_width / _output_model_height) else target_width / target_height)
                         resized_mask_image = self.configure_image(mask_image, [target_left, target_top, target_right,
                                                                                target_bottom],
-                                                                  target_ratio=_output_width / _output_height if (
+                                                                  target_ratio=_output_model_width / _output_model_height if (
                                                                                                                          target_width / target_height) < (
-                                                                                                                         _output_width / _output_height) else target_width / target_height,
+                                                                                                                         _output_model_width / _output_model_height) else target_width / target_height,
                                                                   color=(0, 0, 0))
 
                         if self.update_progress(celery_task, self.redis_client, 30):
@@ -2029,9 +2031,9 @@ class OperatorSD(Operator):
                         print(traceback.format_exc())
                         print('preprocess img error')
                     else:
-                        resized_clothing_image = self.limit_and_compress_image(resized_clothing_image, _output_height)
-                        resized_input_image = self.limit_and_compress_image(resized_input_image, _output_height)
-                        resized_mask_image = self.limit_and_compress_image(resized_mask_image, _output_height)
+                        resized_clothing_image = self.limit_and_compress_image(resized_clothing_image, _output_model_height)
+                        resized_input_image = self.limit_and_compress_image(resized_input_image, _output_model_height)
+                        resized_mask_image = self.limit_and_compress_image(resized_mask_image, _output_model_height)
 
                         resized_input_image.save(f"tmp/model_resized_input_{pic_name}_save.png")
                         resized_clothing_image.save(f"tmp/model_resized_clothing_{pic_name}_save.png")
@@ -2205,7 +2207,7 @@ class OperatorSD(Operator):
                                                subseed,
                                                subseed_strength, seed_resize_from_h, seed_resize_from_w,
                                                seed_enable_extras,
-                                               selected_scale_tab, _output_height, _output_width, scale_by, resize_mode,
+                                               selected_scale_tab, _output_model_height, _output_model_width, scale_by, resize_mode,
                                                inpaint_full_res,
                                                inpaint_full_res_padding, inpainting_mask_invert,
                                                img2img_batch_input_dir,
@@ -2235,12 +2237,44 @@ class OperatorSD(Operator):
                                     top_down_space = 64
                                     left_right_space = 32
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
-                                        _tmp_image_width, _tmp_image_height = sam_mask_img.size
-                                        person_box[0] = 0 if person_box[0]-left_right_space < 0 else person_box[0]-left_right_space
-                                        person_box[1] = 0 if person_box[1]-top_down_space < 0 else person_box[1]-top_down_space
-                                        person_box[2] = _tmp_image_width-1 if person_box[2]+left_right_space > _tmp_image_width else person_box[2]+left_right_space
-                                        person_box[3] = _tmp_image_height-1 if person_box[3]+top_down_space > _tmp_image_height-1 else person_box[3]+top_down_space
-                                        sam_bg_result[idx] = sam_mask_img.crop(person_box)
+                                        person_img = sam_mask_img.crop(person_box)
+                                        person_width, person_height = person_img.size
+
+                                        if person_box[1] <= 4 or person_box[3] >= 768 - 4:
+                                            new_canvas = Image.new("RGB", (_output_final_width, _output_final_height),
+                                                                   (255, 255, 255))
+                                            new_canvas.paste(person_img, ((512 - person_width)/2, 0))
+
+                                        elif person_box[1] < top_down_space:
+                                            new_canvas = Image.new("RGB", (_output_final_width, _output_final_height),
+                                                                   (255, 255, 255))
+                                            new_y1 = top_down_space
+                                            new_y2 = person_box[3] + top_down_space - person_box[1]
+                                            if new_y2 > _output_final_height-top_down_space:
+                                                new_y2 = _output_model_height - top_down_space
+
+                                            new_height = new_y2-new_y1
+                                            new_width = _output_final_width/_output_final_height*new_height
+                                            person_img = person_img.resize((new_width, new_height))
+                                            new_canvas.paste(person_img, ((_output_final_width - new_width) / 2, new_y1))
+                                        elif _output_final_height-person_box[3]<top_down_space:
+                                            new_canvas = Image.new("RGB", (_output_final_width, _output_final_height),
+                                                                   (255, 255, 255))
+                                            new_y2 = _output_final_height - top_down_space
+                                            new_y1 = person_box[1] - (person_box[3] - new_y2)
+
+                                            if new_y1 < top_down_space:
+                                                new_y1 = top_down_space
+
+                                            new_height = new_y2 - new_y1
+                                            new_width = _output_final_width / _output_final_height * new_height
+                                            person_img = person_img.resize((new_width, new_height))
+                                            new_canvas.paste(person_img,
+                                                             ((_output_final_width - new_width) / 2, new_y1))
+
+
+                                            sam_bg_result[idx] = new_canvas
+
                                         # sam_bg_result[idx] = self.configure_image(sam_bg_result[idx],
                                         #                                               [0,0,_tmp_image_width-1,_tmp_image_height-1],
                                         #                                               target_ratio=_output_width / _output_height)
