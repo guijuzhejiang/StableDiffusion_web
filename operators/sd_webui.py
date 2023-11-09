@@ -2237,7 +2237,6 @@ class OperatorSD(Operator):
                                     left_right_space = 32
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
                                         _tmp_image_width, _tmp_image_height = sam_mask_img.size
-
                                         person_box[0] = 0 if person_box[0]-left_right_space < 0 else person_box[0]-left_right_space
                                         person_box[1] = 0 if person_box[1]-top_down_space < 0 else person_box[1]-top_down_space
                                         person_box[2] = _tmp_image_width-1 if person_box[2]+left_right_space > _tmp_image_width else person_box[2]+left_right_space
