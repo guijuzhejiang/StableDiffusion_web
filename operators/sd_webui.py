@@ -2240,10 +2240,10 @@ class OperatorSD(Operator):
                                         person_img = sam_mask_img.crop(person_box)
                                         person_width, person_height = person_img.size
 
-                                        if person_box[1] <= 4 or person_box[3] >= 768 - 4:
+                                        if person_box[1] <= 4 or person_box[3] >= _output_final_height - 4:
                                             new_canvas = Image.new("RGB", (_output_final_width, _output_final_height),
                                                                    (255, 255, 255))
-                                            new_canvas.paste(person_img, ((512 - person_width)/2, 0))
+                                            new_canvas.paste(person_img, (int((512 - person_width)/2), 0))
 
                                         elif person_box[1] < top_down_space:
                                             new_canvas = Image.new("RGB", (_output_final_width, _output_final_height),
@@ -2254,9 +2254,9 @@ class OperatorSD(Operator):
                                                 new_y2 = _output_model_height - top_down_space
 
                                             new_height = new_y2-new_y1
-                                            new_width = _output_final_width/_output_final_height*new_height
+                                            new_width = int(_output_final_width/_output_final_height*new_height)
                                             person_img = person_img.resize((new_width, new_height))
-                                            new_canvas.paste(person_img, ((_output_final_width - new_width) / 2, new_y1))
+                                            new_canvas.paste(person_img, (int((_output_final_width - new_width) / 2), new_y1))
                                         elif _output_final_height-person_box[3]<top_down_space:
                                             new_canvas = Image.new("RGB", (_output_final_width, _output_final_height),
                                                                    (255, 255, 255))
@@ -2267,10 +2267,10 @@ class OperatorSD(Operator):
                                                 new_y1 = top_down_space
 
                                             new_height = new_y2 - new_y1
-                                            new_width = _output_final_width / _output_final_height * new_height
+                                            new_width = int(_output_final_width / _output_final_height * new_height)
                                             person_img = person_img.resize((new_width, new_height))
                                             new_canvas.paste(person_img,
-                                                             ((_output_final_width - new_width) / 2, new_y1))
+                                                             (int((_output_final_width - new_width) / 2), new_y1))
 
 
                                             sam_bg_result[idx] = new_canvas
