@@ -2233,13 +2233,15 @@ class OperatorSD(Operator):
 
                                 if len(sam_bg_result) > 0:
                                     sam_bg_tmp_png_fp = []
+                                    top_down_space = 128
+                                    left_right_space = 32
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
                                         _tmp_image_width, _tmp_image_height = sam_mask_img.size
 
-                                        person_box[0] = 0 if person_box[0]-32 < 0 else person_box[0]-32
-                                        person_box[1] = 0 if person_box[1]-128 < 0 else person_box[1]-128
-                                        person_box[2] = _tmp_image_width-1 if person_box[2]+32 > _tmp_image_width else person_box[2]+32
-                                        person_box[3] = _tmp_image_height-1 if person_box[3]+128 > _tmp_image_height-1 else person_box[3]+128
+                                        person_box[0] = 0 if person_box[0]-left_right_space < 0 else person_box[0]-left_right_space
+                                        person_box[1] = 0 if person_box[1]-top_down_space < 0 else person_box[1]-top_down_space
+                                        person_box[2] = _tmp_image_width-1 if person_box[2]+left_right_space > _tmp_image_width else person_box[2]+left_right_space
+                                        person_box[3] = _tmp_image_height-1 if person_box[3]+top_down_space > _tmp_image_height-1 else person_box[3]+top_down_space
                                         sam_bg_result[idx] = sam_mask_img.crop(person_box)
                                         # sam_bg_result[idx] = self.configure_image(sam_bg_result[idx],
                                         #                                               [0,0,_tmp_image_width-1,_tmp_image_height-1],
