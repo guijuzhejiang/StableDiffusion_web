@@ -2231,39 +2231,49 @@ class OperatorSD(Operator):
                                 # sam
                                 sam_bg_result, person_boxes = self.sam.sam_predict(self.dino_model_name, 'person', 0.3, res_img)
                                 person_box = [int(x) for x in person_boxes[0]]
+                                person_width = person_box[2] - person_box[0]
+                                person_height = person_box[3] - person_box[1]
 
                                 if len(sam_bg_result) > 0:
                                     sam_bg_tmp_png_fp = []
                                     top_down_space = 20
                                     left_right_space = 32
 
-                                    person_box[0] = person_box[0] - left_right_space
-                                    if person_box[0] < 0:
-                                        person_box[0] = 0
+                                    target_rect = [0, 0, 0, 0]
+                                    target_resize = [0, 0]
+                                    # check top
+                                    if person_box[1] > top_down_space and person_box[3] < _output_model_height - top_down_space:
+                                        # 计算高宽缩放比例
+                                        scale = (_output_model_height - top_down_space*2) / person_height
+                                        # scale_w = (_output_model_width - left_right_space*2) / person_width
+                                        #
+                                        # # 取最小比例作为等比缩放比例
+                                        # scale = min(scale_h, scale_w)
 
-                                    person_box[1] = person_box[1] - top_down_space
-                                    if person_box[1] < 0:
-                                        person_box[1] = 0
+                                    elif person_box[1] <= top_down_space and person_box[3] >= _output_model_height - top_down_space:
+                                        scale = 1
 
-                                    person_box[2] = person_box[2] + left_right_space
-                                    if person_box[2] > _output_model_width:
-                                        person_box[2] = _output_model_width
+                                    else:
+                                        scale = (_output_model_height - top_down_space) / person_height
 
-                                    person_box[3] = person_box[3] + top_down_space
-                                    if person_box[3] > _output_model_height:
-                                        person_box[3] = _output_model_height
+                                    target_rect[0] = int(person_box[0] * scale)
+                                    target_rect[1] = int(person_box[1] * scale)
+                                    target_rect[2] = int(person_box[2] * scale)
+                                    target_rect[3] = int(person_box[3] * scale)
+
+                                    target_resize = [target_rect[2] - target_rect[0], target_rect[3],
+                                                     target_rect[1]]
 
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
                                         person_img = sam_mask_img.crop(person_box)
-                                        person_width, person_height = person_img.size
-                                        resized_person_img = person_img.resize((int(person_width/person_height*_output_final_height), _output_final_height))
+                                        person_img = person_img.resize(target_resize)
+
                                         if idx == 1:
-                                            new_canvas = Image.new("RGBA", (_output_final_width, _output_final_height),
-                                                                   (0, 0, 0, 255))
+                                            new_canvas = Image.new("RGBA", (_output_final_width, _output_final_height), (0, 0, 0, 255))
                                         else:
-                                            new_canvas = Image.new("RGBA", (_output_final_width, _output_final_height),
-                                                                   (255, 255, 255, 0))
-                                        new_canvas.paste(resized_person_img, (int((512 - resized_person_img.size[0]) / 2), 0))
+                                            new_canvas = Image.new("RGBA", (_output_final_width, _output_final_height), (255, 255, 255, 0))
+
+                                        new_canvas.paste(person_img, target_rect[:2])
                                         sam_bg_result[idx] = new_canvas
 
                                         # if person_box[1] <= 4 or person_box[3] >= _output_final_height - 4:
@@ -2315,7 +2325,7 @@ class OperatorSD(Operator):
                                     else:
                                         sam_bg_tmp_png_fp_list.append(sam_bg_tmp_png_fp)
                                     ok_img_count += 1
-                                    ok_res.append(res_img)
+                                    ok_res.append(sam_bg_result[2])
                                     ok_sam_res.append(sam_bg_result[2])
 
                                 else:
