@@ -2071,7 +2071,7 @@ class OperatorSD(Operator):
                 inpaint_color_sketch_orig = None
                 init_img_inpaint = None
                 init_mask_inpaint = None
-                steps = 30
+                steps = 40
                 sampler_index = 18  # sampling method modules/sd_samplers_kdiffusion.py
                 mask_blur = 4
                 mask_alpha = 0
