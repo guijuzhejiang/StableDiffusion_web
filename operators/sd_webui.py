@@ -304,8 +304,9 @@ class OperatorSD(Operator):
                 '(middlescent:1.3)',
             ],
             'common': [
-                '(full body:1.5)',
+                'full body',
                 # 'a person',
+                'correct body proportions,good figure',
                 'detailed fingers',
                 'realistic fingers',
                 'detailed hand',
@@ -314,7 +315,7 @@ class OperatorSD(Operator):
                 'realistic body',
                 # '(out of frame:1.3)',
                 '' if _viewpoint == 2 else 'posing for a photo,realistic face',
-                'shoes',
+                '(footwear:1.3),(shoeing:1.3)',
                 'tall',
                 # 'Fixhand',
                 # 'hand101',
@@ -1872,7 +1873,7 @@ class OperatorSD(Operator):
                 _place_type = int(params['place_type'])  # 背景
 
                 _output_height = 768
-                _output_width = 512
+                _output_width = 384
 
                 # _sam_model_name = 'samhq_vit_h_1b3123.pth'
 
@@ -2070,7 +2071,7 @@ class OperatorSD(Operator):
                 inpaint_color_sketch_orig = None
                 init_img_inpaint = None
                 init_mask_inpaint = None
-                steps = 40
+                steps = 30
                 sampler_index = 18  # sampling method modules/sd_samplers_kdiffusion.py
                 mask_blur = 4
                 mask_alpha = 0
@@ -2079,7 +2080,7 @@ class OperatorSD(Operator):
                 tiling = False
                 n_iter = 1
                 batch_size = _batch_size
-                cfg_scale = 9
+                cfg_scale = 7
                 image_cfg_scale = 1.5
                 denoising_strength = 1
                 seed = -1.0
