@@ -2260,8 +2260,7 @@ class OperatorSD(Operator):
                                     target_rect[2] = int(person_box[2] * scale)
                                     target_rect[3] = int(person_box[3] * scale)
 
-                                    target_resize = [target_rect[2] - target_rect[0], target_rect[3],
-                                                     target_rect[1]]
+                                    target_resize = [target_rect[2] - target_rect[0], target_rect[3] - target_rect[1]]
 
                                     target_rect[0] = target_rect[0] + int((_output_final_width - _output_model_width) / 2)
                                     target_rect[1] = target_rect[1] + int((_output_final_height - _output_model_height) / 2)
