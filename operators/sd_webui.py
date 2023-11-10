@@ -2242,18 +2242,20 @@ class OperatorSD(Operator):
                                     target_rect = [0, 0, 0, 0]
                                     target_resize = [0, 0]
                                     # check top
-                                    if person_box[1] > top_down_space and person_box[3] < _output_model_height - top_down_space:
+                                    top_down_space_scale = round(top_down_space * _output_model_height / _output_final_height)
+                                    if person_box[1] > top_down_space_scale and person_box[3] < _output_model_height - top_down_space_scale:
                                         # 计算高宽缩放比例
-                                        scale = (_output_model_height - top_down_space*2) / person_height
-                                        # scale_w = (_output_model_width - left_right_space*2) / person_width
-                                        # # 取最小比例作为等比缩放比例
-                                        # scale = min(scale_h, scale_w)
+                                        scale = (_output_final_height - top_down_space*2) / person_height
 
-                                    elif person_box[1] <= top_down_space and person_box[3] >= _output_model_height - top_down_space:
+                                    elif person_box[1] <= top_down_space_scale and person_box[3] >= _output_model_height - top_down_space_scale:
                                         scale = 1
-
                                     else:
-                                        scale = (_output_model_height - top_down_space) / person_height
+                                        scale = (_output_final_height - top_down_space) / person_height
+
+                                    if person_box[1] <= top_down_space_scale or person_box[3] >= _output_model_height - top_down_space_scale:
+                                        target_rect[1] = 0
+                                    else:
+                                        target_rect[1] = top_down_space
 
                                     target_rect[0] = int(person_box[0] * scale)
                                     target_rect[1] = int(person_box[1] * scale)
@@ -2263,7 +2265,6 @@ class OperatorSD(Operator):
                                     target_resize = [target_rect[2] - target_rect[0], target_rect[3] - target_rect[1]]
 
                                     target_rect[0] = target_rect[0] + int((_output_final_width - _output_model_width) / 2)
-                                    target_rect[1] = target_rect[1] + int((_output_final_height - _output_model_height) / 2)
 
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
                                         person_img = sam_mask_img.crop(person_box)
@@ -2274,7 +2275,7 @@ class OperatorSD(Operator):
                                         else:
                                             new_canvas = Image.new("RGBA", (_output_final_width, _output_final_height), (255, 255, 255, 0))
 
-                                        new_canvas.paste(person_img, target_rect[:2])
+                                        new_canvas.paste(person_img, [target_rect[0], top_down_space])
                                         sam_bg_result[idx] = new_canvas
 
                                         # if person_box[1] <= 4 or person_box[3] >= _output_final_height - 4:
