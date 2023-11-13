@@ -448,8 +448,8 @@ class OperatorSD(Operator):
                     sam_mask_img.save(cache_fp)
                     sam_result_tmp_png_fp.append({'name': cache_fp})
             # 性別
-            gender_prompt = ['GS-Girlish', 'GS-Womanly'] if _params[_task_type]['gender'] == 'female' else [
-                'GS-Boyish', 'GS-Masculine']
+            gender_prompt = ['GS-Girlish,GS-DeMasculate', 'GS-Womanly,GS-DeMasculate'] if _params[_task_type]['gender'] == 'female' else [
+                'GS-Boyish,GS-DeFeminize', 'GS-Masculine,GS-DeFeminize']
             gender_prompt = gender_prompt[0] if _params[_task_type]['is_elder'] == 'young' else gender_prompt[1]
 
             denoising_strength_min = 0.05
