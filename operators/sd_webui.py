@@ -20,7 +20,6 @@ import urllib.parse
 from collections import OrderedDict
 
 import GPUtil
-import redis
 from PIL import Image, ImageDraw
 import copy
 import datetime
@@ -67,13 +66,12 @@ class OperatorSD(Operator):
     cuda = True
     enable = True
     celery_task_name = 'sd_task'
-    redis_client = redis.StrictRedis(host='localhost', port=6379, db=1, decode_responses=True)
 
     def __init__(self, gpu_idx=0):
         os.environ['ACCELERATE'] = 'True'
         os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_idx)
         print("use gpu:" + str(gpu_idx))
-        Operator.__init__(self)
+        super().__init__()
         # import lib
         self.extra_networks = importlib.import_module('modules.extra_networks')
         self.script_callbacks = importlib.import_module('modules.script_callbacks')
@@ -195,7 +193,7 @@ class OperatorSD(Operator):
 
         print('init done')
 
-    def configure_image(self, image, person_pos, target_ratio=0.5, quality=90, color=(255, 255, 255)):
+    def configure_image(self, image, person_pos, min_edge=512, quality=90, color=(255, 255, 255)):
         person_pos = [int(x) for x in person_pos]
         # 将PIL RGBA图像转换为BGR图像
         cv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGBA2BGRA)
@@ -224,27 +222,42 @@ class OperatorSD(Operator):
                                       cv2.BORDER_CONSTANT, value=color)
 
         cur_height, cur_width = cv_image.shape[:2]
-        cur_ratio = cur_width / cur_height
+        # cur_ratio = cur_width / cur_height
 
-        # 计算应该添加的填充量
-        if cur_ratio > target_ratio:
-            # 需要添加垂直box
-            target_height = int(cur_width / target_ratio)
+        # # 计算应该添加的填充量
+        # if cur_ratio > target_ratio:
+        #     # 需要添加垂直box
+        #     target_height = int(cur_width / target_ratio)
+        #
+        #     top = int((target_height - cur_height) / 2)
+        #     bottom = target_height - cur_height - top
+        #     padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_CONSTANT, value=color)
+        # else:
+        #     # 需要添加水平box
+        #     target_width = int(person_height * target_ratio)
+        #
+        #     left = int((target_width - cur_width) / 2)
+        #     right = target_width - cur_width - left
+        #     padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, right, cv2.BORDER_CONSTANT,
+        #                                       value=color)
 
-            top = int((target_height - cur_height) / 2)
-            bottom = target_height - cur_height - top
-            padded_image = cv2.copyMakeBorder(cv_image, top, bottom, 0, 0, cv2.BORDER_CONSTANT, value=color)
+        # padded_image = cv2.cvtColor(np.array(padded_image), cv2.COLOR_BGRA2RGBA)
+
+        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 100]
+        _, jpeg_data = cv2.imencode('.jpg', cv_image,
+                                    encode_param)
+
+        # 将压缩后的图像转换为PIL图像
+        __pil_image = Image.open(io.BytesIO(jpeg_data)).convert('RGBA')
+
+        __pil_w, __pil_h = __pil_image.size
+        min_edge = min(__pil_w, __pil_h)
+        min_index = [__pil_w, __pil_h].index(min_edge)
+        if min_index == 0:
+            res_image = __pil_image.resize((512, int(__pil_h / __pil_w * 512)))
         else:
-            # 需要添加水平box
-            target_width = int(person_height * target_ratio)
-
-            left = int((target_width - cur_width) / 2)
-            right = target_width - cur_width - left
-            padded_image = cv2.copyMakeBorder(cv_image, 0, 0, left, right, cv2.BORDER_CONSTANT,
-                                              value=color)
-
-        padded_image = cv2.cvtColor(np.array(padded_image), cv2.COLOR_BGRA2RGBA)
-        return padded_image
+            res_image = __pil_image.resize((int(__pil_w / __pil_h * 512), 512))
+        return res_image
 
     def limit_and_compress_image(self, __cv_image, __output_height, quality=80):
         # 转pil
@@ -448,8 +461,8 @@ class OperatorSD(Operator):
                     sam_mask_img.save(cache_fp)
                     sam_result_tmp_png_fp.append({'name': cache_fp})
             # 性別
-            gender_prompt = ['GS-Girlish,GS-DeMasculate', 'GS-Womanly,GS-DeMasculate'] if _params[_task_type]['gender'] == 'female' else [
-                'GS-Boyish,GS-DeFeminize', 'GS-Masculine,GS-DeFeminize']
+            gender_prompt = ['GS-Girlish,GS-DeMasculate', 'GS-Womanly,GS-DeMasculate'] if _params[_task_type]['gender'] == 'female' \
+                else ['GS-Boyish,GS-DeFeminize', 'GS-Masculine,GS-DeFeminize']
             gender_prompt = gender_prompt[0] if _params[_task_type]['is_elder'] == 'young' else gender_prompt[1]
 
             denoising_strength_min = 0.05
@@ -1532,17 +1545,16 @@ class OperatorSD(Operator):
         else:
             return res[0][0].convert('RGBA')
 
-
     def __call__(self, *args, **kwargs):
         try:
+            super().__call__(*args, **kwargs)
+
             print("operation start !!!!!!!!!!!!!!!!!!!!!!!!!!")
             print({k: v for k, v in kwargs.items() if k != 'input_image'})
             proceed_mode = kwargs['mode'][0]
             user_id = kwargs['user_id'][0]
 
-            celery_task = args[0]
-
-            if self.update_progress(celery_task, self.redis_client, 1):
+            if self.update_progress(1):
                 return {'success': True}
             if self.predict_image(kwargs['input_image']):
                 # return {'success': False, 'result': "抱歉，您上传的图像未通过合规性检查，请重新上传。"}
@@ -1552,7 +1564,7 @@ class OperatorSD(Operator):
             _input_image = Image.open(kwargs['input_image'])
             _input_image_width, _input_image_height = _input_image.size
 
-            if self.update_progress(celery_task, self.redis_client, 5):
+            if self.update_progress(5):
                 return {'success': True}
 
             pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
@@ -1621,7 +1633,7 @@ class OperatorSD(Operator):
                 _input_image = _input_image.convert('RGBA')
                 _input_image_width, _input_image_height = _input_image.size
 
-                if self.update_progress(celery_task, self.redis_client, 10):
+                if self.update_progress(10):
                     return {'success': True}
 
                 avatar_result = self.proceed_avatar(_style, denoising_strength, _batch_size)
@@ -1648,7 +1660,7 @@ class OperatorSD(Operator):
                             img_urls.append('')
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 95})
-                if self.update_progress(celery_task, self.redis_client, 90):
+                if self.update_progress(90):
                     return {'success': True}
                 else:
                     # clear images
@@ -1793,7 +1805,7 @@ class OperatorSD(Operator):
                     _input_image = _input_image.convert('RGBA')
                     _input_image_width, _input_image_height = _input_image.size
 
-                    if self.update_progress(celery_task, self.redis_client, 10):
+                    if self.update_progress(10):
                         return {'success': True}
 
                     hair_result = []
@@ -1803,7 +1815,7 @@ class OperatorSD(Operator):
                         if isinstance(hair_result, dict):
                             return hair_result
 
-                    if self.update_progress(celery_task, self.redis_client, 50):
+                    if self.update_progress(50):
                         return {'success': True}
 
                     # hair color
@@ -1846,7 +1858,7 @@ class OperatorSD(Operator):
                                 img_urls.append('')
 
                     # celery_task.update_state(state='PROGRESS', meta={'progress': 95})
-                    if self.update_progress(celery_task, self.redis_client, 90):
+                    if self.update_progress(90):
                         return {'success': True}
                     else:
                         # clear images
@@ -1861,8 +1873,6 @@ class OperatorSD(Operator):
                 params = ujson.loads(kwargs['params'][0])
                 _cloth_part = 0
                 _batch_size = int(params['batch_size'])
-                # _input_image = base64_to_pil(params['input_image'])
-                # _gender = 0 if params['gender'] == 'female' else 1
                 arge_idxs = {v: i for i, v in enumerate(['child', 'youth', 'middlescent'])}
                 _age = arge_idxs[params['age']]
                 viewpoint_mode_idxs = {v: i for i, v in enumerate(['front', 'side', 'back'])}
@@ -1872,10 +1882,10 @@ class OperatorSD(Operator):
                 _model_type = int(params['model_type'])  # 模特类型
                 _place_type = int(params['place_type'])  # 背景
 
-                _output_model_height = 800
-                _output_model_width = 400
-                _output_final_height = 768
-                _output_final_width = 512
+                # _output_model_height = 1024
+                # _output_model_width = 512
+                # _output_final_height = 768
+                # _output_final_width = 512
 
                 # _sam_model_name = 'samhq_vit_h_1b3123.pth'
 
@@ -1901,7 +1911,7 @@ class OperatorSD(Operator):
                     _input_image.save(origin_image_path, format='PNG')
 
                     try:
-                        if self.update_progress(celery_task, self.redis_client, 10):
+                        if self.update_progress(10):
                             return {'success': True}
 
                         # 切割衣服
@@ -1909,8 +1919,6 @@ class OperatorSD(Operator):
                         sam_images = []
                         mask_images = []
                         for dino_idx, dino_prompt in enumerate(_dino_clothing_text_prompt):
-                            # person_boxes, _ = self.dino.dino_predict_internal(_input_image, self.dino_model_name,
-                            #                                                   dino_prompt, _box_threshold)
                             sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, dino_prompt,
                                                                             _box_threshold,
                                                                             _input_image.convert('RGBA'))
@@ -1933,7 +1941,7 @@ class OperatorSD(Operator):
                                     box[3] if person0_box[3] == -1 or box[3] > person0_box[3] else person0_box[3],
                                 ]
 
-                        if self.update_progress(celery_task, self.redis_client, 20):
+                        if self.update_progress(20):
                             return {'success': True}
 
                         if person0_box[0] == -1:
@@ -1982,14 +1990,14 @@ class OperatorSD(Operator):
                             constant_top = 40
                             factor_bottom = 5
                             factor_top = 5
-                            left_ratio = 0.05
-                            right_ratio = 0.05
+                            left_ratio = 0.2
+                            right_ratio = 0.2
                             # top_ratio = 0.32
-                            # top_ratio = min(0.35, math.pow(person0_width / person0_height, factor_top) * constant_top)
-                            # bottom_ratio = min(0.58, math.pow(person0_width / person0_height,
-                            #                                   factor_bottom) * constant_bottom)
-                            top_ratio = 0.45
-                            bottom_ratio = 0.6
+                            top_ratio = min(0.4, math.pow(person0_width / person0_height, factor_top) * constant_top)
+                            bottom_ratio = min(0.6, math.pow(person0_width / person0_height,
+                                                              factor_bottom) * constant_bottom)
+                            # top_ratio = 0.45
+                            # bottom_ratio = 0.6
                             print(f"bottom_ratio1: {math.pow(person0_width / person0_height, factor_bottom) * constant_bottom}")
                             print(f"bottom_ratio: {bottom_ratio}")
                             print(f"top_ratio1: {math.pow(person0_width / person0_height, factor_top) * constant_top}")
@@ -2010,27 +2018,21 @@ class OperatorSD(Operator):
                         resized_clothing_image = self.configure_image(clothing_image,
                                                                       [target_left, target_top, target_right,
                                                                        target_bottom],
-                                                                      target_ratio=_output_model_width / _output_model_height)
+                                                                      min_edge=512)
                         resized_input_image = self.configure_image(_input_image, [target_left, target_top, target_right,
                                                                                   target_bottom],
-                                                                   target_ratio=_output_model_width / _output_model_height)
+                                                                   min_edge=512)
                         resized_mask_image = self.configure_image(mask_image, [target_left, target_top, target_right,
                                                                                target_bottom],
-                                                                  target_ratio=_output_model_width / _output_model_height,
+                                                                  min_edge=512,
                                                                   color=(0, 0, 0))
 
-                        if self.update_progress(celery_task, self.redis_client, 30):
+                        if self.update_progress(30):
                             return {'success': True}
                     except Exception:
                         print(traceback.format_exc())
                         print('preprocess img error')
                     else:
-                        resized_clothing_image = self.limit_and_compress_image(resized_clothing_image, _output_model_height)
-                        resized_input_image = self.limit_and_compress_image(resized_input_image, _output_model_height)
-                        resized_mask_image = self.limit_and_compress_image(resized_mask_image, _output_model_height)
-
-                        resized_input_image.save(f"tmp/model_resized_input_{pic_name}_save.png")
-                        resized_clothing_image.save(f"tmp/model_resized_clothing_{pic_name}_save.png")
                         sam_result_tmp_png_fp = []
                         for resized_img_type, cache_image in zip(["resized_input", "resized_mask", "resized_clothing"],
                                                                  [
@@ -2042,11 +2044,11 @@ class OperatorSD(Operator):
                             sam_result_tmp_png_fp.append({'name': cache_fp})
 
                         else:
-                            if self.update_progress(celery_task, self.redis_client, 40):
+                            if self.update_progress(40):
                                 return {'success': True}
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 50})
-                if self.update_progress(celery_task, self.redis_client, 50):
+                if self.update_progress(50):
                     return {'success': True}
 
                 task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
@@ -2176,7 +2178,7 @@ class OperatorSD(Operator):
                             ]
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 50})
-                if self.update_progress(celery_task, self.redis_client, 50):
+                if self.update_progress(50):
                     return {'success': True}
 
                 ok_img_count = 0
@@ -2184,6 +2186,7 @@ class OperatorSD(Operator):
                 ok_res = []
                 ok_sam_res = []
                 sam_bg_tmp_png_fp_list = []
+                _output_model_width, _output_model_height = init_img.size
                 while ok_img_count < batch_size:
                     # 模特生成
                     res = self.img2img.img2img(task_id, 4, sd_model_positive_prompt, sd_model_negative_prompt,
@@ -2224,97 +2227,10 @@ class OperatorSD(Operator):
                                 res_img = res_img.convert('RGBA')
                                 # sam
                                 sam_bg_result, person_boxes = self.sam.sam_predict(self.dino_model_name, 'person', 0.3, res_img)
-                                person_box = [int(x) for x in person_boxes[0]]
-                                person_width = person_box[2] - person_box[0]
-                                person_height = person_box[3] - person_box[1]
-
+                                # person_box = [int(x) for x in person_boxes[0]]
+                                sam_bg_tmp_png_fp = []
                                 if len(sam_bg_result) > 0:
-                                    sam_bg_tmp_png_fp = []
-                                    top_down_space = 20
-                                    left_right_space = 32
-
-                                    target_rect = [0, 0, 0, 0]
-                                    target_resize = [0, 0]
-                                    # check top
-                                    top_down_space_scale = round(top_down_space * _output_model_height / _output_final_height)
-                                    if person_box[1] > top_down_space_scale and person_box[3] < _output_model_height - top_down_space_scale:
-                                        # 计算高宽缩放比例
-                                        scale = (_output_final_height - top_down_space*2) / person_height
-
-                                    elif person_box[1] <= top_down_space_scale and person_box[3] >= _output_model_height - top_down_space_scale:
-                                        scale = 1
-                                    else:
-                                        scale = (_output_final_height - top_down_space) / person_height
-
-                                    if person_box[1] <= top_down_space_scale or person_box[3] >= _output_model_height - top_down_space_scale:
-                                        target_rect[1] = 0
-                                    else:
-                                        target_rect[1] = top_down_space
-
-                                    target_rect[0] = int(person_box[0] * scale)
-                                    target_rect[1] = int(person_box[1] * scale)
-                                    target_rect[2] = int(person_box[2] * scale)
-                                    target_rect[3] = int(person_box[3] * scale)
-
-                                    target_resize = [target_rect[2] - target_rect[0], target_rect[3] - target_rect[1]]
-
-                                    target_rect[0] = target_rect[0] + int((_output_final_width - _output_model_width) / 2)
-
                                     for idx, sam_mask_img in enumerate(sam_bg_result):
-                                        person_img = sam_mask_img.crop(person_box)
-                                        person_img = person_img.resize(target_resize)
-
-                                        if idx == 1:
-                                            new_canvas = Image.new("RGBA", (_output_final_width, _output_final_height), (0, 0, 0, 255))
-                                        else:
-                                            new_canvas = Image.new("RGBA", (_output_final_width, _output_final_height), (255, 255, 255, 0))
-
-                                        new_canvas.paste(person_img, [target_rect[0], top_down_space])
-                                        sam_bg_result[idx] = new_canvas
-
-                                        # if person_box[1] <= 4 or person_box[3] >= _output_final_height - 4:
-                                        #     new_canvas = Image.new("RGB", (_output_final_width, _output_final_height),
-                                        #                            (255, 255, 255))
-                                        #     new_canvas.paste(person_img, (int((512 - person_width)/2), 0))
-                                        #
-                                        # elif person_box[1] < top_down_space:
-                                        #     new_canvas = Image.new("RGB", (_output_final_width, _output_final_height),
-                                        #                            (255, 255, 255))
-                                        #     new_y1 = top_down_space
-                                        #     new_y2 = person_box[3] + top_down_space - person_box[1]
-                                        #     if new_y2 > _output_final_height-top_down_space:
-                                        #         new_y2 = _output_model_height - top_down_space
-                                        #
-                                        #     new_height = new_y2-new_y1
-                                        #     new_width = int(_output_final_width/_output_final_height*new_height)
-                                        #     person_img = person_img.resize((new_width, new_height))
-                                        #     new_canvas.paste(person_img, (int((_output_final_width - new_width) / 2), new_y1))
-                                        # elif _output_final_height-person_box[3]<top_down_space:
-                                        #     new_canvas = Image.new("RGB", (_output_final_width, _output_final_height),
-                                        #                            (255, 255, 255))
-                                        #     new_y2 = _output_final_height - top_down_space
-                                        #     new_y1 = person_box[1] - (person_box[3] - new_y2)
-                                        #
-                                        #     if new_y1 < top_down_space:
-                                        #         new_y1 = top_down_space
-                                        #
-                                        #     new_height = new_y2 - new_y1
-                                        #     new_width = int(_output_final_width / _output_final_height * new_height)
-                                        #     person_img = person_img.resize((new_width, new_height))
-                                        #     new_canvas.paste(person_img,
-                                        #                      (int((_output_final_width - new_width) / 2), new_y1))
-                                        #
-                                        #
-                                        #     sam_bg_result[idx] = new_canvas
-                                        #
-                                        # else:
-                                        #     new_canvas = Image.new("RGB", (_output_final_width, _output_final_height),
-                                        #                            (255, 255, 255))
-                                        #     new_canvas.paste(sam_mask_img,
-                                        #                      (int((_output_final_width - sam_mask_img.size[0]) / 2), 0))
-                                        #
-                                        #     sam_bg_result[idx] = new_canvas
-
                                         cache_fp = f"tmp/model_only_person_seg_{res_idx}_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png"
                                         sam_bg_result[idx].save(cache_fp)
                                         sam_bg_tmp_png_fp.append({'name': cache_fp})
@@ -2333,7 +2249,7 @@ class OperatorSD(Operator):
                                         print('detect no person, retry')
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 70})
-                if self.update_progress(celery_task, self.redis_client, 70):
+                if self.update_progress(70):
                     return {'success': True}
 
                     # else:
@@ -2417,7 +2333,7 @@ class OperatorSD(Operator):
                                              subseed,
                                              subseed_strength, seed_resize_from_h, seed_resize_from_w,
                                              seed_enable_extras,
-                                             selected_scale_tab, _output_final_height, _output_final_width, scale_by,
+                                             selected_scale_tab, _output_model_height, _output_model_width, scale_by,
                                              resize_mode,
                                              # selected_scale_tab, height, width, scale_by, resize_mode,
                                              inpaint_full_res,
@@ -2429,7 +2345,7 @@ class OperatorSD(Operator):
                     self.devices.torch_gc()
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 90})
-                if self.update_progress(celery_task, self.redis_client, 90):
+                if self.update_progress(90):
                     return {'success': True}
                     #  -------------------------------------------------------------------------------------
                 # storage img
@@ -2461,7 +2377,7 @@ class OperatorSD(Operator):
                         for i in range(10 - len(img_urls)):
                             img_urls.append('')
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 95})
-                if self.update_progress(celery_task, self.redis_client, 95):
+                if self.update_progress(95):
                     return {'success': True}
                 else:
                     # clear images
@@ -2499,7 +2415,7 @@ class OperatorSD(Operator):
                 if len(person_boxes) == 0:
                     return {'success': False, 'result': 'backend.magic-mirror.error.no-body'}
 
-                if self.update_progress(celery_task, self.redis_client, 40):
+                if self.update_progress(40):
                     return {'success': True}
 
                 # limit 448
@@ -2533,12 +2449,11 @@ class OperatorSD(Operator):
                                         "RGBA")
                                 if isinstance(result_images, dict):
                                     return result_images
-                                if self.update_progress(celery_task, self.redis_client,
-                                                        (batch_idx + 1) * (proceed_idx + 1) * (
+                                if self.update_progress((batch_idx + 1) * (proceed_idx + 1) * (
                                                                 80 // (batch_size * len(task_list)))):
                                     return {'success': True}
                     else:
-                        if self.update_progress(celery_task, self.redis_client, 80):
+                        if self.update_progress(80):
                             return {'success': True}
 
                     # storage img
@@ -2574,7 +2489,7 @@ class OperatorSD(Operator):
                                 img_urls.append('')
 
                     # celery_task.update_state(state='PROGRESS', meta={'progress': 95})
-                    if self.update_progress(celery_task, self.redis_client, 99):
+                    if self.update_progress(99):
                         return {'success': True}
 
                     return {'success': True, 'result': img_urls}
@@ -2589,7 +2504,7 @@ class OperatorSD(Operator):
                 _input_ratio = _input_image_width / _input_image_height
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 10})
-                if self.update_progress(celery_task, self.redis_client, 10):
+                if self.update_progress(10):
                     return {'success': True}
                 if _input_ratio != _output_ratio:
                     padding_height = int(
@@ -2728,7 +2643,7 @@ class OperatorSD(Operator):
                     padding_height = _input_image_height // 8 * 8
                     padding_width = _input_image_width // 8 * 8
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 50})
-                if self.update_progress(celery_task, self.redis_client, 50):
+                if self.update_progress(50):
                     return {'success': True}
                 self.devices.torch_gc()
                 # cnet_res[0][0].save(f'tmp/cnet_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png',
@@ -2738,7 +2653,7 @@ class OperatorSD(Operator):
                 scales = _output_width / padding_width
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 70})
-                if self.update_progress(celery_task, self.redis_client, 70):
+                if self.update_progress(70):
                     return {'success': True}
 
                 gfpgan_enable = 0
@@ -2752,7 +2667,7 @@ class OperatorSD(Operator):
                 self.devices.torch_gc()
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 80})
-                if self.update_progress(celery_task, self.redis_client, 80):
+                if self.update_progress(80):
                     return {'success': True}
 
                 dir_path = CONFIG['storage_dirpath']['hires_dir']
@@ -2763,7 +2678,7 @@ class OperatorSD(Operator):
                 # pp.image.save(os.path.join(dir_path, img_fn), format="png", quality=100)
                 pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=100, lossless=True)
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 90})
-                if self.update_progress(celery_task, self.redis_client, 90):
+                if self.update_progress(90):
                     return {'success': True}
                 return {'success': True, 'result': [img_fp]}
 
