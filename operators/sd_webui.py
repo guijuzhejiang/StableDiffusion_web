@@ -2010,8 +2010,10 @@ class OperatorSD(Operator):
 
                             target_left = person0_box[0] - left_ratio * person0_width
                             target_top = person0_box[1] - top_ratio * person0_height
+                            target_top = _input_image_height if target_top >= _input_image_width else target_top
                             target_right = person0_box[2] + right_ratio * person0_width
                             target_bottom = person0_box[3] + bottom_ratio * person0_height
+                            target_bottom = _input_image_height if target_bottom >= _input_image_height else target_bottom
 
                         target_width = target_right - target_left
                         target_height = target_bottom - target_top
