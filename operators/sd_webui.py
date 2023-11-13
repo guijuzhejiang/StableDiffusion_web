@@ -2010,19 +2010,13 @@ class OperatorSD(Operator):
                         resized_clothing_image = self.configure_image(clothing_image,
                                                                       [target_left, target_top, target_right,
                                                                        target_bottom],
-                                                                      target_ratio=_output_model_width / _output_model_height if (
-                                                                                                                             target_width / target_height) < (
-                                                                                                                             _output_model_width / _output_model_height) else target_width / target_height)
+                                                                      target_ratio=_output_model_width / _output_model_height)
                         resized_input_image = self.configure_image(_input_image, [target_left, target_top, target_right,
                                                                                   target_bottom],
-                                                                   target_ratio=_output_model_width / _output_model_height if (
-                                                                                                                          target_width / target_height) < (
-                                                                                                                          _output_model_width / _output_model_height) else target_width / target_height)
+                                                                   target_ratio=_output_model_width / _output_model_height)
                         resized_mask_image = self.configure_image(mask_image, [target_left, target_top, target_right,
                                                                                target_bottom],
-                                                                  target_ratio=_output_model_width / _output_model_height if (
-                                                                                                                         target_width / target_height) < (
-                                                                                                                         _output_model_width / _output_model_height) else target_width / target_height,
+                                                                  target_ratio=_output_model_width / _output_model_height,
                                                                   color=(0, 0, 0))
 
                         if self.update_progress(celery_task, self.redis_client, 30):
@@ -2509,12 +2503,12 @@ class OperatorSD(Operator):
                     return {'success': True}
 
                 # limit 448
-                if min(_input_image_width, _input_image_height) < 448:
+                if min(_input_image_width, _input_image_height) < 512:
                     if _input_image_width < _input_image_height:
-                        new_width = 448
+                        new_width = 512
                         new_height = int(_input_image_height / _input_image_width * new_width)
                     else:
-                        new_height = 448
+                        new_height = 512
                         new_width = int(_input_image_width / _input_image_height * new_height)
                     _input_image = _input_image.resize((new_width, new_height))
 
