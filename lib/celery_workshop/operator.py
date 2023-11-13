@@ -5,10 +5,9 @@ import redis
 
 
 class Operator(object):
-    redis_client = redis.StrictRedis(host='localhost', port=6379, db=1, decode_responses=True)
-
     def __init__(self):
         print(f"run {self.__class__.__name__}:{sys._getframe().f_code.co_name}")
+        self.redis_client = redis.StrictRedis(host='localhost', port=6379, db=1, decode_responses=True)
 
     def __call__(self, *args, **kwargs):
         # get celery task
