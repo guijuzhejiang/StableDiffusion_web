@@ -1990,8 +1990,8 @@ class OperatorSD(Operator):
                             constant_top = 40
                             factor_bottom = 5
                             factor_top = 5
-                            left_ratio = 0.4
-                            right_ratio = 0.4
+                            left_ratio = 0.35
+                            right_ratio = 0.35
                             # top_ratio = 0.32
                             top_ratio = min(0.4, math.pow(person0_width / person0_height, factor_top) * constant_top)
                             bottom_ratio = min(0.6, math.pow(person0_width / person0_height,
