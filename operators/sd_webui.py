@@ -1990,8 +1990,8 @@ class OperatorSD(Operator):
                             constant_top = 40
                             factor_bottom = 5
                             factor_top = 5
-                            left_ratio = 0.2
-                            right_ratio = 0.2
+                            left_ratio = 0.4
+                            right_ratio = 0.4
                             # top_ratio = 0.32
                             top_ratio = min(0.4, math.pow(person0_width / person0_height, factor_top) * constant_top)
                             bottom_ratio = min(0.6, math.pow(person0_width / person0_height,
@@ -2010,10 +2010,10 @@ class OperatorSD(Operator):
 
                             target_left = person0_box[0] - left_ratio * person0_width
                             target_top = person0_box[1] - top_ratio * person0_height
-                            target_top = 0 if person0_box[1] <= 0 else target_top
+                            target_top = 0 if person0_box[1] <= 8 else target_top
                             target_right = person0_box[2] + right_ratio * person0_width
                             target_bottom = person0_box[3] + bottom_ratio * person0_height
-                            target_bottom = _input_image_height if person0_box[3] >= _input_image_height else target_bottom
+                            target_bottom = _input_image_height if _input_image_height - person0_box[3] <= 8 else target_bottom
 
                         target_width = target_right - target_left
                         target_height = target_bottom - target_top
