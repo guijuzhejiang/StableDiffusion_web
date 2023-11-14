@@ -328,7 +328,7 @@ class OperatorSD(Operator):
                 'realistic body',
                 # '(out of frame:1.3)',
                 '' if _viewpoint == 2 else 'posing for a photo,realistic face',
-                '(footwear:1.3),(shoeing:1.3)',
+                'footwear',
                 'tall',
                 # 'Fixhand',
                 # 'hand101',
