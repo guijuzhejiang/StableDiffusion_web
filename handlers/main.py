@@ -9,6 +9,7 @@ import aiofile
 import httpx
 import pytz
 import ujson
+from gotrue import check_response
 from sanic.response import json as sanic_json, file_stream
 from sanic.views import HTTPMethodView
 from wechatpayv3 import WeChatPayType
@@ -213,8 +214,18 @@ class WeChatLogin(HTTPMethodView):
                         result_user['name'] = wechat_uinfo['nickname']
 
                     # supabase 检查有没有改用户，没有就注册
-                    users = await request.app.ctx.supabase_client.auth.async_list_users()
-                    users_email = [u.email for u in users]
+                    # users = await request.app.ctx.supabase_client.auth.async_list_users()
+                    h = request.app.ctx.supabase_client.auth.headers
+                    response = await request.app.ctx.supabase_client.auth.async_api.http_client.get(
+                        f"{request.app.ctx.supabase_client.auth.url}/admin/users?per_page=9999", headers=h)
+                    check_response(response)
+                    users = response.json().get("users")
+                    # if users is None:
+                    #     return sanic_json({'success': False, 'message': "登录失败"})
+                    if not isinstance(users, list):
+                        return sanic_json({'success': False, 'message': "backend.api.error.default"})
+
+                    users_email = [u['email'] for u in users]
                     if email not in users_email:
                         try:
                             supabase_res = await request.app.ctx.supabase_client.auth.async_sign_up(email=email,
