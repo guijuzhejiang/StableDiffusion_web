@@ -46,6 +46,14 @@ async def sd_genreate(request: Request, ws):
                     if pixel_sum >= 4681:
                         cost_points = 15
 
+            elif package['mode'] == 'avatar':
+                batch_size = int(params['batch_size'])
+
+                if batch_size == 1:
+                    cost_points = 5
+                elif batch_size == 2:
+                    cost_points = 8
+
             elif package['mode'] == 'beautify':
                 batch_size = int(params['batch_size'])
 

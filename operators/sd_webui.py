@@ -89,7 +89,6 @@ class OperatorSD(Operator):
         self.sd_models = getattr(importlib.import_module('modules'), 'sd_models')
         self.sam = importlib.import_module('guiju.segment_anything_util.sam')
         self.sam_h = importlib.import_module('guiju.segment_anything_util.sam_h')
-        # self.sam_predict = importlib.import_module('guiju.segment_anything_util.sam.sam_predict')
         self.predict_image = getattr(importlib.import_module('guiju.predictor_opennsfw2'), 'predict_image')
         self.logging = getattr(importlib.import_module('lib.common.common_util'), 'logging')
         self.logging = getattr(importlib.import_module('lib.common.common_util'), 'logging')
@@ -1336,7 +1335,7 @@ class OperatorSD(Operator):
         else:
             return res[0][0].convert('RGBA')
 
-    def proceed_avatar(self, _selected_index, _denoising, _batch_size):
+    def proceed_avatar(self, _selected_index, _selected_type, _gender, _sim, _denoising, _batch_size):
         uid_name = ''.join([random.choice(string.ascii_letters) for c in range(4)])
 
         # common
@@ -1369,6 +1368,22 @@ class OperatorSD(Operator):
         cnet_idx = 1
         controlnet_args_unit1 = self.scripts.scripts_img2img.alwayson_scripts[
             cnet_idx].get_default_ui_unit()
+
+        controlnet_args_unit1.batch_images = ''
+        controlnet_args_unit1.control_mode = 'My prompt is more important'
+        controlnet_args_unit1.guidance_end = 1
+        controlnet_args_unit1.guidance_start = 0  # ending control step
+        controlnet_args_unit1.image = None
+        controlnet_args_unit1.low_vram = False
+        controlnet_args_unit1.model = 'control_v11p_sd15_normalbae'
+        controlnet_args_unit1.module = 'normal_bae'
+        controlnet_args_unit1.pixel_perfect = True
+        controlnet_args_unit1.resize_mode = 'Crop and Resize'
+        controlnet_args_unit1.processor_res = 512
+        controlnet_args_unit1.threshold_a = 64
+        controlnet_args_unit1.threshold_b = 64
+        controlnet_args_unit1.weight = 0.4
+        controlnet_args_unit1.enabled = True
         controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
         controlnet_args_unit2.enabled = False
         controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
@@ -1417,7 +1432,7 @@ class OperatorSD(Operator):
                      'is_api': ()}
 
         cfg_scale = 5
-        mask_blur = 20
+        # mask_blur = 20
         resize_mode = 0  # just resize
         sampler_index = 15
         inpaint_full_res = 0 # choices=["Whole picture", "Only masked"]
@@ -1574,12 +1589,13 @@ class OperatorSD(Operator):
                 _batch_size = int(params['batch_size'])
                 _style = int(params['style'])
                 _sim = float(params['sim'])
+                _type = int(params['type'])
+                _gender = str(params['gender'])
 
                 # 0.2–0.4
-                denoising_strength_min = 0.2
+                denoising_strength_min = 0.3
                 denoising_strength_max = 0.4
-                denoising_strength = (1 - _sim) * (
-                        denoising_strength_max - denoising_strength_min) + denoising_strength_min
+                denoising_strength = (1 - _sim) * (denoising_strength_max - denoising_strength_min) + denoising_strength_min
 
                 person_boxes = self.facer.detect_head(_input_image)
                 if len(person_boxes) == 0:
@@ -1636,7 +1652,7 @@ class OperatorSD(Operator):
                 if self.update_progress(10):
                     return {'success': True}
 
-                avatar_result = self.proceed_avatar(_style, denoising_strength, _batch_size)
+                avatar_result = self.proceed_avatar(_style, _type, _gender, _sim, denoising_strength, _batch_size)
 
                 # storage img
                 img_urls = []
