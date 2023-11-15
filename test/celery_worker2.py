@@ -15,20 +15,10 @@ class _AddTask2(Task):
     def run(self, x, y):
         print(self.a)
         print("222222")
-        self.update_state(state='PROGRESS', meta={'progress': 1})
-        time.sleep(1)
-        self.update_state(state='PROGRESS', meta={'progress': 2})
-        time.sleep(1)
-        self.update_state(state='PROGRESS', meta={'progress': 3})
-        time.sleep(1)
-        self.update_state(state='PROGRESS', meta={'progress': 4})
-        time.sleep(1)
-        self.update_state(state='PROGRESS', meta={'progress': 5})
-        time.sleep(1)
-        self.update_state(state='PROGRESS', meta={'progress': 6})
-        time.sleep(1)
-        self.update_state(state='PROGRESS', meta={'progress': 7})
-        time.sleep(1)
+
+        for i in range(20):
+            self.update_state(state='PROGRESS', meta={'progress': i+1})
+            time.sleep(1)
 
         print(f"!!!!!!!!!!!!!x: {x} self.a:{self.a}!!!!!!!!!!!!!!!!!!")
         return x + y
@@ -39,4 +29,4 @@ app.register_task(_AddTask2)
 if __name__ == '__main__':
     print(app.tasks)
     # app.worker_main(argv=['worker', '--loglevel=info', '--concurrency=1'])
-    app.worker_main(argv=['worker', '--loglevel=info', '--concurrency=1', '-Ofair', '-n', 'w2'])
+    app.worker_main(argv=['worker', '--loglevel=info', '--concurrency=1', '-P', 'solo', '-Ofair', '-n', 'w2'])
