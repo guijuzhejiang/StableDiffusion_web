@@ -19,6 +19,7 @@ storage_dirpath:
   user_dir: outputs/img2img-images/user_history
   user_beauty_dir: outputs/img2img-images/user_beauty_history
   user_hair_dir: outputs/img2img-images/user_hair_history
+  user_avatar_dir: outputs/img2img-images/user_avatar_history
   user_upload: outputs/img2img-images/user_upload
   hires_dir: outputs/img2img-images/hires
   lora_model_dir: /home/ray/Workspace/file/素材/头像/224/

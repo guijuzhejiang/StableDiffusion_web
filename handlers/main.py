@@ -306,6 +306,8 @@ class FetchUserHistory(HTTPMethodView):
             category = request.args.get("category")
             if category == 'hair':
                 dir_storage_path = CONFIG['storage_dirpath']['user_hair_dir']
+            elif category == 'avatar':
+                dir_storage_path = CONFIG['storage_dirpath']['user_avatar_dir']
             elif category == 'beauty':
                 dir_storage_path = CONFIG['storage_dirpath']['user_beauty_dir']
             else:
