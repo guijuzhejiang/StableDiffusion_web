@@ -332,7 +332,7 @@ class OperatorSD(Operator):
                 # 'Fixhand',
                 # 'hand101',
                 '(simple background:1.3)',
-                '(plain background:1.3)',
+                # '(plain background:1.3)',
                 # 'natural skin texture',
                 # 'beautiful fingers',
                 # 'clear fingernails',
