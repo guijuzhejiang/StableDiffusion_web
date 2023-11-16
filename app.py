@@ -2,7 +2,6 @@ import importlib
 import logging
 import os
 
-import aioredis
 from sanic import Blueprint
 from sanic import Sanic
 from sanic_cors import CORS
@@ -10,8 +9,8 @@ from lib.celery_workshop.wokrshop import WorkShop
 from operators import OperatorSD
 from wechatpayv3 import WeChatPay, WeChatPayType
 
-from handlers.main import SDGenertae, SDHires, Pay, Query, ImageProvider, QueryPayment, WeChatLogin, FetchUserHistory, UserUpload, QueryDiscount, RevokeTask
-# from supabase import create_client
+from handlers.main import SDGenertae, SDHires, Pay, Query, ImageProvider, QueryPayment, WeChatLogin, FetchUserHistory, UserUpload, QueryDiscount, RevokeTask, SendCaptcha, VerifyCaptcha
+from redis import asyncio as aioredis
 from handlers.websocket import sd_genreate
 from utils.global_vars import CONFIG
 
@@ -24,6 +23,8 @@ bp.add_route(Pay.as_view(), "/wechat/pay")
 bp.add_route(Query.as_view(), "/wechat/query")
 bp.add_route(QueryDiscount.as_view(), "/discount/query")
 bp.add_route(RevokeTask.as_view(), "/management/revoke_task")
+bp.add_route(SendCaptcha.as_view(), "/sms/send_captcha")
+bp.add_route(VerifyCaptcha.as_view(), "/sms/verify_captcha")
 bp.add_route(WeChatLogin.as_view(), "/wechat/login")
 bp.add_route(QueryPayment.as_view(), "/wechat/query_payment")
 bp.add_route(ImageProvider.as_view(), "/user/image/fetch")
@@ -85,8 +86,13 @@ async def main_process_start(sanic_app, loop):
     )
 
     sanic_app.ctx.redis_session = aioredis.from_url(f"redis://localhost:6379/1", decode_responses=True)
+    sanic_app.ctx.redis_session_sms = aioredis.from_url(f"redis://localhost:6379/2", decode_responses=True)
+    sanic_app.ctx.redis_session_sms.flushdb()
 
     sanic_app.ctx.sd_workshop = WorkShop(OperatorSD)
+
+    os.environ['ALIBABA_CLOUD_ACCESS_KEY_ID'] = CONFIG['aliyun']['sms']['access_key_id']
+    os.environ['ALIBABA_CLOUD_ACCESS_KEY_SECRET'] = CONFIG['aliyun']['sms']['access_key_secret']
 
 
 class Config:

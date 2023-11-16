@@ -51,3 +51,9 @@ supabase:
   key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogInNlcnZpY2Vfcm9sZSIsCiAgImlzcyI6ICJzdXBhYmFzZSIsCiAgImlhdCI6IDE2OTU4MzA0MDAsCiAgImV4cCI6IDE4NTM2ODMyMDAKfQ.QanqKpEYyjqgvl1ElcWw7JJAvUEzIC0e0w1pFfPOITE"
   url: "https://www.guijutech.com:8888"
 #  url: "http://127.0.0.1:8888"
+aliyun:
+  sms:
+    access_key_id: "LTAI5tHqAUujrdmH8yQCw3N4"
+    access_key_secret: "CZ0H8ts8FTZblgymKIGNt5rdQj5DON"
+#    template_code: "SMS_463945297"
+    template_code: "SMS_290885121"

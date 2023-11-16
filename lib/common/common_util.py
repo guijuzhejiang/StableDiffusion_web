@@ -33,6 +33,8 @@ def generate_random(num):
     alphabet = 'abcdefghijklmnopqrstuvwxyz_-ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     return ''.join([random.choice(alphabet) for i in range(num)])
 
+def generate_random_digits(num=6):
+    return ''.join([str(n) for n in random.sample(range(10), num)])
 
 def base64_to_pil(base64_string, from_html=True):
     if from_html:

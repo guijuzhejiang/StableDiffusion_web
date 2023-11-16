@@ -14,9 +14,14 @@ from sanic.response import json as sanic_json, file_stream
 from sanic.views import HTTPMethodView
 from wechatpayv3 import WeChatPayType
 from lib.celery_workshop.wokrshop import WorkShop
-from lib.common.common_util import encrypt
+from lib.common.common_util import encrypt, generate_random_digits
 from lib.redis_mq import RedisMQ
 from lib.sanic_util.sanic_jinja2 import SanicJinja2
+from alibabacloud_dysmsapi20170525.client import Client as Dysmsapi20170525Client
+from alibabacloud_tea_openapi import models as open_api_models
+from alibabacloud_dysmsapi20170525 import models as dysmsapi_20170525_models
+from alibabacloud_tea_util import models as util_models
+from alibabacloud_tea_util.client import Client as UtilClient
 from operators import OperatorSD
 from utils.global_vars import CONFIG
 sd_workshop = WorkShop(OperatorSD)
@@ -357,3 +362,90 @@ class UserUpload(HTTPMethodView):
             return sanic_json({'success': True})
 
 
+class SendCaptcha(HTTPMethodView):
+    async def post(self, request):
+        try:
+            exp_secs = 300
+            phone = request.form['phone'][0]
+            captcha = generate_random_digits()
+            config = open_api_models.Config(
+                # 必填，您的 AccessKey ID,
+                access_key_id=os.environ['ALIBABA_CLOUD_ACCESS_KEY_ID'],
+                # 必填，您的 AccessKey Secret,
+                access_key_secret=os.environ['ALIBABA_CLOUD_ACCESS_KEY_SECRET']
+            )
+            # Endpoint 请参考 https://api.aliyun.com/product/Dysmsapi
+            config.endpoint = f'dysmsapi.aliyuncs.com'
+            client = Dysmsapi20170525Client(config)
+            send_sms_request = dysmsapi_20170525_models.SendSmsRequest(
+                phone_numbers=phone,
+                sign_name='幻景AI',
+                template_code=CONFIG['aliyun']['sms']['template_code'],
+                template_param=ujson.dumps({'code': captcha}),
+            )
+            try:
+                # 复制代码运行请自行打印 API 的返回值
+                res = await client.send_sms_with_options_async(send_sms_request, util_models.RuntimeOptions())
+            except Exception as error:
+                # 如有需要，请打印 error
+                UtilClient.assert_as_string(error.message)
+                print(error.message)
+                return sanic_json({'success': False, 'result': 'backend.api.error.send-captcha'})
+            else:
+                if res.body.code == 'OK':
+                    await request.app.ctx.redis_session_sms.setex(phone, exp_secs, captcha)
+                else:
+                    return sanic_json({'success': False, 'result': 'backend.api.error.send-captcha'})
+
+        except Exception:
+            print(traceback.format_exc())
+            return sanic_json({'success': False, 'result': 'backend.api.error.send-captcha'})
+        else:
+            return sanic_json({'success': True})
+
+
+class VerifyCaptcha(HTTPMethodView):
+    async def post(self, request):
+        try:
+            phone = request.form['phone'][0]
+            captcha = request.form['captcha'][0]
+            country = request.form['country'][0]
+
+            redis_captcha = await request.app.ctx.redis_session_sms.get(phone)
+            if redis_captcha:
+                if redis_captcha == captcha:
+                    h = request.app.ctx.supabase_client.auth.headers
+                    response = await request.app.ctx.supabase_client.auth.async_api.http_client.get(
+                        f"{request.app.ctx.supabase_client.auth.url}/admin/users?per_page=9999", headers=h)
+                    check_response(response)
+                    users = response.json().get("users")
+
+                    alike_email = f"{phone}@sms.com"
+                    password = encrypt(phone+'guijutech').lower()
+
+                    if not isinstance(users, list):
+                        return sanic_json({'success': False, 'message': "backend.api.error.default"})
+
+                    users_email = [u['email'] for u in users]
+                    if alike_email not in users_email:
+                        try:
+                            supabase_res = await request.app.ctx.supabase_client.auth.async_sign_up(email=alike_email,
+                                                                                                    password=password)
+                            res = (await request.app.ctx.supabase_client.atable("account").update(
+                                {"locale": country}).eq("id", str(supabase_res.user.id)).execute()).data
+                        except Exception:
+                            print(str(traceback.format_exc()))
+                            return sanic_json({'success': False, 'message': "backend.api.error.register"})
+                    else:
+                        return sanic_json({'success': True, 'username': alike_email, 'password': password})
+
+                else:
+                    return sanic_json({'success': False, 'result': 'backend.api.error.wrong-captcha'})
+            else:
+                return sanic_json({'success': False, 'result': 'backend.api.error.no-captcha'})
+
+        except Exception:
+            print(traceback.format_exc())
+            return sanic_json({'success': False, 'result': 'backend.api.error.send-captcha'})
+        else:
+            return sanic_json({'success': True})

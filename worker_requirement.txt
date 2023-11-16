@@ -2,7 +2,6 @@ celery
 ujson
 GPUtil
 pillow
-aioredis
 redis
 pyyaml
 opencv_python
