@@ -2205,67 +2205,69 @@ class OperatorSD(Operator):
                 ok_sam_res = []
                 sam_bg_tmp_png_fp_list = []
                 _output_model_width, _output_model_height = init_img.size
-                while ok_img_count < batch_size:
-                    # 模特生成
-                    res = self.img2img.img2img(task_id, 4, sd_model_positive_prompt, sd_model_negative_prompt,
-                                               prompt_styles,
-                                               init_img,
-                                               sketch,
-                                               init_img_with_mask, inpaint_color_sketch, inpaint_color_sketch_orig,
-                                               init_img_inpaint, init_mask_inpaint,
-                                               steps, sampler_index, mask_blur, mask_alpha, inpainting_fill,
-                                               restore_faces,
-                                               tiling,
-                                               n_iter, batch_size - fuck_img_count, cfg_scale, image_cfg_scale,
-                                               denoising_strength,
-                                               seed,
-                                               subseed,
-                                               subseed_strength, seed_resize_from_h, seed_resize_from_w,
-                                               seed_enable_extras,
-                                               selected_scale_tab, _output_model_height, _output_model_width, scale_by, resize_mode,
-                                               inpaint_full_res,
-                                               inpaint_full_res_padding, inpainting_mask_invert,
-                                               img2img_batch_input_dir,
-                                               img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
-                                               override_settings_texts,
-                                               *sam_args)
+                # while ok_img_count < batch_size:
+                # 模特生成
+                res = self.img2img.img2img(task_id, 4, sd_model_positive_prompt, sd_model_negative_prompt,
+                                           prompt_styles,
+                                           init_img,
+                                           sketch,
+                                           init_img_with_mask, inpaint_color_sketch, inpaint_color_sketch_orig,
+                                           init_img_inpaint, init_mask_inpaint,
+                                           steps, sampler_index, mask_blur, mask_alpha, inpainting_fill,
+                                           restore_faces,
+                                           tiling,
+                                           n_iter, batch_size, cfg_scale, image_cfg_scale,
+                                           denoising_strength,
+                                           seed,
+                                           subseed,
+                                           subseed_strength, seed_resize_from_h, seed_resize_from_w,
+                                           seed_enable_extras,
+                                           selected_scale_tab, _output_model_height, _output_model_width, scale_by, resize_mode,
+                                           inpaint_full_res,
+                                           inpaint_full_res_padding, inpainting_mask_invert,
+                                           img2img_batch_input_dir,
+                                           img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
+                                           override_settings_texts,
+                                           *sam_args)
 
-                    self.devices.torch_gc()
-                    for res_idx, res_img in enumerate(res[0]):
-                        if getattr(res_img, 'already_saved_as', False):
-                            if self.predict_image(res_img.already_saved_as):
-                                fuck_img_count += 1
-                                if fuck_img_count > 10:
-                                    # return {'success': False, 'result': "生成失败次数过多"}
-                                    return {'success': False, 'result': 'backend.generate.error.re-try'}
+                self.devices.torch_gc()
+                for res_idx, res_img in enumerate(res[0]):
+                    if getattr(res_img, 'already_saved_as', False):
+                        if self.predict_image(res_img.already_saved_as):
+                            return {'success': False, 'result': 'backend.generate.error.re-try'}
+                            # fuck_img_count += 1
+                            # if fuck_img_count > 10:
+                            #     # return {'success': False, 'result': "生成失败次数过多"}
+                            #     return {'success': False, 'result': 'backend.generate.error.re-try'}
+                            #
+                            # else:
+                            #     print('detect nsfw, retry')
+                        else:
+                            res_img = res_img.convert('RGBA')
+                            # sam
+                            sam_bg_result, person_boxes = self.sam.sam_predict(self.dino_model_name, 'person', 0.3, res_img)
 
+                            sam_bg_tmp_png_fp = []
+                            if len(sam_bg_result) > 0:
+                                for idx, sam_mask_img in enumerate(sam_bg_result):
+                                    cache_fp = f"tmp/model_only_person_seg_{res_idx}_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png"
+                                    sam_bg_result[idx].save(cache_fp)
+                                    sam_bg_tmp_png_fp.append({'name': cache_fp})
                                 else:
-                                    print('detect nsfw, retry')
+                                    sam_bg_tmp_png_fp_list.append(sam_bg_tmp_png_fp)
+                                ok_img_count += 1
+                                ok_res.append(sam_bg_result[2])
+                                ok_sam_res.append(sam_bg_result[2])
+
                             else:
-                                res_img = res_img.convert('RGBA')
-                                # sam
-                                sam_bg_result, person_boxes = self.sam.sam_predict(self.dino_model_name, 'person', 0.3, res_img)
-
-                                # person_box = [int(x) for x in person_boxes[0]]
-                                sam_bg_tmp_png_fp = []
-                                if len(sam_bg_result) > 0:
-                                    for idx, sam_mask_img in enumerate(sam_bg_result):
-                                        cache_fp = f"tmp/model_only_person_seg_{res_idx}_{idx}_{pic_name}{'_save' if idx == 0 else ''}.png"
-                                        sam_bg_result[idx].save(cache_fp)
-                                        sam_bg_tmp_png_fp.append({'name': cache_fp})
-                                    else:
-                                        sam_bg_tmp_png_fp_list.append(sam_bg_tmp_png_fp)
-                                    ok_img_count += 1
-                                    ok_res.append(sam_bg_result[2])
-                                    ok_sam_res.append(sam_bg_result[2])
-
-                                else:
-                                    fuck_img_count += 1
-                                    if fuck_img_count > 10:
-                                        # return {'success': False, 'result': "fatal error"}
-                                        return {'success': False, 'result': "backend.generate.error.failed"}
-                                    else:
-                                        print('detect no person, retry')
+                                # fuck_img_count += 1
+                                # if fuck_img_count > 10:
+                                    # return {'success': False, 'result': "fatal error"}
+                                return {'success': False, 'result': "backend.generate.error.failed"}
+                                # else:
+                                #     print('detect no person, retry')
+                else:
+                    del res
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 70})
                 if self.update_progress(70):
