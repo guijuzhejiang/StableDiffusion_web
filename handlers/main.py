@@ -433,6 +433,8 @@ class VerifyCaptcha(HTTPMethodView):
                                                                                                     password=password)
                             res = (await request.app.ctx.supabase_client.atable("account").update(
                                 {"locale": country}).eq("id", str(supabase_res.user.id)).execute()).data
+
+                            return sanic_json({'success': True, 'username': alike_email, 'password': password})
                         except Exception:
                             print(str(traceback.format_exc()))
                             return sanic_json({'success': False, 'message': "backend.api.error.register"})
