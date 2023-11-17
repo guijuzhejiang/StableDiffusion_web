@@ -1669,7 +1669,7 @@ class OperatorSD(Operator):
                         os.remove(os.path.join(dir_path, cache_list[0]))
                 else:
                     for img_fn in sorted(os.listdir(dir_path), reverse=True):
-                        url_fp = f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category=avatar"
+                        url_fp = f"{'http://192.168.110.8:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category=avatar"
                         img_urls.append(url_fp)
                     if len(img_urls) < 10:
                         for i in range(10 - len(img_urls)):
@@ -1867,7 +1867,7 @@ class OperatorSD(Operator):
                             os.remove(os.path.join(dir_path, cache_list[0]))
                     else:
                         for img_fn in sorted(os.listdir(dir_path), reverse=True):
-                            url_fp = f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category=hair"
+                            url_fp = f"{'http://192.168.110.8:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category=hair"
                             img_urls.append(url_fp)
                         if len(img_urls) < 10:
                             for i in range(10 - len(img_urls)):
@@ -2392,7 +2392,7 @@ class OperatorSD(Operator):
                         os.remove(os.path.join(dir_path, cache_list[0]))
                 else:
                     for img_fn in sorted(os.listdir(dir_path), reverse=True):
-                        url_fp = f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category=model"
+                        url_fp = f"{'http://192.168.110.8:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category=model"
                         img_urls.append(url_fp)
                     if len(img_urls) < 10:
                         for i in range(10 - len(img_urls)):
@@ -2503,7 +2503,7 @@ class OperatorSD(Operator):
                             os.remove(os.path.join(dir_path, cache_list[0]))
                     else:
                         for img_fn in sorted(os.listdir(dir_path), reverse=True):
-                            url_fp = f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category=mirror"
+                            url_fp = f"{'http://192.168.110.8:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category=mirror"
                             img_urls.append(url_fp)
                         if len(img_urls) < 10:
                             for i in range(10 - len(img_urls)):
@@ -2695,7 +2695,7 @@ class OperatorSD(Operator):
                 os.makedirs(dir_path, exist_ok=True)
 
                 img_fn = f"{datetime.datetime.now().strftime('%y%m%d%H%M%S')}_{''.join([random.choice(string.ascii_letters) for c in range(6)])}.jpeg"
-                img_fp = f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}"
+                img_fp = f"{'http://192.168.110.8:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}"
                 # pp.image.save(os.path.join(dir_path, img_fn), format="png", quality=100)
                 pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=100, lossless=True)
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 90})

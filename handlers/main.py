@@ -331,7 +331,7 @@ class FetchUserHistory(HTTPMethodView):
             dir_user_path = os.path.join(dir_storage_path, user_id)
             os.makedirs(dir_user_path, exist_ok=True)
 
-            result = [f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={category}" for img_fn in sorted(os.listdir(dir_user_path), reverse=True)]
+            result = [f"{'http://192.168.110.8:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={category}" for img_fn in sorted(os.listdir(dir_user_path), reverse=True)]
             if len(result) < 10:
                 for i in range(10-len(result)):
                     result.append('')
