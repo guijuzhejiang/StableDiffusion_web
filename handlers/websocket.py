@@ -54,7 +54,7 @@ async def sd_genreate(request: Request, ws):
                 elif batch_size == 2:
                     cost_points = 8
 
-            elif package['mode'] == 'beautify':
+            elif package['mode'] == 'mirror':
                 batch_size = int(params['batch_size'])
 
                 if batch_size == 1:
@@ -84,7 +84,7 @@ async def sd_genreate(request: Request, ws):
             buf_result = {'success': True, 'result': None, 'act': None, 'type': package['mode']}
             if cost_points <= account['balance']:
                 # recv image
-                if package['mode'] == 'model' or package['mode'] == 'beautify' or package['mode'] == 'hair':
+                if package['mode'] == 'model' or package['mode'] == 'mirror' or package['mode'] == 'hair':
                     format_package['input_image'] = os.path.join(CONFIG['storage_dirpath']['user_upload'], f"{user_id}.png")
                 else:
                     parsed_url = urlparse(package['chosen_image'])
@@ -94,8 +94,8 @@ async def sd_genreate(request: Request, ws):
                     category = query_params['category'][0]
                     if category == 'hair':
                         dir_storage_path = CONFIG['storage_dirpath']['user_hair_dir']
-                    elif category == 'beauty':
-                        dir_storage_path = CONFIG['storage_dirpath']['user_beauty_dir']
+                    elif category == 'mirror':
+                        dir_storage_path = CONFIG['storage_dirpath']['user_mirror_dir']
                     else:
                         dir_storage_path = CONFIG['storage_dirpath']['user_dir']
                     img_fp = os.path.join(dir_storage_path, query_params['uid'][0], query_params['imgpath'][0])

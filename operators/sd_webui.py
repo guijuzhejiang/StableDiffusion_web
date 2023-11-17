@@ -2408,7 +2408,7 @@ class OperatorSD(Operator):
 
                 return {'success': True, 'result': img_urls}
 
-            elif proceed_mode == 'beautify':
+            elif proceed_mode == 'mirror':
                 origin_image_path = f'tmp/mirror_origin_{pic_name}_save.png'
                 _input_image.save(origin_image_path, format='PNG')
                 # params: {
@@ -2479,7 +2479,7 @@ class OperatorSD(Operator):
 
                     # storage img
                     img_urls = []
-                    dir_path = os.path.join(CONFIG['storage_dirpath']['user_beauty_dir'], user_id)
+                    dir_path = os.path.join(CONFIG['storage_dirpath']['user_mirror_dir'], user_id)
                     os.makedirs(dir_path, exist_ok=True)
                     for res_idx, res_img in enumerate(result_images):
                         img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"
@@ -2503,7 +2503,7 @@ class OperatorSD(Operator):
                             os.remove(os.path.join(dir_path, cache_list[0]))
                     else:
                         for img_fn in sorted(os.listdir(dir_path), reverse=True):
-                            url_fp = f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category=beauty"
+                            url_fp = f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category=mirror"
                             img_urls.append(url_fp)
                         if len(img_urls) < 10:
                             for i in range(10 - len(img_urls)):
