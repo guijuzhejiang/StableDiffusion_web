@@ -17,7 +17,7 @@ redis:
   redis_mq: 11
 storage_dirpath:
   user_dir: outputs/img2img-images/user_history
-  user_beauty_dir: outputs/img2img-images/user_beauty_history
+  user_mirror_dir: outputs/img2img-images/user_mirror_history
   user_hair_dir: outputs/img2img-images/user_hair_history
   user_avatar_dir: outputs/img2img-images/user_avatar_history
   user_upload: outputs/img2img-images/user_upload
@@ -55,5 +55,5 @@ aliyun:
   sms:
     access_key_id: "LTAI5tHqAUujrdmH8yQCw3N4"
     access_key_secret: "CZ0H8ts8FTZblgymKIGNt5rdQj5DON"
-#    template_code: "SMS_463945297"
-    template_code: "SMS_290885121"
+    template_code: "SMS_463945297"
+#    template_code: "SMS_290885121"
