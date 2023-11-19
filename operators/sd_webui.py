@@ -1556,7 +1556,7 @@ class OperatorSD(Operator):
 
         self.devices.torch_gc()
 
-        return [x.convert('RGBA') for x in res[0]]
+        return [x.convert('L') if prompt_dict[_selected_index]['label'] == '素描' else x.convert('RGBA') for x in res[0]]
 
     def __call__(self, *args, **kwargs):
         try:
@@ -1621,16 +1621,17 @@ class OperatorSD(Operator):
                     person_width = person_box[2] - person_box[0]
                     person_height = person_box[3] - person_box[1]
 
-                    person_box[0] = person_box[0] - int(person_width * 0.2)
+                    padding_ratio = 0.5
+                    person_box[0] = person_box[0] - int(person_width * padding_ratio)
                     if person_box[0] < 0:
                         person_box[0] = 0
-                    person_box[1] = person_box[1] - int(person_height * 0.3)
+                    person_box[1] = person_box[1] - int(person_height * padding_ratio)
                     if person_box[1] < 0:
                         person_box[1] = 0
-                    person_box[2] = person_box[2] + int(person_width * 0.2)
+                    person_box[2] = person_box[2] + int(person_width * padding_ratio)
                     if person_box[2] >= _input_image_width:
                         person_box[2] = _input_image_width-1
-                    person_box[3] = person_box[3] + int(person_height * 0.3)
+                    person_box[3] = person_box[3] + int(person_height * padding_ratio)
                     if person_box[3] >= _input_image_height:
                         person_box[3] = _input_image_height-1
 
