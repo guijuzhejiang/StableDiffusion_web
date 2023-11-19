@@ -112,7 +112,7 @@ class OperatorSD(Operator):
         self.shared.cmd_opts.lang = 'ch'
         self.shared.cmd_opts.disable_adetailer = False
         self.shared.cmd_opts.sd_checkpoint_cache = 0
-        self.shared.cmd_opts.ckpt = None
+        # self.shared.cmd_opts.ckpt = None
 
         # init
         self.initialize()
@@ -1682,7 +1682,7 @@ class OperatorSD(Operator):
 
                 # storage img
                 img_urls = []
-                dir_path = os.path.join(CONFIG['storage_dirpath']['user_hair_dir'], user_id)
+                dir_path = os.path.join(CONFIG['storage_dirpath']['user_avatar_dir'], user_id)
                 os.makedirs(dir_path, exist_ok=True)
                 for res_idx, res_img in enumerate(avatar_result):
                     img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"
