@@ -747,6 +747,12 @@ class Shared(sys.modules[__name__].__class__):
 
     sd_model_val = None
 
+    @staticmethod
+    def change_sd_model(model_name):
+        import modules.sd_models
+
+        return modules.sd_models.model_data.change_sd_model(model_name)
+
     @property
     def sd_model(self):
         import modules.sd_models

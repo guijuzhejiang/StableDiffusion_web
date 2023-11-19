@@ -84,9 +84,7 @@ async def sd_genreate(request: Request, ws):
             buf_result = {'success': True, 'result': None, 'act': None, 'type': package['mode']}
             if cost_points <= account['balance']:
                 # recv image
-                if package['mode'] == 'model' or package['mode'] == 'mirror' or package['mode'] == 'hair':
-                    format_package['input_image'] = os.path.join(CONFIG['storage_dirpath']['user_upload'], f"{user_id}.png")
-                else:
+                if package['mode'] == 'hires':
                     parsed_url = urlparse(package['chosen_image'])
                     # 获取查询参数
                     query_params = parse_qs(parsed_url.query)
@@ -100,6 +98,8 @@ async def sd_genreate(request: Request, ws):
                         dir_storage_path = CONFIG['storage_dirpath']['user_dir']
                     img_fp = os.path.join(dir_storage_path, query_params['uid'][0], query_params['imgpath'][0])
                     format_package['input_image'] = img_fp
+                else:
+                    format_package['input_image'] = os.path.join(CONFIG['storage_dirpath']['user_upload'], f"{user_id}.png")
 
                 # send task
                 task_result = request.app.ctx.sd_workshop(**format_package)

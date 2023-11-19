@@ -115,21 +115,21 @@ def list_models():
     checkpoints_list.clear()
     checkpoint_aliases.clear()
 
-    cmd_ckpt = shared.cmd_opts.ckpt
-    if shared.cmd_opts.no_download_sd_model or cmd_ckpt != shared.sd_model_file or os.path.exists(cmd_ckpt):
-        model_url = None
-    else:
-        model_url = "https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors"
+    # cmd_ckpt = shared.cmd_opts.ckpt
+    # if shared.cmd_opts.no_download_sd_model or cmd_ckpt != shared.sd_model_file or os.path.exists(cmd_ckpt):
+    model_url = None
+    # else:
+    #     model_url = "https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors"
 
     model_list = modelloader.load_models(model_path=model_path, model_url=model_url, command_path=shared.cmd_opts.ckpt_dir, ext_filter=[".ckpt", ".safetensors"], download_name="v1-5-pruned-emaonly.safetensors", ext_blacklist=[".vae.ckpt", ".vae.safetensors"])
 
-    if os.path.exists(cmd_ckpt):
-        checkpoint_info = CheckpointInfo(cmd_ckpt)
-        checkpoint_info.register()
-
-        shared.opts.data['sd_model_checkpoint'] = checkpoint_info.title
-    elif cmd_ckpt is not None and cmd_ckpt != shared.default_sd_model_file:
-        print(f"Checkpoint in --ckpt argument not found (Possible it was moved to {model_path}: {cmd_ckpt}", file=sys.stderr)
+    # if os.path.exists(cmd_ckpt):
+    #     checkpoint_info = CheckpointInfo(cmd_ckpt)
+    #     checkpoint_info.register()
+    #
+    #     shared.opts.data['sd_model_checkpoint'] = checkpoint_info.title
+    # elif cmd_ckpt is not None and cmd_ckpt != shared.default_sd_model_file:
+    #     print(f"Checkpoint in --ckpt argument not found (Possible it was moved to {model_path}: {cmd_ckpt}", file=sys.stderr)
 
     for filename in sorted(model_list, key=str.lower):
         checkpoint_info = CheckpointInfo(filename)
@@ -426,6 +426,17 @@ class SdModelData:
         self.was_loaded_at_least_once = False
         self.lock = threading.Lock()
 
+    def change_sd_model(self, model_name):
+        # self.was_loaded_at_least_once = False
+        with self.lock:
+            try:
+                load_model(checkpoint_aliases.get(os.path.basename(model_name)))
+            except Exception as e:
+                errors.display(e, "loading stable diffusion model", full_traceback=True)
+                print("", file=sys.stderr)
+                print("Stable diffusion model failed to load", file=sys.stderr)
+                self.sd_model = None
+
     def get_sd_model(self):
         if self.was_loaded_at_least_once:
             return self.sd_model
@@ -436,7 +447,14 @@ class SdModelData:
                     return self.sd_model
 
                 try:
-                    load_model()
+                    # load_model()
+                    model_list = modelloader.load_models(model_path=model_path,
+                                                         command_path=shared.cmd_opts.ckpt_dir,
+                                                         ext_filter=[".ckpt", ".safetensors"],
+                                                         download_name="v1-5-pruned-emaonly.safetensors",
+                                                         ext_blacklist=[".vae.ckpt", ".vae.safetensors"])
+                    for model_name in model_list:
+                        load_model(checkpoint_aliases.get(os.path.basename(model_name)))
                 except Exception as e:
                     errors.display(e, "loading stable diffusion model", full_traceback=True)
                     print("", file=sys.stderr)

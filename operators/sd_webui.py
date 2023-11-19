@@ -32,7 +32,8 @@ import cv2
 import numpy as np
 
 from lora_config import lora_model_dict, lora_gender_dict, lora_model_common_dict, lora_place_dict, lora_bg_common_dict, \
-    lora_haircut_common_dict, lora_haircut_male_dict, lora_haircut_female_dict, lora_hair_color_dict
+    lora_haircut_common_dict, lora_haircut_male_dict, lora_haircut_female_dict, lora_hair_color_dict, \
+    male_avatar_reference_dict, female_avatar_reference_dict, reference_dir, lora_avatar_dict
 from lib.celery_workshop.operator import Operator
 from utils.global_vars import CONFIG
 
@@ -66,6 +67,11 @@ class OperatorSD(Operator):
     cuda = True
     enable = True
     celery_task_name = 'sd_task'
+
+    model_name = {
+        'avatar': 'dreamshaper_8',
+        'other': 'chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting',
+    }
 
     def __init__(self, gpu_idx=0):
         os.environ['ACCELERATE'] = 'True'
@@ -105,6 +111,8 @@ class OperatorSD(Operator):
         self.shared.cmd_opts.disable_tome = False
         self.shared.cmd_opts.lang = 'ch'
         self.shared.cmd_opts.disable_adetailer = False
+        self.shared.cmd_opts.sd_checkpoint_cache = 0
+        self.shared.cmd_opts.ckpt = None
 
         # init
         self.initialize()
@@ -1335,8 +1343,13 @@ class OperatorSD(Operator):
         else:
             return res[0][0].convert('RGBA')
 
-    def proceed_avatar(self, _selected_index, _selected_type, _gender, _sim, _denoising, _batch_size):
+    def proceed_avatar(self, _init_img, _selected_index, _selected_type, _gender, _sim, _denoising, _batch_size):
         uid_name = ''.join([random.choice(string.ascii_letters) for c in range(4)])
+        _init_img_width, _init_img_height = _init_img.size
+
+        # prompt setting
+        prompt_dict = female_avatar_reference_dict if _gender == 'female' else male_avatar_reference_dict
+        sd_negative_prompt = f"(NSFW:1.8),EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2),bad anatomy, DeepNegative,text, error, cropped, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions"
 
         # common
         prompt_styles = None
@@ -1365,27 +1378,64 @@ class OperatorSD(Operator):
         img2img_batch_inpaint_mask_dir = ''
         override_settings_texts = []
         # controlnet args
+        _init_img_rgb_ndarray = np.array(_init_img.convert('RGB'))
+        _mask_img_ndarray = np.zeros(shape=_init_img_rgb_ndarray.shape)
         cnet_idx = 1
         controlnet_args_unit1 = self.scripts.scripts_img2img.alwayson_scripts[
             cnet_idx].get_default_ui_unit()
 
         controlnet_args_unit1.batch_images = ''
-        controlnet_args_unit1.control_mode = 'My prompt is more important'
+        controlnet_args_unit1.control_mode = 'ControlNet is more important'
         controlnet_args_unit1.guidance_end = 1
         controlnet_args_unit1.guidance_start = 0  # ending control step
-        controlnet_args_unit1.image = None
+        controlnet_args_unit1.image = {
+            'image': _init_img_rgb_ndarray,
+            'mask': _mask_img_ndarray,
+        }
         controlnet_args_unit1.low_vram = False
-        controlnet_args_unit1.model = 'control_v11p_sd15_normalbae'
-        controlnet_args_unit1.module = 'normal_bae'
+        controlnet_args_unit1.model = 'control_v11p_sd15_canny'
+        controlnet_args_unit1.module = 'canny'
         controlnet_args_unit1.pixel_perfect = True
         controlnet_args_unit1.resize_mode = 'Crop and Resize'
         controlnet_args_unit1.processor_res = 512
-        controlnet_args_unit1.threshold_a = 64
-        controlnet_args_unit1.threshold_b = 64
-        controlnet_args_unit1.weight = 0.4
+        controlnet_args_unit1.threshold_a = 100
+        controlnet_args_unit1.threshold_b = 200
+        controlnet_args_unit1.weight = 1
         controlnet_args_unit1.enabled = True
+
         controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
-        controlnet_args_unit2.enabled = False
+
+        reference_enbale = True if (_gender == 'female' and _selected_index != 8) else False
+
+        controlnet_args_unit2.enabled = reference_enbale
+        if reference_enbale:
+            _reference_img_rgb_ndarray = np.array(Image.open(
+                os.path.join(reference_dir, _gender, prompt_dict[_selected_index]['label'],
+                             f"{str(_selected_type)}.jpeg")).convert('RGB'))
+            _reference_img_mask_ndarray = np.zeros(shape=_reference_img_rgb_ndarray.shape)
+            controlnet_args_unit2.image = {
+                'image': _reference_img_rgb_ndarray,
+                'mask': _reference_img_mask_ndarray,
+            }
+            controlnet_args_unit2.model = 'None'
+            controlnet_args_unit2.module = 'reference_only'
+            controlnet_args_unit2.processor_res = -1
+            controlnet_args_unit2.threshold_a = 1
+            controlnet_args_unit2.threshold_b = -1
+
+            sd_positive_prompt = f"{prompt_dict[_selected_index]['prompt'] + ',' if prompt_dict[_selected_index]['prompt']else ''}{'1man,' if _gender == 'male' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
+
+        else:
+            if _selected_index == 2 or _selected_index == 3:
+                sd_positive_prompt = f"{lora_avatar_dict[prompt_dict[_selected_index]['label']][_selected_type]+','}{'1man,' if _gender == 'male' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
+            else:
+                sd_positive_prompt = f"{prompt_dict[_selected_index]['prompt'] + ',' if prompt_dict[_selected_index]['prompt'] else ''}{'1man,' if _gender == 'male' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
+
+        print("-------------------avatar logger-----------------")
+        print(f"sd_positive_prompt: {sd_positive_prompt}")
+        print(f"sd_negative_prompt: {sd_negative_prompt}")
+        print(f"denoising_strength: {_denoising}")
+        print(f"Sampling method: {samplers_k_diffusion[15]}")
         controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
         controlnet_args_unit3.enabled = False
 
@@ -1439,69 +1489,20 @@ class OperatorSD(Operator):
         inpainting_fill = 1  # masked content original
         denoising_strength = _denoising
         steps = 20
+        mask_blur = 4
 
         sam_result_tmp_png_fp = []
-        if sam_result is not None:
-            for idx in range(3):
-                cache_fp = f"tmp/hair_{_task_type}_{idx}_{uid_name}_{_pic_name}{'_save' if idx == 1 else ''}.png"
-                if idx == 1:
-                    sam_result.save(cache_fp, format='PNG')
-                else:
-                    _init_img.save(cache_fp, format='PNG')
-                sam_result_tmp_png_fp.append({'name': cache_fp})
-            else:
-                sam_result_tmp_png_fp[0] = sam_result_tmp_png_fp[-1]
-
-        else:
-            # return {'success': False, 'result': f'未切割到{"人脸" if _task_type=="haircut" else "头发"}'}
-            return {'success': False, 'result': f'backend.magic-mirror.error.no-{"face" if _task_type=="haircut" else "hair"}'}
 
         # img2img
-        inpainting_mask_invert = 1 if _task_type == 'haircut' else 0  # 0: inpaint masked 1: inpaint not masked
+        inpainting_mask_invert = 0  # 0: inpaint masked 1: inpaint not masked
         task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
-
-        if _task_type == 'haircut':
-            sd_positive_prompt = ','.join([lora_haircut_male_dict[_selected_index]['prompt'] if gender == 'male' else
-                                           lora_haircut_female_dict[_selected_index]['prompt'],
-                                           lora_haircut_common_dict['positive_prompt']])
-            sd_negative_prompt = lora_haircut_common_dict['negative_prompt']
-        else:
-            # sd_positive_prompt = lora_hair_color_dict[_selected_index]['prompt']
-            sd_positive_prompt = ','.join([lora_hair_color_dict[_selected_index]['prompt'],
-                                           '(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,'])
-            sd_negative_prompt = lora_haircut_common_dict['negative_prompt']
-
-            controlnet_args_unit1.enabled = True
-            controlnet_args_unit1.batch_images = ''
-            controlnet_args_unit1.control_mode = 'Balanced'
-            controlnet_args_unit1.guidance_end = 1
-            controlnet_args_unit1.guidance_start = 0  # ending control step
-            controlnet_args_unit1.image = None
-            controlnet_args_unit1.low_vram = False
-            controlnet_args_unit1.model = 't2iadapter_canny_sd14v1'
-            controlnet_args_unit1.module = 'canny'
-            controlnet_args_unit1.pixel_perfect = True
-            controlnet_args_unit1.resize_mode = 'Resize and Fill'
-            controlnet_args_unit1.processor_res = 512
-            controlnet_args_unit1.threshold_a = 64
-            controlnet_args_unit1.threshold_b = 64
-            controlnet_args_unit1.weight = 1
-
-        print(f"-------------------{_task_type} logger-----------------")
-        print(f"sd_positive_prompt: {sd_positive_prompt}")
-        print(f"sd_negative_prompt: {sd_negative_prompt}")
-        print(f"dino_prompt: {'face.glasses' if _task_type=='haircut' else 'hair'}")
-        print(f"denoising_strength: {denoising_strength}")
-        print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
-
-        # 不参考原图，参考分割图
-        # _init_img = sam_result[2]
 
         sam_args = [0,
                     adetail_enabled, face_args, hand_args,  # adetail args
                     controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
                     # controlnet args
-                    True, False, 0, _init_img,
+                    False, # inpaint_upload_enable
+                    False, 0, _init_img,
                     sam_result_tmp_png_fp,
                     0,  # sam_output_chosen_mask
                     False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
@@ -1521,44 +1522,41 @@ class OperatorSD(Operator):
 
         _input_image_width, _input_image_height = _init_img.size
         res = self.img2img.img2img(task_id,
-                                            4,
-                                            sd_positive_prompt,
-                                            sd_negative_prompt,
-                                            prompt_styles, _init_img,
-                                            sketch,
-                                            init_img_with_mask, inpaint_color_sketch,
-                                            inpaint_color_sketch_orig,
-                                            init_img_inpaint, init_mask_inpaint,
-                                            steps, sampler_index, mask_blur, mask_alpha,
-                                            inpainting_fill,
-                                            restore_faces,
-                                            tiling,
-                                            n_iter,
-                                            _batch_size,  # batch_size
-                                            cfg_scale, image_cfg_scale,
-                                            denoising_strength, seed,
-                                            subseed,
-                                            subseed_strength, seed_resize_from_h,
-                                            seed_resize_from_w,
-                                            seed_enable_extras,
-                                            selected_scale_tab, _input_image_height,
-                                            _input_image_width,
-                                            scale_by,
-                                            resize_mode,
-                                            inpaint_full_res,
-                                            inpaint_full_res_padding, inpainting_mask_invert,
-                                            img2img_batch_input_dir,
-                                            img2img_batch_output_dir,
-                                            img2img_batch_inpaint_mask_dir,
-                                            override_settings_texts,
-                                            *sam_args)
+                                    0,
+                                    sd_positive_prompt,
+                                    sd_negative_prompt,
+                                    prompt_styles, _init_img.convert('RGBA'),
+                                    sketch,
+                                    init_img_with_mask, inpaint_color_sketch,
+                                    inpaint_color_sketch_orig,
+                                    init_img_inpaint, init_mask_inpaint,
+                                    steps, sampler_index, mask_blur, mask_alpha,
+                                    inpainting_fill,
+                                    restore_faces,
+                                    tiling,
+                                    n_iter,
+                                    _batch_size,  # batch_size
+                                    cfg_scale, image_cfg_scale,
+                                    denoising_strength, seed,
+                                    subseed,
+                                    subseed_strength, seed_resize_from_h,
+                                    seed_resize_from_w,
+                                    seed_enable_extras,
+                                    selected_scale_tab, 512,
+                                    512,
+                                    scale_by,
+                                    resize_mode,
+                                    inpaint_full_res,
+                                    inpaint_full_res_padding, inpainting_mask_invert,
+                                    img2img_batch_input_dir,
+                                    img2img_batch_output_dir,
+                                    img2img_batch_inpaint_mask_dir,
+                                    override_settings_texts,
+                                    *sam_args)
 
         self.devices.torch_gc()
 
-        if return_list:
-            return [x.convert('RGBA') for x in res[0]]
-        else:
-            return res[0][0].convert('RGBA')
+        return [x.convert('RGBA') for x in res[0]]
 
     def __call__(self, *args, **kwargs):
         try:
@@ -1585,6 +1583,11 @@ class OperatorSD(Operator):
             pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
 
             if proceed_mode == 'avatar':
+                # if self.shared.sd_model.sd_checkpoint_info.model_name == 'dreamshaper_8':
+                #     self.shared.change_sd_model('chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting')
+                if self.shared.sd_model.sd_checkpoint_info.model_name == 'chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting':
+                    self.shared.change_sd_model('dreamshaper_8')
+
                 params = ujson.loads(kwargs['params'][0])
                 _batch_size = int(params['batch_size'])
                 _style = int(params['style'])
@@ -1597,21 +1600,21 @@ class OperatorSD(Operator):
                 denoising_strength_max = 0.4
                 denoising_strength = (1 - _sim) * (denoising_strength_max - denoising_strength_min) + denoising_strength_min
 
-                person_boxes = self.facer.detect_head(_input_image)
+                person_boxes = self.facer.detect_face(_input_image)
                 if len(person_boxes) == 0:
                     # return {'success': False, 'result': '未检测到人脸'}
-                    return {'success': False, 'result': 'backend.magic-avatar.error.no-face'}
+                    return {'success': False, 'result': 'backend.magic-avatar_reference.error.no-face'}
 
                 elif len(person_boxes) > 1:
                     # return {'success': False, 'result': '检测到多个人脸，请上传一张单人照'}
-                    return {'success': False, 'result': 'backend.magic-avatar.error.multi-face'}
+                    return {'success': False, 'result': 'backend.magic-avatar_reference.error.multi-face'}
 
                 else:
                     # save cache face img
                     cache_image = _input_image.copy()
                     draw = ImageDraw.Draw(cache_image)
                     draw.rectangle(person_boxes[0], outline='red', width=5)
-                    cache_image.save(f"tmp/hair_face_{pic_name}_save.png")
+                    cache_image.save(f"tmp/avatar_face_style{str(_style)}_type{_type}_sim{_sim}_gender{_gender}_{pic_name}_save.png")
 
                     # get max area clothing box
                     person_box = person_boxes[0]
@@ -1621,15 +1624,38 @@ class OperatorSD(Operator):
                     person_box[0] = person_box[0] - int(person_width * 0.2)
                     if person_box[0] < 0:
                         person_box[0] = 0
-                    person_box[1] = person_box[1] - int(person_height * 0.2)
+                    person_box[1] = person_box[1] - int(person_height * 0.15)
                     if person_box[1] < 0:
                         person_box[1] = 0
                     person_box[2] = person_box[2] + int(person_width * 0.2)
                     if person_box[2] >= _input_image_width:
                         person_box[2] = _input_image_width-1
-                    person_box[3] = person_box[3] + int(person_height * 0.2)
+                    person_box[3] = person_box[3] + int(person_height * 0.15)
                     if person_box[3] >= _input_image_height:
                         person_box[3] = _input_image_height-1
+
+                    # 正方形
+                    person_width = person_box[2] - person_box[0]
+                    person_height = person_box[3] - person_box[1]
+                    if person_width < person_height:
+                        padding_left = int((person_height-person_width) / 2)
+                        person_box[0] = person_box[0] - padding_left
+                        if person_box[0] < 0:
+                            person_box[0] = 0
+                        padding_right = person_height - person_width - padding_left
+                        person_box[2] = person_box[2] + padding_right
+                        if person_box[2] > _input_image_width:
+                            person_box[2] = _input_image_width
+
+                    elif person_width > person_height:
+                        padding_top = int((person_width-person_height) / 2)
+                        person_box[1] = person_box[1] - padding_top
+                        if person_box[1] < 0:
+                            person_box[1] = 0
+                        padding_bottom = person_width-person_height - padding_top
+                        person_box[3] = person_box[3] + padding_bottom
+                        if person_box[3] > _input_image_height:
+                            person_box[3] = _input_image_height
 
                     # crop
                     _input_image = _input_image.crop(person_box)
@@ -1652,7 +1678,7 @@ class OperatorSD(Operator):
                 if self.update_progress(10):
                     return {'success': True}
 
-                avatar_result = self.proceed_avatar(_style, _type, _gender, _sim, denoising_strength, _batch_size)
+                avatar_result = self.proceed_avatar(_input_image, _style, _type, _gender, _sim, denoising_strength, _batch_size)
 
                 # storage img
                 img_urls = []
@@ -1687,6 +1713,11 @@ class OperatorSD(Operator):
                 return {'success': True, 'result': img_urls}
 
             elif proceed_mode == 'hair':
+                if self.shared.sd_model.sd_checkpoint_info.model_name == 'dreamshaper_8':
+                    self.shared.change_sd_model('chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting')
+                # elif self.shared.sd_model.sd_checkpoint_info.model_name == 'chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting':
+                #     self.shared.change_sd_model('dreamshaper_8')
+
                 params = ujson.loads(kwargs['params'][0])
                 _batch_size = int(params['batch_size'])
                 _haircut_style = int(params['haircut'])
@@ -1886,6 +1917,11 @@ class OperatorSD(Operator):
 
             # 生成服装模特
             elif proceed_mode == 'model':
+                if self.shared.sd_model.sd_checkpoint_info.model_name == 'dreamshaper_8':
+                    self.shared.change_sd_model('chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting')
+                # elif self.shared.sd_model.sd_checkpoint_info.model_name == 'chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting':
+                #     self.shared.change_sd_model('dreamshaper_8')
+
                 params = ujson.loads(kwargs['params'][0])
                 _cloth_part = 0
                 _batch_size = int(params['batch_size'])
@@ -2378,9 +2414,9 @@ class OperatorSD(Operator):
                     img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"
                     # extra upscaler
                     scales = 1
-                    gfpgan_enable = 0
-                    codeformer_enable = 1
-                    args = (0, scales, None, None, True, 'None', 'None', 0, gfpgan_enable, codeformer_enable, 0)
+                    gfpgan_weight = 0
+                    codeformer_visibility = 1
+                    args = (0, scales, None, None, True, 'None', 'None', 0, gfpgan_weight, codeformer_visibility, 0)
                     self.devices.torch_gc()
                     pp = self.scripts_postprocessing.PostprocessedImage(ok_img.convert("RGB"))
                     self.scripts.scripts_postproc.run(pp, args)
@@ -2409,6 +2445,11 @@ class OperatorSD(Operator):
                 return {'success': True, 'result': img_urls}
 
             elif proceed_mode == 'mirror':
+                # debug
+                if self.shared.sd_model.sd_checkpoint_info.model_name == 'dreamshaper_8':
+                    self.shared.change_sd_model('chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting')
+                # elif self.shared.sd_model.sd_checkpoint_info.model_name == 'chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting':
+                #     self.shared.change_sd_model('dreamshaper_8')
                 origin_image_path = f'tmp/mirror_origin_{pic_name}_save.png'
                 _input_image.save(origin_image_path, format='PNG')
                 # params: {
@@ -2486,9 +2527,9 @@ class OperatorSD(Operator):
                         if 'face_expression' in task_list or 'age' in task_list or 'gender' in task_list:
                             # extra upscaler
                             scales = 1
-                            gfpgan_enable = 0
-                            codeformer_enable = 0.5
-                            args = (0, scales, None, None, True, 'None', 'None', 0, gfpgan_enable, codeformer_enable, 0)
+                            gfpgan_weight = 0
+                            codeformer_visibility = 0.5
+                            args = (0, scales, None, None, True, 'None', 'None', 0, gfpgan_weight, codeformer_visibility, 0)
                             pp = self.scripts_postprocessing.PostprocessedImage(res_img.convert("RGB"))
                             self.scripts.scripts_postproc.run(pp, args)
                             self.devices.torch_gc()
@@ -2516,6 +2557,11 @@ class OperatorSD(Operator):
                     return {'success': True, 'result': img_urls}
             else:
                 # hires
+                if self.shared.sd_model.sd_checkpoint_info.model_name == 'dreamshaper_8':
+                    self.shared.change_sd_model('chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting')
+                # elif self.shared.sd_model.sd_checkpoint_info.model_name == 'chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting':
+                #     self.shared.change_sd_model('dreamshaper_8')
+
                 params = ujson.loads(kwargs['params'][0])
                 # _input_image = base64_to_pil(params['input_image'])
                 _output_width = int(params['output_width'])
@@ -2677,9 +2723,9 @@ class OperatorSD(Operator):
                 if self.update_progress(70):
                     return {'success': True}
 
-                gfpgan_enable = 0
-                codeformer_enable = 0
-                args = (0, scales, None, None, True, 'ESRGAN_4x', 'None', 0, gfpgan_enable, codeformer_enable, 1)
+                gfpgan_weight = 0
+                codeformer_visibility = 1 if proceed_mode == 'model' else 0
+                args = (0, scales, None, None, True, 'ESRGAN_4x', 'None', 0, gfpgan_weight, codeformer_visibility, 0 if proceed_mode == 'model' else 1)
                 assert cnet_res_img, 'image not selected'
                 self.devices.torch_gc()
                 pp = self.scripts_postprocessing.PostprocessedImage(cnet_res_img.convert("RGB"))

@@ -71,7 +71,7 @@
     "training_enable_tensorboard": false,
     "training_tensorboard_save_images": false,
     "training_tensorboard_flush_every": 120,
-    "sd_model_checkpoint": "chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting.safetensors [5269b1fa59]",
+    "sd_model_checkpoint": "dreamshaper_8.safetensors [879db523c3]",
     "sd_checkpoint_cache": 0,
     "sd_vae_checkpoint_cache": 0,
     "sd_vae": "Automatic",
@@ -175,7 +175,7 @@
     "disabled_extensions": [],
     "disable_all_extensions": "none",
     "restore_config_state_file": "",
-    "sd_checkpoint_hash": "5269b1fa598028f8c2ee1615397fbabc20989c06687df55814db7a62d45a180e",
+    "sd_checkpoint_hash": "879db523c30d3b9017143d56705015e15a2cb5628762c11d086fed9538abd7fd",
     "ui_reorder_list": [
         "inpaint",
         "sampler",

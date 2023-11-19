@@ -503,6 +503,79 @@ lora_hair_color_dict = {
          },
 }
 
+reference_dir = "guiju/assets/avatar_reference"
+
+male_avatar_reference_dict = {
+    0: {'label': '亚克力',
+        'prompt': '(acrylic paint \(medium\):1.8)',
+        },
+    1: {'label': '手办',
+        'prompt': '(faux figurine:1.8),3d',
+        },
+    2: {'label': '泥塑',
+        'prompt': '',
+        },
+    3: {'label': '素描',
+        'prompt': '(sketch,monochrome, greyscale:1.5)',
+        },
+    4: {'label': '纸偶',
+        'prompt': '(paper art:1.8),3d',
+        },
+}
+
+female_avatar_reference_dict = {
+    0: {'label': 'Q版',
+        'prompt': 'chibi,(3d:1.3)',
+        },
+    1: {'label': '国漫',
+        'prompt': '',
+        },
+    2: {'label': '日漫',
+        'prompt': '',
+        },
+    3: {'label': '美漫',
+        'prompt': '',
+        },
+    4: {'label': '彩墨',
+        'prompt': '(ink splashing:1.3)',
+        },
+    5: {'label': '手办',
+        'prompt': '(faux figurine:1.8),3d',
+        },
+    6: {'label': '水彩',
+        'prompt': '(watercolor \(medium\):1.3)',
+        },
+    7: {'label': '油画',
+        'prompt': '(oil painting \(medium\):1.3)',
+        },
+    8: {'label': '素描',
+        'prompt': '(sketch,monochrome, greyscale:1.5)',
+        },
+    9: {'label': '蜡笔',
+        'prompt': '(crayon \(medium\):1.6)',
+        },
+    10: {'label': '纸偶',
+         'prompt': '(paper art:1.8),3d',
+         },
+}
+
+lora_avatar_dict = {
+    '素描': {
+        0: '<lora:penink:0.4>,(penink,monochrome, greyscale:1.3)',
+        1: '<lora:Greyscale-000012:0.7>,(sketch,monochrome, greyscale:1.5)',
+        2: '<lora:inoitohV2-000012:0.6>,(monochrome, greyscale:1.5)',
+        3: '<lora:otoyomegatari:0.8>,halftone,drawing,manga,(monochrome, greyscale:1.5)',
+        4: '<lora:1658606601595300147:0.6>,(sketch,monochrome, greyscale:1.5)',
+        5: '<lora:1658601235832400793:0.5>,(sketch,monochrome, greyscale:1.5)',
+        6: '<lora:style18-v2:0.7>,(sketch,monochrome, greyscale:1.5)',
+        7: '(sketch,monochrome, greyscale:1.5)',
+    },
+    '泥塑': {
+        0: '(acrylic paint \(medium\):1.5),<lora:Quartz_sand_acrylic_texture:1>,Quartz sand acrylic texture'
+    }
+
+}
+
 if __name__ == '__main__':
     for k, v in lora_model_dict.items():
         shutil.copy(
