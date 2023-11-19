@@ -304,6 +304,8 @@ class ImageProvider(HTTPMethodView):
                 dir_storage_path = CONFIG['storage_dirpath']['user_hair_dir']
             elif category == 'mirror':
                 dir_storage_path = CONFIG['storage_dirpath']['user_mirror_dir']
+            elif category == 'avatar':
+                dir_storage_path = CONFIG['storage_dirpath']['user_avatar_dir']
             else:
                 dir_storage_path = CONFIG['storage_dirpath']['user_dir']
             dir_user_path = os.path.join(dir_storage_path, user_id)
