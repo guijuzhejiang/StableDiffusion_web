@@ -1520,6 +1520,7 @@ class OperatorSD(Operator):
                     False, None, None, False, 50
                     ]
 
+        self.update_progress(50)
         _input_image_width, _input_image_height = _init_img.size
         res = self.img2img.img2img(task_id,
                                     0,
