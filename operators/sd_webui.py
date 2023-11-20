@@ -1582,6 +1582,13 @@ class OperatorSD(Operator):
 
             pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
 
+            # logging
+            self.logging(
+                f"[__call__][{datetime.datetime.now()}]:\n"
+                f"[{pic_name}]:\n"
+                f"{ujson.dumps({k: v for k, v in kwargs.items() if k != 'input_image'}, indent=4)}",
+                f"logs/sd_webui.log")
+
             if proceed_mode == 'avatar':
                 # if self.shared.sd_model.sd_checkpoint_info.model_name == 'dreamshaper_8':
                 #     self.shared.change_sd_model('chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting')
@@ -1614,7 +1621,7 @@ class OperatorSD(Operator):
                     cache_image = _input_image.copy()
                     draw = ImageDraw.Draw(cache_image)
                     draw.rectangle(person_boxes[0], outline='red', width=5)
-                    cache_image.save(f"tmp/avatar_face_style{str(_style)}_type{_type}_sim{_sim}_gender{_gender}_{pic_name}_save.png")
+                    cache_image.save(f"tmp/avatar_origin_face_style{str(_style)}_type{_type}_sim{_sim}_gender{_gender}_{pic_name}_save.png")
 
                     # get max area clothing box
                     person_box = person_boxes[0]

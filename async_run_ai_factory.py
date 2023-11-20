@@ -33,7 +33,7 @@ if __name__ == '__main__':
                 # print(msg)
                 logging(
                     f"{__file__}got msg: {msg}",
-                    f"logs/info.log", print_msg=CONFIG['debug_mode'])
+                    f"logs/mq_info.log", print_msg=CONFIG['debug_mode'])
                 params = ujson.loads(msg['params'])
                 params['input_image'] = [BytesIO(base64.b64decode(msg['input_image']))]
                 res = workers['OperatorSD'](**params)
