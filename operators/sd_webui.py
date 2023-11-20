@@ -1488,7 +1488,7 @@ class OperatorSD(Operator):
         inpaint_full_res = 0 # choices=["Whole picture", "Only masked"]
         inpainting_fill = 1  # masked content original
         denoising_strength = _denoising
-        steps = 20
+        steps = 30
         mask_blur = 4
 
         sam_result_tmp_png_fp = []
