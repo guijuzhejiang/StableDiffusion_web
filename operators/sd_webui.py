@@ -1426,7 +1426,7 @@ class OperatorSD(Operator):
             sd_positive_prompt = f"{prompt_dict[_selected_index]['prompt'] + ',' if prompt_dict[_selected_index]['prompt']else ''}{'1man,' if _gender == 'male' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
 
         else:
-            if _selected_index == 2 or _selected_index == 3:
+            if (_gender == 'female' and _selected_index == 8) or (_gender == 'male' and _selected_index == 2):
                 sd_positive_prompt = f"{lora_avatar_dict[prompt_dict[_selected_index]['label']][_selected_type]+','}{'1man,' if _gender == 'male' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
             else:
                 sd_positive_prompt = f"{prompt_dict[_selected_index]['prompt'] + ',' if prompt_dict[_selected_index]['prompt'] else ''}{'1man,' if _gender == 'male' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
