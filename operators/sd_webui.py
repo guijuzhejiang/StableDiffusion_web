@@ -1563,7 +1563,9 @@ class OperatorSD(Operator):
             super().__call__(*args, **kwargs)
 
             print("operation start !!!!!!!!!!!!!!!!!!!!!!!!!!")
-            print({k: v for k, v in kwargs.items() if k != 'input_image'})
+            clean_args = {k: v for k, v in kwargs.items() if k != 'input_image'}
+            clean_args['params'] = ujson.loads(kwargs['params'][0])
+            print(clean_args)
             proceed_mode = kwargs['mode'][0]
             user_id = kwargs['user_id'][0]
 
@@ -1586,7 +1588,7 @@ class OperatorSD(Operator):
             self.logging(
                 f"[__call__][{datetime.datetime.now()}]:\n"
                 f"[{pic_name}]:\n"
-                f"{ujson.dumps({k: v for k, v in kwargs.items() if k != 'input_image'}, indent=4)}",
+                f"{ujson.dumps(clean_args, indent=4)}",
                 f"logs/sd_webui.log")
 
             if proceed_mode == 'avatar':
