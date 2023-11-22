@@ -1631,7 +1631,7 @@ class OperatorSD(Operator):
                     person_width = person_box[2] - person_box[0]
                     person_height = person_box[3] - person_box[1]
 
-                    padding_ratio = 0.5
+                    padding_ratio = 1
                     person_box[0] = person_box[0] - int(person_width * padding_ratio)
                     if person_box[0] < 0:
                         person_box[0] = 0
