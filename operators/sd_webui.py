@@ -1350,6 +1350,7 @@ class OperatorSD(Operator):
         # prompt setting
         prompt_dict = female_avatar_reference_dict if _gender == 'female' else male_avatar_reference_dict
         sd_negative_prompt = f"(NSFW:1.8),EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2),bad anatomy, DeepNegative,text, error, cropped, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions"
+        _selected_style = prompt_dict[_selected_index]['label']
 
         # common
         prompt_styles = None
@@ -1383,34 +1384,42 @@ class OperatorSD(Operator):
         cnet_idx = 1
         controlnet_args_unit1 = self.scripts.scripts_img2img.alwayson_scripts[
             cnet_idx].get_default_ui_unit()
-
         controlnet_args_unit1.batch_images = ''
-        controlnet_args_unit1.control_mode = 'ControlNet is more important'
         controlnet_args_unit1.guidance_end = 1
         controlnet_args_unit1.guidance_start = 0  # ending control step
+        controlnet_args_unit1.low_vram = False
+        controlnet_args_unit1.pixel_perfect = True
+        controlnet_args_unit1.weight = 1
+        controlnet_args_unit1.enabled = True
+        controlnet_args_unit1.resize_mode = 'Crop and Resize'
+        controlnet_args_unit1.processor_res = 512
         controlnet_args_unit1.image = {
             'image': _init_img_rgb_ndarray,
             'mask': _mask_img_ndarray,
         }
-        controlnet_args_unit1.low_vram = False
-        controlnet_args_unit1.model = 'control_v11p_sd15_canny'
-        controlnet_args_unit1.module = 'canny'
-        controlnet_args_unit1.pixel_perfect = True
-        controlnet_args_unit1.resize_mode = 'Crop and Resize'
-        controlnet_args_unit1.processor_res = 512
-        controlnet_args_unit1.threshold_a = 100
-        controlnet_args_unit1.threshold_b = 200
-        controlnet_args_unit1.weight = 1
-        controlnet_args_unit1.enabled = True
+
+        # canny
+        # controlnet_args_unit1.control_mode = 'ControlNet is more important'
+        # controlnet_args_unit1.model = 'control_v11p_sd15_canny'
+        # controlnet_args_unit1.module = 'canny'
+        # controlnet_args_unit1.threshold_a = 100
+        # controlnet_args_unit1.threshold_b = 200
+
+        # depth
+        controlnet_args_unit1.control_mode = 'My prompt is more important'
+        controlnet_args_unit1.model = 'control_v11f1p_sd15_depth'
+        controlnet_args_unit1.module = 'depth_midas'
+        controlnet_args_unit1.threshold_a = -1
+        controlnet_args_unit1.threshold_b = -1
 
         controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
 
-        reference_enbale = True if (_gender == 'female' and _selected_index != 8) else False
+        reference_enbale = True if (_gender == 'female' and _selected_style != "素描") else False
 
         controlnet_args_unit2.enabled = reference_enbale
         if reference_enbale:
             _reference_img_rgb_ndarray = np.array(Image.open(
-                os.path.join(reference_dir, _gender, prompt_dict[_selected_index]['label'],
+                os.path.join(reference_dir, _gender, _selected_style,
                              f"{str(_selected_type)}.jpeg")).convert('RGB'))
             _reference_img_mask_ndarray = np.zeros(shape=_reference_img_rgb_ndarray.shape)
             controlnet_args_unit2.image = {
@@ -1426,8 +1435,8 @@ class OperatorSD(Operator):
             sd_positive_prompt = f"{prompt_dict[_selected_index]['prompt'] + ',' if prompt_dict[_selected_index]['prompt']else ''}{'1man,' if _gender == 'male' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
 
         else:
-            if (_gender == 'female' and _selected_index == 8) or (_gender == 'male' and _selected_index == 2):
-                sd_positive_prompt = f"{lora_avatar_dict[prompt_dict[_selected_index]['label']][_selected_type]+','}{'1man,' if _gender == 'male' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
+            if (_gender == 'female' and _selected_style == '素描') or (_gender == 'male' and (_selected_style == '泥塑' or (_selected_style == '赛博朋克' and _selected_type == 1))):
+                sd_positive_prompt = f"{lora_avatar_dict[_selected_style][_selected_type]+','}{'1man,' if _gender == 'male' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
             else:
                 sd_positive_prompt = f"{prompt_dict[_selected_index]['prompt'] + ',' if prompt_dict[_selected_index]['prompt'] else ''}{'1man,' if _gender == 'male' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
 
@@ -1557,7 +1566,7 @@ class OperatorSD(Operator):
 
         self.devices.torch_gc()
 
-        return [x.convert('L') if prompt_dict[_selected_index]['label'] == '素描' else x.convert('RGBA') for x in res[0]]
+        return [x.convert('L') if _selected_style == '素描' else x.convert('RGBA') for x in res[0]]
 
     def __call__(self, *args, **kwargs):
         try:
@@ -1793,29 +1802,6 @@ class OperatorSD(Operator):
                         #     person_box[3] = _input_image_height-1
                         need_padding = True if new_person_box[0] < 0 or new_person_box[1] < 0 or new_person_box[2] > _input_image_width-1 or new_person_box[3] > _input_image_height-1 else False
 
-                        # 正方形
-                        # person_width = person_box[2] - person_box[0]
-                        # person_height = person_box[3] - person_box[1]
-                        # if person_width < person_height:
-                        #     padding_left = int((person_height-person_width) / 2)
-                        #     person_box[0] = person_box[0] - padding_left
-                        #     if person_box[0] < 0:
-                        #         person_box[0] = 0
-                        #     padding_right = person_height - person_width - padding_left
-                        #     person_box[2] = person_box[2] + padding_right
-                        #     if person_box[2] > _input_image_width:
-                        #         person_box[2] = _input_image_width
-                        #
-                        # if person_width > person_height:
-                        #     padding_top = int((person_width-person_height) / 2)
-                        #     person_box[1] = person_box[1] - padding_top
-                        #     if person_box[1] < 0:
-                        #         person_box[1] = 0
-                        #     padding_bottom = person_width-person_height - padding_top
-                        #     person_box[3] = person_box[3] + padding_bottom
-                        #     if person_box[3] > _input_image_height:
-                        #         person_box[3] = _input_image_height
-
                         # crop
                         if _hair_color_enable:
                             pass
@@ -1851,14 +1837,6 @@ class OperatorSD(Operator):
 
                         cache_fp = f"tmp/hair_resized_{pic_name}_save.png"
                         _input_image.save(cache_fp)
-                        # if min(_input_image_width, _input_image_height) < 512:
-                        #     if _input_image_width < _input_image_height:
-                        #         new_width = 448
-                        #         new_height = int(_input_image_height / _input_image_width * new_width)
-                        #     else:
-                        #         new_height = 448
-                        #         new_width = int(_input_image_width / _input_image_height * new_height)
-                        #     _input_image = _input_image.resize((new_width, new_height))
 
                     _input_image = _input_image.convert('RGBA')
                     _input_image_width, _input_image_height = _input_image.size

@@ -521,6 +521,9 @@ male_avatar_reference_dict = {
     4: {'label': '纸偶',
         'prompt': '(paper art:1.8),3d',
         },
+    5: {'label': '赛博朋克',
+         'prompt': '(surreal:1.5),(cyberpunk:1.5),(mecha:1.5)',
+         },
 }
 
 female_avatar_reference_dict = {
@@ -557,6 +560,9 @@ female_avatar_reference_dict = {
     10: {'label': '纸偶',
          'prompt': '(paper art:1.8),3d',
          },
+    11: {'label': '赛博朋克',
+         'prompt': '(surreal:1.5),(cyberpunk:1.5),(mecha:1.5)',
+         },
 }
 
 lora_avatar_dict = {
@@ -572,8 +578,11 @@ lora_avatar_dict = {
     },
     '泥塑': {
         0: '(acrylic paint \(medium\):1.5),<lora:Quartz_sand_acrylic_texture:1>,Quartz sand acrylic texture'
+    },
+    '赛博朋克': {
+        0: '',
+        1: '<lora:Steampunkcog:0.8>,meccog,cog,asians,(surreal:1.5),(cyberpunk:1.5),(mecha:1.5)',
     }
-
 }
 
 if __name__ == '__main__':
