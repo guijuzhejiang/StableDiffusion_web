@@ -583,8 +583,8 @@ lora_avatar_dict = {
         0: '(acrylic paint \(medium\):1.5),<lora:Quartz_sand_acrylic_texture:1>,Quartz sand acrylic texture'
     },
     '赛博朋克': {
-        0: '',
-        1: '<lora:Steampunkcog:0.8>,meccog,cog,asians,(surreal:1.5),(cyberpunk:1.5),(mecha:1.5)',
+        0: '<lora:Steampunkcog:0.8>,meccog,cog,asians,(surreal:1.5),(cyberpunk:1.5),(mecha:1.5)',
+        1: '',
     }
 }
 
