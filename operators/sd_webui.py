@@ -99,6 +99,7 @@ class OperatorSD(Operator):
         self.logging = getattr(importlib.import_module('lib.common.common_util'), 'logging')
         self.logging = getattr(importlib.import_module('lib.common.common_util'), 'logging')
         self.img2img = getattr(importlib.import_module('modules'), 'img2img')
+        self.txt2img = getattr(importlib.import_module('modules'), 'txt2img')
         self.devices = getattr(importlib.import_module('modules'), 'devices')
         self.scripts_postprocessing = getattr(importlib.import_module('modules'), 'scripts_postprocessing')
 
@@ -1343,14 +1344,33 @@ class OperatorSD(Operator):
         else:
             return res[0][0].convert('RGBA')
 
-    def proceed_avatar(self, _init_img, _selected_index, _selected_type, _gender, _sim, _denoising, _batch_size):
+    def proceed_avatar(self, _init_img, _selected_index, _selected_type, _gender, _denoising, _batch_size, _txt2img=False):
         uid_name = ''.join([random.choice(string.ascii_letters) for c in range(4)])
-        _init_img_width, _init_img_height = _init_img.size
+        task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
 
         # prompt setting
-        prompt_dict = female_avatar_reference_dict if _gender == 'female' else male_avatar_reference_dict
         sd_negative_prompt = f"(NSFW:1.8),EasyNegative, easynegative, ng_deepnegative_v1_75t,verybadimagenegative_v1.3, (worst quality:2), (low quality:2), (normal quality:2),bad anatomy, DeepNegative,text, error, cropped, mutation, deformed, jpeg artifacts,polar lowres, bad proportions, gross proportions"
+
+        prompt_dict = female_avatar_reference_dict if _gender == 'female' else male_avatar_reference_dict
         _selected_style = prompt_dict[_selected_index]['label']
+        reference_enbale = True if (_gender == 'female' and _selected_style != "素描") else False
+
+        if reference_enbale:
+            _reference_img_rgb_ndarray = np.array(Image.open(
+                os.path.join(reference_dir, _gender, _selected_style,
+                             f"{str(_selected_type)}.jpeg")).convert('RGB'))
+            _reference_img_mask_ndarray = np.zeros(shape=_reference_img_rgb_ndarray.shape)
+            sd_positive_prompt = f"{prompt_dict[_selected_index]['prompt'] + ',' if prompt_dict[_selected_index]['prompt'] else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
+
+        else:
+            if (_gender == 'female' and _selected_style == '素描') or (_gender == 'male' and (
+                    _selected_style == '泥塑' or (_selected_style == '赛博朋克' and _selected_type == 0))):
+                sd_positive_prompt = f"{lora_avatar_dict[_selected_style][_selected_type] + ','}{'1boy,' if _gender == 'male' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
+            else:
+                if _gender == 'male' and _selected_style == '彩墨':
+                    sd_positive_prompt = prompt_dict[_selected_index]['prompt']
+                else:
+                    sd_positive_prompt = f"{prompt_dict[_selected_index]['prompt'] + ',' if prompt_dict[_selected_index]['prompt'] else ''}{'1boy,' if _gender == 'male' and _selected_style != 'Q版' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
 
         # common
         prompt_styles = None
@@ -1378,79 +1398,15 @@ class OperatorSD(Operator):
         img2img_batch_output_dir = ''
         img2img_batch_inpaint_mask_dir = ''
         override_settings_texts = []
-        # controlnet args
-        _init_img_rgb_ndarray = np.array(_init_img.convert('RGB'))
-        _mask_img_ndarray = np.zeros(shape=_init_img_rgb_ndarray.shape)
-        cnet_idx = 1
-        controlnet_args_unit1 = self.scripts.scripts_img2img.alwayson_scripts[
-            cnet_idx].get_default_ui_unit()
-        controlnet_args_unit1.batch_images = ''
-        controlnet_args_unit1.guidance_end = 1
-        controlnet_args_unit1.guidance_start = 0  # ending control step
-        controlnet_args_unit1.low_vram = False
-        controlnet_args_unit1.pixel_perfect = True
-        controlnet_args_unit1.weight = 1
-        controlnet_args_unit1.enabled = True
-        controlnet_args_unit1.resize_mode = 'Crop and Resize'
-        controlnet_args_unit1.processor_res = 512
-        controlnet_args_unit1.image = {
-            'image': _init_img_rgb_ndarray,
-            'mask': _mask_img_ndarray,
-        }
-
-        # canny
-        # controlnet_args_unit1.control_mode = 'ControlNet is more important'
-        # controlnet_args_unit1.model = 'control_v11p_sd15_canny'
-        # controlnet_args_unit1.module = 'canny'
-        # controlnet_args_unit1.threshold_a = 100
-        # controlnet_args_unit1.threshold_b = 200
-
-        # depth
-        controlnet_args_unit1.control_mode = 'My prompt is more important'
-        controlnet_args_unit1.model = 'control_v11f1p_sd15_depth'
-        controlnet_args_unit1.module = 'depth_midas'
-        controlnet_args_unit1.threshold_a = -1
-        controlnet_args_unit1.threshold_b = -1
-
-        controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
-
-        reference_enbale = True if (_gender == 'female' and _selected_style != "素描") else False
-
-        controlnet_args_unit2.enabled = reference_enbale
-        if reference_enbale:
-            _reference_img_rgb_ndarray = np.array(Image.open(
-                os.path.join(reference_dir, _gender, _selected_style,
-                             f"{str(_selected_type)}.jpeg")).convert('RGB'))
-            _reference_img_mask_ndarray = np.zeros(shape=_reference_img_rgb_ndarray.shape)
-            controlnet_args_unit2.image = {
-                'image': _reference_img_rgb_ndarray,
-                'mask': _reference_img_mask_ndarray,
-            }
-            controlnet_args_unit2.model = 'None'
-            controlnet_args_unit2.module = 'reference_only'
-            controlnet_args_unit2.processor_res = -1
-            controlnet_args_unit2.threshold_a = 1
-            controlnet_args_unit2.threshold_b = -1
-
-            sd_positive_prompt = f"{prompt_dict[_selected_index]['prompt'] + ',' if prompt_dict[_selected_index]['prompt']else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
-
-        else:
-            if (_gender == 'female' and _selected_style == '素描') or (_gender == 'male' and (_selected_style == '泥塑' or (_selected_style == '赛博朋克' and _selected_type == 0))):
-                sd_positive_prompt = f"{lora_avatar_dict[_selected_style][_selected_type]+','}{'1boy,' if _gender == 'male' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
-            else:
-                if _gender == 'male' and _selected_style == '彩墨':
-                    sd_positive_prompt = prompt_dict[_selected_index]['prompt']
-                else:
-                    sd_positive_prompt = f"{prompt_dict[_selected_index]['prompt'] + ',' if prompt_dict[_selected_index]['prompt'] else ''}{'1boy,' if _gender == 'male' and _selected_style != 'Q版' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
-
-        print("-------------------avatar logger-----------------")
-        print(f"sd_positive_prompt: {sd_positive_prompt}")
-        print(f"sd_negative_prompt: {sd_negative_prompt}")
-        print(f"denoising_strength: {_denoising}")
-        print(f"Sampling method: {samplers_k_diffusion[15]}")
-        controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
-        controlnet_args_unit3.enabled = False
-
+        cfg_scale = 5
+        # mask_blur = 20
+        resize_mode = 0  # just resize
+        sampler_index = 15
+        inpaint_full_res = 0  # choices=["Whole picture", "Only masked"]
+        inpainting_fill = 1  # masked content original
+        denoising_strength = _denoising
+        steps = 20
+        mask_blur = 4
         adetail_enabled = False
         face_args = {'ad_model': 'face_yolov8n.pt',
                      'ad_prompt': f'',
@@ -1493,79 +1449,222 @@ class OperatorSD(Operator):
                      'ad_controlnet_guidance_end': 1,
                      'is_api': ()}
 
-        cfg_scale = 5
-        # mask_blur = 20
-        resize_mode = 0  # just resize
-        sampler_index = 15
-        inpaint_full_res = 0 # choices=["Whole picture", "Only masked"]
-        inpainting_fill = 1  # masked content original
-        denoising_strength = _denoising
-        steps = 30
-        mask_blur = 4
-
-        sam_result_tmp_png_fp = []
-
-        # img2img
-        inpainting_mask_invert = 0  # 0: inpaint masked 1: inpaint not masked
-        task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
-
-        sam_args = [0,
-                    adetail_enabled, face_args, hand_args,  # adetail args
-                    controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
-                    # controlnet args
-                    False, # inpaint_upload_enable
-                    False, 0, _init_img,
-                    sam_result_tmp_png_fp,
-                    0,  # sam_output_chosen_mask
-                    False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
-                    '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                    True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                    '',
-                    128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
-                    ['left', 'right', 'up', 'down'],
-                    False, False, 'positive', 'comma', 0, False, False, '',
-                    '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                    64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
-                    None,
-                    False,
-                    None, None,
-                    False, None, None, False, 50
-                    ]
-
         self.update_progress(50)
-        _input_image_width, _input_image_height = _init_img.size
-        res = self.img2img.img2img(task_id,
-                                    0,
-                                    sd_positive_prompt,
-                                    sd_negative_prompt,
-                                    prompt_styles, _init_img.convert('RGBA'),
-                                    sketch,
-                                    init_img_with_mask, inpaint_color_sketch,
-                                    inpaint_color_sketch_orig,
-                                    init_img_inpaint, init_mask_inpaint,
-                                    steps, sampler_index, mask_blur, mask_alpha,
-                                    inpainting_fill,
-                                    restore_faces,
-                                    tiling,
-                                    n_iter,
-                                    _batch_size,  # batch_size
-                                    cfg_scale, image_cfg_scale,
-                                    denoising_strength, seed,
-                                    subseed,
-                                    subseed_strength, seed_resize_from_h,
-                                    seed_resize_from_w,
-                                    seed_enable_extras,
-                                    selected_scale_tab, _input_image_height,
-                                    _input_image_width,
-                                    scale_by,
-                                    resize_mode,
-                                    inpaint_full_res,
-                                    inpaint_full_res_padding, inpainting_mask_invert,
-                                    img2img_batch_input_dir,
-                                    img2img_batch_output_dir,
-                                    img2img_batch_inpaint_mask_dir,
-                                    override_settings_texts,
-                                    *sam_args)
+        if _txt2img:
+            # controlnet args
+            cnet_idx = 1
+            controlnet_args_unit1 = self.scripts.scripts_img2img.alwayson_scripts[
+                cnet_idx].get_default_ui_unit()
+            # depth
+            controlnet_args_unit1.enabled = reference_enbale
+            if reference_enbale:
+                controlnet_args_unit1.batch_images = ''
+                controlnet_args_unit1.guidance_end = 1
+                controlnet_args_unit1.guidance_start = 0  # ending control step
+                controlnet_args_unit1.low_vram = False
+                controlnet_args_unit1.pixel_perfect = False
+                controlnet_args_unit1.weight = 1
+                controlnet_args_unit1.resize_mode = 'Crop and Resize'
+                controlnet_args_unit1.processor_res = 512
+
+                # depth
+                controlnet_args_unit1.control_mode = 'Balanced'
+                _reference_img_rgb_ndarray = np.array(Image.open(
+                    os.path.join(reference_dir, _gender, _selected_style,
+                                 f"{str(_selected_type)}.jpeg")).convert('RGB'))
+                _reference_img_mask_ndarray = np.zeros(shape=_reference_img_rgb_ndarray.shape)
+                controlnet_args_unit1.image = {
+                    'image': _reference_img_rgb_ndarray,
+                    'mask': _reference_img_mask_ndarray,
+                }
+                controlnet_args_unit1.model = 'None'
+                # controlnet_args_unit1.module = 'reference_only'
+                controlnet_args_unit1.module = 'reference_adain+attn'
+                controlnet_args_unit1.threshold_a = 0.5
+                controlnet_args_unit1.threshold_b = 64
+            controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
+            controlnet_args_unit2.enabled = False
+            controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
+            controlnet_args_unit3.enabled = False
+            sam_args = [0,
+                        adetail_enabled, face_args, hand_args,  # adetail args
+                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
+                        # controlnet args
+                        False,  # inpaint_upload_enable
+                        False, 0, _init_img,
+                        [],
+                        0,  # sam_output_chosen_mask
+                        False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                        '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
+                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
+                        '',
+                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
+                        ['left', 'right', 'up', 'down'],
+                        False, False, 'positive', 'comma', 0, False, False, '',
+                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
+                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
+                        None,
+                        False,
+                        None, None,
+                        False, None, None, False, 50
+                        ]
+
+            sd_positive_prompt = f"{sd_positive_prompt},(portrait:1.1),1{'girl' if _gender=='female' else 'boy'},(half-length:1.1)"
+            print("-------------------avatar logger-----------------")
+            print(f"sd_positive_prompt: {sd_positive_prompt}")
+            print(f"sd_negative_prompt: {sd_negative_prompt}")
+            print(f"denoising_strength: {str(1)}")
+            print(f"Sampling method: {samplers_k_diffusion[15]}")
+            res = self.txt2img.txt2img(task_id,
+                                       sd_positive_prompt,
+                                       sd_negative_prompt,
+                                       prompt_styles,
+                                       steps,
+                                       sampler_index,
+                                       restore_faces,
+                                       tiling,
+                                       n_iter,
+                                       _batch_size, # batch size
+                                       cfg_scale,
+                                       seed, subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w,
+                                       seed_enable_extras,
+                                       512,
+                                       512,
+                                       False, # enable_hr
+                                       0.5, # denoising_strength
+                                       2.0, # hr_scale
+                                       'Latent', # hr_upscaler"
+                                       0, # hr_second_pass_steps
+                                       0, # hr_resize_x
+                                       0, # hr_resize_y
+                                       sampler_index, # hr_sampler_index
+                                       '', # hr_prompt
+                                       '', # hr_negative_prompt,
+                                       override_settings_texts,
+                                       *sam_args)
+
+        else:
+            _init_img_width, _init_img_height = _init_img.size
+
+            # controlnet args
+            _init_img_rgb_ndarray = np.array(_init_img.convert('RGB'))
+            _mask_img_ndarray = np.zeros(shape=_init_img_rgb_ndarray.shape)
+
+            cnet_idx = 1
+            controlnet_args_unit1 = self.scripts.scripts_img2img.alwayson_scripts[
+                cnet_idx].get_default_ui_unit()
+            controlnet_args_unit1.batch_images = ''
+            controlnet_args_unit1.guidance_end = 1
+            controlnet_args_unit1.guidance_start = 0  # ending control step
+            controlnet_args_unit1.low_vram = False
+            controlnet_args_unit1.pixel_perfect = True
+            controlnet_args_unit1.weight = 1
+            controlnet_args_unit1.enabled = True
+            controlnet_args_unit1.resize_mode = 'Crop and Resize'
+            controlnet_args_unit1.processor_res = 512
+            controlnet_args_unit1.image = {
+                'image': _init_img_rgb_ndarray,
+                'mask': _mask_img_ndarray,
+            }
+
+            # canny
+            # controlnet_args_unit1.control_mode = 'ControlNet is more important'
+            # controlnet_args_unit1.model = 'control_v11p_sd15_canny'
+            # controlnet_args_unit1.module = 'canny'
+            # controlnet_args_unit1.threshold_a = 100
+            # controlnet_args_unit1.threshold_b = 200
+
+            # depth
+            controlnet_args_unit1.control_mode = 'My prompt is more important'
+            controlnet_args_unit1.model = 'control_v11f1p_sd15_depth'
+            controlnet_args_unit1.module = 'depth_midas'
+            controlnet_args_unit1.threshold_a = -1
+            controlnet_args_unit1.threshold_b = -1
+            controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
+            controlnet_args_unit2.enabled = reference_enbale
+            if reference_enbale:
+                _reference_img_rgb_ndarray = np.array(Image.open(
+                    os.path.join(reference_dir, _gender, _selected_style,
+                                 f"{str(_selected_type)}.jpeg")).convert('RGB'))
+                _reference_img_mask_ndarray = np.zeros(shape=_reference_img_rgb_ndarray.shape)
+                controlnet_args_unit2.image = {
+                    'image': _reference_img_rgb_ndarray,
+                    'mask': _reference_img_mask_ndarray,
+                }
+                controlnet_args_unit2.model = 'None'
+                controlnet_args_unit2.module = 'reference_only'
+                controlnet_args_unit2.processor_res = -1
+                controlnet_args_unit2.threshold_a = 1
+                controlnet_args_unit2.threshold_b = -1
+
+            print("-------------------avatar logger-----------------")
+            print(f"sd_positive_prompt: {sd_positive_prompt}")
+            print(f"sd_negative_prompt: {sd_negative_prompt}")
+            print(f"denoising_strength: {_denoising}")
+            print(f"Sampling method: {samplers_k_diffusion[15]}")
+            controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
+            controlnet_args_unit3.enabled = False
+
+            # img2img
+            inpainting_mask_invert = 0  # 0: inpaint masked 1: inpaint not masked
+
+            sam_args = [0,
+                        adetail_enabled, face_args, hand_args,  # adetail args
+                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
+                        # controlnet args
+                        False,  # inpaint_upload_enable
+                        False, 0, _init_img,
+                        [],
+                        0,  # sam_output_chosen_mask
+                        False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                        '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
+                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
+                        '',
+                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
+                        ['left', 'right', 'up', 'down'],
+                        False, False, 'positive', 'comma', 0, False, False, '',
+                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
+                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
+                        None,
+                        False,
+                        None, None,
+                        False, None, None, False, 50
+                        ]
+
+            _input_image_width, _input_image_height = _init_img.size
+
+            res = self.img2img.img2img(task_id,
+                                       0,
+                                       sd_positive_prompt,
+                                       sd_negative_prompt,
+                                       prompt_styles, _init_img.convert('RGBA'),
+                                       sketch,
+                                       init_img_with_mask, inpaint_color_sketch,
+                                       inpaint_color_sketch_orig,
+                                       init_img_inpaint, init_mask_inpaint,
+                                       steps, sampler_index, mask_blur, mask_alpha,
+                                       inpainting_fill,
+                                       restore_faces,
+                                       tiling,
+                                       n_iter,
+                                       _batch_size,  # batch_size
+                                       cfg_scale, image_cfg_scale,
+                                       denoising_strength, seed,
+                                       subseed,
+                                       subseed_strength, seed_resize_from_h,
+                                       seed_resize_from_w,
+                                       seed_enable_extras,
+                                       selected_scale_tab, _input_image_height,
+                                       _input_image_width,
+                                       scale_by,
+                                       resize_mode,
+                                       inpaint_full_res,
+                                       inpaint_full_res_padding, inpainting_mask_invert,
+                                       img2img_batch_input_dir,
+                                       img2img_batch_output_dir,
+                                       img2img_batch_inpaint_mask_dir,
+                                       override_settings_texts,
+                                       *sam_args)
 
         self.devices.torch_gc()
 
@@ -1616,27 +1715,32 @@ class OperatorSD(Operator):
                 _sim = float(params['sim'])
                 _type = int(params['type'])
                 _gender = str(params['gender'])
+                _txt2img = bool(params['txt2img'])
 
                 # 0.2–0.4
                 denoising_strength_min = 0.3
                 denoising_strength_max = 0.4
                 denoising_strength = (1 - _sim) * (denoising_strength_max - denoising_strength_min) + denoising_strength_min
 
-                person_boxes = self.facer.detect_face(_input_image)
-                if len(person_boxes) == 0:
-                    # return {'success': False, 'result': '未检测到人脸'}
-                    return {'success': False, 'result': 'backend.magic-avatar_reference.error.no-face'}
-
-                elif len(person_boxes) > 1:
-                    # return {'success': False, 'result': '检测到多个人脸，请上传一张单人照'}
-                    return {'success': False, 'result': 'backend.magic-avatar_reference.error.multi-face'}
+                if _txt2img:
+                    _input_image = None
 
                 else:
+                    person_boxes = self.facer.detect_face(_input_image)
+                    if len(person_boxes) == 0:
+                        # return {'success': False, 'result': '未检测到人脸'}
+                        return {'success': False, 'result': 'backend.magic-avatar_reference.error.no-face'}
+
+                    elif len(person_boxes) > 1:
+                        # return {'success': False, 'result': '检测到多个人脸，请上传一张单人照'}
+                        return {'success': False, 'result': 'backend.magic-avatar_reference.error.multi-face'}
+
                     # save cache face img
                     cache_image = _input_image.copy()
                     draw = ImageDraw.Draw(cache_image)
                     draw.rectangle(person_boxes[0], outline='red', width=5)
-                    cache_image.save(f"tmp/avatar_origin_face_style{str(_style)}_type{_type}_sim{_sim}_gender{_gender}_{pic_name}_save.png")
+                    cache_image.save(
+                        f"tmp/avatar_origin_face_style{str(_style)}_type{_type}_sim{_sim}_gender{_gender}_{pic_name}_save.png")
 
                     # get max area clothing box
                     person_box = person_boxes[0]
@@ -1652,16 +1756,16 @@ class OperatorSD(Operator):
                         person_box[1] = 0
                     person_box[2] = person_box[2] + int(person_width * padding_ratio)
                     if person_box[2] >= _input_image_width:
-                        person_box[2] = _input_image_width-1
+                        person_box[2] = _input_image_width - 1
                     person_box[3] = person_box[3] + int(person_height * padding_ratio)
                     if person_box[3] >= _input_image_height:
-                        person_box[3] = _input_image_height-1
+                        person_box[3] = _input_image_height - 1
 
                     # 正方形
                     person_width = person_box[2] - person_box[0]
                     person_height = person_box[3] - person_box[1]
                     if person_width < person_height:
-                        padding_left = int((person_height-person_width) / 2)
+                        padding_left = int((person_height - person_width) / 2)
                         person_box[0] = person_box[0] - padding_left
                         if person_box[0] < 0:
                             person_box[0] = 0
@@ -1671,11 +1775,11 @@ class OperatorSD(Operator):
                             person_box[2] = _input_image_width
 
                     elif person_width > person_height:
-                        padding_top = int((person_width-person_height) / 2)
+                        padding_top = int((person_width - person_height) / 2)
                         person_box[1] = person_box[1] - padding_top
                         if person_box[1] < 0:
                             person_box[1] = 0
-                        padding_bottom = person_width-person_height - padding_top
+                        padding_bottom = person_width - person_height - padding_top
                         person_box[3] = person_box[3] + padding_bottom
                         if person_box[3] > _input_image_height:
                             person_box[3] = _input_image_height
@@ -1695,13 +1799,13 @@ class OperatorSD(Operator):
                     cache_fp = f"tmp/avatar_resized_{pic_name}_save.png"
                     _input_image.save(cache_fp)
 
-                _input_image = _input_image.convert('RGBA')
-                _input_image_width, _input_image_height = _input_image.size
+                    _input_image = _input_image.convert('RGBA')
+                    _input_image_width, _input_image_height = _input_image.size
 
                 if self.update_progress(10):
                     return {'success': True}
 
-                avatar_result = self.proceed_avatar(_input_image, _style, _type, _gender, _sim, denoising_strength, _batch_size)
+                avatar_result = self.proceed_avatar(_input_image, _style, _type, _gender, denoising_strength, _batch_size, _txt2img)
 
                 # storage img
                 img_urls = []
