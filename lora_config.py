@@ -528,7 +528,7 @@ male_avatar_reference_dict = {
         'prompt': '(paper art:1.8),3d',
         },
     7: {'label': '彩墨',
-        'prompt': '<lora:Chinese_Ink_Painting_style:0.6>,greyscale,ink painting,Chinese martial arts style',
+        'prompt': '<lora:Chinese_Ink_Painting_style:0.6>,1boy, greyscale,ink painting,Chinese martial arts style,<lora:more_details:1>,(best quality:1.2),(high quality:1.2),strong contrast,intense angle',
         },
 }
 
