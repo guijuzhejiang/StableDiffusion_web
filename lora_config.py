@@ -527,6 +527,9 @@ male_avatar_reference_dict = {
     6: {'label': '纸偶',
         'prompt': '(paper art:1.8),3d',
         },
+    7: {'label': '彩墨',
+        'prompt': '<lora:Chinese_Ink_Painting_style:0.6>,greyscale,ink painting,Chinese martial arts style',
+        },
 }
 
 female_avatar_reference_dict = {
