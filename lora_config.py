@@ -530,6 +530,9 @@ male_avatar_reference_dict = {
     7: {'label': '彩墨',
         'prompt': '<lora:Chinese_Ink_Painting_style:0.6>,1boy, greyscale,ink painting,Chinese martial arts style,<lora:more_details:1>,(best quality:1.2),(high quality:1.2),strong contrast,intense angle',
         },
+    8: {'label': '水彩',
+        'prompt': '<lora:Watercolor_Painting_by_vizsumit:0.6>,watercolor painting',
+        },
 }
 
 female_avatar_reference_dict = {
