@@ -1432,13 +1432,13 @@ class OperatorSD(Operator):
             controlnet_args_unit2.threshold_a = 1
             controlnet_args_unit2.threshold_b = -1
 
-            sd_positive_prompt = f"{prompt_dict[_selected_index]['prompt'] + ',' if prompt_dict[_selected_index]['prompt']else ''}{'1man,' if _gender == 'male' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
+            sd_positive_prompt = f"{prompt_dict[_selected_index]['prompt'] + ',' if prompt_dict[_selected_index]['prompt']else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
 
         else:
             if (_gender == 'female' and _selected_style == '素描') or (_gender == 'male' and (_selected_style == '泥塑' or (_selected_style == '赛博朋克' and _selected_type == 0))):
-                sd_positive_prompt = f"{lora_avatar_dict[_selected_style][_selected_type]+','}{'1man,' if _gender == 'male' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
+                sd_positive_prompt = f"{lora_avatar_dict[_selected_style][_selected_type]+','}{'1boy,' if _gender == 'male' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
             else:
-                sd_positive_prompt = f"{prompt_dict[_selected_index]['prompt'] + ',' if prompt_dict[_selected_index]['prompt'] else ''}{'1man,' if _gender == 'male' and _selected_style != 'Q版' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
+                sd_positive_prompt = f"{prompt_dict[_selected_index]['prompt'] + ',' if prompt_dict[_selected_index]['prompt'] else ''}{'1boy,' if _gender == 'male' and _selected_style != 'Q版' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
 
         print("-------------------avatar logger-----------------")
         print(f"sd_positive_prompt: {sd_positive_prompt}")
