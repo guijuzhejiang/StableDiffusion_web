@@ -105,7 +105,7 @@ class OperatorSD(Operator):
 
         self.insightface = importlib.import_module('insightface')
         self.swapper = self.insightface.model_zoo.get_model('models/insightface/models/inswapper_128.onnx')
-        self.face_analysis = self.insightface.app.FaceAnalysis(name='buffalo_l', root='models/insightface/models')
+        self.face_analysis = self.insightface.app.FaceAnalysis(name='buffalo_l', root='models/insightface')
         self.face_analysis.prepare(ctx_id=0, det_size=(640, 640))
 
         self.shared.cmd_opts.listen = True
@@ -1742,8 +1742,8 @@ class OperatorSD(Operator):
                 gfpgan_weight = 0
                 scales = 1
                 codeformer_visibility = 0
-                args = (0, scales, None, None, True, 'ESRGAN_4x', 'None', 0, 0.5, 0.5,
-                        0.5)
+                args = (0, scales, None, None, True, 'ESRGAN_4x', 'None', 1, 1, 0,
+                        0)
                 self.devices.torch_gc()
                 pp = self.scripts_postprocessing.PostprocessedImage(Image.open(os.path.join(dir_path, img_fn)))
                 self.scripts.scripts_postproc.run(pp, args)
