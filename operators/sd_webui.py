@@ -1866,7 +1866,11 @@ class OperatorSD(Operator):
                     #                                                   0.43,
                     #                                                   _input_image.convert('RGBA'))
 
-                    person_boxes = self.facer.detect_face(_input_image)
+                    if _hair_color_enable:
+                        person_boxes = self.facer.detect_head(_input_image)
+                    else:
+                        person_boxes = self.facer.detect_face(_input_image)
+
                     if len(person_boxes) == 0:
                         # return {'success': False, 'result': '未检测到人脸'}
                         return {'success': False, 'result': 'backend.magic-hair.error.no-face'}
@@ -1896,10 +1900,10 @@ class OperatorSD(Operator):
 
                         # crop
                         if _hair_color_enable:
-                            new_person_box[0] = person_box[0] - int(person_width * 0.8)
-                            new_person_box[1] = person_box[1] - int(person_height * 0.8)
-                            new_person_box[2] = person_box[2] + int(person_width * 0.8)
-                            new_person_box[3] = person_box[3] + int(person_height * 0.8)
+                            new_person_box[0] = person_box[0] - int(person_width * 0.6)
+                            new_person_box[1] = person_box[1] - int(person_height * 0.6)
+                            new_person_box[2] = person_box[2] + int(person_width * 0.6)
+                            new_person_box[3] = person_box[3] + int(person_height * 0.6)
                             if new_person_box[0] < 0:
                                 new_person_box[0] = 0
                             if new_person_box[1] < 0:
