@@ -16,11 +16,13 @@ redis:
   port: 6379
   redis_mq: 11
 storage_dirpath:
-  user_dir: outputs/img2img-images/user_history
+  user_model_dir: outputs/img2img-images/user_model_history
   user_mirror_dir: outputs/img2img-images/user_mirror_history
   user_hair_dir: outputs/img2img-images/user_hair_history
   user_avatar_dir: outputs/img2img-images/user_avatar_history
+  user_facer_dir: outputs/img2img-images/user_facer_history
   user_upload: outputs/img2img-images/user_upload
+  user_facer_upload: outputs/img2img-images/user_facer_upload
   hires_dir: outputs/img2img-images/hires
   lora_model_dir: /home/ray/Workspace/file/素材/头像/224/
   lora_place_dir: /home/ray/Workspace/file/素材/背景/224/

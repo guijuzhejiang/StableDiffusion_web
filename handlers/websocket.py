@@ -90,18 +90,22 @@ async def sd_genreate(request: Request, ws):
                     query_params = parse_qs(parsed_url.query)
 
                     category = query_params['category'][0]
-                    if category == 'hair':
-                        dir_storage_path = CONFIG['storage_dirpath']['user_hair_dir']
-                    elif category == 'mirror':
-                        dir_storage_path = CONFIG['storage_dirpath']['user_mirror_dir']
-                    elif category == 'avatar':
-                        dir_storage_path = CONFIG['storage_dirpath']['user_avatar_dir']
-                    else:
-                        dir_storage_path = CONFIG['storage_dirpath']['user_dir']
+                    category = category if category else "model"
+                    # if category == 'hair':
+                    #     dir_storage_path = CONFIG['storage_dirpath']['user_hair_dir']
+                    # elif category == 'mirror':
+                    #     dir_storage_path = CONFIG['storage_dirpath']['user_mirror_dir']
+                    # elif category == 'avatar':
+                    #     dir_storage_path = CONFIG['storage_dirpath']['user_avatar_dir']
+                    # else:
+                    dir_storage_path = CONFIG['storage_dirpath'][f'user_{category}_dir']
                     img_fp = os.path.join(dir_storage_path, query_params['uid'][0], query_params['imgpath'][0])
                     format_package['input_image'] = img_fp
                 else:
                     format_package['input_image'] = os.path.join(CONFIG['storage_dirpath']['user_upload'], f"{user_id}.png")
+                    if package['mode'] == 'facer':
+                        format_package['input_image_tgt'] = os.path.join(CONFIG['storage_dirpath']['user_facer_upload'],
+                                                                     f"{user_id}.png")
 
                 # send task
                 task_result = request.app.ctx.sd_workshop(**format_package)

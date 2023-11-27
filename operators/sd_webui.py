@@ -103,6 +103,11 @@ class OperatorSD(Operator):
         self.devices = getattr(importlib.import_module('modules'), 'devices')
         self.scripts_postprocessing = getattr(importlib.import_module('modules'), 'scripts_postprocessing')
 
+        self.insightface = importlib.import_module('insightface')
+        self.swapper = self.insightface.model_zoo.get_model('/home/ray/Workspace/project/demo_web_sys/test/facefusion/.assets/models/inswapper_128.onnx')
+        self.face_analysis = self.insightface.app.FaceAnalysis(name='buffalo_l')
+        self.face_analysis.prepare(ctx_id=0, det_size=(640, 640))
+
         self.shared.cmd_opts.listen = True
         self.shared.cmd_opts.debug_mode = True
         self.shared.cmd_opts.enable_insecure_extension_access = True
@@ -1703,7 +1708,72 @@ class OperatorSD(Operator):
                 f"{ujson.dumps(clean_args, indent=4)}",
                 f"logs/sd_webui.log")
 
-            if proceed_mode == 'avatar':
+            if proceed_mode == 'facer':
+                if self.update_progress(40):
+                    return {'success': True}
+                params = ujson.loads(kwargs['params'][0])
+                # _batch_size = int(params['batch_size'])
+                _input_src_image = cv2.imread(kwargs['input_image'])
+                _input_tgt_image = cv2.imread(kwargs['input_image_tgt'])
+
+                if self.update_progress(60):
+                    return {'success': True}
+                src_faces = self.face_analysis.get(_input_src_image)
+                if len(src_faces) != 1:
+                    # return {'success': False, 'result': '未检测到人脸'}
+                    return {'success': False, 'result': 'backend.magic-facer.error.no-face0'}
+                tgt_faces = self.face_analysis.get(_input_tgt_image)
+                if len(tgt_faces) != 1:
+                    # return {'success': False, 'result': '未检测到人脸'}
+                    return {'success': False, 'result': 'backend.magic-facer.error.no-face1'}
+
+                res = self.swapper.get(_input_tgt_image, tgt_faces[0], src_faces[0], paste_back=True)
+                # storage img
+                img_urls = []
+                dir_path = os.path.join(CONFIG['storage_dirpath']['user_facer_dir'], user_id)
+                os.makedirs(dir_path, exist_ok=True)
+
+                img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"
+                cv2.imwrite(os.path.join(dir_path, img_fn), res)
+
+                if self.update_progress(80):
+                    return {'success': True}
+                # face fix
+                gfpgan_weight = 0
+                scales = 1
+                codeformer_visibility = 0
+                args = (0, scales, None, None, True, 'ESRGAN_4x', 'None', 0, 0.5, 0.5,
+                        0.5)
+                self.devices.torch_gc()
+                pp = self.scripts_postprocessing.PostprocessedImage(Image.open(os.path.join(dir_path, img_fn)))
+                self.scripts.scripts_postproc.run(pp, args)
+                pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=80, lossless=True)
+                self.devices.torch_gc()
+
+                # 限制缓存10张
+                cache_list = sorted(os.listdir(dir_path))
+                if len(cache_list) > 10:
+                    os.remove(os.path.join(dir_path, cache_list[0]))
+
+                for img_fn in sorted(os.listdir(dir_path), reverse=True):
+                    url_fp = f"{'http://192.168.110.8:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category=facer"
+                    img_urls.append(url_fp)
+                if len(img_urls) < 10:
+                    for i in range(10 - len(img_urls)):
+                        img_urls.append('')
+
+                # celery_task.update_state(state='PROGRESS', meta={'progress': 95})
+                if self.update_progress(90):
+                    return {'success': True}
+                else:
+                    # clear images
+                    for cache_img_fp in glob.glob(f'tmp/*{pic_name}*'):
+                        if '_save' not in cache_img_fp:
+                            os.remove(cache_img_fp)
+
+                return {'success': True, 'result': img_urls}
+
+            elif proceed_mode == 'avatar':
                 # if self.shared.sd_model.sd_checkpoint_info.model_name == 'dreamshaper_8':
                 #     self.shared.change_sd_model('chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting')
                 if self.shared.sd_model.sd_checkpoint_info.model_name == 'chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting':
@@ -1730,11 +1800,11 @@ class OperatorSD(Operator):
                     person_boxes = self.facer.detect_face(_input_image)
                     if len(person_boxes) == 0:
                         # return {'success': False, 'result': '未检测到人脸'}
-                        return {'success': False, 'result': 'backend.magic-avatar_reference.error.no-face'}
+                        return {'success': False, 'result': 'backend.magic-avatar.error.no-face'}
 
                     elif len(person_boxes) > 1:
                         # return {'success': False, 'result': '检测到多个人脸，请上传一张单人照'}
-                        return {'success': False, 'result': 'backend.magic-avatar_reference.error.multi-face'}
+                        return {'success': False, 'result': 'backend.magic-avatar.error.multi-face'}
 
                     # save cache face img
                     cache_image = _input_image.copy()
@@ -2512,7 +2582,7 @@ class OperatorSD(Operator):
                     #  -------------------------------------------------------------------------------------
                 # storage img
                 img_urls = []
-                dir_path = os.path.join(CONFIG['storage_dirpath']['user_dir'], user_id)
+                dir_path = os.path.join(CONFIG['storage_dirpath']['user_model_dir'], user_id)
                 os.makedirs(dir_path, exist_ok=True)
 
                 for ok_idx, ok_img in enumerate(ok_res):

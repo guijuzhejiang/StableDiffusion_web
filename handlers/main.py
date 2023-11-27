@@ -299,15 +299,15 @@ class ImageProvider(HTTPMethodView):
         if request.args.get("uid"):
             user_id = urllib.parse.unquote(request.args.get("uid"))
 
-            category = request.args.get("category")
-            if category == 'hair':
-                dir_storage_path = CONFIG['storage_dirpath']['user_hair_dir']
-            elif category == 'mirror':
-                dir_storage_path = CONFIG['storage_dirpath']['user_mirror_dir']
-            elif category == 'avatar':
-                dir_storage_path = CONFIG['storage_dirpath']['user_avatar_dir']
-            else:
-                dir_storage_path = CONFIG['storage_dirpath']['user_dir']
+            category = request.args.get("category", 'model')
+            # if category == 'hair':
+            #     dir_storage_path = CONFIG['storage_dirpath']['user_hair_dir']
+            # elif category == 'mirror':
+            #     dir_storage_path = CONFIG['storage_dirpath']['user_mirror_dir']
+            # elif category == 'avatar':
+            #     dir_storage_path = CONFIG['storage_dirpath']['user_avatar_dir']
+            # else:
+            dir_storage_path = CONFIG['storage_dirpath'][f'user_{category}_dir']
             dir_user_path = os.path.join(dir_storage_path, user_id)
 
             fp = os.path.join(dir_user_path, request.args.get("imgpath"))
@@ -321,15 +321,16 @@ class FetchUserHistory(HTTPMethodView):
     async def post(self, request):
         try:
             user_id = request.form['user_id'][0]
-            category = request.args.get("category")
-            if category == 'hair':
-                dir_storage_path = CONFIG['storage_dirpath']['user_hair_dir']
-            elif category == 'avatar':
-                dir_storage_path = CONFIG['storage_dirpath']['user_avatar_dir']
-            elif category == 'mirror':
-                dir_storage_path = CONFIG['storage_dirpath']['user_mirror_dir']
-            else:
-                dir_storage_path = CONFIG['storage_dirpath']['user_dir']
+            category = request.args.get("category", 'model')
+            # if category == 'hair':
+            #     dir_storage_path = CONFIG['storage_dirpath']['user_hair_dir']
+            # elif category == 'avatar':
+            #     dir_storage_path = CONFIG['storage_dirpath']['user_avatar_dir']
+            # elif category == 'mirror':
+            #     dir_storage_path = CONFIG['storage_dirpath']['user_mirror_dir']
+            # else:
+            #     dir_storage_path = CONFIG['storage_dirpath']['user_dir']
+            dir_storage_path = CONFIG['storage_dirpath'][f'user_{category}_dir']
             dir_user_path = os.path.join(dir_storage_path, user_id)
             os.makedirs(dir_user_path, exist_ok=True)
 
@@ -349,9 +350,13 @@ class UserUpload(HTTPMethodView):
     async def post(self, request):
         try:
             user_id = urllib.parse.unquote(request.args.get("uid"))
+            category = request.args.get("category")
             upload_image = request.files['upload_image'][0]
             image_type = upload_image.type.split('/')[-1]
-            dir_path = os.path.join(CONFIG['storage_dirpath']['user_upload'])
+            if category:
+                dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_{category}_upload'])
+            else:
+                dir_path = os.path.join(CONFIG['storage_dirpath']['user_upload'])
             os.makedirs(dir_path, exist_ok=True)
 
             async with aiofile.async_open(os.path.join(dir_path, f"{user_id}.png"), 'wb') as file:
