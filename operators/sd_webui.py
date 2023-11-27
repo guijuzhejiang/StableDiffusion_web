@@ -1893,26 +1893,30 @@ class OperatorSD(Operator):
                         person_height = person_box[3] - person_box[1]
 
                         new_person_box = [0, 0, 0, 0]
-                        new_person_box[0] = person_box[0] - int(person_width*0.6)
-                        # if new_person_box[0] < 0:
-                        #     need_padding = True
-                        #     # person_box[0] = 0
-
-                        new_person_box[1] = person_box[1] - int(person_height*0.7)
-                        # if person_box[1] < 0:
-                        #     person_box[1] = 0
-                        new_person_box[2] = person_box[2] + int(person_width*0.6)
-                        # if person_box[2] >= _input_image_width:
-                        #     person_box[2] = _input_image_width-1
-                        new_person_box[3] = person_box[3] + int(person_height*0.8)
-                        # if person_box[3] >= _input_image_height:
-                        #     person_box[3] = _input_image_height-1
-                        need_padding = True if new_person_box[0] < 0 or new_person_box[1] < 0 or new_person_box[2] > _input_image_width-1 or new_person_box[3] > _input_image_height-1 else False
 
                         # crop
                         if _hair_color_enable:
-                            pass
+                            new_person_box[0] = person_box[0] - int(person_width * 0.8)
+                            new_person_box[1] = person_box[1] - int(person_height * 0.8)
+                            new_person_box[2] = person_box[2] + int(person_width * 0.8)
+                            new_person_box[3] = person_box[3] + int(person_height * 0.8)
+                            if new_person_box[0] < 0:
+                                new_person_box[0] = 0
+                            if new_person_box[1] < 0:
+                                new_person_box[1] = 0
+                            if new_person_box[2] >= _input_image_width:
+                                new_person_box[2] = _input_image_width-1
+                            if new_person_box[3] >= _input_image_height:
+                                new_person_box[3] = _input_image_height-1
+                            _input_image = _input_image.crop(new_person_box)
                         else:
+                            new_person_box[0] = person_box[0] - int(person_width * 0.6)
+                            new_person_box[1] = person_box[1] - int(person_height * 0.7)
+                            new_person_box[2] = person_box[2] + int(person_width * 0.6)
+                            new_person_box[3] = person_box[3] + int(person_height * 0.8)
+                            need_padding = True if new_person_box[0] < 0 or new_person_box[1] < 0 or new_person_box[
+                                2] > _input_image_width - 1 or new_person_box[3] > _input_image_height - 1 else False
+
                             if need_padding:
                                 # _input_image = _input_image.crop(person_box)
                                 new_image_width = new_person_box[2] - new_person_box[0]
