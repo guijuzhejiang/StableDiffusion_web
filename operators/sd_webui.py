@@ -1715,7 +1715,8 @@ class OperatorSD(Operator):
                 _sim = float(params['sim'])
                 _type = int(params['type'])
                 _gender = str(params['gender'])
-                _txt2img = bool(params['txt2img'])
+                # _txt2img = bool(params['txt2img'])
+                _txt2img = False
 
                 # 0.2–0.4
                 denoising_strength_min = 0.3
