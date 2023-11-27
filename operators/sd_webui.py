@@ -104,8 +104,8 @@ class OperatorSD(Operator):
         self.scripts_postprocessing = getattr(importlib.import_module('modules'), 'scripts_postprocessing')
 
         self.insightface = importlib.import_module('insightface')
-        self.swapper = self.insightface.model_zoo.get_model('/home/ray/Workspace/project/demo_web_sys/test/facefusion/.assets/models/inswapper_128.onnx')
-        self.face_analysis = self.insightface.app.FaceAnalysis(name='buffalo_l')
+        self.swapper = self.insightface.model_zoo.get_model('models/insightface/models/inswapper_128.onnx')
+        self.face_analysis = self.insightface.app.FaceAnalysis(name='buffalo_l', root='models/insightface/models')
         self.face_analysis.prepare(ctx_id=0, det_size=(640, 640))
 
         self.shared.cmd_opts.listen = True
