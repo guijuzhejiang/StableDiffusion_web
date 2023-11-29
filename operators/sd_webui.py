@@ -1867,7 +1867,7 @@ class OperatorSD(Operator):
                              '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
                              False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
                             # tiled_vae
-                            True, 256, 48, True, True, True, False
+                            False if _selected_place == 0 or _selected_place == 6 else True, 256, 48, True, True, True, False
                             ]
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 50})
