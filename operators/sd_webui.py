@@ -561,16 +561,19 @@ class OperatorSD(Operator):
                         0,  # sam_output_chosen_mask
                         False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                         '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                        '',
-                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
-                        ['left', 'right', 'up', 'down'],
-                        False, False, 'positive', 'comma', 0, False, False, '',
-                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None, None,
-                        False,
-                        None, None,
-                        False, None, None, False, 50
+                        True, True, '',
+                        # tiled diffsuion
+                        False, 'MultiDiffusion', False, True,
+                        1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
+                        64, False, False, False, False, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                        '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                        '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        # tiled_vae
+                        False, 256, 48, True, True, True,
+                        False
                         ]
 
         elif _task_type == 'age':
@@ -663,17 +666,19 @@ class OperatorSD(Operator):
                         0,  # sam_output_chosen_mask
                         False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                         '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                        '',
-                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
-                        ['left', 'right', 'up', 'down'],
-                        False, False, 'positive', 'comma', 0, False, False, '',
-                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
-                        None,
-                        False,
-                        None, None,
-                        False, None, None, False, 50
+                        True, True, '',
+                        # tiled diffsuion
+                        False, 'MultiDiffusion', False, True,
+                        1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
+                        64, False, False, False, False, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                        '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                        '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        # tiled_vae
+                        False, 256, 48, True, True, True,
+                        False
                         ]
 
         elif _task_type == 'face_expression':
@@ -774,17 +779,19 @@ class OperatorSD(Operator):
                         0,  # sam_output_chosen_mask
                         False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                         '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                        '',
-                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
-                        ['left', 'right', 'up', 'down'],
-                        False, False, 'positive', 'comma', 0, False, False, '',
-                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
-                        None,
-                        False,
-                        None, None,
-                        False, None, None, False, 50
+                        True, True, '',
+                        # tiled diffsuion
+                        False, 'MultiDiffusion', False, True,
+                        1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
+                        64, False, False, False, False, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                        '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                        '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        # tiled_vae
+                        False, 256, 48, True, True, True,
+                        False
                         ]
 
         elif _task_type == 'eye_size':
@@ -872,17 +879,19 @@ class OperatorSD(Operator):
                         0,  # sam_output_chosen_mask
                         False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                         '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                        '',
-                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
-                        ['left', 'right', 'up', 'down'],
-                        False, False, 'positive', 'comma', 0, False, False, '',
-                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
-                        None,
-                        False,
-                        None, None,
-                        False, None, None, False, 50
+                        True, True, '',
+                        # tiled diffsuion
+                        False, 'MultiDiffusion', False, True,
+                        1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
+                        64, False, False, False, False, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                        '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                        '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        # tiled_vae
+                        False, 256, 48, True, True, True,
+                        False
                         ]
 
         elif _task_type == 'curly_hair':
@@ -981,17 +990,19 @@ class OperatorSD(Operator):
                         0,  # sam_output_chosen_mask
                         False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                         '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                        '',
-                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
-                        ['left', 'right', 'up', 'down'],
-                        False, False, 'positive', 'comma', 0, False, False, '',
-                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
-                        None,
-                        False,
-                        None, None,
-                        False, None, None, False, 50
+                        True, True, '',
+                        # tiled diffsuion
+                        False, 'MultiDiffusion', False, True,
+                        1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
+                        64, False, False, False, False, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                        '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                        '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        # tiled_vae
+                        False, 256, 48, True, True, True,
+                        False
                         ]
 
         elif _task_type == 'muscle':
@@ -1080,17 +1091,19 @@ class OperatorSD(Operator):
                         0,  # sam_output_chosen_mask
                         False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                         '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                        '',
-                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
-                        ['left', 'right', 'up', 'down'],
-                        False, False, 'positive', 'comma', 0, False, False, '',
-                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
-                        None,
-                        False,
-                        None, None,
-                        False, None, None, False, 50
+                        True, True, '',
+                        # tiled diffsuion
+                        False, 'MultiDiffusion', False, True,
+                        1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
+                        64, False, False, False, False, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                        '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                        '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        # tiled_vae
+                        False, 256, 48, True, True, True,
+                        False
                         ]
 
         _input_image_width, _input_image_height = _init_img.size
@@ -1305,17 +1318,19 @@ class OperatorSD(Operator):
                     0,  # sam_output_chosen_mask
                     False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                     '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                    True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                    '',
-                    128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
-                    ['left', 'right', 'up', 'down'],
-                    False, False, 'positive', 'comma', 0, False, False, '',
-                    '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                    64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
-                    None,
-                    False,
-                    None, None,
-                    False, None, None, False, 50
+                    True, True, '',
+                    # tiled diffsuion
+                    False, 'MultiDiffusion', False, True,
+                    1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
+                    64, False, False, False, False, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                    False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                    '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                    False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                    '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                    False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                    # tiled_vae
+                    False, 256, 48, True, True, True,
+                    False
                     ]
 
         _input_image_width, _input_image_height = _init_img.size
@@ -1423,46 +1438,8 @@ class OperatorSD(Operator):
         steps = 20
         mask_blur = 4
         adetail_enabled = False
-        face_args = {'ad_model': 'face_yolov8n.pt',
-                     'ad_prompt': f'',
-                     'ad_negative_prompt': '',
-                     'ad_confidence': 0.3,
-                     'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
-                     'ad_y_offset': 0,
-                     'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
-                     'ad_denoising_strength': 0.4,
-                     'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
-                     'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
-                     'ad_inpaint_height': 512,
-                     'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
-                     'ad_cfg_scale': 7,
-                     'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
-                     'ad_restore_face': False,
-                     'ad_controlnet_model': 'None',
-                     'ad_controlnet_module': 'inpaint_global_harmonious',
-                     'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
-                     'ad_controlnet_guidance_end': 1,
-                     'is_api': ()}
-        hand_args = {'ad_model': 'None',
-                     'ad_prompt': '',
-                     'ad_negative_prompt': '',
-                     'ad_confidence': 0.3,
-                     'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
-                     'ad_y_offset': 0,
-                     'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
-                     'ad_denoising_strength': 0.4,
-                     'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
-                     'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
-                     'ad_inpaint_height': 512,
-                     'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False,
-                     'ad_cfg_scale': 7,
-                     'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1,
-                     'ad_restore_face': False,
-                     'ad_controlnet_model': 'None',
-                     'ad_controlnet_module': 'inpaint_global_harmonious',
-                     'ad_controlnet_weight': 1, 'ad_controlnet_guidance_start': 0,
-                     'ad_controlnet_guidance_end': 1,
-                     'is_api': ()}
+        face_args = {}
+        hand_args = {}
 
         self.update_progress(50)
         if _txt2img:
@@ -1505,17 +1482,19 @@ class OperatorSD(Operator):
                         0,  # sam_output_chosen_mask
                         False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                         '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                        '',
-                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
-                        ['left', 'right', 'up', 'down'],
-                        False, False, 'positive', 'comma', 0, False, False, '',
-                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
-                        None,
-                        False,
-                        None, None,
-                        False, None, None, False, 50
+                        True, True, '',
+                        # tiled diffsuion
+                        False, 'MultiDiffusion', False, True,
+                        1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
+                        64, False, False, False, False, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                        '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                        '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        # tiled_vae
+                        False, 256, 48, True, True, True,
+                        False
                         ]
 
             sd_positive_prompt = f"{sd_positive_prompt},(portrait:1.1),1{'girl' if _gender=='female' else 'boy'},(half-length:1.1)"
@@ -1621,17 +1600,19 @@ class OperatorSD(Operator):
                         0,  # sam_output_chosen_mask
                         False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                         '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                        True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                        '',
-                        128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
-                        ['left', 'right', 'up', 'down'],
-                        False, False, 'positive', 'comma', 0, False, False, '',
-                        '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                        64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
-                        None,
-                        False,
-                        None, None,
-                        False, None, None, False, 50
+                        True, True, '',
+                        # tiled diffsuion
+                        False, 'MultiDiffusion', False, True,
+                        1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
+                        64, False, False, False, False, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                        '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                        '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        # tiled_vae
+                        False, 256, 48, True, True, True,
+                        False
                         ]
 
             _input_image_width, _input_image_height = _init_img.size
@@ -1849,16 +1830,7 @@ class OperatorSD(Operator):
                             False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                             '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
                             True, True, '',
-                            # '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                            # f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
-                            # 128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
-                            # ['left', 'right', 'up', 'down'],
-                            # False, False, 'positive', 'comma', 0, False, False, '',
-                            # '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                            # 64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None, None, False,
-                            # None, None,
-                            # False, None, None, False, 50,
-                            # tiled_diffsuion
+                            # tiled diffsuion
                             False if _selected_place == 0 or _selected_place == 6 else True, 'MultiDiffusion', False, True, 1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
                              64, False, False, False, False, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
                              False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
@@ -2631,15 +2603,19 @@ class OperatorSD(Operator):
                             0,  # sam_output_chosen_mask
                             False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                             '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                            True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                            f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
-                            128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
-                            ['left', 'right', 'up', 'down'],
-                            False, False, 'positive', 'comma', 0, False, False, '',
-                            '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                            64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None, None, False,
-                            None, None,
-                            False, None, None, False, 50
+                            True, True, '',
+                            # tiled diffsuion
+                            False, 'MultiDiffusion', False, True,
+                            1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
+                            64, False, False, False, False, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                            False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                            '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                            False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                            '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                            False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                            # tiled_vae
+                            False, 256, 48, True, True, True,
+                            False
                             ]
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 50})
@@ -2773,16 +2749,22 @@ class OperatorSD(Operator):
                                 0,  # sam_output_chosen_mask
                                 False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                                 '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                                True, True, '', '', True, 50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                                f'<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: {denoising_strength}</p>',
-                                128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
-                                ['left', 'right', 'up', 'down'],
-                                False, False, 'positive', 'comma', 0, False, False, '',
-                                '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                                64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None,
-                                None, False,
-                                None, None,
-                                False, None, None, False, 50
+                                True, True, '',
+                                # tiled diffsuion
+                                False, 'MultiDiffusion', False, True,
+                                1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
+                                64, False, False, False, False, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2,
+                                -1.0,
+                                False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2,
+                                '',
+                                '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                                False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2,
+                                '',
+                                '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                                False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                                # tiled_vae
+                                False, 256, 48, True, True, True,
+                                False
                                 ]
                     ok_res[ok_idx] = \
                         self.img2img.img2img(task_id, 4, sd_bg_positive_prompt, sd_bg_negative_prompt, prompt_styles,
@@ -3079,16 +3061,17 @@ class OperatorSD(Operator):
                                 [], 0, False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [], False, 0,
                                 None, None,
                                 '<ul>\n<li><code>CFG Scale</code> should be 2 or lower.</li>\n</ul>\n', True, True, '',
-                                '', True,
-                                50, True, 1, 0, False, 4, 0.5, 'Linear', 'None',
-                                '<p style="margin-bottom:0.75em">Recommended settings: Sampling Steps: 80-100, Sampler: Euler a, Denoising strength: 0.8</p>',
-                                128, 8, ['left', 'right', 'up', 'down'], 1, 0.05, 128, 4, 0,
-                                ['left', 'right', 'up', 'down'], False,
-                                False, 'positive', 'comma', 0, False, False, '',
-                                '<p style="margin-bottom:0.75em">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>',
-                                64, 0, 2, 1, '', [], 0, '', [], 0, '', [], True, False, False, False, 0, None, None,
-                                False, None,
-                                None, False, None, None, False, 50
+                                False, 'MultiDiffusion', False,
+                                True, 1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
+                                64, False, False, False, False, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                                False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                                '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                                False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                                '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                                False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                                # tiled_vae
+                                False, 256, 48, True, True, True,
+                                False
                                 ]
 
                     cnet_res = self.img2img.img2img(task_id, 0, sd_positive_prompt, sd_negative_prompt,
