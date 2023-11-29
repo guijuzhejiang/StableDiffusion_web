@@ -503,7 +503,7 @@ lora_hair_color_dict = {
          },
 }
 
-reference_dir = "guiju/assets/avatar_reference"
+reference_dir = "guiju/assets"
 
 male_avatar_reference_dict = {
     0: {'label': '赛博朋克',
@@ -592,6 +592,48 @@ lora_avatar_dict = {
         0: '<lora:Steampunkcog:0.8>,meccog,cog,asians,(surreal:1.5),(cyberpunk:1.5),(mecha:1.5)',
         1: '',
     }
+}
+
+lora_mirage_dict = {
+    0: {'label': '侏罗纪',
+        'prompt': '<lora:侏罗纪花园_v1.0:0.7>,horror,deep shadow, large Tyrannosaurus Rex, forest, trees,huge waterfall, river',
+        },
+    1: {'label': '巨大战舰',
+         'prompt': '<lora:neowrsk_v2:0.7>,<lora:[LoHa] Octans八分儀 Stylev2:1>,Megalophobia,giant phobia,cloud,low angle,chaosmix, chaos, horror,neowrsk,octans,flying spacecraft, floating in the sky, spaceship,cyberpunk aesthetics, electrical storm, plasma turret fire, interstellar warfare, tension, decaying space station backdrop, ominous, nebula-filled cosmos, (huge:1.5),from below, red theme, mysterious, ethereal, sharp focus,hot pinks, and glowing purples, (giant clothes), Dramatic Lighting, Bold Coloration, Vibrant Warmth,deep shadow, astonishing level of detail,Horizon composition,universe,Hal\'s Mobile Castle,Huge Sky Castle',
+         },
+    2: {'label': '恐怖死神',
+         'prompt': '<lora:Ghost Concept_v1.0:0.7>,visually stunning,elegant,incredible details,g0s1, faceless,no humans,cloak,robe,torn clothes,torn fabric,floating, grim reaper,black reaper,<lora:f1nt - Fantasy:0.5>,f1nt,fantasy theme,horror \(theme\),scythe,holding scythe, death,ghost,hood',
+         },
+    3: {'label': '星际大战',
+        'prompt': '<lora:末日-宇宙（场景）_v1.0:0.6>,horror,(A huge spaceship:1.5),(solo:1.5),(A rectangular spacecraft resembling the shape of an aircraft carrier:1.5),Full of art,Cosmic galaxy background,Doomsday scenario,Crumbling earth,a volcano erupts,energy blast,The fleeing spaceship',
+        },
+    4: {'label': '月下城堡',
+         'prompt': '<lora:(LIb首发)CG古风大场景类_v2.0:1>,HD,cg,Chinese CG scene,unreal 5 engine,Mid-autumn,full moon,night view,plants,ancient buildings,bridge,Backlight,Creek,Clouds,Chinese architecture,brightly lit',
+         },
+    5: {'label': '未来机器城',
+         'prompt': '<lora:XSArchi_127:1> <lora:Concept_scenery_background:0.3>,solo, (zenithal angle), sunset, ((by Iwan Baan)), skyscraper, japan style, arasaka tower, neon lights, cyberpunk, cyberpunk \(series\),Steam power: Steampunk works usually depict a world based on steam power, people use steam engines, steam trains, steam airships, etc., these machines are usually powered by steam engines.coastal city,blue sky and white clouds,the sun is shining brightly,ultra-wide angle',
+         },
+    6: {'label': '机甲怪兽',
+        'prompt': '<lora:机甲怪兽风格lora_v1.0:0.5>,monster,Alien monsters invade Earth,Dragon-shaped monster,huge,thriller,robot,Mecha,chilling,horrifying,terrifying',
+        },
+    7: {'label': '浮岛宝塔',
+         'prompt': '<lora:(LIb首发)CG古风大场景类_v2.0:1>,Unreal Engine 5,CG,abg,Chinese CG scene,top down,scenery,waterfall,cloud,tree,architecture,sky,outdoors, floating island,day,east asian architecture,fantasy,mountain,water,bridge,pagoda,castle,building,blue sky,tower,fog',
+         },
+    8: {'label': '满月与海',
+         'prompt': '<lora:满月与大海_v0.1:1>,ambient lighting,professional artwork,Ambient Occlusion,surrealism,illusion,only sky,unreal,depth of field,focus to the sky,silver theme,lunarYW,sea',
+         },
+    9: {'label': '满月古城',
+        'prompt': '<lora:(LIb首发)CG古风大场景类_v2.0:1>,HD,cg,Chinese CG scene,unreal 5 engine,Mid-autumn,full moon,night view,plants,ancient buildings,bridge,Backlight,Creek,Clouds,Chinese architecture,brightly lit',
+        },
+    10: {'label': '科幻世界',
+         'prompt': '<lora:新科幻Neo Sci-Fi_v1.0:1>,sci-fi city,modern architecture style,river,a floating city in the sky,super high-rise building,high resolution,outdoor,(day:1.2),(blue sky:1.3), water,soft lighting,(dramatic scene),(Epic composition:1.2)',
+         },
+    11: {'label': '蓬莱仙岛',
+         'prompt': '<lora:(LIb首发)CG古风大场景类_v2.0:1>,HD,cg,Chinese CG scene,unreal 5 engine,floating island,abg,large waterfall left in the middle,rain,huge peaks',
+         },
+    12: {'label': '赛博朋克',
+        'prompt': '<lora:Cyberpunk sceneV1:0.7>,Megalophobia,giant phobia,cloud,low angle,chaosmix,chaos,horror,tooimage cyberpunk futuristic city,flying spacecraft,floating in the sky,spaceship,cyberpunk aesthetics,electrical storm,plasma turret fire,interstellar warfare,tension,decaying space station backdrop,ominous,nebula-filled cosmos,(huge:1.5),from below,red theme,mysterious,ethereal,sharp focus,hot pinks,and glowing purples,(giant clothes),Dramatic Lighting,Bold Coloration, Vibrant Warmth,deep shadow, astonishing level of detail,Horizon composition,universe,Hal\'s Mobile Castle,Huge Sky Castle',
+        },
 }
 
 if __name__ == '__main__':
