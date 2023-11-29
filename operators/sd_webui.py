@@ -1748,7 +1748,7 @@ class OperatorSD(Operator):
                 init_mask_inpaint = None
                 steps = 12
                 sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
-                mask_blur = 4
+                mask_blur = 0
                 mask_alpha = 0
                 inpainting_fill = 1
                 restore_faces = False
