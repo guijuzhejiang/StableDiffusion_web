@@ -1859,7 +1859,7 @@ class OperatorSD(Operator):
                             # None, None,
                             # False, None, None, False, 50,
                             # tiled_diffsuion
-                            True if _selected_place !=0 or _selected_place != 6 else False, 'MultiDiffusion', False, True, 1024, 1024, 64, 64, 32, 8, 'None', 2, True, 10, 1, 1,
+                            True if _selected_place != 0 and _selected_place != 6 else False, 'MultiDiffusion', False, True, 1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
                              64, False, False, False, False, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
                              False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
                              '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
@@ -1867,7 +1867,7 @@ class OperatorSD(Operator):
                              '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
                              False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
                             # tiled_vae
-                            True, 256, 64, True, True, True, False
+                            True, 256, 48, True, True, True, False
                             ]
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 50})
