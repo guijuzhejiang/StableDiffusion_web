@@ -602,7 +602,7 @@ lora_mirage_dict = {
          'prompt': '<lora:neowrsk_v2:0.7>,<lora:[LoHa] Octans八分儀 Stylev2:1>,Megalophobia,giant phobia,cloud,low angle,chaosmix, chaos, horror,neowrsk,octans,flying spacecraft, floating in the sky, spaceship,cyberpunk aesthetics, electrical storm, plasma turret fire, interstellar warfare, tension, decaying space station backdrop, ominous, nebula-filled cosmos, (huge:1.5),from below, red theme, mysterious, ethereal, sharp focus,hot pinks, and glowing purples, (giant clothes), Dramatic Lighting, Bold Coloration, Vibrant Warmth,deep shadow, astonishing level of detail,Horizon composition,universe,Hal\'s Mobile Castle,Huge Sky Castle',
          },
     2: {'label': '恐怖死神',
-         'prompt': '<lora:Ghost Concept_v1.0:0.7>,visually stunning,elegant,incredible details,g0s1, faceless,no humans,cloak,robe,torn clothes,torn fabric,floating, grim reaper,black reaper,<lora:f1nt - Fantasy:0.5>,f1nt,fantasy theme,horror \(theme\),scythe,holding scythe, death,ghost,hood',
+         'prompt': '<lora:Ghost Concept_v1.0:0.7>,visually stunning,elegant,incredible details,g0s1, faceless,no humans,cloak,robe,torn clothes,torn fabric,floating, grim reaper,black reaper,fantasy theme,horror \(theme\),scythe,holding scythe, death,ghost,hood',
          },
     3: {'label': '星际大战',
         'prompt': '<lora:末日-宇宙（场景）_v1.0:0.6>,horror,(A huge spaceship:1.5),(solo:1.5),(A rectangular spacecraft resembling the shape of an aircraft carrier:1.5),Full of art,Cosmic galaxy background,Doomsday scenario,Crumbling earth,a volcano erupts,energy blast,The fleeing spaceship',

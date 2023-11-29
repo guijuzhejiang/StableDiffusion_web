@@ -78,7 +78,7 @@ lora_place_dict = {
          },
     #死神，效果不好
     17: {'label': '死神',
-         'prompt': "<lora:Ghost Concept_v1.0:0.7>,visually stunning,elegant,g0s1,faceless,cloak,robe,torn clothes,torn fabric,floating,grim reaper,black reaper,<lora:f1nt - Fantasy:0.5>,f1nt,fantasy theme,horror \(theme\),scythe,holding scythe,death,ghost,hood,",
+         'prompt': "<lora:Ghost Concept_v1.0:0.7>,visually stunning,elegant,g0s1,faceless,cloak,robe,torn clothes,torn fabric,floating,grim reaper,black reaper,fantasy theme,horror \(theme\),scythe,holding scythe,death,ghost,hood,",
          },
 }
 
