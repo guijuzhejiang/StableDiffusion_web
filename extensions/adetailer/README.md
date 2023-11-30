@@ -1,6 +1,6 @@
-# !After Detailer
+# ADetailer
 
-!After Detailer is a extension for stable diffusion webui, similar to Detection Detailer, except it uses ultralytics instead of the mmdet.
+ADetailer is a extension for stable diffusion webui, similar to Detection Detailer, except it uses ultralytics instead of the mmdet.
 
 ## Install
 
@@ -22,15 +22,17 @@ You **DON'T** need to download any model from huggingface.
 
 ## Options
 
-| Model, Prompts                    |                                       |                                                   |
-| --------------------------------- | ------------------------------------- | ------------------------------------------------- |
-| ADetailer model                   | Determine what to detect.             | `None` = disable                                  |
-| ADetailer prompt, negative prompt | Prompts and negative prompts to apply | If left blank, it will use the same as the input. |
+| Model, Prompts                    |                                                                                   |                                                   |
+| --------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------- |
+| ADetailer model                   | Determine what to detect.                                                         | `None` = disable                                  |
+| ADetailer prompt, negative prompt | Prompts and negative prompts to apply                                             | If left blank, it will use the same as the input. |
+| Skip img2img                      | Skip img2img. In practice, this works by changing the step count of img2img to 1. | img2img only                                      |
 
-| Detection                            |                                                                                              |     |
-| ------------------------------------ | -------------------------------------------------------------------------------------------- | --- |
-| Detection model confidence threshold | Only objects with a detection model confidence above this threshold are used for inpainting. |     |
-| Mask min/max ratio                   | Only use masks whose area is between those ratios for the area of the entire image.          |     |
+| Detection                            |                                                                                              |              |
+| ------------------------------------ | -------------------------------------------------------------------------------------------- | ------------ |
+| Detection model confidence threshold | Only objects with a detection model confidence above this threshold are used for inpainting. |              |
+| Mask min/max ratio                   | Only use masks whose area is between those ratios for the area of the entire image.          |              |
+| Mask only the top k largest          | Only use the k objects with the largest area of the bbox.                                    | 0 to disable |
 
 If you want to exclude objects in the background, try setting the min ratio to around `0.01`.
 
@@ -44,15 +46,26 @@ Applied in this order: x, y offset → erosion/dilation → merge/invert.
 
 #### Inpainting
 
-![image](https://i.imgur.com/wyWlT1n.png)
-
-Each option corresponds to a corresponding option on the inpaint tab.
+Each option corresponds to a corresponding option on the inpaint tab. Therefore, please refer to the inpaint tab for usage details on how to use each option.
 
 ## ControlNet Inpainting
 
 You can use the ControlNet extension if you have ControlNet installed and ControlNet models.
 
-Support `inpaint, scribble, lineart, openpose, tile` controlnet models. Once you choose a model, the preprocessor is set automatically.
+Support `inpaint, scribble, lineart, openpose, tile` controlnet models. Once you choose a model, the preprocessor is set automatically. It works separately from the model set by the Controlnet extension.
+
+## Advanced Options
+
+API request example: [wiki/API](https://github.com/Bing-su/adetailer/wiki/API)
+
+`ui-config.json` entries: [wiki/ui-config.json](https://github.com/Bing-su/adetailer/wiki/ui-config.json)
+
+`[SEP], [SKIP]` tokens: [wiki/Advanced](https://github.com/Bing-su/adetailer/wiki/Advanced)
+
+## Media
+
+- 🎥 [どこよりも詳しいAfter Detailer (adetailer)の使い方① 【Stable Diffusion】](https://youtu.be/sF3POwPUWCE)
+- 🎥 [どこよりも詳しいAfter Detailer (adetailer)の使い方② 【Stable Diffusion】](https://youtu.be/urNISRdbIEg)
 
 ## Model
 
@@ -69,37 +82,16 @@ Support `inpaint, scribble, lineart, openpose, tile` controlnet models. Once you
 
 The yolo models can be found on huggingface [Bingsu/adetailer](https://huggingface.co/Bingsu/adetailer).
 
-### User Model
+### Additional Model
 
-Put your [ultralytics](https://github.com/ultralytics/ultralytics) model in `webui/models/adetailer`. The model name should end with `.pt` or `.pth`.
+Put your [ultralytics](https://github.com/ultralytics/ultralytics) yolo model in `webui/models/adetailer`. The model name should end with `.pt` or `.pth`.
 
 It must be a bbox detection or segment model and use all label.
 
-### Dataset
+## How it works
 
-Datasets used for training the yolo models are:
+ADetailer works in three simple steps.
 
-#### Face
-
-- [Anime Face CreateML](https://universe.roboflow.com/my-workspace-mph8o/anime-face-createml)
-- [xml2txt](https://universe.roboflow.com/0oooooo0/xml2txt-njqx1)
-- [AN](https://universe.roboflow.com/sed-b8vkf/an-lfg5i)
-- [wider face](http://shuoyang1213.me/WIDERFACE/index.html)
-
-#### Hand
-
-- [AnHDet](https://universe.roboflow.com/1-yshhi/anhdet)
-- [hand-detection-fuao9](https://universe.roboflow.com/catwithawand/hand-detection-fuao9)
-
-#### Person
-
-- [coco2017](https://cocodataset.org/#home) (only person)
-- [AniSeg](https://github.com/jerryli27/AniSeg)
-- [skytnt/anime-segmentation](https://huggingface.co/datasets/skytnt/anime-segmentation)
-
-## Example
-
-![image](https://i.imgur.com/38RSxSO.png)
-![image](https://i.imgur.com/2CYgjLx.png)
-
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/F1F1L7V2N)
+1. Create an image.
+2. Detect object with a detection model and create a mask image.
+3. Inpaint using the image from 1 and the mask from 2.

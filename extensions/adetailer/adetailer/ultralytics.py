@@ -4,6 +4,7 @@ from pathlib import Path
 
 import cv2
 from PIL import Image
+from torchvision.transforms.functional import to_pil_image
 
 from adetailer import PredictOutput
 from adetailer.common import create_mask_from_bbox
@@ -16,8 +17,6 @@ def ultralytics_predict(
     device: str = "",
 ) -> PredictOutput:
     from ultralytics import YOLO
-
-    model_path = str(model_path)
 
     model = YOLO(model_path)
     pred = model(image, conf=confidence, device=device)
@@ -48,7 +47,5 @@ def mask_to_pil(masks, shape: tuple[int, int]) -> list[Image.Image]:
     shape: tuple[int, int]
         (width, height) of the original image
     """
-    from torchvision.transforms.functional import to_pil_image
-
     n = masks.shape[0]
     return [to_pil_image(masks[i], mode="L").resize(shape) for i in range(n)]

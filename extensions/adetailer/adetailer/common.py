@@ -10,6 +10,7 @@ from PIL import Image, ImageDraw
 from rich import print
 
 repo_id = "Bingsu/adetailer"
+_download_failed = False
 
 
 @dataclass
@@ -20,34 +21,41 @@ class PredictOutput:
 
 
 def hf_download(file: str):
+    global _download_failed
+
+    if _download_failed:
+        return "INVALID"
+
     try:
         path = hf_hub_download(repo_id, file)
     except Exception:
         msg = f"[-] ADetailer: Failed to load model {file!r} from huggingface"
         print(msg)
         path = "INVALID"
+        _download_failed = True
     return path
 
 
+def scan_model_dir(path_: str | Path) -> list[Path]:
+    if not path_ or not (path := Path(path_)).is_dir():
+        return []
+    return [p for p in path.rglob("*") if p.is_file() and p.suffix in (".pt", ".pth")]
+
+
 def get_models(
-    model_dir: Union[str, Path], huggingface: bool = True
-) -> OrderedDict[str, Optional[str]]:
-    model_dir = Path(model_dir)
-    if model_dir.is_dir():
-        model_paths = [
-            p
-            for p in model_dir.rglob("*")
-            if p.is_file() and p.suffix in (".pt", ".pth")
-        ]
-    else:
-        model_paths = []
+    model_dir: str | Path, extra_dir: str | Path = "", huggingface: bool = True
+) -> OrderedDict[str, str | None]:
+    model_paths = [*scan_model_dir(model_dir), *scan_model_dir(extra_dir)]
 
     models = OrderedDict()
     if huggingface:
         models.update(
             {
-                "face_yolov8m.pt": hf_download("face_yolov8m.pt"),
-                "hand_yolov8s.pt": hf_download("hand_yolov8s.pt"),
+                "face_yolov8n.pt": hf_download("face_yolov8n.pt"),
+                "face_yolov8s.pt": hf_download("face_yolov8s.pt"),
+                "hand_yolov8n.pt": hf_download("hand_yolov8n.pt"),
+                "person_yolov8n-seg.pt": hf_download("person_yolov8n-seg.pt"),
+                "person_yolov8s-seg.pt": hf_download("person_yolov8s-seg.pt"),
             }
         )
     models.update(

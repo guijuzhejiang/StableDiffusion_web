@@ -1,5 +1,105 @@
 # Changelog
 
+## 2023-10-30
+
+- v23.11.0
+- 이미지의 인덱스 계산방법 변경
+  - webui 1.1.0 미만에서 adetailer 실행 불가능하게 함
+- 컨트롤넷 preprocessor 선택지 늘림
+- 추가 yolo 모델 디렉터리를 설정할 수 있는 옵션 추가
+- infotext에 `/`가 있는 항목이 exif에서 복원되지 않는 문제 수정
+  - 이전 버전에 생성된 이미지는 여전히 복원안됨
+- 같은 탭에서 항상 같은 시드를 적용하게 하는 옵션 추가
+- 컨트롤넷 1.1.411 (f2aafcf2beb99a03cbdf7db73852228ccd6bd1d6) 버전을 사용중일 경우,
+  webui 버전 1.6.0 미만에서 사용할 수 없다는 메세지 출력
+
+## 2023-10-15
+
+- v23.10.1
+- xyz grid에 prompt S/R 추가
+- img2img에서 steps가 1일때 에러가 발생하는 샘플러의 처리를 위해 샘플러 이름도 변경하게 수정
+
+## 2023-10-07
+
+- v23.10.0
+- 허깅페이스 모델을 다운로드 실패했을 때, 계속 다운로드를 시도하지 않음
+- img2img에서 img2img단계를 건너뛰는 기능 추가
+- live preview에서 감지 단계를 보여줌 (PR #352)
+
+## 2023-09-20
+
+- v23.9.3
+- ultralytics 버전 8.0.181로 업데이트 (https://github.com/ultralytics/ultralytics/pull/4891)
+- mediapipe와 ultralytics의 lazy import
+
+## 2023-09-10
+
+- v23.9.2
+- (실험적) VAE 선택 기능
+
+## 2023-09-01
+
+- v23.9.1
+- webui 1.6.0에 추가된 인자를 사용해서 생긴 하위 호환 문제 수정
+
+## 2023-08-31
+
+- v23.9.0
+- (실험적) 체크포인트 선택기능
+  - 버그가 있어 리프레시 버튼은 구현에서 빠짐
+- 1.6.0 업데이트에 따라 img2img에서 사용불가능한 샘플러를 선택했을 때 더이상 Euler로 변경하지 않음
+- 유효하지 않은 인자가 전달되었을 때, 에러를 일으키지 않고 대신 adetailer를 비활성화함
+
+
+## 2023-08-25
+
+- v23.8.1
+- xyz grid에서 model을 `None`으로 설정한 이후에 adetailer가 비활성화 되는 문제 수정
+- skip을 눌렀을 때 진행을 멈춤
+- `--medvram-sdxl`을 설정했을 때에도 cpu를 사용하게 함
+
+## 2023-08-14
+
+- v23.8.0
+- `[PROMPT]` 키워드 추가. `ad_prompt` 또는 `ad_negative_prompt`에 사용하면 입력 프롬프트로 대체됨 (PR #243)
+- Only top k largest 옵션 추가 (PR #264)
+- ultralytics 버전 업데이트
+
+
+## 2023-07-31
+
+- v23.7.11
+- separate clip skip 옵션 추가
+- install requirements 정리 (ultralytics 새 버전, mediapipe~=3.20)
+
+## 2023-07-28
+
+- v23.7.10
+- ultralytics, mediapipe import문 정리
+- traceback에서 컬러를 없앰 (api 때문), 라이브러리 버전도 보여주게 설정.
+- huggingface_hub, pydantic을 install.py에서 없앰
+- 안쓰는 컨트롤넷 관련 코드 삭제
+
+
+## 2023-07-23
+
+- v23.7.9
+- `ultralytics.utils` ModuleNotFoundError 해결 (https://github.com/ultralytics/ultralytics/issues/3856)
+- `pydantic` 2.0 이상 버전 설치안되도록 함
+- `controlnet_dir` cmd args 문제 수정 (PR #107)
+
+## 2023-07-20
+
+- v23.7.8
+- `paste_field_names` 추가했던 것을 되돌림
+
+## 2023-07-19
+
+- v23.7.7
+- 인페인팅 단계에서 별도의 샘플러를 선택할 수 있게 옵션을 추가함 (xyz그리드에도 추가)
+- webui 1.0.0-pre 이하 버전에서 batch index 문제 수정
+- 스크립트에 `paste_field_names`을 추가함. 사용되는지는 모르겠음
+
 ## 2023-07-16
 
 - v23.7.6
