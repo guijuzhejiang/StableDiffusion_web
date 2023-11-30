@@ -554,12 +554,12 @@ class OperatorSD(Operator):
                          'is_api': ()}
             sam_args = [0,
                         adetail_enabled, face_args, hand_args,  # adetail args
-                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
-                        # controlnet args
+                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3, # controlnet args
+                        # sam
                         True, False, 0, _init_img,
                         sam_result_tmp_png_fp,
                         0,  # sam_output_chosen_mask
-                        False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                        False, sam_result_tmp_png_fp, [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                         '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
                         True, True, '',
                         # tiled diffsuion
@@ -659,12 +659,12 @@ class OperatorSD(Operator):
                          'is_api': ()}
             sam_args = [0,
                         adetail_enabled, face_args, hand_args,  # adetail args
-                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
-                        # controlnet args
+                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3, # controlnet args
+                        # sam
                         True, False, 0, _init_img,
                         sam_result_tmp_png_fp,
                         0,  # sam_output_chosen_mask
-                        False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                        False, sam_result_tmp_png_fp, [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                         '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
                         True, True, '',
                         # tiled diffsuion
@@ -772,12 +772,12 @@ class OperatorSD(Operator):
                          'is_api': ()}
             sam_args = [0,
                         adetail_enabled, face_args, hand_args,  # adetail args
-                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
-                        # controlnet args
+                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3, # controlnet args
+                        # sam
                         True, False, 0, _init_img,
                         sam_result_tmp_png_fp,
                         0,  # sam_output_chosen_mask
-                        False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                        False, sam_result_tmp_png_fp, [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                         '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
                         True, True, '',
                         # tiled diffsuion
@@ -872,12 +872,12 @@ class OperatorSD(Operator):
                          'is_api': ()}
             sam_args = [0,
                         adetail_enabled, face_args, hand_args,  # adetail args
-                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
-                        # controlnet args
+                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3, # controlnet args
+                        # sam
                         True, False, 0, _init_img,
                         sam_result_tmp_png_fp,
                         0,  # sam_output_chosen_mask
-                        False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                        False, sam_result_tmp_png_fp, [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                         '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
                         True, True, '',
                         # tiled diffsuion
@@ -983,12 +983,12 @@ class OperatorSD(Operator):
                          'is_api': ()}
             sam_args = [0,
                         adetail_enabled, face_args, hand_args,  # adetail args
-                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
-                        # controlnet args
+                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3, # controlnet args
+                        # sam
                         True, False, 0, _init_img,
                         sam_result_tmp_png_fp,
                         0,  # sam_output_chosen_mask
-                        False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                        False, sam_result_tmp_png_fp, [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                         '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
                         True, True, '',
                         # tiled diffsuion
@@ -1089,7 +1089,7 @@ class OperatorSD(Operator):
                         True, False, 0, _init_img,
                         sam_result_tmp_png_fp,
                         0,  # sam_output_chosen_mask
-                        False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                        False, sam_result_tmp_png_fp, [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                         '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
                         True, True, '',
                         # tiled diffsuion
@@ -1316,7 +1316,7 @@ class OperatorSD(Operator):
                     True, False, 0, _init_img,
                     sam_result_tmp_png_fp,
                     0,  # sam_output_chosen_mask
-                    False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                    False, sam_result_tmp_png_fp, [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                     '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
                     True, True, '',
                     # tiled diffsuion
@@ -1474,8 +1474,8 @@ class OperatorSD(Operator):
             controlnet_args_unit3.enabled = False
             sam_args = [0,
                         adetail_enabled, face_args, hand_args,  # adetail args
-                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
-                        # controlnet args
+                        controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3, # controlnet args
+                        # sam
                         False,  # inpaint_upload_enable
                         False, 0, _init_img,
                         [],
@@ -2609,12 +2609,12 @@ class OperatorSD(Operator):
                 sam_args = [0,
                             adetail_enabled, face_args, hand_args,  # adetail args
                             controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,  # controlnet args
+                            # sam
                             True, False, 0, resized_input_image if _model_mode == 0 else resized_clothing_image,
                             sam_result_tmp_png_fp,
                             0,  # sam_output_chosen_mask
-                            False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
-                            '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                            True, True, '',
+                            False, sam_result_tmp_png_fp, [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                            False, 0, None, None,
                             # tiled diffsuion
                             False, 'MultiDiffusion', False, True,
                             1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
@@ -2753,14 +2753,13 @@ class OperatorSD(Operator):
 
                     sam_args = [0,
                                 adetail_enabled, face_args, hand_args,  # adetail args
-                                controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
-                                # controlnet args
+                                controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3, # controlnet args
+                                # sam
                                 True, False, 0, ok_model_res,
                                 sam_bg_tmp_png_fp_list[ok_idx],
                                 0,  # sam_output_chosen_mask
-                                False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
-                                '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                                True, True, '',
+                                False, sam_bg_tmp_png_fp_list[ok_idx], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                                False, 0, None, None,
                                 # tiled diffsuion
                                 False, 'MultiDiffusion', False, True,
                                 1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
