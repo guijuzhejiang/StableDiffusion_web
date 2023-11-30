@@ -595,7 +595,7 @@ lora_avatar_dict = {
 }
 
 lora_mirage_dict = {
-    0: {'label': '侏罗纪',
+    12: {'label': '侏罗纪',
         'prompt': '<lora:侏罗纪花园_v1.0:0.7>,horror,deep shadow, large Tyrannosaurus Rex, forest, trees,huge waterfall, river',
         },
     1: {'label': '巨大战舰',
@@ -631,7 +631,7 @@ lora_mirage_dict = {
     11: {'label': '蓬莱仙岛',
          'prompt': '<lora:(LIb首发)CG古风大场景类_v2.0:1>,HD,cg,Chinese CG scene,unreal 5 engine,floating island,abg,large waterfall left in the middle,rain,huge peaks',
          },
-    12: {'label': '赛博朋克',
+    0: {'label': '赛博朋克',
         'prompt': '<lora:Cyberpunk sceneV1:0.7>,Megalophobia,giant phobia,cloud,low angle,chaosmix,chaos,horror,tooimage cyberpunk futuristic city,flying spacecraft,floating in the sky,spaceship,cyberpunk aesthetics,electrical storm,plasma turret fire,interstellar warfare,tension,decaying space station backdrop,ominous,nebula-filled cosmos,(huge:1.5),from below,red theme,mysterious,ethereal,sharp focus,hot pinks,and glowing purples,(giant clothes),Dramatic Lighting,Bold Coloration, Vibrant Warmth,deep shadow, astonishing level of detail,Horizon composition,universe,Hal\'s Mobile Castle,Huge Sky Castle',
         },
 }

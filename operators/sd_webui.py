@@ -1842,7 +1842,7 @@ class OperatorSD(Operator):
                             False, sam_result_tmp_png_fp, [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                             False, 0, None, None,
                             # tiled diffsuion
-                            False if _selected_place == 0 or _selected_place == 6 else True, 'MultiDiffusion', False, True, 1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
+                            False if _selected_place == 12 or _selected_place == 6 else True, 'MultiDiffusion', False, True, 1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
                              64, False, False, False, False, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
                              False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
                              '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
@@ -1850,7 +1850,7 @@ class OperatorSD(Operator):
                              '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
                              False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
                             # tiled_vae
-                            False if _selected_place == 0 or _selected_place == 6 else True, 256, 48, True, True, True, False
+                            False if _selected_place == 12 or _selected_place == 6 else True, 256, 48, True, True, True, False
                             ]
 
                 # celery_task.update_state(state='PROGRESS', meta={'progress': 50})
