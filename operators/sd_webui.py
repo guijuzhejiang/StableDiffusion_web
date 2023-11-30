@@ -1726,7 +1726,7 @@ class OperatorSD(Operator):
 
                     sam_result_tmp_png_fp = []
                     for resized_img_type, cache_image in zip(["resized_input", "resized_mask", "resized_clothing"],
-                                                             [sam_image, mask_image, sam_image]):
+                                                             [sam_result[0], mask_image, sam_image]):
                         cache_fp = f"tmp/mirage_{resized_img_type}_{pic_name}.png"
                         cache_image.save(cache_fp)
                         sam_result_tmp_png_fp.append({'name': cache_fp})
@@ -1738,7 +1738,8 @@ class OperatorSD(Operator):
 
                 # img2img generate bg
                 prompt_styles = None
-                init_img = sam_image
+                # init_img = sam_image
+                init_img = _input_image
 
                 sketch = None
                 init_img_with_mask = None
@@ -1766,9 +1767,9 @@ class OperatorSD(Operator):
                 seed_enable_extras = False
                 selected_scale_tab = 0
                 scale_by = 1
-                resize_mode = 2  # 1: crop and resize 2: resize and fill
+                resize_mode = 0  # 1: crop and resize 2: resize and fill
                 inpaint_full_res = 0  # choices=["Whole picture", "Only masked"]
-                inpaint_full_res_padding = 0
+                inpaint_full_res_padding = 32
                 inpainting_mask_invert = 1  # Mask mode 0: Inpaint masked - 1: Inpaint not masked
                 img2img_batch_input_dir = ''
                 img2img_batch_output_dir = ''
@@ -1784,9 +1785,9 @@ class OperatorSD(Operator):
                 controlnet_args_unit1.guidance_start = 0  # ending control step
                 controlnet_args_unit1.low_vram = False
                 controlnet_args_unit1.loopback = False
-                controlnet_args_unit1.processor_res = 512
+                # controlnet_args_unit1.processor_res = 512
                 controlnet_args_unit1.threshold_a = 0.5
-                controlnet_args_unit1.threshold_b = 64
+                controlnet_args_unit1.threshold_b = -1
                 controlnet_args_unit1.model = 'None'
                 controlnet_args_unit1.module = 'reference_adain+attn'
                 controlnet_args_unit1.pixel_perfect = True
@@ -1810,8 +1811,8 @@ class OperatorSD(Operator):
                 controlnet_args_unit2.model = 'control_v11e_sd15_shuffle'
                 controlnet_args_unit2.module = 'shuffle'
                 controlnet_args_unit2.control_mode = 'Balanced'
-                controlnet_args_unit2.threshold_a = 64
-                controlnet_args_unit2.threshold_b = 64
+                controlnet_args_unit2.threshold_a = -1
+                controlnet_args_unit2.threshold_b = -1
 
                 # depth
                 controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
@@ -1835,12 +1836,11 @@ class OperatorSD(Operator):
                             adetail_enabled, face_args, hand_args,  # adetail args
                             controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,  # controlnet args
                             # sam
-                            True, False, 0, sam_image,
+                            True, False, 0, _input_image,
                             sam_result_tmp_png_fp,
                             0,  # sam_output_chosen_mask
-                            False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
-                            '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
-                            True, True, '',
+                            False, sam_result_tmp_png_fp, [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                            False, 0, None, None,
                             # tiled diffsuion
                             False if _selected_place == 0 or _selected_place == 6 else True, 'MultiDiffusion', False, True, 1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
                              64, False, False, False, False, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
