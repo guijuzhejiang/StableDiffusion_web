@@ -15,6 +15,7 @@ import io
 import importlib
 import json
 import os
+import re
 import sys
 import urllib.parse
 from collections import OrderedDict
@@ -2957,11 +2958,22 @@ class OperatorSD(Operator):
 
                     return {'success': True, 'result': img_urls}
             else:
+                pattern = re.compile(r"user_(.*?)_history")
+                match = pattern.search(kwargs['input_image'])
+
+                if match:
+                    _input_image_mode = match.group(1)
+                else:
+                    _input_image_mode = 'facer'
                 # hires
-                if self.shared.sd_model.sd_checkpoint_info.model_name != 'chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting':
-                    self.shared.change_sd_model('chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting')
-                # elif self.shared.sd_model.sd_checkpoint_info.model_name == 'chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting':
-                #     self.shared.change_sd_model('dreamshaper_8')
+                if _input_image_mode == 'avatar' or _input_image_mode == 'mirage':
+                    if self.shared.sd_model.sd_checkpoint_info.model_name != 'dreamshaper_8':
+                        self.shared.change_sd_model('dreamshaper_8')
+                elif _input_image_mode == 'facer':
+                    pass
+                else:
+                    if self.shared.sd_model.sd_checkpoint_info.model_name != 'chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting':
+                        self.shared.change_sd_model('chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting')
 
                 params = ujson.loads(kwargs['params'][0])
                 # _input_image = base64_to_pil(params['input_image'])
@@ -3124,8 +3136,8 @@ class OperatorSD(Operator):
                     return {'success': True}
 
                 gfpgan_weight = 0
-                codeformer_visibility = 1 if proceed_mode == 'model' else 0
-                args = (0, scales, None, None, True, 'ESRGAN_4x', 'None', 0, gfpgan_weight, codeformer_visibility, 0 if proceed_mode == 'model' else 1)
+                codeformer_visibility = 1 if _input_image_mode == 'model' else 0
+                args = (0, scales, None, None, True, 'R-ESRGAN 4x+', 'None', 0, gfpgan_weight, codeformer_visibility, 0 if _input_image_mode == 'model' else 1)
                 assert cnet_res_img, 'image not selected'
                 self.devices.torch_gc()
                 pp = self.scripts_postprocessing.PostprocessedImage(cnet_res_img.convert("RGB"))
