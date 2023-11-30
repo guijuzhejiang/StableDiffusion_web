@@ -498,7 +498,7 @@ class OperatorSD(Operator):
             sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
             cfg_scale = 10
             resize_mode = 2  # resize and fill
-            mask_blur = 4
+            mask_blur = 0
             inpainting_mask_invert = 0  # inpaint masked
             inpaint_full_res = 1  # choices=["Whole picture", "Only masked"]
             inpainting_fill = 1  # masked content original
@@ -521,7 +521,7 @@ class OperatorSD(Operator):
                          'ad_negative_prompt': '',
                          'ad_confidence': 0.3,
                          'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
-                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 0,
                          'ad_denoising_strength': 0.4,
                          'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
                          'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
@@ -539,7 +539,7 @@ class OperatorSD(Operator):
                          'ad_negative_prompt': '',
                          'ad_confidence': 0.3,
                          'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
-                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 0,
                          'ad_denoising_strength': 0.4,
                          'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
                          'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
@@ -599,7 +599,7 @@ class OperatorSD(Operator):
             sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
             cfg_scale = 10
             resize_mode = 0  # just resize
-            mask_blur = 4
+            mask_blur = 0
             inpainting_mask_invert = 0  # inpaint masked
             inpaint_full_res = 1  # choices=["Whole picture", "Only masked"]
             inpainting_fill = 1  # masked content: original
@@ -623,7 +623,7 @@ class OperatorSD(Operator):
                          'ad_confidence': 0.3,
                          'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
                          'ad_y_offset': 0,
-                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 0,
                          'ad_denoising_strength': 0.4,
                          'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
                          'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
@@ -643,7 +643,7 @@ class OperatorSD(Operator):
                          'ad_confidence': 0.3,
                          'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
                          'ad_y_offset': 0,
-                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 0,
                          'ad_denoising_strength': 0.4,
                          'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
                          'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
@@ -712,7 +712,7 @@ class OperatorSD(Operator):
             sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
             cfg_scale = 10
             resize_mode = 2  # resize and fill
-            mask_blur = 4
+            mask_blur = 0
             inpainting_mask_invert = 0  # inpaint masked
             inpaint_full_res = 1  # choices=["Whole picture", "Only masked"]
             inpainting_fill = 1  # masked content: original
@@ -736,7 +736,7 @@ class OperatorSD(Operator):
                          'ad_confidence': 0.3,
                          'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
                          'ad_y_offset': 0,
-                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 0,
                          'ad_denoising_strength': 0.4,
                          'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
                          'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
@@ -756,7 +756,7 @@ class OperatorSD(Operator):
                          'ad_confidence': 0.3,
                          'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
                          'ad_y_offset': 0,
-                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 0,
                          'ad_denoising_strength': 0.4,
                          'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
                          'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
@@ -812,7 +812,7 @@ class OperatorSD(Operator):
             sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
             cfg_scale = 10
             resize_mode = 0  # just resize
-            mask_blur = 4
+            mask_blur = 0
             inpainting_mask_invert = 0  # inpaint masked
             inpaint_full_res = 1  # choices=["Whole picture", "Only masked"]
             inpainting_fill = 1  # masked content: original
@@ -836,7 +836,7 @@ class OperatorSD(Operator):
                          'ad_confidence': 0.3,
                          'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
                          'ad_y_offset': 0,
-                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 0,
                          'ad_denoising_strength': 0.4,
                          'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
                          'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
@@ -856,7 +856,7 @@ class OperatorSD(Operator):
                          'ad_confidence': 0.3,
                          'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
                          'ad_y_offset': 0,
-                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 0,
                          'ad_denoising_strength': 0.4,
                          'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
                          'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
@@ -923,7 +923,7 @@ class OperatorSD(Operator):
             sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
             cfg_scale = 10
             resize_mode = 0  # just resize
-            mask_blur = 4
+            mask_blur = 0
             inpainting_mask_invert = 0  # inpaint masked
             inpaint_full_res = 1  # choices=["Whole picture", "Only masked"]
             inpainting_fill = 1  # masked content: original
@@ -947,7 +947,7 @@ class OperatorSD(Operator):
                          'ad_confidence': 0.3,
                          'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
                          'ad_y_offset': 0,
-                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 0,
                          'ad_denoising_strength': 0.4,
                          'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
                          'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
@@ -967,7 +967,7 @@ class OperatorSD(Operator):
                          'ad_confidence': 0.3,
                          'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
                          'ad_y_offset': 0,
-                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 0,
                          'ad_denoising_strength': 0.4,
                          'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
                          'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
@@ -1024,7 +1024,7 @@ class OperatorSD(Operator):
             sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
             cfg_scale = 10
             resize_mode = 0  # just resize
-            mask_blur = 4
+            mask_blur = 0
             inpainting_mask_invert = 0  # inpaint masked
             inpaint_full_res = 0  # choices=["Whole picture", "Only masked"]
             inpainting_fill = 1  # masked content: original
@@ -1048,7 +1048,7 @@ class OperatorSD(Operator):
                          'ad_confidence': 0.3,
                          'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
                          'ad_y_offset': 0,
-                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 0,
                          'ad_denoising_strength': 0.4,
                          'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
                          'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
@@ -1068,7 +1068,7 @@ class OperatorSD(Operator):
                          'ad_confidence': 0.3,
                          'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
                          'ad_y_offset': 0,
-                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                         'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 0,
                          'ad_denoising_strength': 0.4,
                          'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
                          'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
@@ -1192,7 +1192,7 @@ class OperatorSD(Operator):
                      'ad_confidence': 0.3,
                      'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
                      'ad_y_offset': 0,
-                     'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                     'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 0,
                      'ad_denoising_strength': 0.4,
                      'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
                      'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
@@ -1212,7 +1212,7 @@ class OperatorSD(Operator):
                      'ad_confidence': 0.3,
                      'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0,
                      'ad_y_offset': 0,
-                     'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                     'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 0,
                      'ad_denoising_strength': 0.4,
                      'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
                      'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
@@ -1228,7 +1228,7 @@ class OperatorSD(Operator):
                      'is_api': ()}
 
         cfg_scale = 10
-        mask_blur = 20
+        mask_blur = 0
         resize_mode = 0  # just resize
         sampler_index = 15
         inpaint_full_res = 0 if _task_type == 'haircut' else 1 # choices=["Whole picture", "Only masked"]
@@ -1436,7 +1436,7 @@ class OperatorSD(Operator):
         inpainting_fill = 1  # masked content original
         denoising_strength = _denoising
         steps = 20
-        mask_blur = 4
+        mask_blur = 0
         adetail_enabled = False
         face_args = {}
         hand_args = {}
@@ -1714,8 +1714,8 @@ class OperatorSD(Operator):
                 _input_image_width, _input_image_height = _input_image.size
 
                 # sam predict person
-                sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, 'person.bag.glasses.ornaments',
-                                                                0.3, _input_image)
+                sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, 'person.bag',
+                                                                0.4, _input_image)
 
                 if len(sam_result) > 0:
                     sam_image = sam_result[2]
@@ -1755,7 +1755,7 @@ class OperatorSD(Operator):
                 tiling = False
                 n_iter = 1
                 batch_size = _batch_size
-                cfg_scale = 7
+                cfg_scale = 10
                 image_cfg_scale = 1.5
                 denoising_strength = 1
                 seed = -1.0
@@ -2508,7 +2508,7 @@ class OperatorSD(Operator):
                 init_mask_inpaint = None
                 steps = 30
                 sampler_index = 18  # sampling method modules/sd_samplers_kdiffusion.py
-                mask_blur = 4
+                mask_blur = 0
                 mask_alpha = 0
                 inpainting_fill = 1
                 restore_faces = False
@@ -2570,7 +2570,7 @@ class OperatorSD(Operator):
                              'ad_negative_prompt': '2 head,poorly drawn face,ugly,cloned face,blurred faces,irregular face',
                              'ad_confidence': 0.3,
                              'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
-                             'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                             'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 0,
                              'ad_denoising_strength': 0.4,
                              'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
                              'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512, 'ad_inpaint_height': 512,
@@ -2585,7 +2585,7 @@ class OperatorSD(Operator):
                              'ad_negative_prompt': 'mutated hands, bad hands, poorly drawn hands,3 hand,3 hand,twisted hands,fused fingers,too many fingers,duplicate,poorly drawn hands,extra fingers',
                              'ad_confidence': 0.3,
                              'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
-                             'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                             'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 0,
                              'ad_denoising_strength': 0.4,
                              'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
                              'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512, 'ad_inpaint_height': 512,
@@ -2988,7 +2988,7 @@ class OperatorSD(Operator):
                     inpaint_color_sketch_orig = None
                     init_img_inpaint = None
                     init_mask_inpaint = None
-                    mask_blur = 4
+                    mask_blur = 0
                     mask_alpha = 0
                     inpainting_fill = 1
                     restore_faces = False
@@ -3043,7 +3043,7 @@ class OperatorSD(Operator):
                     fake_args = {'ad_model': 'face_yolov8m.pt', 'ad_prompt': '', 'ad_negative_prompt': '',
                                  'ad_confidence': 0.3,
                                  'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0,
-                                 'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4,
+                                 'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 0,
                                  'ad_denoising_strength': 0.4,
                                  'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32,
                                  'ad_use_inpaint_width_height': False, 'ad_inpaint_width': 512,
