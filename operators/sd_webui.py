@@ -1810,11 +1810,22 @@ class OperatorSD(Operator):
                 controlnet_args_unit2.model = 'control_v11e_sd15_shuffle'
                 controlnet_args_unit2.module = 'shuffle'
                 controlnet_args_unit2.control_mode = 'Balanced'
-                controlnet_args_unit1.threshold_a = 64
-                controlnet_args_unit1.threshold_b = 64
+                controlnet_args_unit2.threshold_a = 64
+                controlnet_args_unit2.threshold_b = 64
 
+                # depth
                 controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
-                controlnet_args_unit3.enabled = False
+                controlnet_args_unit3.enabled = True
+                controlnet_args_unit3.processor_res = 512
+                controlnet_args_unit3.image = {
+                    'image': np.array(_input_image),
+                    'mask': np.zeros(shape=_input_image.shape),
+                }
+                controlnet_args_unit3.control_mode = 'Balanced'
+                controlnet_args_unit3.model = 'control_v11f1p_sd15_depth'
+                controlnet_args_unit3.module = 'depth_midas'
+                controlnet_args_unit3.threshold_a = -1
+                controlnet_args_unit3.threshold_b = -1
 
                 # adetail
                 adetail_enabled = False
