@@ -22,6 +22,7 @@ storage_dirpath:
   user_avatar_dir: outputs/img2img-images/user_avatar_history
   user_facer_dir: outputs/img2img-images/user_facer_history
   user_mirage_dir: outputs/img2img-images/user_mirage_history
+  user_wallpaper_dir: outputs/img2img-images/user_wallpaper_history
   user_upload: outputs/img2img-images/user_upload
   user_facer_upload: outputs/img2img-images/user_facer_upload
   hires_dir: outputs/img2img-images/hires
