@@ -1727,7 +1727,7 @@ class OperatorSD(Operator):
 
                 # sam predict person
                 sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, 'person.bag',
-                                                                0.4, _input_image)
+                                                                0.6, _input_image)
 
                 if len(sam_result) > 0:
                     sam_image = sam_result[2]
@@ -2728,7 +2728,7 @@ class OperatorSD(Operator):
                 inpaint_color_sketch_orig = None
                 init_img_inpaint = None
                 init_mask_inpaint = None
-                steps = 30
+                steps = 20
                 sampler_index = 18  # sampling method modules/sd_samplers_kdiffusion.py
                 mask_blur = 0
                 mask_alpha = 0
