@@ -179,6 +179,7 @@ class OperatorSD(Operator):
         # init sam
         self.scripts.scripts_current = self.scripts.scripts_img2img
         self.scripts.scripts_img2img.initialize_scripts(is_img2img=True)
+        self.scripts.scripts_txt2img.initialize_scripts(is_img2img=False)
 
         self.cnet_idx = 3
         sam_idx = 4
