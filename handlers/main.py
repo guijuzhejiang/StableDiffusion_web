@@ -153,10 +153,10 @@ class QueryDiscount(HTTPMethodView):
             if first_charge:
                 res.append(['首次充值享8折优惠', 0.8])
 
-            start_date = date(2023, 11, 1)
-            end_date = date(2023, 11, 30)
+            start_date = date(2023, 12, 1)
+            end_date = date(2023, 12, 29)
             if start_date <= date.today() <= end_date:
-                res.append(['十一月优惠礼6折', 0.6])
+                res.append(['十二月优惠礼6折', 0.7])
 
             if len(res) > 1:
                 res.append(['多个折扣可叠加', 1])
