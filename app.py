@@ -87,7 +87,7 @@ async def main_process_start(sanic_app, loop):
 
     sanic_app.ctx.redis_session = aioredis.from_url(f"redis://localhost:6379/1", decode_responses=True)
     sanic_app.ctx.redis_session_sms = aioredis.from_url(f"redis://localhost:6379/2", decode_responses=True)
-    sanic_app.ctx.redis_session_sms.flushdb()
+    await sanic_app.ctx.redis_session_sms.flushdb()
 
     sanic_app.ctx.sd_workshop = WorkShop(OperatorSD)
 
