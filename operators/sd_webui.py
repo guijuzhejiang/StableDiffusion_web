@@ -1956,8 +1956,8 @@ class OperatorSD(Operator):
                     _output_wallpaper_width = min_edge
                     _output_wallpaper_height = int(min_edge / _selected_aspect)
                 else:
-                    _output_model_width = int(min_edge * _selected_aspect)
-                    _output_model_height = min_edge
+                    _output_wallpaper_width = int(min_edge * _selected_aspect)
+                    _output_wallpaper_height = min_edge
 
                 if self.update_progress(20):
                     return {'success': True}
@@ -2078,8 +2078,8 @@ class OperatorSD(Operator):
                                            cfg_scale,
                                            seed, subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w,
                                            seed_enable_extras,
-                                           512,
-                                           512,
+                                           _output_wallpaper_height,
+                                           _output_wallpaper_width,
                                            False,  # enable_hr
                                            0.5,  # denoising_strength
                                            2.0,  # hr_scale
