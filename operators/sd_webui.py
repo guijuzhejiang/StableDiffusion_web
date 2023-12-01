@@ -194,27 +194,48 @@ class OperatorSD(Operator):
               self.scripts.scripts_img2img.alwayson_scripts[tiled_diffusion_idx], \
               self.scripts.scripts_img2img.alwayson_scripts[tiled_vae_idx], \
               self.scripts.scripts_img2img.alwayson_scripts[self.cnet_idx], \
-              self.scripts.scripts_img2img.alwayson_scripts[adetail_idx], \
- \
+              self.scripts.scripts_img2img.alwayson_scripts[adetail_idx]
+
+        self.scripts.scripts_txt2img.alwayson_scripts[0], \
+        self.scripts.scripts_txt2img.alwayson_scripts[1], \
+        self.scripts.scripts_txt2img.alwayson_scripts[2], \
+        self.scripts.scripts_txt2img.alwayson_scripts[3], \
+        self.scripts.scripts_txt2img.alwayson_scripts[4], \
+            = self.scripts.scripts_txt2img.alwayson_scripts[sam_idx], \
+              self.scripts.scripts_txt2img.alwayson_scripts[tiled_diffusion_idx], \
+              self.scripts.scripts_txt2img.alwayson_scripts[tiled_vae_idx], \
+              self.scripts.scripts_txt2img.alwayson_scripts[self.cnet_idx], \
+              self.scripts.scripts_txt2img.alwayson_scripts[adetail_idx]
+
         # sam 24 args
         self.scripts.scripts_img2img.alwayson_scripts[0].args_from = 7
         self.scripts.scripts_img2img.alwayson_scripts[0].args_to = 31
+        self.scripts.scripts_txt2img.alwayson_scripts[0].args_from = 7
+        self.scripts.scripts_txt2img.alwayson_scripts[0].args_to = 31
 
         # tiled_diffusion 101 args
         self.scripts.scripts_img2img.alwayson_scripts[1].args_from = 31
         self.scripts.scripts_img2img.alwayson_scripts[1].args_to = 132
+        self.scripts.scripts_txt2img.alwayson_scripts[1].args_from = 31
+        self.scripts.scripts_txt2img.alwayson_scripts[1].args_to = 132
 
         # tiled_vae 7 args
         self.scripts.scripts_img2img.alwayson_scripts[2].args_from = 132
         self.scripts.scripts_img2img.alwayson_scripts[2].args_to = 139
+        self.scripts.scripts_txt2img.alwayson_scripts[2].args_from = 132
+        self.scripts.scripts_txt2img.alwayson_scripts[2].args_to = 139
 
         # controlnet 3 args
         self.scripts.scripts_img2img.alwayson_scripts[3].args_from = 4
         self.scripts.scripts_img2img.alwayson_scripts[3].args_to = 7
+        self.scripts.scripts_txt2img.alwayson_scripts[3].args_from = 4
+        self.scripts.scripts_txt2img.alwayson_scripts[3].args_to = 7
 
         # adetail 3 args
         self.scripts.scripts_img2img.alwayson_scripts[4].args_from = 1
         self.scripts.scripts_img2img.alwayson_scripts[4].args_to = 4
+        self.scripts.scripts_txt2img.alwayson_scripts[4].args_from = 1
+        self.scripts.scripts_txt2img.alwayson_scripts[4].args_to = 4
 
         # invisible detectmap
         self.shared.opts.control_net_no_detectmap = True
