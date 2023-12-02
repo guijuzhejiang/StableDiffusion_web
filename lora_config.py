@@ -608,7 +608,7 @@ lora_mirage_dict = {
         'prompt': '<lora:末日-宇宙（场景）_v1.0:0.6>,horror,(A huge spaceship:1.5),(solo:1.5),(A rectangular spacecraft resembling the shape of an aircraft carrier:1.5),Full of art,Cosmic galaxy background,Doomsday scenario,Crumbling earth,a volcano erupts,energy blast,The fleeing spaceship',
         },
     4: {'label': '月下城堡',
-         'prompt': '<lora:(LIb首发)CG古风大场景类_v2.0:1>,HD,cg,Chinese CG scene,unreal 5 engine,Mid-autumn,full moon,night view,plants,ancient buildings,bridge,Backlight,Creek,Clouds,Chinese architecture,brightly lit',
+         'prompt': '<lora:Ancient_city:1>,BJ_Ancient_city,outdoors,sky,cloud,water,tree,moon,fire,building,scenery,full_moon,stairs,mountain,architecture,east_asian_architecture, cinematic lighting,morning red,abundant,wallpaper,huge bridges',
          },
     5: {'label': '未来机器城',
          'prompt': '<lora:XSArchi_127:1> <lora:Concept_scenery_background:0.3>,solo, (zenithal angle), sunset, ((by Iwan Baan)), skyscraper, japan style, arasaka tower, neon lights, cyberpunk, cyberpunk \(series\),Steam power: Steampunk works usually depict a world based on steam power, people use steam engines, steam trains, steam airships, etc., these machines are usually powered by steam engines.coastal city,blue sky and white clouds,the sun is shining brightly,ultra-wide angle',
