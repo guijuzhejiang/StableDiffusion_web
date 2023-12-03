@@ -1986,7 +1986,7 @@ class OperatorSD(Operator):
 
                 # img2img generate bg
                 prompt_styles = None
-                steps = 12
+                steps = 20
                 sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
                 restore_faces = False
                 tiling = False
