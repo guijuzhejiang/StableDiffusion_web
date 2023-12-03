@@ -1992,7 +1992,6 @@ class OperatorSD(Operator):
                 tiling = False
                 n_iter = 1
                 cfg_scale = 10
-                denoising_strength = 1
                 seed = -1.0
                 subseed = -1.0
                 subseed_strength = 0
@@ -2083,8 +2082,6 @@ class OperatorSD(Operator):
                 print("-------------------wallpaper logger-----------------")
                 print(f"sd_positive_prompt: {sd_positive_prompt}")
                 print(f"sd_negative_prompt: {sd_negative_prompt}")
-                print(f"dino_prompt: person")
-                print(f"denoising_strength: {denoising_strength}")
                 print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
                 # 生成
                 res = self.txt2img.txt2img(task_id,
