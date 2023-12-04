@@ -446,6 +446,7 @@ class OperatorSD(Operator):
 
         print(f'sd_model_positive_prompt: {sd_model_positive_prompt}')
         print(f'sd_model_negative_prompt: {sd_model_negative_prompt}')
+        print(f'ad_face_positive_prompt: {ad_face_positive_prompt}')
 
         # bg prompt
         bg_prmpt_list = [lora_place_dict[_place_type]['prompt'],
@@ -460,7 +461,7 @@ class OperatorSD(Operator):
         print(f'sd_bg_positive_prompt: {sd_bg_positive_prompt}')
         print(f'sd_bg_negative_prompt: {sd_bg_negative_prompt}')
 
-        return sd_model_positive_prompt, sd_model_negative_prompt, ad_face_positive_prompt, sd_bg_positive_prompt, sd_bg_positive_prompt, sd_bg_negative_prompt
+        return sd_model_positive_prompt, sd_model_negative_prompt, ad_face_positive_prompt, sd_bg_positive_prompt, sd_bg_negative_prompt
 
     def proceed_human_transform(self, _params, _task_type, _batch_size, _init_img):
         prompt_styles = None
@@ -2732,7 +2733,7 @@ class OperatorSD(Operator):
 
                 task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
 
-                sd_model_positive_prompt, sd_model_negative_prompt, ad_face_positive_prompt, sd_bg_positive_prompt, sd_bg_positive_prompt, sd_bg_negative_prompt = self.get_prompt(
+                sd_model_positive_prompt, sd_model_negative_prompt, ad_face_positive_prompt, sd_bg_positive_prompt, sd_bg_negative_prompt = self.get_prompt(
                     _age, _viewpoint_mode,
                     _model_type,
                     _place_type,
@@ -2747,7 +2748,7 @@ class OperatorSD(Operator):
                 inpaint_color_sketch_orig = None
                 init_img_inpaint = None
                 init_mask_inpaint = None
-                steps = 20
+                steps = 30
                 sampler_index = 18  # sampling method modules/sd_samplers_kdiffusion.py
                 mask_blur = 0
                 mask_alpha = 0

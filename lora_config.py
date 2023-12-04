@@ -1,7 +1,7 @@
 import shutil
 
 lora_model_common_dict = [
-    {'lora_name': 'polyhedron_new_skin_v1.1', 'weight': 0.2, 'label': '赋予真实皮肤，带褶皱'},
+    {'lora_name': 'polyhedron_new_skin_v1.1', 'weight': 0.1, 'label': '赋予真实皮肤，带褶皱'},
     # {'lora_name': 'ClothingAdjuster3', 'weight': 1, 'label': '不填加额外衣服'},
     {'lora_name': 'more_details', 'weight': 0.8, 'label': '增加细节'},
     # {'lora_name': 'k Hand Mix 101_v1.0', 'weight': 0.6, 'label': '手部修复'},
@@ -528,7 +528,7 @@ male_avatar_reference_dict = {
         'prompt': '(paper art:1.8),3d',
         },
     7: {'label': '彩墨',
-        'prompt': '<lora:Chinese_Ink_Painting_style:0.6>,1boy,greyscale,ink painting,Chinese martial arts style,<lora:more_details:1>,(best quality:1.2),(high quality:1.2),strong contrast,intense angle',
+        'prompt': '<lora:Chinese_Ink_Painting_style:0.6>,1boy,greyscale,ink painting,Chinese martial arts style',
         },
     8: {'label': '水彩',
         'prompt': '<lora:Watercolor_Painting_by_vizsumit:0.6>,watercolor painting',
