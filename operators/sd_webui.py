@@ -1971,16 +1971,38 @@ class OperatorSD(Operator):
                 params = ujson.loads(kwargs['params'][0])
                 _batch_size = int(params['batch_size'])
                 _selected_place = int(params['place'])
-                _selected_aspect = float(params['aspect'])
+                _output_width = int(params['width'])
+                _output_height = int(params['height'])
+                _selected_aspect = _output_width / _output_height
 
                 # limit 512
-                min_edge = 512
-                if _selected_aspect <= 1:
-                    _output_wallpaper_width = min_edge
-                    _output_wallpaper_height = int(min_edge / _selected_aspect)
-                else:
-                    _output_wallpaper_width = int(min_edge * _selected_aspect)
-                    _output_wallpaper_height = min_edge
+                # min_edge = 512
+                # _buf_width = 512
+                # _buf_height = 512
+                # if _output_width <= _output_height:
+                #     _buf_width = min_edge
+                #     _buf_height = int(min_edge / _selected_aspect)
+                # else:
+                #     _buf_width = int(min_edge * _selected_aspect)
+                #     _buf_height = min_edge
+
+                target_short_side = 512
+                closest_divisor = 1
+                closest_remainder = float('inf')
+
+                for i in range(1, min(_output_width, _output_height) + 1):
+                    if _output_width % i == 0 and _output_height % i == 0:
+                        short_side = min(_output_width // i, _output_height // i)
+                        remainder = abs(target_short_side - short_side)
+                        if remainder < closest_remainder:
+                            closest_remainder = remainder
+                            closest_divisor = i
+
+                _buf_width = _output_width//closest_divisor
+                _buf_height = _output_height//closest_divisor
+
+                print(f"_buf_width:{_buf_width}")
+                print(f"_buf_height:{_buf_height}")
 
                 if self.update_progress(20):
                     return {'success': True}
@@ -2098,8 +2120,8 @@ class OperatorSD(Operator):
                                            cfg_scale,
                                            seed, subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w,
                                            seed_enable_extras,
-                                           _output_wallpaper_height,
-                                           _output_wallpaper_width,
+                                           _buf_height,
+                                           _buf_width,
                                            False,  # enable_hr
                                            0.5,  # denoising_strength
                                            2.0,  # hr_scale
@@ -2118,9 +2140,25 @@ class OperatorSD(Operator):
                 dir_path = os.path.join(CONFIG['storage_dirpath']['user_wallpaper_dir'], user_id)
                 os.makedirs(dir_path, exist_ok=True)
                 for res_idx, res_img in enumerate(res):
+                    # hires
+                    # extra upscaler
+                    scales = closest_divisor
+                    gfpgan_weight = 0
+                    codeformer_visibility = 0
+                    args = (
+                        0, scales, None, None, True, 'R-ESRGAN 4x+', 'None', 0, gfpgan_weight, codeformer_visibility,
+                        0)
+                    self.devices.torch_gc()
+                    pp = self.scripts_postprocessing.PostprocessedImage(res_img.convert("RGB"))
+                    self.scripts.scripts_postproc.run(pp, args)
+
+                    self.devices.torch_gc()
+
+
                     img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"
-                    res_img.convert("RGB").save(os.path.join(dir_path, img_fn), format="jpeg", quality=80,
-                                                lossless=True)
+                    # res_img.convert("RGB").save(os.path.join(dir_path, img_fn), format="jpeg", quality=80,
+                    #                             lossless=True)
+                    pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=100, lossless=True)
 
                     # 限制缓存10张
                     cache_list = sorted(os.listdir(dir_path))
