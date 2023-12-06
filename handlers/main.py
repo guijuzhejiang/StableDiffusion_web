@@ -156,7 +156,7 @@ class QueryDiscount(HTTPMethodView):
             start_date = date(2023, 12, 1)
             end_date = date(2023, 12, 29)
             if start_date <= date.today() <= end_date:
-                res.append(['十二月优惠礼6折', 0.7])
+                res.append(['十二月优惠礼6折', 0.6])
 
             if len(res) > 1:
                 res.append(['多个折扣可叠加', 1])
