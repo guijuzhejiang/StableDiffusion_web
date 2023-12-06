@@ -1976,30 +1976,30 @@ class OperatorSD(Operator):
                 _selected_aspect = _output_width / _output_height
 
                 # limit 512
-                # min_edge = 512
-                # _buf_width = 512
-                # _buf_height = 512
-                # if _output_width <= _output_height:
-                #     _buf_width = min_edge
-                #     _buf_height = int(min_edge / _selected_aspect)
-                # else:
-                #     _buf_width = int(min_edge * _selected_aspect)
-                #     _buf_height = min_edge
+                min_edge = 512
+                _buf_width = 512
+                _buf_height = 512
+                if _output_width <= _output_height:
+                    _buf_width = min_edge
+                    _buf_height = int(min_edge / _selected_aspect)
+                else:
+                    _buf_width = int(min_edge * _selected_aspect)
+                    _buf_height = min_edge
 
-                target_short_side = 512
-                closest_divisor = 1
-                closest_remainder = float('inf')
-
-                for i in range(1, min(_output_width, _output_height) + 1):
-                    if _output_width % i == 0 and _output_height % i == 0:
-                        short_side = min(_output_width // i, _output_height // i)
-                        remainder = abs(target_short_side - short_side)
-                        if remainder < closest_remainder:
-                            closest_remainder = remainder
-                            closest_divisor = i
-
-                _buf_width = _output_width//closest_divisor
-                _buf_height = _output_height//closest_divisor
+                # target_short_side = 512
+                # closest_divisor = 1
+                # closest_remainder = float('inf')
+                #
+                # for i in range(1, min(_output_width, _output_height) + 1):
+                #     if _output_width % i == 0 and _output_height % i == 0:
+                #         short_side = min(_output_width // i, _output_height // i)
+                #         remainder = abs(target_short_side - short_side)
+                #         if remainder < closest_remainder:
+                #             closest_remainder = remainder
+                #             closest_divisor = i
+                #
+                # _buf_width = _output_width//closest_divisor
+                # _buf_height = _output_height//closest_divisor
 
                 print(f"_buf_width:{_buf_width}")
                 print(f"_buf_height:{_buf_height}")
@@ -2142,18 +2142,28 @@ class OperatorSD(Operator):
                 for res_idx, res_img in enumerate(res):
                     # hires
                     # extra upscaler
-                    scales = closest_divisor
+                    scales = _output_width / _buf_width
                     gfpgan_weight = 0
                     codeformer_visibility = 0
+
+                    upscale_mode = 1  # 0:scale_by 1:scale_to
+                    upscale_by = None
+                    upscale_to_width = _output_width
+                    upscale_to_height = _output_height
+                    upscale_crop = True
+                    upscaler_1_name = 'R-ESRGAN 4x+'
+                    upscaler_2_name = 'None'
+                    upscaler_2_visibility = 0
                     args = (
-                        0, scales, None, None, True, 'R-ESRGAN 4x+', 'None', 0, gfpgan_weight, codeformer_visibility,
+                        upscale_mode, upscale_by, upscale_to_width, upscale_to_height, upscale_crop, upscaler_1_name,
+                        upscaler_2_name, upscaler_2_visibility,
+                        gfpgan_weight, codeformer_visibility,
                         0)
                     self.devices.torch_gc()
                     pp = self.scripts_postprocessing.PostprocessedImage(res_img.convert("RGB"))
                     self.scripts.scripts_postproc.run(pp, args)
 
                     self.devices.torch_gc()
-
 
                     img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"
                     # res_img.convert("RGB").save(os.path.join(dir_path, img_fn), format="jpeg", quality=80,
@@ -2215,12 +2225,11 @@ class OperatorSD(Operator):
                     return {'success': True}
                 # face fix
                 gfpgan_weight = 0.5
-                gfpgan_visibility = 1
                 scales = 1
                 codeformer_weight = 0
                 codeformer_visibility = 0
                 args = (0, scales, None, None, True, 'ESRGAN_4x', 'None',
-                        gfpgan_visibility, gfpgan_weight,
+                        0, gfpgan_weight,
                         codeformer_visibility, codeformer_weight)
                 self.devices.torch_gc()
                 pp = self.scripts_postprocessing.PostprocessedImage(Image.open(os.path.join(dir_path, img_fn)))
@@ -2270,7 +2279,7 @@ class OperatorSD(Operator):
                 denoising_strength_min = 0.3
                 denoising_strength_max = 0.4
                 denoising_strength = (1 - _sim) * (
-                            denoising_strength_max - denoising_strength_min) + denoising_strength_min
+                        denoising_strength_max - denoising_strength_min) + denoising_strength_min
 
                 if _txt2img:
                     _input_image = None
@@ -3205,7 +3214,7 @@ class OperatorSD(Operator):
                             gfpgan_weight = 0
                             codeformer_visibility = 0.5
                             args = (
-                            0, scales, None, None, True, 'None', 'None', 0, gfpgan_weight, codeformer_visibility, 0)
+                                0, scales, None, None, True, 'None', 'None', 0, gfpgan_weight, codeformer_visibility, 0)
                             pp = self.scripts_postprocessing.PostprocessedImage(res_img.convert("RGB"))
                             self.scripts.scripts_postproc.run(pp, args)
                             self.devices.torch_gc()
