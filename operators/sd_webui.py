@@ -1751,7 +1751,16 @@ class OperatorSD(Operator):
 
                     # segment person
                     sam_person_result, person_boxes = self.sam.sam_predict(self.dino_model_name, 'person', 0.3,
-                                                                       _input_image)
+                                                                           _input_image)
+                    padding = 4
+                    resize_mask = sam_person_result[1].resize((_input_image_width-padding, _input_image_height-padding))
+                    padding_mask = Image.new("RGB", _input_image.size, (0, 0, 0, 1))
+                    padding_mask.paste(resize_mask, (int(padding/2), int(padding/2)))
+                    padding_mask = padding_mask.convert('1')
+
+                    padding_sam = Image.new('RGBA', _input_image.size)
+                    padding_sam.paste(sam_person_result[2], (0, 0), padding_mask)
+                    sam_person_result[2] = padding_sam
 
                 if self.update_progress(60):
                     return {'success': True}
@@ -1784,16 +1793,16 @@ class OperatorSD(Operator):
                     # 需要添加垂直box
                     target_height = int(_cur_width / _output_aspect)
 
-                    if int((target_height - _cur_height)/2) + face_box[3] <= _input_image_height:
-                        face_box[3] = int((target_height - _cur_height)/2) + face_box[3]
+                    if int((target_height - _cur_height) / 2) + face_box[3] <= _input_image_height:
+                        face_box[3] = int((target_height - _cur_height) / 2) + face_box[3]
                         _cur_height = face_box[3] - face_box[1]
-                    if face_box[1] - int((target_height - _cur_height)/2) >= 0:
-                        face_box[1] = face_box[1] - int((target_height - _cur_height)/2)
+                    if face_box[1] - int((target_height - _cur_height) / 2) >= 0:
+                        face_box[1] = face_box[1] - int((target_height - _cur_height) / 2)
                         _cur_height = face_box[3] - face_box[1]
 
                     left = face_box[0]
-                    if target_height > face_box[3]-face_box[1]:
-                        top = int((target_height - _cur_height)/2)
+                    if target_height > face_box[3] - face_box[1]:
+                        top = int((target_height - _cur_height) / 2)
 
                     else:
                         top = 0
@@ -1803,16 +1812,16 @@ class OperatorSD(Operator):
                     # 需要添加水平box
                     target_width = int(_cur_height * _output_aspect)
 
-                    if face_box[0] - int((target_width - _cur_width)/2) >= 0:
-                        face_box[0] = face_box[0] - int((target_width - _cur_width)/2)
+                    if face_box[0] - int((target_width - _cur_width) / 2) >= 0:
+                        face_box[0] = face_box[0] - int((target_width - _cur_width) / 2)
                         _cur_width = face_box[2] - face_box[0]
-                    if face_box[2] + int((target_width - _cur_width)/2) <= _input_image_width:
-                        face_box[2] = face_box[2] + int((target_width - _cur_width)/2)
+                    if face_box[2] + int((target_width - _cur_width) / 2) <= _input_image_width:
+                        face_box[2] = face_box[2] + int((target_width - _cur_width) / 2)
                         _cur_width = face_box[2] - face_box[0]
 
                     top = face_box[1]
-                    if target_width > face_box[2]-face_box[0]:
-                        left = int((target_width - _cur_width)/2)
+                    if target_width > face_box[2] - face_box[0]:
+                        left = int((target_width - _cur_width) / 2)
 
                     else:
                         left = 0
@@ -1851,7 +1860,6 @@ class OperatorSD(Operator):
                 self.scripts.scripts_postproc.run(pp, args)
                 pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=80, lossless=True)
                 self.devices.torch_gc()
-
 
                 # 限制缓存10张
                 cache_list = sorted(os.listdir(dir_path))

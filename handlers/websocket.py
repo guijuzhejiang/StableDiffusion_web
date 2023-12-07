@@ -71,7 +71,7 @@ async def sd_genreate(request: Request, ws):
                     cost_points = 8
 
             elif package['mode'] == 'cert':
-                cost_points = 5
+                cost_points = 3
 
             else:
                 batch_size = int(params['batch_size'])
