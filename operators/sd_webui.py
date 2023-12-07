@@ -1709,6 +1709,8 @@ class OperatorSD(Operator):
             if proceed_mode != 'wallpaper':
                 _input_image = Image.open(kwargs['input_image'])
                 _input_image_width, _input_image_height = _input_image.size
+            else:
+                _input_image_width, _input_image_height = 0, 0
 
             if self.update_progress(5):
                 return {'success': True}
@@ -1722,7 +1724,159 @@ class OperatorSD(Operator):
                 f"{ujson.dumps(clean_args, indent=4)}",
                 f"logs/sd_webui.log")
 
-            if proceed_mode == 'mirage':
+            if proceed_mode == 'cert':
+                params = ujson.loads(kwargs['params'][0])
+                _bg_color = str(params['bg_color'])
+                _output_aspect = float(params['aspect'])
+
+                # save cache face img
+                _input_image.save(f"tmp/cert_origin_{pic_name}_save.png")
+                _input_image = _input_image.convert('RGBA')
+
+                if self.update_progress(10):
+                    return {'success': True}
+                # parse face
+                face_boxes = self.facer.detect_face(_input_image)
+                if len(face_boxes) == 0:
+                    # return {'success': False, 'result': '未检测到人脸'}
+                    return {'success': False, 'result': 'backend.magic-avatar.error.no-face'}
+
+                elif len(face_boxes) > 1:
+                    # return {'success': False, 'result': '检测到多个人脸，请上传一张单人照'}
+                    return {'success': False, 'result': 'backend.magic-avatar.error.multi-face'}
+
+                else:
+                    if self.update_progress(30):
+                        return {'success': True}
+
+                    # segment person
+                    sam_person_result, person_boxes = self.sam.sam_predict(self.dino_model_name, 'person', 0.3,
+                                                                       _input_image)
+
+                if self.update_progress(60):
+                    return {'success': True}
+
+                # get max area face box
+                face_box = face_boxes[0]
+                face_width = face_box[2] - face_box[0]
+                face_height = face_box[3] - face_box[1]
+
+                padding_ratio = 1
+                face_box[0] = face_box[0] - int(face_width * padding_ratio)
+                if face_box[0] < 0:
+                    face_box[0] = 0
+                face_box[1] = face_box[1] - int(face_height * padding_ratio)
+                if face_box[1] < 0:
+                    face_box[1] = 0
+                face_box[2] = face_box[2] + int(face_width * padding_ratio)
+                if face_box[2] >= _input_image_width:
+                    face_box[2] = _input_image_width - 1
+                face_box[3] = face_box[3] + int(face_height * padding_ratio)
+                if face_box[3] >= _input_image_height:
+                    face_box[3] = _input_image_height - 1
+
+                _cur_width = face_box[2] - face_box[0]
+                _cur_height = face_box[3] - face_box[1]
+                _cur_aspect = _cur_width / _cur_height
+
+                # 计算应该添加的填充量
+                if _cur_aspect > _output_aspect:
+                    # 需要添加垂直box
+                    target_height = int(_cur_width / _output_aspect)
+
+                    if int((target_height - _cur_height)/2) + face_box[3] <= _input_image_height:
+                        face_box[3] = int((target_height - _cur_height)/2) + face_box[3]
+                        _cur_height = face_box[3] - face_box[1]
+                    if face_box[1] - int((target_height - _cur_height)/2) >= 0:
+                        face_box[1] = face_box[1] - int((target_height - _cur_height)/2)
+                        _cur_height = face_box[3] - face_box[1]
+
+                    left = face_box[0]
+                    if target_height > face_box[3]-face_box[1]:
+                        top = int((target_height - _cur_height)/2)
+
+                    else:
+                        top = 0
+
+                    canvas_wh = (_cur_width, target_height)
+                else:
+                    # 需要添加水平box
+                    target_width = int(_cur_height * _output_aspect)
+
+                    if face_box[0] - int((target_width - _cur_width)/2) >= 0:
+                        face_box[0] = face_box[0] - int((target_width - _cur_width)/2)
+                        _cur_width = face_box[2] - face_box[0]
+                    if face_box[2] + int((target_width - _cur_width)/2) <= _input_image_width:
+                        face_box[2] = face_box[2] + int((target_width - _cur_width)/2)
+                        _cur_width = face_box[2] - face_box[0]
+
+                    top = face_box[1]
+                    if target_width > face_box[2]-face_box[0]:
+                        left = int((target_width - _cur_width)/2)
+
+                    else:
+                        left = 0
+
+                    canvas_wh = (target_width, _cur_height)
+
+                # new canvas
+                cert_res = Image.new("RGBA", canvas_wh, _bg_color)
+                foreground = sam_person_result[2].crop(face_box)
+                cert_res.paste(foreground, (left, top), mask=foreground)
+
+                # storage img
+                img_urls = []
+                dir_path = os.path.join(CONFIG['storage_dirpath']['user_cert_dir'], user_id)
+                os.makedirs(dir_path, exist_ok=True)
+                img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"
+                # cert_res.convert("RGB").save(os.path.join(dir_path, img_fn), format="jpeg", quality=80,
+                #                             lossless=True)
+                # face fix
+                gfpgan_weight = 0.5
+                scales = 1
+                codeformer_weight = 0
+                codeformer_visibility = 0
+                min_edge = 512
+                if _output_aspect < 1:
+                    _resize_w = min_edge
+                    _resize_h = int(min_edge / _output_aspect)
+                else:
+                    _resize_w = int(min_edge * _output_aspect)
+                    _resize_h = min_edge
+                args = (1, scales, _resize_w, _resize_h, True, 'ESRGAN_4x', 'None',
+                        0, gfpgan_weight,
+                        codeformer_visibility, codeformer_weight)
+                self.devices.torch_gc()
+                pp = self.scripts_postprocessing.PostprocessedImage(cert_res.convert('RGB'))
+                self.scripts.scripts_postproc.run(pp, args)
+                pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=80, lossless=True)
+                self.devices.torch_gc()
+
+
+                # 限制缓存10张
+                cache_list = sorted(os.listdir(dir_path))
+                if len(cache_list) > 10:
+                    os.remove(os.path.join(dir_path, cache_list[0]))
+
+                for img_fn in sorted(os.listdir(dir_path), reverse=True):
+                    url_fp = f"{'http://192.168.110.8:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category=cert"
+                    img_urls.append(url_fp)
+                if len(img_urls) < 10:
+                    for i in range(10 - len(img_urls)):
+                        img_urls.append('')
+
+                # celery_task.update_state(state='PROGRESS', meta={'progress': 95})
+                if self.update_progress(90):
+                    return {'success': True}
+                else:
+                    # clear images
+                    for cache_img_fp in glob.glob(f'tmp/*{pic_name}*'):
+                        if '_save' not in cache_img_fp:
+                            os.remove(cache_img_fp)
+
+                return {'success': True, 'result': img_urls}
+
+            elif proceed_mode == 'mirage':
                 if self.shared.sd_model.sd_checkpoint_info.model_name != 'dreamshaper_8':
                     # self.shared.change_sd_model('dreamshaper_8Inpainting')
                     self.shared.change_sd_model('dreamshaper_8')
