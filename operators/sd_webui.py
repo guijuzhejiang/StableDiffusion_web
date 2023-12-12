@@ -1265,7 +1265,7 @@ class OperatorSD(Operator):
         sampler_index = 15
         inpaint_full_res = 0 if _task_type == 'haircut' else 1  # choices=["Whole picture", "Only masked"]
         inpainting_fill = 1  # masked content original
-        denoising_strength = 0.65 if _task_type == 'haircut' else 0.5
+        denoising_strength = 0.75 if _task_type == 'haircut' else 0.5
         steps = 20
 
         if _task_type == 'haircut':
@@ -2789,9 +2789,9 @@ class OperatorSD(Operator):
                                 new_person_box[3] = _input_image_height - 1
                             _input_image = _input_image.crop(new_person_box)
                         else:
-                            new_person_box[0] = person_box[0] - int(person_width * 1)
+                            new_person_box[0] = person_box[0] - int(person_width * 0.6)
                             new_person_box[1] = person_box[1] - int(person_height * 0.6)
-                            new_person_box[2] = person_box[2] + int(person_width * 1)
+                            new_person_box[2] = person_box[2] + int(person_width * 0.6)
                             new_person_box[3] = person_box[3] + int(person_height * 0.8)
                             need_padding = True if new_person_box[0] < 0 or new_person_box[1] < 0 or new_person_box[
                                 2] > _input_image_width - 1 or new_person_box[3] > _input_image_height - 1 else False
