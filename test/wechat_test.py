@@ -34,7 +34,7 @@ wxpay = WeChatPay(
 amount = 1
 user_id = 1
 # out_trade_no=''.join([random.choice(string.ascii_letters) for c in range(8)])
-out_trade_no='zWroaNhJ'
+out_trade_no='20231206114134150930_Ceazvtkx'
 # shanghai_tz = pytz.timezone('Asia/Shanghai')
 # now = datetime.now(shanghai_tz)
 # now += timedelta(seconds=20)

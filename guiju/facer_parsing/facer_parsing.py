@@ -92,4 +92,5 @@ class FaceParsing:
 
 
 if __name__ == '__main__':
-    print(FaceParsing().detect_head(Image.open('/home/ray/Downloads/sample13.jpg'), return_rect=True))
+    res = FaceParsing()(Image.open('/home/ray/Workspace/project/stable_diffusion/StableDiffusion_web/tmp/hair_origin_wGqoHn_save.png'), keep='True')
+    res.show()

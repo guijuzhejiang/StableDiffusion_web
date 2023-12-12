@@ -1260,21 +1260,38 @@ class OperatorSD(Operator):
                      'is_api': ()}
 
         cfg_scale = 10
-        mask_blur = 0
-        resize_mode = 0  # just resize
+        mask_blur = 4
+        resize_mode = 1  # just resize
         sampler_index = 15
         inpaint_full_res = 0 if _task_type == 'haircut' else 1  # choices=["Whole picture", "Only masked"]
         inpainting_fill = 1  # masked content original
-        denoising_strength = 1 if _task_type == 'haircut' else 0.8
+        denoising_strength = 0.65 if _task_type == 'haircut' else 0.5
         steps = 20
 
         if _task_type == 'haircut':
             # 切割face.glasses
-            # sam_result, person_boxes = self.sam_h.sam_predict(self.dino_model_name, 'face.glasses',
-            #                                                   0.5,
-            #                                                   _init_img.convert('RGBA'))
             sam_result = self.facer(_init_img, keep='face')
-
+            # sam_result, person_boxes = self.sam.sam_predict(self.dino_model_name, 'face.neck',
+            #                                                   0.3,
+            #                                                   _init_img.convert('RGBA'))
+            # _w, _h = sam_result[1].size
+            # padding = 4
+            # resize_mask = sam_result[1].resize((_w - padding, _h - padding))
+            # padding_mask = Image.new("RGB", sam_result[1].size, (0, 0, 0, 1))
+            # padding_mask.paste(resize_mask, (int(padding / 2), int(padding / 2)))
+            # person_result = padding_mask.convert('L')
+            #
+            # sam_hair_result, _ = self.sam.sam_predict(self.dino_model_name, 'hair',
+            #                                                 0.3,
+            #                                                 _init_img.convert('RGBA'))
+            # # person_result = sam_result[1].convert('L')
+            # sam_hair_result = sam_hair_result[1].convert('L')
+            #
+            # # result_array = np.bitwise_xor(np.array(person_result), np.array(sam_hair_result))
+            # result_array = np.maximum(np.array(person_result) - np.array(sam_hair_result), 0)
+            # np.bitwise_and(array1, array2)
+            # 将结果数组转换为 PIL 图像
+            # sam_result = Image.fromarray(result_array)
 
         else:
             # 切割hair
@@ -1293,8 +1310,8 @@ class OperatorSD(Operator):
                 else:
                     _init_img.save(cache_fp, format='PNG')
                 sam_result_tmp_png_fp.append({'name': cache_fp})
-            else:
-                sam_result_tmp_png_fp[0] = sam_result_tmp_png_fp[-1]
+            # else:
+            #     sam_result_tmp_png_fp[0] = sam_result_tmp_png_fp[-1]
 
         else:
             # return {'success': False, 'result': f'未切割到{"人脸" if _task_type=="haircut" else "头发"}'}
@@ -1399,8 +1416,144 @@ class OperatorSD(Operator):
                                    img2img_batch_inpaint_mask_dir,
                                    override_settings_texts,
                                    *sam_args)
-
         self.devices.torch_gc()
+
+        # if _task_type == 'haircut':
+        #     if res[0][0].size[0] != _input_image_width:
+        #         new_img = Image.new("RGBA", (_input_image_width, res[0][0].size[1]), (0, 0, 0, 1))
+        #         new_img.paste(res[0][0], (0,0))
+        #         res[0][0] = new_img
+        #     if res[0][0].size[1] != _input_image_height:
+        #         new_img = Image.new("RGBA", (res[0][0].size[0], _input_image_height), (0, 0, 0, 1))
+        #         new_img.paste(res[0][0], (0,0))
+        #         res[0][0] = new_img
+        #
+        #     #
+        #     origin_rgba = _init_img.convert('RGBA')
+        #     # output face and hair
+        #     output_head_result = self.facer.detect_head(res[0][0], return_rect=False)
+        #
+        #     # origin without hair
+        #     sam_hair_result, _ = self.sam.sam_predict(self.dino_model_name, 'hair',
+        #                                                     0.3,
+        #                                                     origin_rgba)
+        #     sam_hair_data = sam_hair_result[1].convert('L').getdata()
+        #
+        #     # 创建一个新的图像，将原图中mask为0的像素设置为透明
+        #     new_image = Image.new("RGBA", origin_rgba.size, (0, 0, 0, 0))
+        #
+        #     # 遍历每个像素，根据mask的值来设置新图的像素
+        #     for y in range(origin_rgba.size[1]):
+        #         for x in range(origin_rgba.size[0]):
+        #             pixel_value = sam_hair_data[y * origin_rgba.size[0] + x]
+        #             if pixel_value == 0:
+        #                 new_image.putpixel((x, y), origin_rgba.getpixel((x, y)))
+        #
+        #     origin_nohair_image = new_image
+        #     nohair_array = np.array(origin_nohair_image)
+        #     origin_nohair_image.save('nohair.png')
+        #
+        #     # paste
+        #     _output_hair_array = np.array(output_head_result)
+        #     _output_hair_rgba = res[0][0].convert('RGBA')
+        #     _output_hair_rgba_arr = np.array(_output_hair_rgba)
+        #     # 将掩码区域的像素置零
+        #     _output_hair_rgba_arr[:, :, 3][_output_hair_array == 0] = 0
+        #     # 将结果数组转换为 PIL 图像
+        #     _output_hair_crop_image = Image.fromarray(_output_hair_rgba_arr)
+        #
+        #     origin_nohair_image.paste(_output_hair_crop_image, (0, 0), mask=output_head_result)
+        #
+        #     origin_nohair_image.save('testing.png')
+        #
+        #     # mask
+        #     # sam_person_result, _ = self.sam.sam_predict(self.dino_model_name, 'person',
+        #     #                                               0.3,
+        #     #                                               origin_rgba)
+        #     # 计算没有相交的 "person" 掩码
+        #     # person_array = np.array(sam_person_result[1].convert('L'))
+        #     # hair_array = np.array(sam_hair_result[1].convert('L'))
+        #     # result_array = np.maximum(person_array - hair_array, 0)
+        #     # output_head_array = np.array(output_head_result.convert('L'))
+        #     # mask_res = Image.fromarray(np.maximum(result_array, output_head_array))
+        #     # 将RGBA图片转换为灰度图（带有透明度通道）
+        #     mask_image = origin_nohair_image.convert("LA")
+        #
+        #     # 提取透明度通道数据
+        #     alpha_data = mask_image.split()[1]
+        #
+        #     # 创建一个新的图像，将透明部分设置为黑色
+        #     mask_res = Image.new("L", origin_nohair_image.size, 0)
+        #     mask_res.paste(alpha_data, (0, 0), alpha_data)
+        #
+        #     # mask_res = Image.fromarray(np.maximum(np.array(origin_nohair_image.convert('1')), np.array(output_head_result.convert('1'))))
+        #     cache_fp = f"tmp/hair1_{_task_type}_{1}_{uid_name}_{_pic_name}_save.png"
+        #     mask_res.save(cache_fp)
+        #     sam_result_tmp_png_fp[1] = {'name': cache_fp}
+        #     # sam_result_tmp_png_fp[0] = {'name': 'testing.png'}
+        #     # sam_result_tmp_png_fp[2] = {'name': 'testing.png'}
+        #
+        #     _init_img = origin_nohair_image
+        #
+        #     sam_args = [0,
+        #                 adetail_enabled, face_args, hand_args,  # adetail args
+        #                 controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,
+        #                 # controlnet args
+        #                 True, False, 0, _init_img,
+        #                 sam_result_tmp_png_fp,
+        #                 0,  # sam_output_chosen_mask
+        #                 False, sam_result_tmp_png_fp, [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+        #                 '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
+        #                 True, True, '',
+        #                 # tiled diffsuion
+        #                 False, 'MultiDiffusion', False, True,
+        #                 1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
+        #                 64, False, False, False, False, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+        #                 False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+        #                 '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+        #                 False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+        #                 '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+        #                 False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+        #                 # tiled_vae
+        #                 False, 256, 48, True, True, True,
+        #                 False
+        #                 ]
+        #     res = self.img2img.img2img(task_id,
+        #                                4,
+        #                                "(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,character close-up,<lora:more_details:1>",
+        #                                "(hair:2.0),"+sd_negative_prompt,
+        #                                prompt_styles, _init_img,
+        #                                sketch,
+        #                                init_img_with_mask, inpaint_color_sketch,
+        #                                inpaint_color_sketch_orig,
+        #                                init_img_inpaint, init_mask_inpaint,
+        #                                steps, sampler_index, mask_blur, mask_alpha,
+        #                                inpainting_fill,
+        #                                restore_faces,
+        #                                tiling,
+        #                                n_iter,
+        #                                _batch_size,  # batch_size
+        #                                cfg_scale, image_cfg_scale,
+        #                                # denoising_strength
+        #                                0.9,
+        #                                seed,
+        #                                subseed,
+        #                                subseed_strength, seed_resize_from_h,
+        #                                seed_resize_from_w,
+        #                                seed_enable_extras,
+        #                                selected_scale_tab, _input_image_height,
+        #                                _input_image_width,
+        #                                scale_by,
+        #                                resize_mode,
+        #                                inpaint_full_res,
+        #                                inpaint_full_res_padding, inpainting_mask_invert,
+        #                                img2img_batch_input_dir,
+        #                                img2img_batch_output_dir,
+        #                                img2img_batch_inpaint_mask_dir,
+        #                                override_settings_texts,
+        #                                *sam_args)
+        #
+        #     self.devices.torch_gc()
 
         if return_list:
             return [x.convert('RGBA') for x in res[0]]
@@ -1698,6 +1851,7 @@ class OperatorSD(Operator):
             print(clean_args)
             proceed_mode = kwargs['mode'][0]
             user_id = kwargs['user_id'][0]
+            params = ujson.loads(kwargs['params'][0])
 
             if self.update_progress(1):
                 return {'success': True}
@@ -1707,8 +1861,13 @@ class OperatorSD(Operator):
 
             # read image
             if proceed_mode != 'wallpaper':
-                _input_image = Image.open(kwargs['input_image'])
-                _input_image_width, _input_image_height = _input_image.size
+                if 'preset_index' in params.keys() and params['preset_index'] and params['preset_index'] >= 0:
+                    _input_image = Image.open(f"guiju/assets/preset/{proceed_mode}/{params['preset_index']}.jpg")
+                    _input_image_width, _input_image_height = _input_image.size
+
+                else:
+                    _input_image = Image.open(kwargs['input_image'])
+                    _input_image_width, _input_image_height = _input_image.size
             else:
                 _input_image_width, _input_image_height = 0, 0
 
@@ -1725,7 +1884,6 @@ class OperatorSD(Operator):
                 f"logs/sd_webui.log")
 
             if proceed_mode == 'cert':
-                params = ujson.loads(kwargs['params'][0])
                 _bg_color = str(params['bg_color'])
                 _output_aspect = float(params['aspect'])
 
@@ -1892,7 +2050,6 @@ class OperatorSD(Operator):
                 origin_image_path = f'tmp/mirage_origin_{pic_name}_save.png'
                 _input_image.save(origin_image_path, format='PNG')
 
-                params = ujson.loads(kwargs['params'][0])
                 _batch_size = int(params['batch_size'])
                 _selected_place = int(params['place'])
 
@@ -1955,7 +2112,7 @@ class OperatorSD(Operator):
                 batch_size = _batch_size
                 cfg_scale = 10
                 image_cfg_scale = 1.5
-                denoising_strength = 1
+                denoising_strength = 0.75
                 seed = -1.0
                 subseed = -1.0
                 subseed_strength = 0
@@ -2130,7 +2287,6 @@ class OperatorSD(Operator):
                 if self.shared.sd_model.sd_checkpoint_info.model_name != 'dreamshaper_8':
                     self.shared.change_sd_model('dreamshaper_8')
 
-                params = ujson.loads(kwargs['params'][0])
                 _batch_size = int(params['batch_size'])
                 _selected_place = int(params['place'])
                 _output_width = int(params['width'])
@@ -2358,7 +2514,6 @@ class OperatorSD(Operator):
             elif proceed_mode == 'facer':
                 if self.update_progress(40):
                     return {'success': True}
-                params = ujson.loads(kwargs['params'][0])
                 # _batch_size = int(params['batch_size'])
                 _input_src_image = cv2.imread(kwargs['input_image'])
                 _input_tgt_image = cv2.imread(kwargs['input_image_tgt'])
@@ -2428,7 +2583,6 @@ class OperatorSD(Operator):
                 if self.shared.sd_model.sd_checkpoint_info.model_name != 'dreamshaper_8':
                     self.shared.change_sd_model('dreamshaper_8')
 
-                params = ujson.loads(kwargs['params'][0])
                 _batch_size = int(params['batch_size'])
                 _style = int(params['style'])
                 _sim = float(params['sim'])
@@ -2567,7 +2721,6 @@ class OperatorSD(Operator):
                 # elif self.shared.sd_model.sd_checkpoint_info.model_name == 'chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting':
                 #     self.shared.change_sd_model('dreamshaper_8')
 
-                params = ujson.loads(kwargs['params'][0])
                 _batch_size = int(params['batch_size'])
                 _haircut_style = int(params['haircut'])
                 _hair_color = int(params['hair_color'])
@@ -2636,10 +2789,10 @@ class OperatorSD(Operator):
                                 new_person_box[3] = _input_image_height - 1
                             _input_image = _input_image.crop(new_person_box)
                         else:
-                            new_person_box[0] = person_box[0] - int(person_width * 0.6)
+                            new_person_box[0] = person_box[0] - int(person_width * 1)
                             new_person_box[1] = person_box[1] - int(person_height * 0.7)
-                            new_person_box[2] = person_box[2] + int(person_width * 0.6)
-                            new_person_box[3] = person_box[3] + int(person_height * 0.8)
+                            new_person_box[2] = person_box[2] + int(person_width * 1)
+                            new_person_box[3] = person_box[3] + int(person_height * 1.5)
                             need_padding = True if new_person_box[0] < 0 or new_person_box[1] < 0 or new_person_box[
                                 2] > _input_image_width - 1 or new_person_box[3] > _input_image_height - 1 else False
 
@@ -2647,7 +2800,7 @@ class OperatorSD(Operator):
                                 # _input_image = _input_image.crop(person_box)
                                 new_image_width = new_person_box[2] - new_person_box[0]
                                 new_image_height = new_person_box[3] - new_person_box[1]
-                                new_canvas = Image.new("RGB", (new_image_width, new_image_height), (127, 127, 127))
+                                new_canvas = Image.new("RGBA", (new_image_width, new_image_height), (0, 0, 0, 0))
 
                                 origin_box_x = abs(new_person_box[0]) if new_person_box[0] < 0 else 0
                                 origin_box_y = abs(new_person_box[1]) if new_person_box[1] < 0 else 0
@@ -2754,7 +2907,6 @@ class OperatorSD(Operator):
                 # elif self.shared.sd_model.sd_checkpoint_info.model_name == 'chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting':
                 #     self.shared.change_sd_model('dreamshaper_8')
 
-                params = ujson.loads(kwargs['params'][0])
                 _cloth_part = 0
                 _batch_size = int(params['batch_size'])
                 arge_idxs = {v: i for i, v in enumerate(['child', 'youth', 'middlescent'])}
@@ -3317,7 +3469,6 @@ class OperatorSD(Operator):
                 #                 muscle: muscleRef?.current?.inputValue,
                 #                 batch_size: batch_size
                 #             }
-                params = ujson.loads(kwargs['params'][0])
 
                 person_boxes, _ = self.dino.dino_predict_internal(_input_image, self.dino_model_name, 'person', 0.3)
                 if len(person_boxes) == 0:
@@ -3421,7 +3572,6 @@ class OperatorSD(Operator):
                     if self.shared.sd_model.sd_checkpoint_info.model_name != 'chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting':
                         self.shared.change_sd_model('chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting')
 
-                params = ujson.loads(kwargs['params'][0])
                 # _input_image = base64_to_pil(params['input_image'])
                 _output_width = int(params['output_width'])
                 _output_height = int(params['output_height'])
