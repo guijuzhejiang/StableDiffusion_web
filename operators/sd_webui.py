@@ -1265,7 +1265,7 @@ class OperatorSD(Operator):
         sampler_index = 15
         inpaint_full_res = 0 if _task_type == 'haircut' else 1  # choices=["Whole picture", "Only masked"]
         inpainting_fill = 1  # masked content original
-        denoising_strength = 0.85 if _task_type == 'haircut' else 0.5
+        denoising_strength = 0.85 if _task_type == 'haircut' else 0.8
         steps = 20
 
         if _task_type == 'haircut':
