@@ -1761,7 +1761,7 @@ class OperatorSD(Operator):
                     'mask': _reference_img_mask_ndarray,
                 }
                 controlnet_args_unit2.model = 'None'
-                controlnet_args_unit2.module = 'reference_adain'
+                controlnet_args_unit2.module = 'reference_only' if _selected_style in ["手办","蜡笔","纸偶","Q板","赛博朋克"] else "reference_adain"
                 controlnet_args_unit2.processor_res = -1
                 controlnet_args_unit2.threshold_a = 1
                 controlnet_args_unit2.threshold_b = -1
