@@ -1560,9 +1560,8 @@ class OperatorSD(Operator):
         else:
             return res[0][0].convert('RGBA')
 
-    def proceed_avatar(self, _init_img, _selected_index, _selected_type, _gender, _denoising, _batch_size,
-                       _txt2img=False):
-        uid_name = ''.join([random.choice(string.ascii_letters) for c in range(4)])
+    def proceed_avatar(self, _init_img, _selected_index, _gender, _denoising, _batch_size,
+                       pic_name, _txt2img=False):
         task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
 
         # prompt setting
@@ -1572,22 +1571,33 @@ class OperatorSD(Operator):
         _selected_style = prompt_dict[_selected_index]['label']
         reference_enbale = True if (_gender == 'female' and _selected_style != "素描") else False
 
+        _selected_type = -1
         if reference_enbale:
-            _reference_img_rgb_ndarray = np.array(Image.open(
-                os.path.join(reference_dir, f"avatar_reference", _gender, _selected_style,
-                             f"{str(_selected_type)}.jpeg")).convert('RGB'))
+            _reference_img_dir = os.path.join(reference_dir, f"avatar_reference", _gender, _selected_style)
+            _selected_type = random.randint(0, len(os.listdir(_reference_img_dir))-1)
+
+            _reference_img_rgb_ndarray = np.array(Image.open(os.path.join(_reference_img_dir, f"{str(_selected_type)}.jpeg")).convert('RGB'))
             _reference_img_mask_ndarray = np.zeros(shape=_reference_img_rgb_ndarray.shape)
             sd_positive_prompt = f"{prompt_dict[_selected_index]['prompt'] + ',' if prompt_dict[_selected_index]['prompt'] else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
 
         else:
             if (_gender == 'female' and _selected_style == '素描') or (_gender == 'male' and (
-                    _selected_style == '泥塑' or (_selected_style == '赛博朋克' and _selected_type == 0))):
+                    _selected_style == '泥塑' or (_selected_style == '赛博朋克'))):
+                _selected_type = random.randint(0, len(lora_avatar_dict[_selected_style])-1)
                 sd_positive_prompt = f"{lora_avatar_dict[_selected_style][_selected_type] + ','}{'1boy,' if _gender == 'male' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
             else:
                 if _gender == 'male' and _selected_style == '彩墨':
                     sd_positive_prompt = prompt_dict[_selected_index]['prompt']
                 else:
                     sd_positive_prompt = f"{prompt_dict[_selected_index]['prompt'] + ',' if prompt_dict[_selected_index]['prompt'] else ''}{'1boy,' if _gender == 'male' and _selected_style != 'Q版' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
+
+        # logging
+        self.logging(
+            f"[__call__][{datetime.datetime.now()}]:\n"
+            f"[{pic_name}]:\n"
+            f"{ujson.dumps({'sd_positive_prompt':sd_positive_prompt, '_selected_reference': _selected_type}, indent=4)}",
+            f"logs/sd_webui.log")
+
 
         # common
         prompt_styles = None
@@ -2586,7 +2596,6 @@ class OperatorSD(Operator):
                 _batch_size = int(params['batch_size'])
                 _style = int(params['style'])
                 _sim = float(params['sim'])
-                _type = int(params['type'])
                 _gender = str(params['gender'])
                 # _txt2img = bool(params['txt2img'])
                 _txt2img = False
@@ -2680,8 +2689,8 @@ class OperatorSD(Operator):
                 if self.update_progress(10):
                     return {'success': True}
 
-                avatar_result = self.proceed_avatar(_input_image, _style, _type, _gender, denoising_strength,
-                                                    _batch_size, _txt2img)
+                avatar_result = self.proceed_avatar(_input_image, _style, _gender, denoising_strength,
+                                                    _batch_size, pic_name, _txt2img)
 
                 # storage img
                 img_urls = []
