@@ -1861,7 +1861,7 @@ class OperatorSD(Operator):
 
             # read image
             if proceed_mode != 'wallpaper':
-                if 'preset_index' in params.keys() and params['preset_index'] and params['preset_index'] >= 0:
+                if 'preset_index' in params.keys() and params['preset_index'] is not None and params['preset_index'] >= 0:
                     _input_image = Image.open(f"guiju/assets/preset/{proceed_mode}/{params['preset_index']}.jpg")
                     _input_image_width, _input_image_height = _input_image.size
 
