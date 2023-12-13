@@ -1741,18 +1741,18 @@ class OperatorSD(Operator):
             }
 
             # canny
-            # controlnet_args_unit1.control_mode = 'ControlNet is more important'
-            # controlnet_args_unit1.model = 'control_v11p_sd15_canny'
-            # controlnet_args_unit1.module = 'canny'
-            # controlnet_args_unit1.threshold_a = 100
-            # controlnet_args_unit1.threshold_b = 200
+            controlnet_args_unit1.control_mode = 'Balanced'
+            controlnet_args_unit1.model = 'control_v11p_sd15_canny'
+            controlnet_args_unit1.module = 'canny'
+            controlnet_args_unit1.threshold_a = 100
+            controlnet_args_unit1.threshold_b = 200
 
             # depth
-            controlnet_args_unit1.control_mode = 'My prompt is more important'
-            controlnet_args_unit1.model = 'control_v11f1p_sd15_depth'
-            controlnet_args_unit1.module = 'depth_midas'
-            controlnet_args_unit1.threshold_a = -1
-            controlnet_args_unit1.threshold_b = -1
+            # controlnet_args_unit1.control_mode = 'My prompt is more important'
+            # controlnet_args_unit1.model = 'control_v11f1p_sd15_depth'
+            # controlnet_args_unit1.module = 'depth_midas'
+            # controlnet_args_unit1.threshold_a = -1
+            # controlnet_args_unit1.threshold_b = -1
             controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
             controlnet_args_unit2.enabled = reference_enbale
             if reference_enbale:
@@ -1761,7 +1761,7 @@ class OperatorSD(Operator):
                     'mask': _reference_img_mask_ndarray,
                 }
                 controlnet_args_unit2.model = 'None'
-                controlnet_args_unit2.module = 'reference_only'
+                controlnet_args_unit2.module = 'reference_adain+attn'
                 controlnet_args_unit2.processor_res = -1
                 controlnet_args_unit2.threshold_a = 1
                 controlnet_args_unit2.threshold_b = -1
