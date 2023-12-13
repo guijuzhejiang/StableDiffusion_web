@@ -2624,7 +2624,7 @@ class OperatorSD(Operator):
                     draw = ImageDraw.Draw(cache_image)
                     draw.rectangle(person_boxes[0], outline='red', width=5)
                     cache_image.save(
-                        f"tmp/avatar_origin_face_style{str(_style)}_type{_type}_sim{_sim}_gender{_gender}_{pic_name}_save.png")
+                        f"tmp/avatar_origin_face_style{str(_style)}_sim{_sim}_gender{_gender}_{pic_name}_save.png")
 
                     # get max area clothing box
                     person_box = person_boxes[0]
