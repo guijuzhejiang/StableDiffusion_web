@@ -1262,7 +1262,7 @@ class OperatorSD(Operator):
         cfg_scale = 10
         mask_blur = 0
         resize_mode = 1  # just resize
-        sampler_index = 15 if _task_type == 'haircut' else 17
+        sampler_index = 15 if _task_type == 'haircut' else 16
         inpaint_full_res = 0 if _task_type == 'haircut' else 1  # choices=["Whole picture", "Only masked"]
         inpainting_fill = 1  # masked content original
         denoising_strength = 0.85 if _task_type == 'haircut' else 0.8
