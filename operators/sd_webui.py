@@ -1262,7 +1262,7 @@ class OperatorSD(Operator):
         cfg_scale = 10
         mask_blur = 0
         resize_mode = 1  # just resize
-        sampler_index = 15
+        sampler_index = 15 if _task_type == 'haircut' else 17
         inpaint_full_res = 0 if _task_type == 'haircut' else 1  # choices=["Whole picture", "Only masked"]
         inpainting_fill = 1  # masked content original
         denoising_strength = 0.85 if _task_type == 'haircut' else 0.8
@@ -1335,18 +1335,18 @@ class OperatorSD(Operator):
 
             controlnet_args_unit1.enabled = True
             controlnet_args_unit1.batch_images = ''
-            controlnet_args_unit1.control_mode = 'Balanced'
+            controlnet_args_unit1.control_mode = 'My prompt is more important'
             controlnet_args_unit1.guidance_end = 1
             controlnet_args_unit1.guidance_start = 0  # ending control step
             controlnet_args_unit1.image = None
             controlnet_args_unit1.low_vram = False
-            controlnet_args_unit1.model = 't2iadapter_canny_sd14v1'
+            controlnet_args_unit1.model = 'control_v11p_sd15_canny'
             controlnet_args_unit1.module = 'canny'
             controlnet_args_unit1.pixel_perfect = True
             controlnet_args_unit1.resize_mode = 'Resize and Fill'
             controlnet_args_unit1.processor_res = 512
-            controlnet_args_unit1.threshold_a = 64
-            controlnet_args_unit1.threshold_b = 64
+            controlnet_args_unit1.threshold_a = 100
+            controlnet_args_unit1.threshold_b = 200
             controlnet_args_unit1.weight = 1
 
         print(f"-------------------{_task_type} logger-----------------")
