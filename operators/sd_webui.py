@@ -2745,15 +2745,12 @@ class OperatorSD(Operator):
                     origin_image_path = f'tmp/hair_origin_{pic_name}_save.png'
                     _input_image.save(origin_image_path, format='PNG')
 
-                    # preprocess
-                    # sam_result, person_boxes = self.sam_h.sam_predict(self.dino_model_name, 'face',
-                    #                                                   0.43,
-                    #                                                   _input_image.convert('RGBA'))
-
-                    if _hair_color_enable:
-                        person_boxes = self.facer.detect_head(_input_image)
-                    else:
+                    if _haircut_enable:
                         person_boxes = self.facer.detect_face(_input_image)
+
+                    else:
+                        person_boxes = self.facer.detect_head(_input_image)
+
 
                     if len(person_boxes) == 0:
                         # return {'success': False, 'result': '未检测到人脸'}
@@ -2770,12 +2767,6 @@ class OperatorSD(Operator):
                         draw.rectangle(person_boxes[0], outline='red', width=5)
                         cache_image.save(f"tmp/hair_face_{pic_name}_save.png")
 
-                        # get max area clothing box
-                        # x_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 0 or i == 2]
-                        # y_list = [int(y) for x in person_boxes for i, y in enumerate(x) if i == 1 or i == 3]
-                        # person_box = [min(x_list), min(y_list), max(x_list), max(y_list)]
-                        # person_width = person_box[2] - person_box[0]
-                        # person_height = person_box[3] - person_box[1]
                         person_box = person_boxes[0]
                         person_width = person_box[2] - person_box[0]
                         person_height = person_box[3] - person_box[1]
@@ -2783,11 +2774,11 @@ class OperatorSD(Operator):
                         new_person_box = [0, 0, 0, 0]
 
                         # crop
-                        if _hair_color_enable:
-                            new_person_box[0] = person_box[0] - int(person_width * 0.6)
-                            new_person_box[1] = person_box[1] - int(person_height * 0.6)
-                            new_person_box[2] = person_box[2] + int(person_width * 0.6)
-                            new_person_box[3] = person_box[3] + int(person_height * 0.6)
+                        if _haircut_enable:
+                            new_person_box[0] = person_box[0] - int(person_width * 0.8)
+                            new_person_box[1] = person_box[1] - int(person_height * 0.8)
+                            new_person_box[2] = person_box[2] + int(person_width * 0.8)
+                            new_person_box[3] = person_box[3] + int(person_height * 0.8)
                             if new_person_box[0] < 0:
                                 new_person_box[0] = 0
                             if new_person_box[1] < 0:
@@ -2811,27 +2802,6 @@ class OperatorSD(Operator):
                             if new_person_box[3] > _input_image_height - 1:
                                 new_person_box[3] = _input_image_height - 1
 
-                            # need_padding = True if new_person_box[0] < 0 or new_person_box[1] < 0 or new_person_box[
-                            #     2] > _input_image_width - 1 or new_person_box[3] > _input_image_height - 1 else False
-
-                            # if need_padding:
-                            #     # _input_image = _input_image.crop(person_box)
-                            #     new_image_width = new_person_box[2] - new_person_box[0]
-                            #     new_image_height = new_person_box[3] - new_person_box[1]
-                            #     new_canvas = Image.new("RGBA", (new_image_width, new_image_height), (0, 0, 0, 0))
-                            #
-                            #     origin_box_x = abs(new_person_box[0]) if new_person_box[0] < 0 else 0
-                            #     origin_box_y = abs(new_person_box[1]) if new_person_box[1] < 0 else 0
-                            #
-                            #     if new_person_box[0] >= 0 or new_person_box[1] >= 0:
-                            #         _input_image = _input_image.crop([0 if new_person_box[0] < 0 else new_person_box[0],
-                            #                                           0 if new_person_box[1] < 0 else new_person_box[1],
-                            #                                           _input_image_width - 1,
-                            #                                           _input_image_height - 1])
-                            #
-                            #     new_canvas.paste(_input_image, (origin_box_x, origin_box_y))
-                            #     _input_image = new_canvas
-                            # else:
                             _input_image = _input_image.crop(new_person_box)
 
                         _input_image_width, _input_image_height = _input_image.size

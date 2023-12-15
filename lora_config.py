@@ -460,7 +460,7 @@ lora_hair_color_dict = {
         'prompt': '(dark blue hair:1.3)',
         },
     9: {'label': '绿色',
-         'prompt': 'green pubic hair,(green hair:1.4),ultra high resolution,<lora:dyed_pubes-10:1>',
+         'prompt': 'green pubic hair,(green hair:1.3),ultra high resolution,<lora:dyed_pubes-10:1>',
          },
     10: {'label': '橙色',
          'prompt': 'orange pubic hair,(orange hair:1.4),ultra high resolution,<lora:dyed_pubes-10:1>',
