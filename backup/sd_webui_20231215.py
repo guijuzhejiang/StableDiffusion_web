@@ -1855,8 +1855,7 @@ class OperatorSD(Operator):
         try:
             super().__call__(*args, **kwargs)
 
-            # log start
-            print(f"{str(datetime.datetime.now())} operation start !!!!!!!!!!!!!!!!!!!!!!!!!!")
+            print("operation start !!!!!!!!!!!!!!!!!!!!!!!!!!")
             clean_args = {k: v for k, v in kwargs.items() if k != 'input_image'}
             clean_args['params'] = ujson.loads(kwargs['params'][0])
             print(clean_args)
@@ -1864,18 +1863,13 @@ class OperatorSD(Operator):
             user_id = kwargs['user_id'][0]
             params = ujson.loads(kwargs['params'][0])
 
-            if self.update_progress(2):
+            if self.update_progress(1):
                 return {'success': True}
-
-            # nsfw check
             if self.predict_image(kwargs['input_image']):
                 # return {'success': False, 'result': "抱歉，您上传的图像未通过合规性检查，请重新上传。"}
                 return {'success': False, 'result': 'backend.check.error.nsfw'}
 
-            # define task id
-            pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
-
-            # read input image
+            # read image
             if proceed_mode != 'wallpaper':
                 if 'preset_index' in params.keys() and params['preset_index'] is not None and params['preset_index'] >= 0:
                     _input_image = Image.open(f"guiju/assets/preset/{proceed_mode}/{params['preset_index']}.jpg")
@@ -1884,15 +1878,13 @@ class OperatorSD(Operator):
                 else:
                     _input_image = Image.open(kwargs['input_image'])
                     _input_image_width, _input_image_height = _input_image.size
-
-                # cache upload image
-                _input_image.save(f"tmp/{proceed_mode}_origin_{pic_name}_save.png")
-
             else:
                 _input_image_width, _input_image_height = 0, 0
 
             if self.update_progress(5):
                 return {'success': True}
+
+            pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
 
             # logging
             self.logging(

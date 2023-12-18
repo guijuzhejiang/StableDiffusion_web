@@ -5,11 +5,14 @@ import os
 from sanic import Blueprint
 from sanic import Sanic
 from sanic_cors import CORS
+
+from handlers.wechat import ReqPayQRCode, WeChatLogin, QueryPayment
 from lib.celery_workshop.wokrshop import WorkShop
 from operators import OperatorSD
 from wechatpayv3 import WeChatPay, WeChatPayType
 
-from handlers.main import SDGenertae, SDHires, Pay, Query, ImageProvider, QueryPayment, WeChatLogin, FetchUserHistory, UserUpload, QueryDiscount, RevokeTask, SendCaptcha, VerifyCaptcha
+from handlers.main import ImageProvider, FetchUserHistory, UserUpload, QueryDiscount, RevokeTask, SendCaptcha, \
+    VerifyCaptcha, QueryBalance
 from redis import asyncio as aioredis
 from handlers.websocket import sd_genreate
 from utils.global_vars import CONFIG
@@ -17,10 +20,8 @@ from utils.global_vars import CONFIG
 # Blueprint
 bp = Blueprint("ai_tasks")
 # add_route
-bp.add_route(SDGenertae.as_view(), "/sd/generate")
-bp.add_route(SDHires.as_view(), "/sd/hires")
-bp.add_route(Pay.as_view(), "/wechat/pay")
-bp.add_route(Query.as_view(), "/wechat/query")
+bp.add_route(ReqPayQRCode.as_view(), "/wechat/pay")
+bp.add_route(QueryBalance.as_view(), "/wechat/query")
 bp.add_route(QueryDiscount.as_view(), "/discount/query")
 bp.add_route(RevokeTask.as_view(), "/management/revoke_task")
 bp.add_route(SendCaptcha.as_view(), "/sms/send_captcha")
