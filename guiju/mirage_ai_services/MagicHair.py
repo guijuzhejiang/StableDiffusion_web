@@ -267,7 +267,7 @@ class MagicHair(object):
                 # crop
                 if _haircut_enable:
                     new_person_box[0] = person_box[0] - int(person_width * 0.6)
-                    new_person_box[1] = person_box[1] - int(person_height * 0.33)
+                    new_person_box[1] = person_box[1] - int(person_height * 0.4)
                     new_person_box[2] = person_box[2] + int(person_width * 0.6)
                     new_person_box[3] = person_box[3] + int(person_height * 0.6)
                     if new_person_box[0] < 0:
