@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>登陆中</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+</head>
+<style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .loading {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: rotate 1.5s linear infinite;
+    }
+    @keyframes rotate {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    .circle {
+       /* 注：使用 document.querySelector('.circle').getTotalLength() 可以得到圆一圈大小约为345 */
+      stroke-dasharray: 345;
+      stroke-dashoffset: 172;
+    }
+  </style>
+<body>
+<div>
+    <svg class="loading">
+    <circle class="circle" cx="60" cy="60" r="55" fill="transparent" stroke="#6DDBFE" stroke-linecap="round" stroke-width="10"></circle>
+</svg>
+</div>
+
+</body>
+
+<script>
+    window.addEventListener("load", function() {
+        // 页面加载完成后执行的逻辑
+        // 获取 URL 参数
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // 创建一个空字典
+        const myDictionary = {};
+
+        // 遍历 URL 参数并添加到字典中
+        for (const [key, value] of urlParams) {
+            myDictionary[key] = value;
+        }
+
+        // 将字典转换为 JSON 字符串并存储到 localStorage
+        localStorage.setItem("line_session", JSON.stringify(myDictionary));
+
+    });
+</script>
+</html>
+

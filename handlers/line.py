@@ -18,9 +18,7 @@ class LineLogin(HTTPMethodView):
         line登录
     """
     async def get(self, request):
-        state = request.args.get('state')
-        code = request.args.get('code')
-        return await SanicJinja2.template_render_async("loggingin.html")
+        return await SanicJinja2.template_render_async("line_logging_in.html")
 
     async def post(self, request):
         try:
