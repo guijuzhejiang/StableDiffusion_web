@@ -17,6 +17,8 @@ class LineLogin(HTTPMethodView):
     """
         line登录
     """
+    proxy_url = "http://127.0.0.1:1095"
+
     async def get(self, request):
         return await SanicJinja2.template_render_async("line_logging_in.html")
 
@@ -26,7 +28,7 @@ class LineLogin(HTTPMethodView):
             code = request.form['code'][0]
             print(code)
             # 发起GET请求
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(proxies={"http://": self.proxy_url, "https://": self.proxy_url}) as client:
                 # req token
                 token_form_data = {
                     "grant_type": "authorization_code",
