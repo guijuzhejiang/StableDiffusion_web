@@ -2,6 +2,8 @@
 # @Time : 2023/12/18 上午9:45
 # @File : line.py
 import traceback
+import urllib
+
 from sanic.response import json as sanic_json
 
 import httpx
