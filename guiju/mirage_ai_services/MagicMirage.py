@@ -62,7 +62,7 @@ class MagicMirage(object):
     sd_model_name = 'dreamshaper_8'
 
     denoising_strength_min = 0.5
-    denoising_strength_max = 0.1
+    denoising_strength_max = 1
 
     def __init__(self, operator):
         self.operator = operator
