@@ -217,7 +217,7 @@ class MagicMirage(object):
 
         controlnet_args_unit1.image = {
             'image': _reference_img_rgb_ndarray,
-            'mask': np.array(composite_ref_image),
+            'mask': np.array(composite_ref_image)*1,
         }
 
         controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
