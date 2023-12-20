@@ -14,35 +14,34 @@ from PIL import Image
 from lora_config import reference_dir
 from modules.sd_samplers_kdiffusion import samplers_k_diffusion
 
-
 lora_mirage_dict = {
     12: {'label': '侏罗纪',
-        'prompt': '<lora:侏罗纪花园_v1.0:0.7>,horror,deep shadow,large Tyrannosaurus Rex,forest,trees,huge waterfall,river',
-        },
+         'prompt': '<lora:侏罗纪花园_v1.0:0.7>,horror,deep shadow,large Tyrannosaurus Rex,forest,trees,huge waterfall,river',
+         },
     1: {'label': '巨大战舰',
-         'prompt': '<lora:neowrsk_v2:0.7>,<lora:[LoHa] Octans八分儀 Stylev2:1>,Megalophobia,giant phobia,cloud,low angle,chaosmix,chaos,horror,neowrsk,octans,flying spacecraft,floating in the sky,spaceship,cyberpunk aesthetics,electrical storm,plasma turret fire,interstellar warfare,tension,decaying space station backdrop,ominous,nebula-filled cosmos,(huge:1.5),from below,red theme,mysterious,ethereal,sharp focus,hot pinks,and glowing purples,(giant clothes),Dramatic Lighting,Bold Coloration,Vibrant Warmth,deep shadow,astonishing level of detail,Horizon composition,universe,Hal\'s Mobile Castle,Huge Sky Castle',
-         },
+        'prompt': '<lora:neowrsk_v2:0.7>,<lora:[LoHa] Octans八分儀 Stylev2:1>,Megalophobia,giant phobia,cloud,low angle,chaosmix,chaos,horror,neowrsk,octans,flying spacecraft,floating in the sky,spaceship,cyberpunk aesthetics,electrical storm,plasma turret fire,interstellar warfare,tension,decaying space station backdrop,ominous,nebula-filled cosmos,(huge:1.5),from below,red theme,mysterious,ethereal,sharp focus,hot pinks,and glowing purples,(giant clothes),Dramatic Lighting,Bold Coloration,Vibrant Warmth,deep shadow,astonishing level of detail,Horizon composition,universe,Hal\'s Mobile Castle,Huge Sky Castle',
+        },
     2: {'label': '恐怖死神',
-         'prompt': '<lora:Ghost Concept_v1.0:0.7>,visually stunning,elegant,incredible details,g0s1,faceless,no humans,cloak,robe,torn clothes,torn fabric,floating,grim reaper,black reaper,fantasy theme,horror \(theme\),scythe,holding scythe,death,ghost,hood',
-         },
+        'prompt': '<lora:Ghost Concept_v1.0:0.7>,visually stunning,elegant,incredible details,g0s1,faceless,no humans,cloak,robe,torn clothes,torn fabric,floating,grim reaper,black reaper,fantasy theme,horror \(theme\),scythe,holding scythe,death,ghost,hood',
+        },
     3: {'label': '星际大战',
         'prompt': '<lora:末日-宇宙（场景）_v1.0:0.6>,horror,(A huge spaceship:1.5),(solo:1.5),(A rectangular spacecraft resembling the shape of an aircraft carrier:1.5),Full of art,Cosmic galaxy background,Doomsday scenario,Crumbling earth,a volcano erupts,energy blast,The fleeing spaceship',
         },
     4: {'label': '月下城堡',
-         'prompt': '<lora:Ancient_city:1>,BJ_Ancient_city,outdoors,sky,cloud,water,tree,moon,fire,building,scenery,full_moon,stairs,mountain,architecture,east_asian_architecture,cinematic lighting,morning red,abundant,wallpaper,huge bridges',
-         },
+        'prompt': '<lora:Ancient_city:1>,BJ_Ancient_city,outdoors,sky,cloud,water,tree,moon,fire,building,scenery,full_moon,stairs,mountain,architecture,east_asian_architecture,cinematic lighting,morning red,abundant,wallpaper,huge bridges',
+        },
     5: {'label': '未来机器城',
-         'prompt': '<lora:XSArchi_127:1>,<lora:Concept_scenery_background:0.3>,solo,(zenithal angle),sunset,(by Iwan Baan),skyscraper,japan style,arasaka tower,neon lights,cyberpunk,cyberpunk series,steam power,ultra-wide angle',
-         },
+        'prompt': '<lora:XSArchi_127:1>,<lora:Concept_scenery_background:0.3>,solo,(zenithal angle),sunset,(by Iwan Baan),skyscraper,japan style,arasaka tower,neon lights,cyberpunk,cyberpunk series,steam power,ultra-wide angle',
+        },
     6: {'label': '机甲怪兽',
         'prompt': '<lora:机甲怪兽风格lora_v1.0:0.5>,monster,Alien monsters invade Earth,Dragon-shaped monster,huge,thriller,robot,Mecha,chilling,horrifying,terrifying',
         },
     8: {'label': '浮岛宝塔',
-         'prompt': '<lora:(LIb首发)CG古风大场景类_v2.0:1>,Unreal Engine 5,CG,abg,Chinese CG scene,top down,scenery,waterfall,cloud,tree,architecture,sky,outdoors,floating island,day,east asian architecture,fantasy,mountain,water,bridge,pagoda,castle,building,blue sky,tower,fog',
-         },
+        'prompt': '<lora:(LIb首发)CG古风大场景类_v2.0:1>,Unreal Engine 5,CG,abg,Chinese CG scene,top down,scenery,waterfall,cloud,tree,architecture,sky,outdoors,floating island,day,east asian architecture,fantasy,mountain,water,bridge,pagoda,castle,building,blue sky,tower,fog',
+        },
     7: {'label': '满月与海',
-         'prompt': '<lora:满月与大海_v0.1:1>,ambient lighting,professional artwork,Ambient Occlusion,surrealism,illusion,only sky,unreal,depth of field,focus to the sky,silver theme,lunarYW,sea',
-         },
+        'prompt': '<lora:满月与大海_v0.1:1>,ambient lighting,professional artwork,Ambient Occlusion,surrealism,illusion,only sky,unreal,depth of field,focus to the sky,silver theme,lunarYW,sea',
+        },
     9: {'label': '满月古城',
         'prompt': '<lora:(LIb首发)CG古风大场景类_v2.0:1>,HD,cg,Chinese CG scene,unreal 5 engine,Mid-autumn,full moon,night view,plants,ancient buildings,bridge,Backlight,Creek,Clouds,Chinese architecture,brightly lit',
         },
@@ -62,6 +61,9 @@ class MagicMirage(object):
     operator = None
     sd_model_name = 'dreamshaper_8'
 
+    denoising_strength_min = 0.0
+    denoising_strength_max = 1.0
+
     def __init__(self, operator):
         self.operator = operator
 
@@ -78,8 +80,10 @@ class MagicMirage(object):
         origin_image_path = f'tmp/{self.__class__.__name__}_origin_{pic_name}_save.png'
         _input_image.save(origin_image_path, format='PNG')
 
+        # params
         _batch_size = int(params['batch_size'])
         _selected_place = int(params['place'])
+        _sim = float(params['sim'])
 
         _input_image_width, _input_image_height = _input_image.size
 
@@ -99,7 +103,7 @@ class MagicMirage(object):
 
         # sam predict person
         sam_result, person_boxes = self.operator.sam.sam_predict(self.operator.dino_model_name, 'person.bag',
-                                                        0.6, _input_image)
+                                                                 0.6, _input_image)
 
         if len(sam_result) > 0:
             sam_image = sam_result[2]
@@ -120,6 +124,7 @@ class MagicMirage(object):
         if self.operator.update_progress(20):
             return {'success': True}
 
+        denoising_strength = (1 - _sim) * (self.denoising_strength_max - self.denoising_strength_min) + self.denoising_strength_min
         # img2img generate bg
         prompt_styles = None
         # init_img = sam_image
@@ -142,7 +147,7 @@ class MagicMirage(object):
         batch_size = _batch_size
         cfg_scale = 10
         image_cfg_scale = 1.5
-        denoising_strength = 0.75
+        # denoising_strength = 0.75
         seed = -1.0
         subseed = -1.0
         subseed_strength = 0
@@ -185,11 +190,34 @@ class MagicMirage(object):
         self.operator.logging(
             f"[_reference_image_path][{_reference_image_path}]:\n",
             f"logs/sd_webui.log")
-        _reference_img_rgb_ndarray = np.array(Image.open(_reference_image_path))
+
+        _reference_image = Image.open(_reference_image_path)
+        _reference_image_w, _reference_image_h = _reference_image.size
+        _reference_img_rgb_ndarray = np.array(_reference_image)
         _reference_img_mask_ndarray = np.zeros(shape=_reference_img_rgb_ndarray.shape)
+
+        # 计算缩放比例，使mask_image适应background_image
+        width_ratio = _reference_image.width / mask_image.width
+        height_ratio = _reference_image.height / mask_image.height
+        min_ratio = min(width_ratio, height_ratio)
+        new_width = int(mask_image.width * min_ratio)
+        new_height = int(mask_image.height * min_ratio)
+        # 缩放mask_image
+        resized_mask = mask_image.resize((new_width, new_height), Image.ANTIALIAS)
+        # 计算粘贴位置
+        paste_position = (
+            (_reference_image.width - resized_mask.width) // 2,
+            (_reference_image.height - resized_mask.height) // 2
+        )
+        # 创建一个透明度通道（alpha channel）的合成图像
+        composite_ref_image = Image.new("RGB", _reference_image.size, (0, 0, 0))
+        # composite_ref_image.paste(_reference_image, (0, 0))
+        composite_ref_image.paste(resized_mask, paste_position, resized_mask)
+        composite_ref_image = composite_ref_image.convert('1')
+
         controlnet_args_unit1.image = {
             'image': _reference_img_rgb_ndarray,
-            'mask': _reference_img_mask_ndarray,
+            'mask': np.array(composite_ref_image),
         }
 
         controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
@@ -258,28 +286,27 @@ class MagicMirage(object):
         print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
         # 生成
         res = self.operator.img2img.img2img(task_id, 4, sd_positive_prompt, sd_negative_prompt,
-                                   prompt_styles,
-                                   init_img,
-                                   sketch,
-                                   init_img_with_mask, inpaint_color_sketch, inpaint_color_sketch_orig,
-                                   init_img_inpaint, init_mask_inpaint,
-                                   steps, sampler_index, mask_blur, mask_alpha, inpainting_fill,
-                                   restore_faces,
-                                   tiling,
-                                   n_iter, batch_size, cfg_scale, image_cfg_scale,
-                                   denoising_strength,
-                                   seed,
-                                   subseed,
-                                   subseed_strength, seed_resize_from_h, seed_resize_from_w,
-                                   seed_enable_extras,
-                                   selected_scale_tab, _output_model_height, _output_model_width, scale_by,
-                                   resize_mode,
-                                   inpaint_full_res,
-                                   inpaint_full_res_padding, inpainting_mask_invert,
-                                   img2img_batch_input_dir,
-                                   img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
-                                   override_settings_texts,
-                                   *sam_args)[0]
+                                            prompt_styles,
+                                            init_img,
+                                            sketch,
+                                            init_img_with_mask, inpaint_color_sketch, inpaint_color_sketch_orig,
+                                            init_img_inpaint, init_mask_inpaint,
+                                            steps, sampler_index, mask_blur, mask_alpha, inpainting_fill,
+                                            restore_faces,
+                                            tiling,
+                                            n_iter, batch_size, cfg_scale, image_cfg_scale,
+                                            denoising_strength,
+                                            seed,
+                                            subseed,
+                                            subseed_strength, seed_resize_from_h, seed_resize_from_w,
+                                            seed_enable_extras,
+                                            selected_scale_tab, _output_model_height, _output_model_width, scale_by,
+                                            resize_mode,
+                                            inpaint_full_res,
+                                            inpaint_full_res_padding, inpainting_mask_invert,
+                                            img2img_batch_input_dir,
+                                            img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
+                                            override_settings_texts,
+                                            *sam_args)[0]
 
         return res
-
