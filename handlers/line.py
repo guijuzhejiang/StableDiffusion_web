@@ -89,7 +89,7 @@ class LineLogin(HTTPMethodView):
                 password = encrypt(str({line_info['sub']}).lower())
                 result_user = {'username': email,
                                'password': password,
-                               'avatar': line_info['picture'],
+                               'avatar': line_info['picture'] if 'picture' in line_info.keys() else '',
                                'name': line_info['name'],
                                }
 
