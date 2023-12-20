@@ -203,7 +203,7 @@ class MagicMirage(object):
         new_width = int(mask_image.width * min_ratio)
         new_height = int(mask_image.height * min_ratio)
         # 缩放mask_image
-        resized_mask = mask_image.resize((new_width, new_height), Image.ANTIALIAS)
+        resized_mask = mask_image.resize((new_width, new_height))
         # 计算粘贴位置
         paste_position = (
             (_reference_image.width - resized_mask.width) // 2,
