@@ -234,7 +234,7 @@ class MagicMirage(object):
         controlnet_args_unit3.processor_res = 512
         controlnet_args_unit3.image = {
             'image': np.array(_input_image),
-            'mask': np.zeros(shape=(_input_image_height, _input_image_width)),
+            'mask': np.array(mask_image),
         }
         controlnet_args_unit3.control_mode = 'Balanced'
         controlnet_args_unit3.model = 'control_v11f1p_sd15_depth'
