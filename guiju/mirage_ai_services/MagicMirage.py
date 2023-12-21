@@ -166,79 +166,78 @@ class MagicMirage(object):
         override_settings_texts = []
 
         # controlnet args
+        # depth
         controlnet_args_unit1 = self.operator.scripts.scripts_img2img.alwayson_scripts[
             self.operator.cnet_idx].get_default_ui_unit()
+        controlnet_args_unit1.enabled = False if denoising_strength >= 0.9 else True
         controlnet_args_unit1.batch_images = ''
-        controlnet_args_unit1.control_mode = 'My prompt is more important'
-        controlnet_args_unit1.enabled = True
+        controlnet_args_unit1.processor_res = 512
+        controlnet_args_unit1.image = None
+        controlnet_args_unit1.model = 'control_v11f1p_sd15_depth'
+        controlnet_args_unit1_module = random.choice(['depth_midas', 'depth_leres++'])
+        controlnet_args_unit1.control_mode = 'Balanced' if controlnet_args_unit1_module == 'depth_leres++' else random.choice(['Balanced', 'My prompt is more important', 'ControlNet is more important'])
+        controlnet_args_unit1.threshold_a = -1
+        controlnet_args_unit1.threshold_b = -1
         controlnet_args_unit1.guidance_end = 1
         controlnet_args_unit1.guidance_start = 0  # ending control step
         controlnet_args_unit1.low_vram = False
         controlnet_args_unit1.loopback = False
-        controlnet_args_unit1.processor_res = 512
-        controlnet_args_unit1.threshold_a = 0.5
-        controlnet_args_unit1.threshold_b = -1
-        controlnet_args_unit1.model = 'None'
-        controlnet_args_unit1.module = 'reference_adain+attn'
-        controlnet_args_unit1.pixel_perfect = True
         controlnet_args_unit1.weight = 1
-        controlnet_args_unit1.resize_mode = 'Crop and Resize'
+        controlnet_args_unit1.pixel_perfect = True
 
+        # shuffle
         _reference_dir_path = os.path.join(reference_dir, "mirage_reference", str(_selected_place))
         _reference_image_path = os.path.join(_reference_dir_path,
                                              f'{random.randint(0, len(os.listdir(_reference_dir_path)) - 1)}.jpeg')
         self.operator.logging(
             f"[_reference_image_path][{_reference_image_path}]:\n",
             f"logs/sd_webui.log")
-
         _reference_image = Image.open(_reference_image_path)
         _reference_image_w, _reference_image_h = _reference_image.size
         _reference_img_rgb_ndarray = np.array(_reference_image)
         _reference_img_mask_ndarray = np.zeros(shape=_reference_img_rgb_ndarray.shape)
 
-        # 计算缩放比例，使mask_image适应background_image
-        width_ratio = _reference_image.width / mask_image.width
-        height_ratio = _reference_image.height / mask_image.height
-        min_ratio = min(width_ratio, height_ratio)
-        new_width = int(mask_image.width * min_ratio)
-        new_height = int(mask_image.height * min_ratio)
-        # 缩放mask_image
-        resized_mask = mask_image.resize((new_width, new_height))
-        # 计算粘贴位置
-        paste_position = (
-            (_reference_image.width - resized_mask.width) // 2,
-            (_reference_image.height - resized_mask.height) // 2
-        )
-        # 创建一个透明度通道（alpha channel）的合成图像
-        composite_ref_image = Image.new("RGB", _reference_image.size, (0, 0, 0))
-        # composite_ref_image.paste(_reference_image, (0, 0))
-        composite_ref_image.paste(resized_mask, paste_position, resized_mask)
-        composite_ref_image = composite_ref_image.convert('1')
-
-        controlnet_args_unit1.image = {
-            'image': _reference_img_rgb_ndarray,
-            'mask': np.array(composite_ref_image)*1,
-        }
+        #
+        # # 计算缩放比例，使mask_image适应background_image
+        # width_ratio = _reference_image.width / mask_image.width
+        # height_ratio = _reference_image.height / mask_image.height
+        # min_ratio = min(width_ratio, height_ratio)
+        # new_width = int(mask_image.width * min_ratio)
+        # new_height = int(mask_image.height * min_ratio)
+        # # 缩放mask_image
+        # resized_mask = mask_image.resize((new_width, new_height))
+        # # 计算粘贴位置
+        # paste_position = (
+        #     (_reference_image.width - resized_mask.width) // 2,
+        #     (_reference_image.height - resized_mask.height) // 2
+        # )
+        # # 创建一个透明度通道（alpha channel）的合成图像
+        # composite_ref_image = Image.new("RGB", _reference_image.size, (0, 0, 0))
+        # # composite_ref_image.paste(_reference_image, (0, 0))
+        # composite_ref_image.paste(resized_mask, paste_position, resized_mask)
+        # composite_ref_image = composite_ref_image.convert('1')
 
         controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
         controlnet_args_unit2.enabled = True
         controlnet_args_unit2.model = 'control_v11e_sd15_shuffle'
         controlnet_args_unit2.module = 'shuffle'
+        controlnet_args_unit2.image = {
+            'image': _reference_img_rgb_ndarray,
+            'mask': _reference_img_mask_ndarray,
+        }
+        controlnet_args_unit2.resize_mode = 'Crop and Resize'
         controlnet_args_unit2.control_mode = 'Balanced'
         controlnet_args_unit2.threshold_a = -1
         controlnet_args_unit2.threshold_b = -1
 
-        # depth
+        # normal
         controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
         controlnet_args_unit3.enabled = True
         controlnet_args_unit3.processor_res = 512
-        controlnet_args_unit3.image = {
-            'image': np.array(_input_image),
-            'mask': np.array(mask_image),
-        }
-        controlnet_args_unit3.control_mode = 'Balanced'
-        controlnet_args_unit3.model = 'control_v11f1p_sd15_depth'
-        controlnet_args_unit3.module = 'depth_midas'
+        controlnet_args_unit3.image = None
+        controlnet_args_unit3.control_mode = 'My prompt is more important'
+        controlnet_args_unit3.model = 'control_v11p_sd15_normalbae'
+        controlnet_args_unit3.module = 'normal_bae'
         controlnet_args_unit3.threshold_a = -1
         controlnet_args_unit3.threshold_b = -1
 
