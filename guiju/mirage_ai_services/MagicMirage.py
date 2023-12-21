@@ -210,14 +210,14 @@ class MagicMirage(object):
             (_reference_image.height - resized_mask.height) // 2
         )
         # 创建一个透明度通道（alpha channel）的合成图像
-        composite_ref_image = Image.new("RGB", _reference_image.size, (0, 0, 0))
+        composite_ref_image = Image.new("RGBA", _reference_image.size, (0, 0, 0, 0))
         # composite_ref_image.paste(_reference_image, (0, 0))
         composite_ref_image.paste(resized_mask, paste_position, resized_mask)
-        composite_ref_image = composite_ref_image
+        # composite_ref_image = composite_ref_image
 
         controlnet_args_unit1.image = {
-            'image': _reference_img_rgb_ndarray,
-            'mask': np.array(composite_ref_image),
+            'image': np.array(_reference_image),
+            'mask': np.zeros(shape=(_reference_image.height, _reference_image.width)),
         }
 
         controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
