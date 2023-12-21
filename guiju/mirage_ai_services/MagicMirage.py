@@ -213,11 +213,11 @@ class MagicMirage(object):
         composite_ref_image = Image.new("RGB", _reference_image.size, (0, 0, 0))
         # composite_ref_image.paste(_reference_image, (0, 0))
         composite_ref_image.paste(resized_mask, paste_position, resized_mask)
-        composite_ref_image = composite_ref_image.convert('1')
+        composite_ref_image = composite_ref_image
 
         controlnet_args_unit1.image = {
             'image': _reference_img_rgb_ndarray,
-            'mask': np.array(composite_ref_image)*1,
+            'mask': np.array(composite_ref_image),
         }
 
         controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
