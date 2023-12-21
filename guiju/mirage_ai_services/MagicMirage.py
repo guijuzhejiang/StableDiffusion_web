@@ -238,8 +238,8 @@ class MagicMirage(object):
         controlnet_args_unit3.control_mode = 'My prompt is more important'
         controlnet_args_unit3.model = 'control_v11p_sd15_normalbae'
         controlnet_args_unit3.module = 'normal_bae'
-        controlnet_args_unit3.threshold_a = -1
-        controlnet_args_unit3.threshold_b = -1
+        controlnet_args_unit3.threshold_a = 64
+        controlnet_args_unit3.threshold_b = 64
 
         # adetail
         adetail_enabled = False
@@ -255,7 +255,7 @@ class MagicMirage(object):
                     False, sam_result_tmp_png_fp, [], False, 0, 1, False, False, 0, None, [], -2, False, [],
                     False, 0, None, None,
                     # tiled diffsuion
-                    False if _selected_place == 12 or _selected_place == 6 else True, 'MultiDiffusion', False,
+                    False if _selected_place == 12 or _selected_place == 6 or denoising_strength <= 0.75 else True, 'MultiDiffusion', False,
                     True, 1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
                     64, False, False, False, False, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
                     False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
@@ -264,7 +264,7 @@ class MagicMirage(object):
                     '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
                     False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
                     # tiled_vae
-                    False if _selected_place == 12 or _selected_place == 6 else True, 256, 48, True, True, True,
+                    False if _selected_place == 12 or _selected_place == 6 or denoising_strength <= 0.75 else True, 256, 48, True, True, True,
                     False
                     ]
 
