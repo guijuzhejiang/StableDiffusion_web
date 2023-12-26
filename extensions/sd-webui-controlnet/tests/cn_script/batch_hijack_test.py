@@ -3,7 +3,7 @@ import importlib
 from typing import Any
 
 utils = importlib.import_module('extensions.sd-webui-controlnet.tests.utils', 'utils')
-utils.setup_test_env()
+
 
 from modules import processing, scripts, shared
 from scripts import controlnet, external_code, batch_hijack
@@ -42,6 +42,7 @@ class TestBatchHijack(unittest.TestCase):
 class TestGetControlNetBatchesWorks(unittest.TestCase):
     def setUp(self):
         self.p = unittest.mock.MagicMock()
+        assert scripts.scripts_txt2img is not None
         self.p.scripts = scripts.scripts_txt2img
         self.cn_script = controlnet.Script()
         self.p.scripts.alwayson_scripts = [self.cn_script]
@@ -59,7 +60,7 @@ class TestGetControlNetBatchesWorks(unittest.TestCase):
 
         batch_units = [unit for unit in self.p.script_args if getattr(unit, 'input_mode', batch_hijack.InputMode.SIMPLE) == batch_hijack.InputMode.BATCH]
         if batch_units:
-            self.assertEqual(min(len(unit.batch_images) for unit in batch_units), len(batches))
+            self.assertEqual(min(len(list(unit.batch_images)) for unit in batch_units), len(batches))
         else:
             self.assertEqual(1, len(batches))
 
@@ -193,6 +194,7 @@ class TestProcessImagesPatchWorks(unittest.TestCase):
     def setUp(self, on_script_unloaded_mock):
         self.on_script_unloaded_mock = on_script_unloaded_mock
         self.p = unittest.mock.MagicMock()
+        assert scripts.scripts_txt2img is not None
         self.p.scripts = scripts.scripts_txt2img
         self.cn_script = controlnet.Script()
         self.p.scripts.alwayson_scripts = [self.cn_script]

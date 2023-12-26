@@ -230,6 +230,7 @@ class OpenposeModel(object):
             include_hand: bool,
             include_face: bool,
             use_dw_pose: bool = False,
+            use_animal_pose: bool = False,
             json_pose_callback: Callable[[str], None] = None,
             res: int = 512,
             **kwargs  # Ignore rest of kwargs
@@ -255,6 +256,7 @@ class OpenposeModel(object):
             include_hand=include_hand,
             include_face=include_face,
             use_dw_pose=use_dw_pose,
+            use_animal_pose=use_animal_pose,
             json_pose_callback=json_pose_callback
         )), True
 
@@ -336,30 +338,28 @@ def unload_pidinet():
         unload_pid_model()
 
 
-clip_encoder = None
+clip_encoder = {
+    'clip_g': None,
+    'clip_h': None,
+    'clip_vitl': None,
+}
 
 
-def clip(img, res=512, **kwargs):
+def clip(img, res=512, config='clip_vitl', **kwargs):
     img = HWC3(img)
     global clip_encoder
-    if clip_encoder is None:
-        from annotator.clip import apply_clip
-        clip_encoder = apply_clip
-    result = clip_encoder(img)
+    if clip_encoder[config] is None:
+        from annotator.clipvision import ClipVisionDetector
+        clip_encoder[config] = ClipVisionDetector(config)
+    result = clip_encoder[config](img)
     return result, False
 
 
-def clip_vision_visualization(x):
-    x = x.detach().cpu().numpy()[0]
-    x = np.ascontiguousarray(x).copy()
-    return np.ndarray((x.shape[0] * 4, x.shape[1]), dtype="uint8", buffer=x.tobytes())
-
-
-def unload_clip():
+def unload_clip(config='clip_vitl'):
     global clip_encoder
-    if clip_encoder is not None:
-        from annotator.clip import unload_clip_model
-        unload_clip_model()
+    if clip_encoder[config] is not None:
+        clip_encoder[config].unload_model()
+        clip_encoder[config] = None
 
 
 model_color = None
@@ -597,10 +597,66 @@ def shuffle(img, res=512, **kwargs):
     return result, True
 
 
+def recolor_luminance(img, res=512, thr_a=1.0, **kwargs):
+    result = cv2.cvtColor(HWC3(img), cv2.COLOR_BGR2LAB)
+    result = result[:, :, 0].astype(np.float32) / 255.0
+    result = result ** thr_a
+    result = (result * 255.0).clip(0, 255).astype(np.uint8)
+    result = cv2.cvtColor(result, cv2.COLOR_GRAY2RGB)
+    return result, True
+
+
+def recolor_intensity(img, res=512, thr_a=1.0, **kwargs):
+    result = cv2.cvtColor(HWC3(img), cv2.COLOR_BGR2HSV)
+    result = result[:, :, 2].astype(np.float32) / 255.0
+    result = result ** thr_a
+    result = (result * 255.0).clip(0, 255).astype(np.uint8)
+    result = cv2.cvtColor(result, cv2.COLOR_GRAY2RGB)
+    return result, True
+
+
+def blur_gaussian(img, res=512, thr_a=1.0, **kwargs):
+    img, remove_pad = resize_image_with_pad(img, res)
+    img = remove_pad(img)
+    result = cv2.GaussianBlur(img, (0, 0), float(thr_a))
+    return result, True
+
+
+model_anime_face_segment = None
+
+
+def anime_face_segment(img, res=512, **kwargs):
+    img, remove_pad = resize_image_with_pad(img, res)
+    global model_anime_face_segment
+    if model_anime_face_segment is None:
+        from annotator.anime_face_segment import AnimeFaceSegment
+        model_anime_face_segment = AnimeFaceSegment()
+
+    result = model_anime_face_segment(img)
+    return remove_pad(result), True
+
+
+def unload_anime_face_segment():
+    global model_anime_face_segment
+    if model_anime_face_segment is not None:
+        model_anime_face_segment.unload_model()
+
+
 model_free_preprocessors = [
     "reference_only",
     "reference_adain",
-    "reference_adain+attn"
+    "reference_adain+attn",
+    "revision_clipvision",
+    "revision_ignore_prompt"
+]
+
+no_control_mode_preprocessors = [
+    "revision_clipvision",
+    "revision_ignore_prompt",
+    "clip_vision",
+    "ip-adapter_clip_sd15",
+    "ip-adapter_clip_sdxl",
+    "t2ia_style_clipvision"
 ]
 
 flag_preprocessor_resolution = "Preprocessor Resolution"
@@ -608,6 +664,24 @@ preprocessor_sliders_config = {
     "none": [],
     "inpaint": [],
     "inpaint_only": [],
+    "revision_clipvision": [
+        None,
+        {
+            "name": "Noise Augmentation",
+            "value": 0.0,
+            "min": 0.0,
+            "max": 1.0
+        },
+    ],
+    "revision_ignore_prompt": [
+        None,
+        {
+            "name": "Noise Augmentation",
+            "value": 0.0,
+            "min": 0.0,
+            "max": 1.0
+        },
+    ],
     "canny": [
         {
             "name": flag_preprocessor_resolution,
@@ -691,6 +765,14 @@ preprocessor_sliders_config = {
         }
     ],
     "dw_openpose_full": [
+        {
+            "name": flag_preprocessor_resolution,
+            "min": 64,
+            "max": 2048,
+            "value": 512
+        }
+    ],
+    "animal_openpose": [
         {
             "name": flag_preprocessor_resolution,
             "min": 64,
@@ -802,6 +884,20 @@ preprocessor_sliders_config = {
             "value": 32,
         }
     ],
+    "blur_gaussian": [
+        {
+            "name": flag_preprocessor_resolution,
+            "value": 512,
+            "min": 64,
+            "max": 2048
+        },
+        {
+            "name": "Sigma",
+            "min": 0.01,
+            "max": 64.0,
+            "value": 9.0,
+        }
+    ],
     "tile_resample": [
         None,
         {
@@ -900,23 +996,64 @@ preprocessor_sliders_config = {
             "step": 0.01
         }
     ],
+    "recolor_luminance": [
+        None,
+        {
+            "name": "Gamma Correction",
+            "value": 1.0,
+            "min": 0.1,
+            "max": 2.0,
+            "step": 0.001
+        }
+    ],
+    "recolor_intensity": [
+        None,
+        {
+            "name": "Gamma Correction",
+            "value": 1.0,
+            "min": 0.1,
+            "max": 2.0,
+            "step": 0.001
+        }
+    ],
+    "anime_face_segment": [
+        {
+            "name": flag_preprocessor_resolution,
+            "value": 512,
+            "min": 64,
+            "max": 2048
+        }
+    ],
 }
 
 preprocessor_filters = {
     "All": "none",
     "Canny": "canny",
     "Depth": "depth_midas",
-    "Normal": "normal_bae",
+    "NormalMap": "normal_bae",
     "OpenPose": "openpose_full",
     "MLSD": "mlsd",
     "Lineart": "lineart_standard (from white bg & black line)",
     "SoftEdge": "softedge_pidinet",
-    "Scribble": "scribble_pidinet",
-    "Seg": "seg_ofade20k",
+    "Scribble/Sketch": "scribble_pidinet",
+    "Segmentation": "seg_ofade20k",
     "Shuffle": "shuffle",
-    "Tile": "tile_resample",
+    "Tile/Blur": "tile_resample",
     "Inpaint": "inpaint_only",
-    "IP2P": "none",
+    "InstructP2P": "none",
     "Reference": "reference_only",
-    "T2IA": "none",
+    "Recolor": "recolor_luminance",
+    "Revision": "revision_clipvision",
+    "T2I-Adapter": "none",
+    "IP-Adapter": "ip-adapter_clip_sd15",
 }
+
+preprocessor_filters_aliases = {
+    'instructp2p': ['ip2p'],
+    'segmentation': ['seg'],
+    'normalmap': ['normal'],
+    't2i-adapter': ['t2i_adapter', 't2iadapter', 't2ia'],
+    'ip-adapter': ['ip_adapter', 'ipadapter'],
+    'scribble/sketch': ['scribble', 'sketch'],
+    'tile/blur': ['tile', 'blur']
+}  # must use all lower texts

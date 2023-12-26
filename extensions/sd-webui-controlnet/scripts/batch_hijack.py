@@ -68,7 +68,7 @@ class BatchHijack:
 
     def process_images_cn_batch(self, p, *args, **kwargs):
         self.dispatch_callbacks(self.process_batch_each_callbacks, p)
-        old_detectmap_output = shared.opts.data.get('control_net_no_detectmap', True)
+        old_detectmap_output = shared.opts.data.get('control_net_no_detectmap', False)
         try:
             shared.opts.data.update({'control_net_no_detectmap': True})
             processed = getattr(processing, '__controlnet_original_process_images_inner')(p, *args, **kwargs)
