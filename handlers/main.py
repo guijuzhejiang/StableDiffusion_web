@@ -8,7 +8,7 @@ import ujson
 from sanic.response import json as sanic_json, file_stream
 from sanic.views import HTTPMethodView
 from lib.celery_workshop.wokrshop import WorkShop
-from lib.common.common_util import encrypt, generate_random_digits
+from lib.common.common_util import encrypt, generate_random_digits, uuid_to_number_string
 import pytz
 from gotrue import check_response
 from alibabacloud_dysmsapi20170525.client import Client as Dysmsapi20170525Client
@@ -69,7 +69,6 @@ class QueryDiscount(HTTPMethodView):
 
 
 class QueryBalance(HTTPMethodView):
-
     """
         查余额
     """
@@ -127,9 +126,12 @@ class ImageProvider(HTTPMethodView):
 
             category = request.args.get("category", 'model')
             dir_storage_path = CONFIG['storage_dirpath'][f'user_{category}_dir']
-            dir_user_path = os.path.join(dir_storage_path, user_id)
 
-            fp = os.path.join(dir_user_path, request.args.get("imgpath"))
+            if category == 'account_avatar':
+                fp = os.path.join(dir_storage_path, f"{user_id}.jpg")
+            else:
+                dir_user_path = os.path.join(dir_storage_path, user_id)
+                fp = os.path.join(dir_user_path, request.args.get("imgpath"))
         else:
             fp = os.path.join(CONFIG['storage_dirpath']['hires_dir'], request.args.get("imgpath"))
 
@@ -171,17 +173,42 @@ class UserUpload(HTTPMethodView):
             upload_image = request.files['upload_image'][0]
             image_type = upload_image.type.split('/')[-1]
             if category:
-                dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_{category}_upload'])
+                if category == 'account_avatar':
+                    dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_account_avatar_dir'])
+                else:
+                    dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_{category}_upload'])
             else:
                 dir_path = os.path.join(CONFIG['storage_dirpath']['user_upload'])
             os.makedirs(dir_path, exist_ok=True)
 
-            async with aiofile.async_open(os.path.join(dir_path, f"{user_id}.png"), 'wb') as file:
+            async with aiofile.async_open(os.path.join(dir_path, f"{user_id}.{'jpg' if category == 'account_avatar' else 'png'}"), 'wb') as file:
                 await file.write(upload_image.body)
 
         except Exception:
             print(traceback.format_exc())
             return sanic_json({'success': False, 'result': 'backend.api.error.upload'})
+        else:
+            return sanic_json({'success': True})
+
+
+class UserEditNickname(HTTPMethodView):
+    """
+        用户上传图片
+    """
+    async def post(self, request):
+        try:
+            user_id = request.form['user_id'][0]
+            new_nickname = request.form['nickname'][0]
+
+            nick_taken_res = (await request.app.ctx.supabase_client.atable("account").select('id').eq("nick_name", new_nickname).execute()).data
+            if len(nick_taken_res) > 0:
+                return sanic_json({'success': False, 'message': 'backend.api.error.nickname'})
+            else:
+                res = (await request.app.ctx.supabase_client.atable("account").update({'nick_name': new_nickname}).eq("id", user_id).execute()).data
+
+        except Exception:
+            print(traceback.format_exc())
+            return sanic_json({'success': False, 'message': 'backend.api.error.default'})
         else:
             return sanic_json({'success': True})
 
@@ -244,32 +271,38 @@ class VerifyCaptcha(HTTPMethodView):
             redis_captcha = await request.app.ctx.redis_session_sms.get(phone)
             if redis_captcha:
                 if redis_captcha == captcha:
-                    h = request.app.ctx.supabase_client.auth.headers
-                    response = await request.app.ctx.supabase_client.auth.async_api.http_client.get(
-                        f"{request.app.ctx.supabase_client.auth.url}/admin/users?per_page=9999", headers=h)
-                    check_response(response)
-                    users = response.json().get("users")
-
+                    # h = request.app.ctx.supabase_client.auth.headers
+                    # response = await request.app.ctx.supabase_client.auth.async_api.http_client.get(
+                    #     f"{request.app.ctx.supabase_client.auth.url}/admin/users?per_page=9999", headers=h)
+                    # check_response(response)
+                    # users = response.json().get("users")
+                    id_res = (await request.app.ctx.supabase_client.atable("account").select("id").eq("phone", str(phone)).execute()).data
                     alike_email = f"{phone}@sms.com"
                     password = encrypt(phone+'guijutech').lower()
 
-                    if not isinstance(users, list):
-                        return sanic_json({'success': False, 'message': "backend.api.error.default"})
-
-                    users_email = [u['email'] for u in users]
-                    if alike_email not in users_email:
+                    # 如果没有查询到则注册
+                    if len(id_res) == 0:
                         try:
                             supabase_res = await request.app.ctx.supabase_client.auth.async_sign_up(email=alike_email,
                                                                                                     password=password)
                             res = (await request.app.ctx.supabase_client.atable("account").update(
-                                {"locale": country}).eq("id", str(supabase_res.user.id)).execute()).data
+                                {"locale": country, 'phone': phone, 'nick_name': f'user{uuid_to_number_string(str(supabase_res.user.id))}'}).eq("id", str(supabase_res.user.id)).execute()).data
 
-                            return sanic_json({'success': True, 'username': alike_email, 'password': password})
                         except Exception:
                             print(str(traceback.format_exc()))
                             return sanic_json({'success': False, 'message': "backend.api.error.register"})
-                    else:
-                        return sanic_json({'success': True, 'username': alike_email, 'password': password})
+
+                    account_info = (await request.app.ctx.supabase_client.atable("account").select(
+                        "id,balance,locale,nick_name").eq("phone", phone).execute()).data
+                    # 成功返回
+                    return sanic_json({'success': True,
+                                       'user': {'name': account_info[0]['nick_name'],
+                                                'id': account_info[0]['id'],
+                                                'balance': account_info[0]['balance'],
+                                                'locale': account_info[0]['locale'],
+                                                },
+                                       'expires_in': 3600
+                                       })
 
                 else:
                     return sanic_json({'success': False, 'result': 'backend.api.error.wrong-captcha'})
@@ -281,3 +314,28 @@ class VerifyCaptcha(HTTPMethodView):
             return sanic_json({'success': False, 'result': 'backend.api.error.send-captcha'})
         else:
             return sanic_json({'success': True})
+
+
+class PasswordLogin(HTTPMethodView):
+    """
+        密码登录
+    """
+    async def post(self, request):
+        try:
+            phone = request.form['phone'][0]
+            password = request.form['password'][0]
+
+            supabase_res = await request.app.ctx.supabase_client.auth.async_sign_in(email=phone, password=password)
+            account_info = (await request.app.ctx.supabase_client.atable("account").select(
+                "id,balance,locale,nick_name").eq("id", supabase_res.user.id).execute()).data
+            return sanic_json({'success': True,
+                               'user': {'name': account_info[0]['nick_name'],
+                                        'id': account_info[0]['id'],
+                                        'balance': account_info[0]['balance'],
+                                        'locale': account_info[0]['locale'],
+                                        },
+                               'expires_in': 3600
+                               })
+        except Exception:
+            print(traceback.format_exc())
+            return sanic_json({'success': False, 'result': 'backend.api.error.send-captcha'})

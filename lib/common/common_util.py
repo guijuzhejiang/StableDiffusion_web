@@ -58,5 +58,13 @@ def pil_to_base64(pil_image, to_html=True):
     return base64_string
 
 
+def uuid_to_number_string(uuid_str):
+    # 将UUID字符串转换为整数
+    uuid_int = int(uuid_str.replace('-', ''), 16)
+
+    # 将整数转换为字符串
+    return str(uuid_int)
+
+
 if __name__ == '__main__':
     print(encrypt("data"))

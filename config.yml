@@ -25,6 +25,7 @@ storage_dirpath:
   user_mirage_dir: outputs/img2img-images/user_mirage_history
   user_wallpaper_dir: outputs/img2img-images/user_wallpaper_history
   user_upload: outputs/img2img-images/user_upload
+  user_account_avatar_dir: outputs/user_account_avatar
   user_facer_upload: outputs/img2img-images/user_facer_upload
   hires_dir: outputs/img2img-images/hires
   lora_model_dir: /home/ray/Workspace/file/素材/头像/224/

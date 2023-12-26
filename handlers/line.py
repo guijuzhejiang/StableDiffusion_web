@@ -2,7 +2,8 @@
 # @Time : 2023/12/18 上午9:45
 # @File : line.py
 import traceback
-import urllib
+import aiofile
+import os
 
 from sanic.response import json as sanic_json
 
@@ -87,35 +88,65 @@ class LineLogin(HTTPMethodView):
 
                 email = f"{line_info['sub']}@line.com".lower()
                 password = encrypt(str({line_info['sub']}).lower())
-                result_user = {'username': email,
-                               'password': password,
-                               'avatar': line_info['picture'] if 'picture' in line_info.keys() else '',
-                               'name': line_info['name'],
-                               }
+                # result_user = {'username': email,
+                #                'password': password,
+                #                'avatar': line_info['picture'] if 'picture' in line_info.keys() else '',
+                #                'name': line_info['name'],
+                #                }
 
                 # supabase 检查有没有改用户，没有就注册
                 # users = await request.app.ctx.supabase_client.auth.async_list_users()
-                h = request.app.ctx.supabase_client.auth.headers
-                response = await request.app.ctx.supabase_client.auth.async_api.http_client.get(
-                    f"{request.app.ctx.supabase_client.auth.url}/admin/users?per_page=9999", headers=h)
-                check_response(response)
-                users = response.json().get("users")
-                # if users is None:
-                #     return sanic_json({'success': False, 'message': "登录失败"})
-                if not isinstance(users, list):
-                    return sanic_json({'success': False, 'message': "backend.api.error.default"})
+                # h = request.app.ctx.supabase_client.auth.headers
+                # response = await request.app.ctx.supabase_client.auth.async_api.http_client.get(
+                #     f"{request.app.ctx.supabase_client.auth.url}/admin/users?per_page=9999", headers=h)
+                # check_response(response)
+                # users = response.json().get("users")
+                # # if users is None:
+                # #     return sanic_json({'success': False, 'message': "登录失败"})
+                # if not isinstance(users, list):
+                #     return sanic_json({'success': False, 'message': "backend.api.error.default"})
 
-                users_email = [u['email'] for u in users]
-                if email not in users_email:
+                # users_email = [u['email'] for u in users]
+
+                id_res = (await request.app.ctx.supabase_client.atable("account").select("id").eq("line_id", str(
+                    line_info['sub'])).execute()).data
+                # 如果没有查询到则注册
+                if len(id_res) == 0:
                     try:
                         supabase_res = await request.app.ctx.supabase_client.auth.async_sign_up(email=email,
                                                                                                 password=password)
+                        user_id = supabase_res.user.id
+
+                        if 'picture' in line_info.keys():
+                            avatar_response = await client.get(line_info['picture'])
+                            async with aiofile.async_open(
+                                    os.path.join(CONFIG['storage_dirpath']['user_account_avatar_dir'],
+                                                 f"{supabase_res.user.id}.jpg"), 'wb') as file:
+                                await file.write(avatar_response.body)
                     except Exception:
                         print(str(traceback.format_exc()))
                         return sanic_json({'success': False, 'message': "backend.api.error.register"})
+                    else:
+                        res = (await request.app.ctx.supabase_client.atable("account").update(
+                            {"line_id": str(line_info['sub']), 'nick_name': line_info['name'], "locale": 'jp'}).eq(
+                            "id", user_id).execute()).data
+                        # res = (await request.app.ctx.supabase_client.atable("account").update(
+                        #     {"locale": 'jp'}).eq("id", str(supabase_res.user.id)).execute()).data
+                else:
+                    user_id = id_res[0]['id']
+
+                account_info = (await request.app.ctx.supabase_client.atable("account").select(
+                    "id,balance,locale,nick_name").eq("line_id", str(line_info['sub'])).execute()).data
 
                 # 成功返回
-                return sanic_json({'success': True, 'user': result_user})
+                return sanic_json({'success': True,
+                                   'user': {'username': account_info[0]['nick_name'],
+                                            'id': account_info[0]['id'],
+                                            'balance': account_info[0]['balance'],
+                                            'locale': account_info[0]['locale'],
+                                            },
+                                   'expires_in': 3600
+                                   })
         except Exception:
             print(str(traceback.format_exc()))
             return sanic_json({'success': False, 'message': "backend.api.error.default"})

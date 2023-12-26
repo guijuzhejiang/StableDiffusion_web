@@ -13,7 +13,7 @@ from operators import OperatorSD
 from wechatpayv3 import WeChatPay, WeChatPayType
 
 from handlers.main import ImageProvider, FetchUserHistory, UserUpload, QueryDiscount, RevokeTask, SendCaptcha, \
-    VerifyCaptcha, QueryBalance
+    VerifyCaptcha, QueryBalance, PasswordLogin, UserEditNickname
 from redis import asyncio as aioredis
 from handlers.websocket import sd_genreate
 from utils.global_vars import CONFIG
@@ -29,11 +29,13 @@ bp.add_route(SendCaptcha.as_view(), "/sms/send_captcha")
 bp.add_route(VerifyCaptcha.as_view(), "/sms/verify_captcha")
 bp.add_route(WeChatLogin.as_view(), "/wechat/login")
 bp.add_route(LineLogin.as_view(), "/line/login")
+bp.add_route(PasswordLogin.as_view(), "/user/login")
 # bp.add_route(LineLoginPost.as_view(), "/line/login_post")
 bp.add_route(QueryPayment.as_view(), "/wechat/query_payment")
 bp.add_route(ImageProvider.as_view(), "/user/image/fetch")
 bp.add_route(FetchUserHistory.as_view(), "/user/image/history")
 bp.add_route(UserUpload.as_view(), "/user/image/upload")
+bp.add_route(UserEditNickname.as_view(), "/user/edit/nickname")
 bp.add_websocket_route(sd_genreate, "/sd/io")
 
 # CORS settings
