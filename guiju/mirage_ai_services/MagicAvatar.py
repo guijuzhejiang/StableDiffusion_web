@@ -512,4 +512,4 @@ class MagicAvatar(object):
 
         self.operator.devices.torch_gc()
 
-        return [x.convert('L') if _selected_style == '素描' else x.convert('RGBA') for x in res[0]]
+        return [x.convert('L') if _selected_style == '素描' else x.convert('RGBA') for x in res[0][:_batch_size]]

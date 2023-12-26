@@ -307,6 +307,6 @@ class MagicMirage(object):
                                             img2img_batch_input_dir,
                                             img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
                                             override_settings_texts,
-                                            *sam_args)[0]
+                                            *sam_args)[0][:_batch_size]
 
         return res

@@ -569,6 +569,6 @@ class MagicHair(object):
         self.operator.devices.torch_gc()
 
         if return_list:
-            return [x.convert('RGBA') for x in res[0]]
+            return [x.convert('RGBA') for x in res[0][:_batch_size]]
         else:
             return res[0][0].convert('RGBA')

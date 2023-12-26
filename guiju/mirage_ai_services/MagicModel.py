@@ -702,7 +702,7 @@ class MagicModel(object):
                                             *sam_args)
 
         self.operator.devices.torch_gc()
-        for res_idx, res_img in enumerate(res[0]):
+        for res_idx, res_img in enumerate(res[0][:_batch_size]):
             if getattr(res_img, 'already_saved_as', False):
                 if self.operator.predict_image(res_img.already_saved_as):
                     return {'success': False, 'result': 'backend.generate.error.re-try'}

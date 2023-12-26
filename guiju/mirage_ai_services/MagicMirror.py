@@ -838,4 +838,4 @@ class MagicMirror(object):
 
         self.operator.devices.torch_gc()
 
-        return res
+        return res[0][:_batch_size]

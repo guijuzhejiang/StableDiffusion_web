@@ -194,7 +194,7 @@ class MagicWallpaper(object):
                                             '',  # hr_prompt
                                             '',  # hr_negative_prompt,
                                             override_settings_texts,
-                                            *sam_args)[0]
+                                            *sam_args)[0][:_batch_size]
 
         # storage img
         res = []
