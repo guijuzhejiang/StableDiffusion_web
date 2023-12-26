@@ -84,7 +84,7 @@ class MagicMirror(object):
         if isinstance(result_images, dict):
             return result_images
         else:
-            result_images = result_images[0]
+            # result_images = result_images[0]
             if batch_size > 1:
                 result_images = [x.convert('RGBA') for x in result_images]
                 proceed_task_list = task_list[1:]

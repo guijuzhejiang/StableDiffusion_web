@@ -37,16 +37,16 @@ female_avatar_reference_dict = {
         'prompt': '(crayon \(medium\):1.3)',
         },
     8: {'label': '纸偶',
-        'prompt': '(paper art:1.3),3d',
+        'prompt': '(paper art:1.5),3d',
         },
     0: {'label': '赛博朋克',
-        'prompt': '(surreal:1.3),(cyberpunk:1.3),(mecha:1.3)',
+        'prompt': '(surreal:1.5),(cyberpunk:1.5),(mecha:1.5)',
         },
 }
 
 male_avatar_reference_dict = {
     0: {'label': '赛博朋克',
-        'prompt': '(surreal:1.3),(cyberpunk:1.3),(mecha:1.3)',
+        'prompt': '(surreal:1.5),(cyberpunk:1.5),(mecha:1.5)',
         },
     1: {'label': 'Q版',
         'prompt': '<lora:Guofeng_mengwan_boy:1>,chibi,1boy',
@@ -64,7 +64,7 @@ male_avatar_reference_dict = {
         'prompt': '(sketch,monochrome,greyscale:1.3)',
         },
     6: {'label': '纸偶',
-        'prompt': '(paper art:1.3),3d',
+        'prompt': '(paper art:1.5),3d',
         },
     7: {'label': '彩墨',
         'prompt': '<lora:Chinese_Ink_Painting_style:0.6>,1boy,greyscale,ink painting,Chinese martial arts style',
