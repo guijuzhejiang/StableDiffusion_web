@@ -155,7 +155,7 @@ class WeChatLogin(HTTPMethodView):
                         user_id = id_res[0]['id']
 
                     account_info = (await request.app.ctx.supabase_client.atable("account").select(
-                        "id,balance,locale,nick_name").eq("wechat_id", str(wechat_data['openid'])).lower().execute()).data
+                        "id,balance,locale,nick_name").eq("wechat_id", str(wechat_data['openid']).lower()).execute()).data
 
                     # 成功返回
                     return sanic_json({'success': True,
