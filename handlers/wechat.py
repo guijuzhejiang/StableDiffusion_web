@@ -101,7 +101,7 @@ class WeChatLogin(HTTPMethodView):
                     email = f"{wechat_data['openid']}@wechat.com".lower()
                     # result_user = {'username': email, 'password': password}
                     id_res = (await request.app.ctx.supabase_client.atable("account").select("id").eq("wechat_id", str(
-                        wechat_data['openid'])).execute()).data
+                        wechat_data['openid'].lower())).execute()).data
 
                     # supabase 检查有没有改用户，没有就注册
                     # users = await request.app.ctx.supabase_client.auth.async_list_users()
