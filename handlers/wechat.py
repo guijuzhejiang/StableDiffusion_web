@@ -145,7 +145,7 @@ class WeChatLogin(HTTPMethodView):
 
                             # result_user['avatar'] = f'service/user/image/fetch?category=account_avatar&uid={str(supabase_res.user.id)}'
                             data = (await request.app.ctx.supabase_client.atable("account").update(
-                                {"wechat_id": str(wechat_data['openid']), 'nick_name': wechat_uinfo['nickname']}).eq(
+                                {"wechat_id": str(wechat_data['openid']).lower(), 'nick_name': wechat_uinfo['nickname']}).eq(
                                 "id", user_id).execute()).data
 
                         except Exception:
@@ -155,7 +155,7 @@ class WeChatLogin(HTTPMethodView):
                         user_id = id_res[0]['id']
 
                     account_info = (await request.app.ctx.supabase_client.atable("account").select(
-                        "id,balance,locale,nick_name").eq("wechat_id", str(wechat_data['openid'])).execute()).data
+                        "id,balance,locale,nick_name").eq("wechat_id", str(wechat_data['openid'])).lower().execute()).data
 
                     # 成功返回
                     return sanic_json({'success': True,
