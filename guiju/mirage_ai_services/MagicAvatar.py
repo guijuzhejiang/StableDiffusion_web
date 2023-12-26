@@ -42,6 +42,9 @@ female_avatar_reference_dict = {
     0: {'label': '赛博朋克',
         'prompt': '(surreal:1.5),(cyberpunk:1.5),(mecha:1.5)',
         },
+    9: {'label': '雕塑',
+        'prompt': '(statue:1.5),3d',
+        },
 }
 
 male_avatar_reference_dict = {
@@ -69,8 +72,8 @@ male_avatar_reference_dict = {
     7: {'label': '彩墨',
         'prompt': '<lora:Chinese_Ink_Painting_style:0.6>,1boy,greyscale,ink painting,Chinese martial arts style',
         },
-    8: {'label': '水彩',
-        'prompt': '<lora:Watercolor_Painting_by_vizsumit:0.6>,watercolor painting',
+    8: {'label': '雕塑',
+        'prompt': '(statue:1.5),3d',
         },
 }
 
