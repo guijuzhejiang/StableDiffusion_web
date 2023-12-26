@@ -73,7 +73,7 @@ male_avatar_reference_dict = {
         'prompt': '<lora:Chinese_Ink_Painting_style:0.6>,1boy,greyscale,ink painting,Chinese martial arts style',
         },
     8: {'label': '雕塑',
-        'prompt': '(statue:1.5),3d',
+        'prompt': '<lora:23-3-14-tongren1.1.:0.9>,(statue:1.1),3d',
         },
 }
 
