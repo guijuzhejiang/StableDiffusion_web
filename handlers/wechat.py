@@ -159,7 +159,7 @@ class WeChatLogin(HTTPMethodView):
 
                     # 成功返回
                     return sanic_json({'success': True,
-                                       'user': {'name': account_info[0]['nick_name'],
+                                       'user': {'name': account_info[0]['nick_name'] if len(account_info[0]['nick_name']) > 0 else f'user{account_info[0]["id"][:8]}',
                                                 'id': account_info[0]['id'],
                                                 'balance': account_info[0]['balance'],
                                                 'locale': account_info[0]['locale'],
