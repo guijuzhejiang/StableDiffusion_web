@@ -2,7 +2,7 @@
 
 The WebUI extension for ControlNet and other injection-based SD controls.
 
-![image](https://github.com/Mikubill/sd-webui-controlnet/assets/20929282/90d9b877-ffbc-454f-a020-09116125f8ed)
+![image](https://github.com/Mikubill/sd-webui-controlnet/assets/20929282/51172d20-606b-4b9f-aba5-db2f2417cb0b)
 
 This extension is for AUTOMATIC1111's [Stable Diffusion web UI](https://github.com/AUTOMATIC1111/stable-diffusion-webui), allows the Web UI to add [ControlNet](https://github.com/lllyasviel/ControlNet) to the original Stable Diffusion model to generate images. The addition is on-the-fly, the merging is not required.
 
@@ -18,13 +18,6 @@ This extension is for AUTOMATIC1111's [Stable Diffusion web UI](https://github.c
 8. Download models (see below).
 9. After you put models in the correct folder, you may need to refresh to see the models. The refresh button is right to your "Model" dropdown.
 
-
-**Update from ControlNet 1.0 to 1.1:**
-
-* If you are not sure, you can back up and remove the folder "stable-diffusion-webui\extensions\sd-webui-controlnet", and then start from the step 1 in the above Installation section. 
-
-* Or you can start from the step 6 in the above Install section.
-
 # Download Models
 
 Right now all the 14 models of ControlNet 1.1 are in the beta test.
@@ -33,13 +26,15 @@ Download the models from ControlNet 1.1: https://huggingface.co/lllyasviel/Contr
 
 You need to download model files ending with ".pth" .
 
-Put models in your "stable-diffusion-webui\extensions\sd-webui-controlnet\models". Now we have already included all "yaml" files. You only need to download "pth" files.
+Put models in your "stable-diffusion-webui\extensions\sd-webui-controlnet\models". You only need to download "pth" files.
 
 Do not right-click the filenames in HuggingFace website to download. Some users right-clicked those HuggingFace HTML websites and saved those HTML pages as PTH/YAML files. They are not downloading correct files. Instead, please click the small download arrow “↓” icon in HuggingFace to download.
 
-Note: If you download models elsewhere, please make sure that yaml file names and model files names are same. Please manually rename all yaml files if you download from other sources. (Some models like "shuffle" needs the yaml file so that we know the outputs of ControlNet should pass a global average pooling before injecting to SD U-Nets.)
+# Download Models for SDXL
 
-# New Features in ControlNet 1.1
+See instructions [here](https://github.com/Mikubill/sd-webui-controlnet/discussions/2039).
+
+# Features in ControlNet 1.1
 
 ### Perfect Support for All ControlNet 1.0/1.1 and T2I Adapter Models.
 

@@ -1,12 +1,22 @@
 (function () {
     async function checkEditorAvailable() {
-        const EDITOR_PATH = '/openpose_editor_index';
-        const res = await fetch(EDITOR_PATH);
-        return res.status === 200;
+        const LOCAL_EDITOR_PATH = '/openpose_editor_index';
+        const REMOTE_EDITOR_PATH = 'https://huchenlei.github.io/sd-webui-openpose-editor/';
+
+        async function testEditorPath(path) {
+            const res = await fetch(path);
+            return res.status === 200 ? path : undefined;
+        }
+
+        // Use local editor if the user has the extension installed. Fallback 
+        // onto remote editor if the local editor is not ready yet.
+        // See https://github.com/huchenlei/sd-webui-openpose-editor/issues/53
+        // for more details.
+        return await testEditorPath(LOCAL_EDITOR_PATH) || await testEditorPath(REMOTE_EDITOR_PATH);
     }
 
     const cnetOpenposeEditorRegisteredElements = new Set();
-    function loadOpenposeEditor() {
+    function loadOpenposeEditor(editorURL) {
         // Simulate an `input` DOM event for Gradio Textbox component. Needed after you edit its contents in javascript, otherwise your edits
         // will only visible on web page and not sent to python.
         function updateInput(target) {
@@ -25,7 +35,6 @@
             }
 
             return new Promise((resolve) => {
-                const EDITOR_PATH = '/openpose_editor_index';
                 const darkThemeParam = document.body.classList.contains('dark') ?
                     new URLSearchParams({ theme: 'dark' }).toString() :
                     '';
@@ -35,8 +44,8 @@
                     if (message['ready']) resolve();
                 }, { once: true });
 
-                if (getPathname(iframe.src) !== EDITOR_PATH) {
-                    iframe.src = `${EDITOR_PATH}?${darkThemeParam}`;
+                if (getPathname(iframe.src) !== editorURL) {
+                    iframe.src = `${editorURL}?${darkThemeParam}`;
                     // By default assume 5 second is enough for the openpose editor
                     // to load.
                     setTimeout(resolve, 5000);
@@ -46,17 +55,16 @@
                 }
             });
         }
+        const tabs = gradioApp().querySelectorAll('.cnet-unit-tab');
+        tabs.forEach(tab => {
+            if (cnetOpenposeEditorRegisteredElements.has(tab)) return;
+            cnetOpenposeEditorRegisteredElements.add(tab);
 
-        const imageRows = gradioApp().querySelectorAll('.cnet-image-row');
-        imageRows.forEach(imageRow => {
-            if (cnetOpenposeEditorRegisteredElements.has(imageRow)) return;
-            cnetOpenposeEditorRegisteredElements.add(imageRow);
-
-            const generatedImageGroup = imageRow.querySelector('.cnet-generated-image-group');
+            const generatedImageGroup = tab.querySelector('.cnet-generated-image-group');
             const editButton = generatedImageGroup.querySelector('.cnet-edit-pose');
 
             editButton.addEventListener('click', async () => {
-                const inputImageGroup = imageRow.querySelector('.cnet-input-image-group');
+                const inputImageGroup = tab.querySelector('.cnet-input-image-group');
                 const inputImage = inputImageGroup.querySelector('.cnet-image img');
                 const downloadLink = generatedImageGroup.querySelector('.cnet-download-pose a');
                 const modalId = editButton.id.replace('cnet-modal-open-', '');
@@ -65,7 +73,7 @@
                 await navigateIframe(modalIframe);
                 modalIframe.contentWindow.postMessage({
                     modalId,
-                    imageURL: inputImage.src,
+                    imageURL: inputImage ? inputImage.src : undefined,
                     poseURL: downloadLink.href,
                 }, '*');
                 // Focus the iframe so that the focus is no longer on the `Edit` button.
@@ -73,53 +81,87 @@
                 // the click again to resend the frame message.
                 modalIframe.contentWindow.focus();
             });
-
-            window.addEventListener('message', (event) => {
-                const message = event.data;
+            /* 
+            * Writes the pose data URL to an link element on input image group.
+            * Click a hidden button to trigger a backend rendering of the pose JSON.
+            * 
+            * The backend should:
+            * - Set the rendered pose image as preprocessor generated image.
+            */
+            function updatePreviewPose(poseURL) {
                 const downloadLink = generatedImageGroup.querySelector('.cnet-download-pose a');
                 const renderButton = generatedImageGroup.querySelector('.cnet-render-pose');
                 const poseTextbox = generatedImageGroup.querySelector('.cnet-pose-json textarea');
-                const modalId = editButton.id.replace('cnet-modal-open-', '');
-                const closeModalButton = generatedImageGroup.querySelector('.cnet-modal .cnet-modal-close');
+                const allowPreviewCheckbox = tab.querySelector('.cnet-allow-preview input');
 
-                if (message.modalId !== modalId) return;
-                /* 
-                * Writes the pose data URL to an link element on input image group.
-                * Click a hidden button to trigger a backend rendering of the pose JSON.
-                * 
-                * The backend should:
-                * - Set the rendered pose image as preprocessor generated image.
-                */
-                downloadLink.href = message.poseURL;
-                poseTextbox.value = message.poseURL;
+                if (!allowPreviewCheckbox.checked)
+                    allowPreviewCheckbox.click();
+
+                // Only set href when download link exists and needs an update. `downloadLink`
+                // can be null when user closes preview and click `Upload JSON` button again.
+                // https://github.com/Mikubill/sd-webui-controlnet/issues/2308
+                if (downloadLink !== null)
+                    downloadLink.href = poseURL;
+
+                poseTextbox.value = poseURL;
                 updateInput(poseTextbox);
                 renderButton.click();
+            }
+
+            // Updates preview image when edit is done.
+            window.addEventListener('message', (event) => {
+                const message = event.data;
+                const modalId = editButton.id.replace('cnet-modal-open-', '');
+                if (message.modalId !== modalId) return;
+                updatePreviewPose(message.poseURL);
+
+                const closeModalButton = generatedImageGroup.querySelector('.cnet-modal .cnet-modal-close');
                 closeModalButton.click();
+            });
+
+            const inputImageGroup = tab.querySelector('.cnet-input-image-group');
+            const uploadButton = inputImageGroup.querySelector('.cnet-upload-pose input');
+            // Updates preview image when JSON file is uploaded.
+            uploadButton.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (!file)
+                    return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const contents = e.target.result;
+                    const poseURL = `data:application/json;base64,${btoa(contents)}`;
+                    updatePreviewPose(poseURL);
+                };
+                reader.readAsText(file);
+                // Reset the file input value so that uploading the same file still triggers callback.
+                event.target.value = '';
             });
         });
     }
 
     function loadPlaceHolder() {
-        const imageRows = gradioApp().querySelectorAll('.cnet-image-row');
-        imageRows.forEach(imageRow => {
-            if (cnetOpenposeEditorRegisteredElements.has(imageRow)) return;
-            cnetOpenposeEditorRegisteredElements.add(imageRow);
+        const tabs = gradioApp().querySelectorAll('.cnet-image-row');
+        tabs.forEach(tab => {
+            if (cnetOpenposeEditorRegisteredElements.has(tab)) return;
+            cnetOpenposeEditorRegisteredElements.add(tab);
 
-            const generatedImageGroup = imageRow.querySelector('.cnet-generated-image-group');
+            const generatedImageGroup = tab.querySelector('.cnet-generated-image-group');
             const editButton = generatedImageGroup.querySelector('.cnet-edit-pose');
             const modalContent = generatedImageGroup.querySelector('.cnet-modal-content');
 
             modalContent.classList.add('alert');
             modalContent.innerHTML = `
         <div>
-            <p>Openpose editor not found. Please make sure you have an openpose
-            editor available on /openpose_editor_index. To hide the edit button,
-            you can check "Disable openpose edit" in Settings.<br>
-            
-            Following extension(s) provide integration with ControlNet:</p>
-            <ul style="list-style-type:none;">
-                <li><a href="https://github.com/huchenlei/sd-webui-openpose-editor">
-                    huchenlei/sd-webui-openpose-editor</a></li>
+            <p>
+                OpenPose editor not found. Please make sure you have an OpenPose editor available on <code>/openpose_editor_index</code>. To hide the edit button, check "Disable openpose edit" in Settings.<br>
+                <br>
+                The following extension(s) provide integration with ControlNet:
+            </p>
+            <ul>
+                <li>
+                    <a href="https://github.com/huchenlei/sd-webui-openpose-editor">huchenlei/sd-webui-openpose-editor</a>
+                </li>
             </ul>
         </div>
         `;
@@ -128,10 +170,10 @@
         });
     }
 
-    checkEditorAvailable().then(editorAvailable => {
+    checkEditorAvailable().then(editorURL => {
         onUiUpdate(() => {
-            if (editorAvailable)
-                loadOpenposeEditor();
+            if (editorURL)
+                loadOpenposeEditor(editorURL);
             else
                 loadPlaceHolder();
         });

@@ -1,17 +1,28 @@
+import os
 import unittest
-import importlib
-utils = importlib.import_module('extensions.sd-webui-controlnet.tests.utils', 'utils')
-utils.setup_test_env()
 import requests
+import importlib
 
+utils = importlib.import_module("extensions.sd-webui-controlnet.tests.utils", "utils")
+from scripts.enums import StableDiffusionVersion
+from modules import shared
 
 
 class TestAlwaysonTxt2ImgWorking(unittest.TestCase):
     def setUp(self):
+        self.sd_version = StableDiffusionVersion(
+            int(
+                os.environ.get(
+                    "CONTROLNET_TEST_SD_VERSION", StableDiffusionVersion.SD1x.value
+                )
+            )
+        )
+        self.model = utils.get_model("canny", self.sd_version)
+
         controlnet_unit = {
             "enabled": True,
             "module": "none",
-            "model": utils.get_model(),
+            "model": self.model,
             "weight": 1.0,
             "image": utils.readImage("test/test_files/img2img_basic.png"),
             "mask": utils.readImage("test/test_files/img2img_basic.png"),
@@ -23,9 +34,9 @@ class TestAlwaysonTxt2ImgWorking(unittest.TestCase):
             "guidance_start": 0.0,
             "guidance_end": 1.0,
             "control_mode": 0,
-            "pixel_perfect": False
+            "pixel_perfect": False,
         }
-        setup_args = [controlnet_unit] * getattr(self, 'units_count', 1)
+        setup_args = [controlnet_unit] * getattr(self, "units_count", 1)
         self.setup_route(setup_args)
 
     def setup_route(self, setup_args):
@@ -57,24 +68,35 @@ class TestAlwaysonTxt2ImgWorking(unittest.TestCase):
             "s_tmin": 0,
             "s_noise": 1,
             "sampler_index": "Euler a",
-            "alwayson_scripts": {}
+            "alwayson_scripts": {},
         }
         self.setup_controlnet_params(setup_args)
 
     def setup_controlnet_params(self, setup_args):
-        self.simple_txt2img["alwayson_scripts"]["ControlNet"] = {
-            "args": setup_args
-        }
+        self.simple_txt2img["alwayson_scripts"]["ControlNet"] = {"args": setup_args}
 
     def assert_status_ok(self, msg=None):
-        self.assertEqual(requests.post(self.url_txt2img, json=self.simple_txt2img).status_code, 200, msg)
-        stderr = ""
-        with open('test/stderr.txt') as f:
-            stderr = f.read().lower()
-        with open('test/stderr.txt', 'w') as f:
-            # clear stderr file so that we can easily parse the next test
-            f.write("")
-        self.assertFalse('error' in stderr, "Errors in stderr: \n" + stderr)
+        msg = ("" if msg is None else msg) + f"\nPayload:\n{self.simple_txt2img}"
+
+        resp = requests.post(self.url_txt2img, json=self.simple_txt2img)
+        self.assertEqual(resp.status_code, 200, msg)
+        # Note: Exception/error in ControlNet code likely will cause hook failure, which further leads
+        # to detected map not being appended at the end of response image array.
+        data = resp.json()
+        expected_image_num = self.simple_txt2img["n_iter"] * self.simple_txt2img[
+            "batch_size"
+        ] + min(
+            sum(
+                [
+                    unit.get("save_detected_map", True)
+                    for unit in self.simple_txt2img["alwayson_scripts"]["ControlNet"][
+                        "args"
+                    ]
+                ]
+            ),
+            shared.opts.data.get("control_net_unit_count", 3),
+        )
+        self.assertEqual(len(data["images"]), expected_image_num, msg)
 
     def test_txt2img_simple_performed(self):
         self.assert_status_ok()
@@ -106,7 +128,7 @@ class TestAlwaysonTxt2ImgWorking(unittest.TestCase):
         self.simple_txt2img["alwayson_scripts"]["ControlNet"]["args"] = [
             {
                 "input_image": utils.readImage("test/test_files/img2img_basic.png"),
-                "model": utils.get_model(),
+                "model": self.model,
             }
         ]
 
@@ -114,32 +136,131 @@ class TestAlwaysonTxt2ImgWorking(unittest.TestCase):
 
     def test_call_with_preprocessors(self):
         available_modules = utils.get_modules()
-        available_modules_list = available_modules.get('module_list', [])
-        available_modules_detail = available_modules.get('module_detail', {})
-        for module in ['depth', 'openpose_full']:
-            assert module in available_modules_list, f'Failed to find {module}.'
-            assert module in available_modules_detail, f"Failed to find {module}'s detail."
+        available_modules_list = available_modules.get("module_list", [])
+        available_modules_detail = available_modules.get("module_detail", {})
+        for module in ["depth", "openpose_full"]:
+            assert module in available_modules_list, f"Failed to find {module}."
+            assert (
+                module in available_modules_detail
+            ), f"Failed to find {module}'s detail."
             with self.subTest(module=module):
                 self.simple_txt2img["alwayson_scripts"]["ControlNet"]["args"] = [
                     {
-                        "input_image": utils.readImage("test/test_files/img2img_basic.png"),
-                        "model": utils.get_model(),
-                        "module": module
+                        "input_image": utils.readImage(
+                            "test/test_files/img2img_basic.png"
+                        ),
+                        "model": self.model,
+                        "module": module,
                     }
                 ]
-                self.assert_status_ok(f'Running preprocessor module: {module}')
+                self.assert_status_ok(f"Running preprocessor module: {module}")
 
     def test_call_invalid_params(self):
-        for param in ('processor_res', 'threshold_a', 'threshold_b'):
+        for param in ("processor_res", "threshold_a", "threshold_b"):
             with self.subTest(param=param):
                 self.simple_txt2img["alwayson_scripts"]["ControlNet"]["args"] = [
                     {
-                        "input_image": utils.readImage("test/test_files/img2img_basic.png"),
-                        "model": utils.get_model(),
+                        "input_image": utils.readImage(
+                            "test/test_files/img2img_basic.png"
+                        ),
+                        "model": self.model,
                         param: -1,
                     }
                 ]
-                self.assert_status_ok(f'Run with {param} = -1.')
+                self.assert_status_ok(f"Run with {param} = -1.")
+
+    def test_save_detected_map(self):
+        for save_map in (True, False):
+            with self.subTest(save_map=save_map):
+                self.simple_txt2img["alwayson_scripts"]["ControlNet"]["args"] = [
+                    {
+                        "input_image": utils.readImage(
+                            "test/test_files/img2img_basic.png"
+                        ),
+                        "model": self.model,
+                        "module": "depth",
+                        "save_detected_map": save_map,
+                    }
+                ]
+
+                resp = requests.post(self.url_txt2img, json=self.simple_txt2img).json()
+                self.assertEqual(2 if save_map else 1, len(resp["images"]))
+
+    def run_test_unit(
+        self, module: str, model: str, sd_version: StableDiffusionVersion
+    ) -> None:
+        if self.sd_version != sd_version:
+            return
+
+        self.simple_txt2img["alwayson_scripts"]["ControlNet"]["args"] = [
+            {
+                "input_image": utils.readImage("test/test_files/img2img_basic.png"),
+                "model": utils.get_model(model, sd_version),
+                "module": module,
+            }
+        ]
+
+        self.assert_status_ok()
+
+    def test_ip_adapter_face(self):
+        self.run_test_unit(
+            "ip-adapter_clip_sdxl_plus_vith",
+            "ip-adapter-plus-face_sdxl_vit-h",
+            StableDiffusionVersion.SDXL,
+        )
+        self.run_test_unit(
+            "ip-adapter_clip_sd15",
+            "ip-adapter-plus-face_sd15",
+            StableDiffusionVersion.SD1x,
+        )
+
+    def test_ip_adapter_fullface(self):
+        self.run_test_unit(
+            "ip-adapter_clip_sd15",
+            "ip-adapter-full-face_sd15",
+            StableDiffusionVersion.SD1x,
+        )
+
+    def test_control_lora(self):
+        self.run_test_unit("canny", "sai_xl_canny_128lora", StableDiffusionVersion.SDXL)
+        self.run_test_unit("canny", "control_lora_rank128_v11p_sd15_canny", StableDiffusionVersion.SD1x)
+
+    def test_control_lllite(self):
+        self.run_test_unit(
+            "canny", "kohya_controllllite_xl_canny", StableDiffusionVersion.SDXL
+        )
+
+    def test_diffusers_controlnet(self):
+        self.run_test_unit(
+            "canny", "diffusers_xl_canny_small", StableDiffusionVersion.SDXL
+        )
+
+    def test_t2i_adapter(self):
+        self.run_test_unit(
+            "canny", "t2iadapter_canny_sd15v2", StableDiffusionVersion.SD1x
+        )
+        self.run_test_unit("canny", "t2i-adapter_xl_canny", StableDiffusionVersion.SDXL)
+
+    def test_reference(self):
+        self.run_test_unit("reference_only", "None", StableDiffusionVersion.SD1x)
+        self.run_test_unit("reference_only", "None", StableDiffusionVersion.SDXL)
+
+    def test_unrecognized_param(self):
+        unit = self.simple_txt2img["alwayson_scripts"]["ControlNet"]["args"][0]
+        unit["foo"] = True
+        unit["is_ui"] = False
+        self.assert_status_ok()
+
+    def test_default_model(self):
+        # Model "None" should be used when model is not specified in the payload.
+        self.simple_txt2img["alwayson_scripts"]["ControlNet"]["args"] = [
+            {
+                "input_image": utils.readImage("test/test_files/img2img_basic.png"),
+                "module": "reference_only",
+            }
+        ]
+        self.assert_status_ok()
+
 
 if __name__ == "__main__":
     unittest.main()
