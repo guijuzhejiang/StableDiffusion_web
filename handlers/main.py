@@ -5,7 +5,7 @@ import urllib.parse
 from datetime import datetime, timedelta, date
 import aiofile
 import ujson
-from sanic.response import json as sanic_json, file_stream
+from sanic.response import json as sanic_json, file_stream, text
 from sanic.views import HTTPMethodView
 from lib.celery_workshop.wokrshop import WorkShop
 from lib.common.common_util import encrypt, generate_random_digits, uuid_to_number_string
@@ -129,6 +129,8 @@ class ImageProvider(HTTPMethodView):
 
             if category == 'account_avatar':
                 fp = os.path.join(dir_storage_path, f"{user_id}.jpg")
+                if not os.path.exists(fp):
+                    return text('404 - Not Found', status=404)
             else:
                 dir_user_path = os.path.join(dir_storage_path, user_id)
                 fp = os.path.join(dir_user_path, request.args.get("imgpath"))

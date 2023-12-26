@@ -3,11 +3,9 @@
 # @File : magic_wallpapaper.py
 import copy
 import datetime
-import glob
 import os
 import random
 import string
-import urllib.parse
 
 import numpy as np
 import ujson
@@ -15,7 +13,6 @@ from PIL import Image, ImageDraw
 
 from lora_config import reference_dir
 from modules.sd_samplers_kdiffusion import samplers_k_diffusion
-from utils.global_vars import CONFIG
 
 female_avatar_reference_dict = {
     1: {'label': 'Q版',
@@ -25,7 +22,7 @@ female_avatar_reference_dict = {
         'prompt': '',
         },
     3: {'label': '手办',
-        'prompt': '(faux figurine:1.8),3d',
+        'prompt': '(faux figurine:1.3),3d',
         },
     4: {'label': '水彩',
         'prompt': '(watercolor \(medium\):1.3)',
@@ -40,7 +37,7 @@ female_avatar_reference_dict = {
         'prompt': '(crayon \(medium\):1.6)',
         },
     8: {'label': '纸偶',
-        'prompt': '(paper art:1.8),3d',
+        'prompt': '(paper art:1.3),3d',
         },
     0: {'label': '赛博朋克',
         'prompt': '(surreal:1.5),(cyberpunk:1.5),(mecha:1.5)',
@@ -55,10 +52,10 @@ male_avatar_reference_dict = {
         'prompt': '<lora:Guofeng_mengwan_boy:1>,chibi,1boy',
         },
     2: {'label': '亚克力',
-        'prompt': '(acrylic paint \(medium\):1.8)',
+        'prompt': '(acrylic paint \(medium\):1.3)',
         },
     3: {'label': '手办',
-        'prompt': '(faux figurine:1.8),3d',
+        'prompt': '(faux figurine:1.3),3d',
         },
     4: {'label': '泥塑',
         'prompt': '',
@@ -67,7 +64,7 @@ male_avatar_reference_dict = {
         'prompt': '(sketch,monochrome,greyscale:1.5)',
         },
     6: {'label': '纸偶',
-        'prompt': '(paper art:1.8),3d',
+        'prompt': '(paper art:1.3),3d',
         },
     7: {'label': '彩墨',
         'prompt': '<lora:Chinese_Ink_Painting_style:0.6>,1boy,greyscale,ink painting,Chinese martial arts style',
