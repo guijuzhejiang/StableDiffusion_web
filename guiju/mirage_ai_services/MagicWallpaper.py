@@ -95,12 +95,12 @@ class MagicWallpaper(object):
         controlnet_args_unit1.low_vram = False
         controlnet_args_unit1.loopback = False
         controlnet_args_unit1.processor_res = 512
-        controlnet_args_unit1.threshold_a = 0.5
+        controlnet_args_unit1.threshold_a = -1
         controlnet_args_unit1.threshold_b = -1
-        controlnet_args_unit1.model = 'None'
-        controlnet_args_unit1.module = 'reference_adain+attn'
+        controlnet_args_unit1.model = 'ip-adapter-plus_sd15'
+        controlnet_args_unit1.module = 'ip-adapter_clip_sd15'
         controlnet_args_unit1.pixel_perfect = True
-        controlnet_args_unit1.weight = 1
+        controlnet_args_unit1.weight = 0.8
         controlnet_args_unit1.resize_mode = 'Crop and Resize'
 
         _reference_dir_path = os.path.join(reference_dir, "mirage_reference", str(_selected_place))
@@ -123,6 +123,7 @@ class MagicWallpaper(object):
         controlnet_args_unit2.control_mode = 'Balanced'
         controlnet_args_unit2.threshold_a = -1
         controlnet_args_unit2.threshold_b = -1
+        controlnet_args_unit2.image = None
 
         # depth
         controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
