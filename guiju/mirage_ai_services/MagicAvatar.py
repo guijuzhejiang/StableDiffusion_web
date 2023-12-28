@@ -37,7 +37,7 @@ female_avatar_reference_dict = {
         'prompt': '(crayon \(medium\):1.6)',
         },
     8: {'label': '纸偶',
-        'prompt': '(paper art:1.8),3d',
+        'prompt': '(paper art:1.6),3d',
         },
     0: {'label': '赛博朋克',
         'prompt': '(surreal:1.5),(cyberpunk:1.5),(mecha:1.5)',
