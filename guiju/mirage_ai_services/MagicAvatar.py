@@ -34,7 +34,7 @@ female_avatar_reference_dict = {
         'prompt': '(sketch,monochrome,greyscale:1.3)',
         },
     7: {'label': '蜡笔',
-        'prompt': '(crayon \(medium\):1.5)',
+        'prompt': '(crayon \(medium\):1.6)',
         },
     8: {'label': '纸偶',
         'prompt': '(paper art:1.8),3d',
