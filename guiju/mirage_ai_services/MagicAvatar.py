@@ -22,7 +22,7 @@ female_avatar_reference_dict = {
         'prompt': '',
         },
     3: {'label': '手办',
-        'prompt': '(faux figurine:1.3),3d',
+        'prompt': '(faux figurine:1.5),3d',
         },
     4: {'label': '水彩',
         'prompt': '(watercolor \(medium\):1.3)',
