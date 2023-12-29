@@ -73,4 +73,5 @@ aliyun:
     access_key_id: "LTAI5tHqAUujrdmH8yQCw3N4"
     access_key_secret: "CZ0H8ts8FTZblgymKIGNt5rdQj5DON"
     template_code: "SMS_463945297"
+    global_template_code: "SMS_464540310"
 #    template_code: "SMS_290885121"

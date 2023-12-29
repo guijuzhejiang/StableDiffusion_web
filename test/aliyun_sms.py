@@ -32,7 +32,7 @@ try:
     send_sms_request = dysmsapi_20170525_models.SendSmsRequest(
         phone_numbers=phone,
         sign_name='幻景AI',
-        template_code=CONFIG['aliyun']['sms']['template_code'],
+        template_code=CONFIG['aliyun']['sms']['global_template_code'],
         template_param=ujson.dumps({'code': captcha}),
     )
     try:

@@ -318,26 +318,4 @@ class VerifyCaptcha(HTTPMethodView):
             return sanic_json({'success': True})
 
 
-class PasswordLogin(HTTPMethodView):
-    """
-        密码登录
-    """
-    async def post(self, request):
-        try:
-            phone = request.form['phone'][0]
-            password = request.form['password'][0]
 
-            supabase_res = await request.app.ctx.supabase_client.auth.async_sign_in(email=phone, password=password)
-            account_info = (await request.app.ctx.supabase_client.atable("account").select(
-                "id,balance,locale,nick_name").eq("id", supabase_res.user.id).execute()).data
-            return sanic_json({'success': True,
-                               'user': {'name': account_info[0]['nick_name'],
-                                        'id': account_info[0]['id'],
-                                        'balance': account_info[0]['balance'],
-                                        'locale': account_info[0]['locale'],
-                                        },
-                               'expires_in': 3600
-                               })
-        except Exception:
-            print(traceback.format_exc())
-            return sanic_json({'success': False, 'result': 'backend.api.error.send-captcha'})
