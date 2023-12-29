@@ -108,35 +108,33 @@ class LineLogin(HTTPMethodView):
 
                 # users_email = [u['email'] for u in users]
 
-                id_res = (await request.app.ctx.supabase_client.atable("account").select("id").eq("line_id", str(
+                account_info = (await request.app.ctx.supabase_client.atable("account").select("id,balance,locale,nick_name").eq("line_id", str(
                     line_info['sub']).lower()).execute()).data
                 # 如果没有查询到则注册
-                if len(id_res) == 0:
+                if len(account_info) == 0:
                     try:
                         supabase_res = await request.app.ctx.supabase_client.auth.async_sign_up(email=email,
                                                                                                 password=password)
-                        user_id = supabase_res.user.id
+                        user_id = str(supabase_res.user.id)
 
                         if 'picture' in line_info.keys():
                             avatar_response = await client.get(line_info['picture'])
                             async with aiofile.async_open(
                                     os.path.join(CONFIG['storage_dirpath']['user_account_avatar_dir'],
                                                  f"{supabase_res.user.id}.jpg"), 'wb') as file:
-                                await file.write(avatar_response.body)
+                                await file.write(avatar_response.content)
                     except Exception:
                         print(str(traceback.format_exc()))
                         return sanic_json({'success': False, 'message': "backend.api.error.register"})
                     else:
                         res = (await request.app.ctx.supabase_client.atable("account").update(
-                            {"line_id": str(line_info['sub']).lower(), 'nick_name': line_info['name'], "locale": 'jp'}).eq(
+                            {"line_id": str(line_info['sub']).lower(), 'nick_name': f'user{user_id[:8]}', "locale": 'jp'}).eq(
                             "id", user_id).execute()).data
                         # res = (await request.app.ctx.supabase_client.atable("account").update(
                         #     {"locale": 'jp'}).eq("id", str(supabase_res.user.id)).execute()).data
                 else:
-                    user_id = id_res[0]['id']
-
-                account_info = (await request.app.ctx.supabase_client.atable("account").select(
-                    "id,balance,locale,nick_name").eq("line_id", str(line_info['sub']).lower()).execute()).data
+                    account_info = (await request.app.ctx.supabase_client.atable("account").select(
+                        "id,balance,locale,nick_name").eq("line_id", str(line_info['sub']).lower()).execute()).data
 
                 # 成功返回
                 return sanic_json({'success': True,

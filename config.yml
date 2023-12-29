@@ -53,6 +53,9 @@ wechatpay:
 wechatlogin:
   appid: wx8b7f856da1e0485c
   secret: 549d9da20952e20ed5cd86ec81303640
+googlelogin:
+  client_id: '51336041422-d1a9ssmmhauk16n4mc9a21mmbv36h604.apps.googleusercontent.com'
+#  client_id: '714423616983-8l6ttvp7f7nhsqg4t5q4k56onj2m2pf6.apps.googleusercontent.com'
 linelogin:
   token_url: 'https://api.line.me/oauth2/v2.1/token'
   verify_url: "https://api.line.me/oauth2/v2.1/verify"

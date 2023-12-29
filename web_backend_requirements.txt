@@ -16,3 +16,7 @@ aiosupabase
 jinja2
 aiofile
 alibabacloud_dysmsapi20170525==2.0.24
+
+google-auth
+google-auth-oauthlib
+google-auth-httplib2

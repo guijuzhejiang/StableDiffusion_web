@@ -6,6 +6,7 @@ from sanic import Blueprint
 from sanic import Sanic
 from sanic_cors import CORS
 
+from handlers.google import GoogleLogin
 from handlers.line import LineLogin
 from handlers.wechat import ReqPayQRCode, WeChatLogin, QueryPayment
 from lib.celery_workshop.wokrshop import WorkShop
@@ -30,6 +31,7 @@ bp.add_route(VerifyCaptcha.as_view(), "/sms/verify_captcha")
 bp.add_route(WeChatLogin.as_view(), "/wechat/login")
 bp.add_route(LineLogin.as_view(), "/line/login")
 bp.add_route(PasswordLogin.as_view(), "/user/login")
+bp.add_route(GoogleLogin.as_view(), "/google/login")
 # bp.add_route(LineLoginPost.as_view(), "/line/login_post")
 bp.add_route(QueryPayment.as_view(), "/wechat/query_payment")
 bp.add_route(ImageProvider.as_view(), "/user/image/fetch")
