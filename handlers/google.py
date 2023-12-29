@@ -34,7 +34,7 @@ class GoogleLogin(HTTPMethodView):
 
             req_session = Session()
             req_session.proxies = {"http": self.proxy_url, "https": self.proxy_url}
-            google_info = id_token.verify_oauth2_token(google_login_jwt, requests.Request(req_session), CONFIG['googlelogin']['client_id'])
+            google_info = id_token.verify_oauth2_token(google_login_jwt, requests.Request(req_session), CONFIG['googlelogin']['client_id'] if not CONFIG['local'] else "714423616983-8l6ttvp7f7nhsqg4t5q4k56onj2m2pf6.apps.googleusercontent.com")
 
             # create supabase account
             email = f"{google_info['sub']}@google.com".lower()
