@@ -6,15 +6,14 @@ from sanic import Blueprint
 from sanic import Sanic
 from sanic_cors import CORS
 
-from handlers.google import GoogleLogin
-from handlers.line import LineLogin
-from handlers.wechat import ReqPayQRCode, WeChatLogin, QueryPayment
+from handlers.login import WeChatLogin, LineLogin, PasswordLogin, GoogleLogin
+from handlers.pay import WechatReqPayQRCode, PayPalCreateOrder, WechatQueryPayment
 from lib.celery_workshop.wokrshop import WorkShop
 from operators import OperatorSD
 from wechatpayv3 import WeChatPay, WeChatPayType
 
 from handlers.main import ImageProvider, FetchUserHistory, UserUpload, QueryDiscount, RevokeTask, SendCaptcha, \
-    VerifyCaptcha, QueryBalance, PasswordLogin, UserEditNickname
+    VerifyCaptcha, QueryBalance, UserEditNickname
 from redis import asyncio as aioredis
 from handlers.websocket import sd_genreate
 from utils.global_vars import CONFIG
@@ -22,7 +21,8 @@ from utils.global_vars import CONFIG
 # Blueprint
 bp = Blueprint("ai_tasks")
 # add_route
-bp.add_route(ReqPayQRCode.as_view(), "/wechat/pay")
+bp.add_route(PayPalCreateOrder.as_view(), "/paypal/pay")
+bp.add_route(WechatReqPayQRCode.as_view(), "/wechat/pay")
 bp.add_route(QueryBalance.as_view(), "/wechat/query")
 bp.add_route(QueryDiscount.as_view(), "/discount/query")
 bp.add_route(RevokeTask.as_view(), "/management/revoke_task")
@@ -33,7 +33,7 @@ bp.add_route(LineLogin.as_view(), "/line/login")
 bp.add_route(PasswordLogin.as_view(), "/user/login")
 bp.add_route(GoogleLogin.as_view(), "/google/login")
 # bp.add_route(LineLoginPost.as_view(), "/line/login_post")
-bp.add_route(QueryPayment.as_view(), "/wechat/query_payment")
+bp.add_route(WechatQueryPayment.as_view(), "/wechat/query_payment")
 bp.add_route(ImageProvider.as_view(), "/user/image/fetch")
 bp.add_route(FetchUserHistory.as_view(), "/user/image/history")
 bp.add_route(UserUpload.as_view(), "/user/image/upload")

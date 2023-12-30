@@ -6,6 +6,7 @@ import gotrue
 # from gotrue import SyncGoTrueAdminAPI
 # from gotrue import SyncGoTrueAdminAPI
 from gotrue import check_response
+from tqdm import tqdm
 
 from lib.common.common_util import uuid_to_number_string
 
@@ -23,15 +24,17 @@ supabase_client.configure(
 #                             {"status": 0}).eq("id", 1).execute().data
 data = supabase_client.table("account").select("*").execute()
 print(data.data)
-for account in list(data.data):
-    if account['wechat_id']:
-        _id, _type = account['wechat_id'].split('@')
-        if 'sms' in _type:
-            supabase_client.table("account").update({"phone": _id, 'wechat_id': ''}).eq('id', account['id']).execute()
-        elif 'wechat' in _type:
-            supabase_client.table("account").update({"wechat_id": _id}).eq('id', account['id']).execute()
-        elif 'line' in _type:
-            supabase_client.table("account").update({"line_id": _id, 'wechat_id': ''}).eq('id', account['id']).execute()
+for account in tqdm(list(data.data)):
+    if account['phone']:
+        supabase_client.table("account").update({"phone": f'+86'+account['phone']}).eq('id', account['id']).execute()
+
+        # _id, _type = account['wechat_id'].split('@')
+        # if 'sms' in _type:
+        #     supabase_client.table("account").update({"phone": _id, 'wechat_id': ''}).eq('id', account['id']).execute()
+        # elif 'wechat' in _type:
+        #     supabase_client.table("account").update({"wechat_id": _id}).eq('id', account['id']).execute()
+        # elif 'line' in _type:
+        #     supabase_client.table("account").update({"line_id": _id, 'wechat_id': ''}).eq('id', account['id']).execute()
 
 # headers = self.headers
 #         url = f"{self.url}/admin/users"
