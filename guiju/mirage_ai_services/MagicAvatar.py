@@ -433,7 +433,8 @@ class MagicAvatar(object):
                     'image': _reference_img_rgb_ndarray,
                     'mask': _reference_img_mask_ndarray,
                 }
-                controlnet_args_unit2.model = 'None' if _selected_style in ["手办", "纸偶"] else "ip-adapter-plus-face_sd15"
+                # controlnet_args_unit2.model = 'None' if _selected_style in ["手办", "纸偶"] else "ip-adapter-plus-face_sd15"
+                controlnet_args_unit2.model = 'None' if _selected_style in ["手办", "纸偶"] else "ip-adapter-plus_sd15"
                 controlnet_args_unit2.module = 'reference_adain+attn' if _selected_style in ["手办", "纸偶"] else "ip-adapter_clip_sd15"
                 # controlnet_args_unit2.module = 'ip-adapter_clip_sd15'
                 controlnet_args_unit2.weight = 0.8
