@@ -9,7 +9,7 @@ from sanic.response import json as sanic_json, file_stream, text
 from sanic.views import HTTPMethodView
 from lib.celery_workshop.wokrshop import WorkShop
 from lib.common.common_util import encrypt, generate_random_digits, uuid_to_number_string
-import pytz
+
 from gotrue import check_response
 from alibabacloud_dysmsapi20170525.client import Client as Dysmsapi20170525Client
 from alibabacloud_tea_openapi import models as open_api_models
@@ -38,82 +38,6 @@ class RevokeTask(HTTPMethodView):
         except Exception:
             print(traceback.format_exc())
             return sanic_json({'success': False, 'message': 'backend.api.error.default'})
-
-
-class QueryDiscount(HTTPMethodView):
-    """
-        查询当前可用优惠
-    """
-    async def post(self, request):
-        try:
-            user_id = request.form['user_id'][0]
-            transaction_data = (await request.app.ctx.supabase_client.atable("transaction").select("*").eq("user_id", user_id).eq("is_plus", True).eq("status", 1).execute())
-            first_charge = len(transaction_data.data) == 0
-
-            res = []
-            if first_charge:
-                res.append(['首次充值享8折优惠', 0.8])
-
-            start_date = date(2023, 12, 1)
-            end_date = date(2023, 12, 29)
-            if start_date <= date.today() <= end_date:
-                res.append(['十二月优惠礼6折', 0.6])
-
-            if len(res) > 1:
-                res.append(['多个折扣可叠加', 1])
-
-            return sanic_json({'success': True, 'result': res})
-        except Exception:
-            print(traceback.format_exc())
-            return sanic_json({'success': False, 'message': 'backend.api.error.default'})
-
-
-class QueryBalance(HTTPMethodView):
-    """
-        查余额
-    """
-    async def post(self, request):
-        user_id = request.form['user_id'][0]
-        no_confirm_rows = (await request.app.ctx.supabase_client.atable("transaction").select("*").eq("user_id", user_id).eq("status", 0).eq("is_plus", True).execute()).data
-
-        # 计算未确认支付额
-        pre_charge_amount = 0
-        need_del_transaction = []
-        for row in no_confirm_rows:
-            code, message = request.app.ctx.wxpay.query(
-                # transaction_id='demo-transation-id'
-                out_trade_no=row['out_trade_no']
-            )
-            trade_message = ujson.loads(message)
-
-            if code == 200 and trade_message['trade_state'] == 'SUCCESS':
-                data = (await request.app.ctx.supabase_client.atable("transaction").update(
-                    {"status": 1}).eq("id", row['id']).eq("is_plus", True).execute()).data
-                if len(data) == 0:
-                    print(row['id'] + " update transaction false")
-                pre_charge_amount += row['amount']
-            else:
-                iso_created_at = row['created_at'].split('.')[0] + '+' + row['created_at'].split('+')[-1]
-                if (datetime.now(pytz.UTC) - datetime.fromisoformat(iso_created_at).replace(tzinfo=pytz.UTC)) >= timedelta(minutes=15):
-                    need_del_transaction.append(row['id'])
-
-        account = (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[0]
-        if pre_charge_amount > 0:
-            data = (await request.app.ctx.supabase_client.atable("account").update(
-                        {"balance": account['balance']+pre_charge_amount}).eq("id", account['id']).execute()).data
-        if len(need_del_transaction):
-            for del_target in need_del_transaction:
-                data = (await request.app.ctx.supabase_client.atable("transaction").delete().eq("id", del_target).execute()).data
-
-        if hasattr(request.form, 'out_trade_no'):
-            out_trade_no = request.form['out_trade_no'][0]
-            code, message = request.app.ctx.wxpay.query(
-                out_trade_no=out_trade_no
-            )
-
-            return sanic_json({'success': code == 200, 'balance': account['balance']+pre_charge_amount})
-        else:
-            return sanic_json({'success': True, 'balance': account['balance']+pre_charge_amount})
 
 
 class ImageProvider(HTTPMethodView):

@@ -33,7 +33,7 @@ class GoogleLogin(HTTPMethodView):
             google_login_jwt = request.form['gtoken'][0]
 
             req_session = Session()
-            req_session.proxies = {"http": self.proxy_url, "https": self.proxy_url}
+            req_session.proxies = {"http": CONFIG['http_proxy'], "https": CONFIG['http_proxy']}
             google_info = id_token.verify_oauth2_token(google_login_jwt, requests.Request(req_session), CONFIG['googlelogin']['client_id'] if not CONFIG['local'] else "714423616983-8l6ttvp7f7nhsqg4t5q4k56onj2m2pf6.apps.googleusercontent.com")
 
             # create supabase account
@@ -52,7 +52,7 @@ class GoogleLogin(HTTPMethodView):
 
                     if 'picture' in google_info.keys() and len(google_info['picture']) > 0:
                         async with httpx.AsyncClient(
-                                proxies={"http://": self.proxy_url, "https://": self.proxy_url}) as client:
+                                proxies={"http://": CONFIG['http_proxy'], "https://": CONFIG['http_proxy']}) as client:
 
                             avatar_response = await client.get(google_info['picture'])
                             async with aiofile.async_open(
@@ -232,7 +232,7 @@ class LineLogin(HTTPMethodView):
             code = request.form['code'][0]
             print(code)
             # 发起GET请求
-            async with httpx.AsyncClient(proxies={"http://": self.proxy_url, "https://": self.proxy_url}) as client:
+            async with httpx.AsyncClient(proxies={"http://": CONFIG['http_proxy'], "https://": CONFIG['http_proxy']}) as client:
                 # req token
                 token_form_data = {
                     "grant_type": "authorization_code",
