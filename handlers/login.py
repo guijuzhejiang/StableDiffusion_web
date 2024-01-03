@@ -68,6 +68,8 @@ class GoogleLogin(HTTPMethodView):
                         "id", user_id).execute()).data
                     # res = (await request.app.ctx.supabase_client.atable("account").update(
                     #     {"locale": 'jp'}).eq("id", str(supabase_res.user.id)).execute()).data
+                    account_info = (await request.app.ctx.supabase_client.atable("account").select(
+                        "id,balance,locale,nick_name").eq("google_id", str(google_info['sub']).lower()).execute()).data
             else:
                 account_info = (await request.app.ctx.supabase_client.atable("account").select(
                     "id,balance,locale,nick_name").eq("google_id", str(google_info['sub']).lower()).execute()).data
