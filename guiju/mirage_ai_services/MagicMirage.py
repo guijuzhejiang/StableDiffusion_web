@@ -73,7 +73,7 @@ class MagicMirage(object):
         # read params
         # params, user_id, input_image, pic_name
         params = kwargs['params']
-        user_id = kwargs['user_id']
+        # user_id = kwargs['user_id']
         _input_image = kwargs['input_image']
         pic_name = kwargs['pic_name']
 
@@ -178,10 +178,10 @@ class MagicMirage(object):
         controlnet_args_unit1.processor_res = 512
         controlnet_args_unit1.threshold_a = -1
         controlnet_args_unit1.threshold_b = -1
-        controlnet_args_unit1.model = 'ip-adapter-plus_sd15'
-        controlnet_args_unit1.module = 'ip-adapter_clip_sd15'
+        controlnet_args_unit1.model = 'None'
+        controlnet_args_unit1.module = 'reference_adain+attn'
         controlnet_args_unit1.pixel_perfect = True
-        controlnet_args_unit1.weight = 0.8
+        controlnet_args_unit1.weight = 1
         controlnet_args_unit1.resize_mode = 'Crop and Resize'
 
         _reference_dir_path = os.path.join(reference_dir, "mirage_reference", str(_selected_place))
@@ -190,34 +190,11 @@ class MagicMirage(object):
         self.operator.logging(
             f"[_reference_image_path][{_reference_image_path}]:\n",
             f"logs/sd_webui.log")
-
-        _reference_image = Image.open(_reference_image_path)
-        _reference_image_w, _reference_image_h = _reference_image.size
-        _reference_img_rgb_ndarray = np.array(_reference_image)
+        _reference_img_rgb_ndarray = np.array(Image.open(_reference_image_path))
         _reference_img_mask_ndarray = np.zeros(shape=_reference_img_rgb_ndarray.shape)
-
-        # 计算缩放比例，使mask_image适应background_image
-        # width_ratio = _reference_image.width / mask_image.width
-        # height_ratio = _reference_image.height / mask_image.height
-        # min_ratio = min(width_ratio, height_ratio)
-        # new_width = int(mask_image.width * min_ratio)
-        # new_height = int(mask_image.height * min_ratio)
-        # 缩放mask_image
-        # resized_mask = mask_image.resize((new_width, new_height))
-        # 计算粘贴位置
-        # paste_position = (
-        #     (_reference_image.width - resized_mask.width) // 2,
-        #     (_reference_image.height - resized_mask.height) // 2
-        # )
-        # 创建一个透明度通道（alpha channel）的合成图像
-        # composite_ref_image = Image.new("RGBA", _reference_image.size, (0, 0, 0, 0))
-        # composite_ref_image.paste(_reference_image, (0, 0))
-        # composite_ref_image.paste(resized_mask, paste_position, resized_mask)
-        # composite_ref_image = composite_ref_image
-
         controlnet_args_unit1.image = {
-            'image': np.array(_reference_image),
-            'mask': np.zeros(shape=(_reference_image.height, _reference_image.width)),
+            'image': _reference_img_rgb_ndarray,
+            'mask': _reference_img_mask_ndarray,
         }
 
         controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
@@ -227,7 +204,6 @@ class MagicMirage(object):
         controlnet_args_unit2.control_mode = 'Balanced'
         controlnet_args_unit2.threshold_a = -1
         controlnet_args_unit2.threshold_b = -1
-        controlnet_args_unit2.image = None
 
         # depth
         controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
