@@ -93,7 +93,7 @@ lora_avatar_dict = {
     },
     '赛博朋克': {
         0: '<lora:Steampunkcog:0.8>,meccog,cog,asians,(surreal:1.5),(cyberpunk:1.5),(mecha:1.5)',
-        1: '',
+        # 1: '',
     }
 }
 
@@ -244,7 +244,7 @@ class MagicAvatar(object):
 
         else:
             if (_gender == 'female' and _selected_style == '素描') or (_gender == 'male' and (
-                    _selected_style == '泥塑' or (_selected_style == '赛博朋克'))):
+                    _selected_style == '泥塑' or _selected_style == '赛博朋克')):
                 _selected_type = random.randint(0, len(lora_avatar_dict[_selected_style]) - 1)
                 sd_positive_prompt = f"{lora_avatar_dict[_selected_style][_selected_type] + ','}{'1boy,' if _gender == 'male' else ''}<lora:more_details:1>,(best quality:1.2),(high quality:1.2),high details,masterpiece,extremely detailed,extremely delicate,ultra detailed,Amazing,8k wallpaper,8k uhd,strong contrast,huge_filesize,incredibly_absurdres,absurdres,highres,magazine cover,intense angle,dynamic angle,high saturation,poster"
             else:
