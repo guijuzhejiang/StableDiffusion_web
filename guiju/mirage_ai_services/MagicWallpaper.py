@@ -27,8 +27,8 @@ class MagicWallpaper(object):
         # read params
         # params, user_id, input_image, pic_name
         params = kwargs['params']
-        # user_id = kwargs['user_id']
-        # pic_name = kwargs['pic_name']
+        user_id = kwargs['user_id']
+        pic_name = kwargs['pic_name']
 
         _batch_size = int(params['batch_size'])
         _selected_place = int(params['place'])
@@ -37,15 +37,15 @@ class MagicWallpaper(object):
         _selected_aspect = _output_width / _output_height
 
         # limit 512
-        max_edge = 512
+        min_edge = 512
         _buf_width = 512
         _buf_height = 512
         if _output_width <= _output_height:
-            _buf_width = int(max_edge * _selected_aspect)
-            _buf_height = max_edge
+            _buf_width = min_edge
+            _buf_height = int(min_edge / _selected_aspect)
         else:
-            _buf_width = max_edge
-            _buf_height = int(max_edge / _selected_aspect)
+            _buf_width = int(min_edge * _selected_aspect)
+            _buf_height = min_edge
 
         # target_short_side = 512
         # closest_divisor = 1
@@ -95,12 +95,12 @@ class MagicWallpaper(object):
         controlnet_args_unit1.low_vram = False
         controlnet_args_unit1.loopback = False
         controlnet_args_unit1.processor_res = 512
-        controlnet_args_unit1.threshold_a = -1
+        controlnet_args_unit1.threshold_a = 0.5
         controlnet_args_unit1.threshold_b = -1
-        controlnet_args_unit1.model = 'ip-adapter-plus_sd15'
-        controlnet_args_unit1.module = 'ip-adapter_clip_sd15'
+        controlnet_args_unit1.model = 'None'
+        controlnet_args_unit1.module = 'reference_adain+attn'
         controlnet_args_unit1.pixel_perfect = True
-        controlnet_args_unit1.weight = 0.8
+        controlnet_args_unit1.weight = 1
         controlnet_args_unit1.resize_mode = 'Crop and Resize'
 
         _reference_dir_path = os.path.join(reference_dir, "mirage_reference", str(_selected_place))
@@ -123,7 +123,6 @@ class MagicWallpaper(object):
         controlnet_args_unit2.control_mode = 'Balanced'
         controlnet_args_unit2.threshold_a = -1
         controlnet_args_unit2.threshold_b = -1
-        # controlnet_args_unit2.image = None
 
         # depth
         controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
@@ -195,7 +194,7 @@ class MagicWallpaper(object):
                                             '',  # hr_prompt
                                             '',  # hr_negative_prompt,
                                             override_settings_texts,
-                                            *sam_args)[0][:_batch_size]
+                                            *sam_args)[0]
 
         # storage img
         res = []
