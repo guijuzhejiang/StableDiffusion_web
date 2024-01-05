@@ -136,7 +136,7 @@ async def sd_genreate(request: Request, ws):
                             if queue_list:
                                 if str(task_result) in queue_list:
                                     buf_result['result'] = f"{queue_list.index(str(task_result)) + 1}"
-                                    buf_result['result'] = f"第{queue_list.index(str(task_result)) + 1}位"
+                                    # buf_result['result'] = f"第{queue_list.index(str(task_result)) + 1}位"
                                 else:
                                     buf_result['result'] = f"..."
                             else:
