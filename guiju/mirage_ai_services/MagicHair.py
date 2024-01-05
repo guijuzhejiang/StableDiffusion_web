@@ -19,7 +19,7 @@ from utils.global_vars import CONFIG
 
 # 头发 fluffy hair,lush hair,
 lora_haircut_common_dict = {
-    'positive_prompt': '(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,character close-up,<lora:more_details:1>,(black shirt:1.3),(simple background:1.3),(cropped hands:1.3),(hidden hands:1.3)',
+    'positive_prompt': '(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,character close-up,<lora:more_details:1>,(black shirt:1.3),(simple background:1.3),(hidden hands:1.3)',
     'negative_prompt': '(jewelry:1.5),(earrings:1.5),(stud earrings:1.5),cat_ears,(NSFW:1.8),(hands:1.5),(feet:1.3),(shoes:1.3),(mask:1.3),(glove:1.3),(fingers:1.3),(legs),(toes:1.3),(digits:1.3),bad_picturesm,EasyNegative,easynegative,ng_deepnegative_v1_75t,verybadimagenegative_v1.3,(worst quality:2),(low quality:2),(normal quality:2),((monochrome)),((grayscale)),sketches,bad anatomy,DeepNegative,{Multiple people},text,error,cropped,blurry,mutation,deformed,jpeg artifacts,polar lowres,bad proportions,gross proportions,humans'
 }
 
