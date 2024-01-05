@@ -27,8 +27,8 @@ class MagicWallpaper(object):
         # read params
         # params, user_id, input_image, pic_name
         params = kwargs['params']
-        user_id = kwargs['user_id']
-        pic_name = kwargs['pic_name']
+        # user_id = kwargs['user_id']
+        # pic_name = kwargs['pic_name']
 
         _batch_size = int(params['batch_size'])
         _selected_place = int(params['place'])
@@ -37,15 +37,15 @@ class MagicWallpaper(object):
         _selected_aspect = _output_width / _output_height
 
         # limit 512
-        min_edge = 512
+        max_edge = 512
         _buf_width = 512
         _buf_height = 512
         if _output_width <= _output_height:
-            _buf_width = min_edge
-            _buf_height = int(min_edge / _selected_aspect)
+            _buf_width = int(max_edge * _selected_aspect)
+            _buf_height = max_edge
         else:
-            _buf_width = int(min_edge * _selected_aspect)
-            _buf_height = min_edge
+            _buf_width = max_edge
+            _buf_height = int(max_edge / _selected_aspect)
 
         # target_short_side = 512
         # closest_divisor = 1
