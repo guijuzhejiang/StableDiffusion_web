@@ -18,7 +18,7 @@ redis:
 storage_dirpath:
   user_storage: outputs/img2img-images/user_storage
   user_upload: outputs/img2img-images/user_upload
-  user_account_avatar_dir: outputs/user_account_avatar
+  user_account_avatar: outputs/user_account_avatar
   user_facer_upload: outputs/img2img-images/user_facer_upload
 mq_name: debug_queue
 wechatpay:

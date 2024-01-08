@@ -49,17 +49,17 @@ class ImageProvider(HTTPMethodView):
             user_id = urllib.parse.unquote(request.args.get("uid"))
 
             category = request.args.get("category", 'model')
-            dir_storage_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage_dir'], category)
+            dir_storage_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], category)
 
             if category == 'account_avatar':
-                fp = os.path.join(CONFIG['storage_dirpath']['user_account_avatar_dir'], f"{user_id}.jpg")
+                fp = os.path.join(CONFIG['storage_dirpath']['user_account_avatar'], f"{user_id}.jpg")
                 if not os.path.exists(fp):
                     return text('404 - Not Found', status=404)
             else:
                 dir_user_path = os.path.join(dir_storage_path, user_id)
                 fp = os.path.join(dir_user_path, request.args.get("imgpath"))
         else:
-            dir_storage_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage_dir'], 'hires')
+            dir_storage_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], 'hires')
             fp = os.path.join(dir_storage_path, request.args.get("imgpath"))
 
         return await file_stream(fp)
@@ -73,7 +73,7 @@ class FetchUserHistory(HTTPMethodView):
         try:
             user_id = request.form['user_id'][0]
             category = request.args.get("category", 'model')
-            dir_storage_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage_dir'], category)
+            dir_storage_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], category)
 
             dir_user_path = os.path.join(dir_storage_path, user_id)
             os.makedirs(dir_user_path, exist_ok=True)
@@ -102,9 +102,9 @@ class UserUpload(HTTPMethodView):
             # image_type = upload_image.type.split('/')[-1]
             if category:
                 if category == 'account_avatar':
-                    dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_account_avatar_dir'])
+                    dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_account_avatar'])
                 else:
-                    dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage_dir'], category)
+                    dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], category)
             else:
                 dir_path = os.path.join(CONFIG['storage_dirpath']['user_upload'])
             os.makedirs(dir_path, exist_ok=True)

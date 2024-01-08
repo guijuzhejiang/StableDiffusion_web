@@ -224,7 +224,7 @@ class MagicHires(object):
         if self.operator.update_progress(80):
             return {'success': True}
 
-        dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage_dir'], 'hires')
+        dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], 'hires')
 
         os.makedirs(dir_path, exist_ok=True)
 

@@ -56,7 +56,7 @@ class GoogleLogin(HTTPMethodView):
 
                             avatar_response = await client.get(google_info['picture'])
                             async with aiofile.async_open(
-                                    os.path.join(CONFIG['storage_dirpath']['user_account_avatar_dir'],
+                                    os.path.join(CONFIG['storage_dirpath']['user_account_avatar'],
                                                  f"{supabase_res.user.id}.jpg"), 'wb') as file:
                                 await file.write(avatar_response.content)
                 except Exception:
@@ -156,7 +156,7 @@ class WeChatLogin(HTTPMethodView):
 
                                 avatar_response = await client.get(wechat_uinfo['headimgurl'])
                                 async with aiofile.async_open(
-                                        os.path.join(CONFIG['storage_dirpath']['user_account_avatar_dir'],
+                                        os.path.join(CONFIG['storage_dirpath']['user_account_avatar'],
                                                      f"{supabase_res.user.id}.jpg"), 'wb') as file:
                                     await file.write(avatar_response.body)
 
@@ -323,7 +323,7 @@ class LineLogin(HTTPMethodView):
                         if 'picture' in line_info.keys():
                             avatar_response = await client.get(line_info['picture'])
                             async with aiofile.async_open(
-                                    os.path.join(CONFIG['storage_dirpath']['user_account_avatar_dir'],
+                                    os.path.join(CONFIG['storage_dirpath']['user_account_avatar'],
                                                  f"{supabase_res.user.id}.jpg"), 'wb') as file:
                                 await file.write(avatar_response.content)
                     except Exception:

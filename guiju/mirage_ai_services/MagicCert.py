@@ -136,7 +136,7 @@ class MagicCert(object):
         cert_res.paste(foreground, (left, top), mask=foreground)
 
         # storage img
-        dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage_dir'], 'cert')
+        dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], 'cert')
 
         os.makedirs(dir_path, exist_ok=True)
         img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"

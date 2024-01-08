@@ -102,7 +102,7 @@ async def sd_genreate(request: Request, ws):
                     # elif category == 'avatar':
                     #     dir_storage_path = CONFIG['storage_dirpath']['user_avatar_dir']
                     # else:
-                    dir_storage_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage_dir'], category)
+                    dir_storage_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], category)
                     # dir_storage_path = CONFIG['storage_dirpath'][f'user_{category}_dir']
                     img_fp = os.path.join(dir_storage_path, query_params['uid'][0], query_params['imgpath'][0])
                     format_package['input_image'] = img_fp

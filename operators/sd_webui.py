@@ -321,7 +321,7 @@ class OperatorSD(Operator):
 
             # storage img
             img_urls = []
-            dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage_dir'], proceed_mode)
+            dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], proceed_mode)
             # dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_{proceed_mode}_dir'], user_id)
             os.makedirs(dir_path, exist_ok=True)
             for res_idx, res_img in enumerate(res):
