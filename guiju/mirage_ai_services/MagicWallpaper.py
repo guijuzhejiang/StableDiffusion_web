@@ -123,6 +123,7 @@ class MagicWallpaper(object):
         controlnet_args_unit2.control_mode = 'Balanced'
         controlnet_args_unit2.threshold_a = -1
         controlnet_args_unit2.threshold_b = -1
+        # controlnet_args_unit2.image = None
 
         # depth
         controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
@@ -194,7 +195,7 @@ class MagicWallpaper(object):
                                             '',  # hr_prompt
                                             '',  # hr_negative_prompt,
                                             override_settings_texts,
-                                            *sam_args)[0]
+                                            *sam_args)[0][:_batch_size]
 
         # storage img
         res = []
