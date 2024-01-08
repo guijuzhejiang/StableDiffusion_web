@@ -42,7 +42,8 @@ class MagicFacer(object):
 
         res = self.operator.swapper.get(_input_tgt_image, tgt_faces[0], src_faces[0], paste_back=True)
         # storage img
-        dir_path = os.path.join(CONFIG['storage_dirpath']['user_facer_dir'], user_id)
+        dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage_dir'], 'facer')
+
         os.makedirs(dir_path, exist_ok=True)
 
         img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"

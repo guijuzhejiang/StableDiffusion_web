@@ -16,20 +16,10 @@ redis:
   port: 6379
   redis_mq: 11
 storage_dirpath:
-  user_model_dir: outputs/img2img-images/user_model_history
-  user_mirror_dir: outputs/img2img-images/user_mirror_history
-  user_hair_dir: outputs/img2img-images/user_hair_history
-  user_avatar_dir: outputs/img2img-images/user_avatar_history
-  user_facer_dir: outputs/img2img-images/user_facer_history
-  user_cert_dir: outputs/img2img-images/user_cert_history
-  user_mirage_dir: outputs/img2img-images/user_mirage_history
-  user_wallpaper_dir: outputs/img2img-images/user_wallpaper_history
+  user_storage: outputs/img2img-images/user_storage
   user_upload: outputs/img2img-images/user_upload
   user_account_avatar_dir: outputs/user_account_avatar
   user_facer_upload: outputs/img2img-images/user_facer_upload
-  hires_dir: outputs/img2img-images/hires
-  lora_model_dir: /home/ray/Workspace/file/素材/头像/224/
-  lora_place_dir: /home/ray/Workspace/file/素材/背景/224/
 mq_name: debug_queue
 wechatpay:
   # 微信支付商户号，服务商模式下为服务商户号，即官方文档中的sp_mchid。

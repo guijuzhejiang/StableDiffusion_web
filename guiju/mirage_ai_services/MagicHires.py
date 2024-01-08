@@ -224,7 +224,8 @@ class MagicHires(object):
         if self.operator.update_progress(80):
             return {'success': True}
 
-        dir_path = CONFIG['storage_dirpath']['hires_dir']
+        dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage_dir'], 'hires')
+
         os.makedirs(dir_path, exist_ok=True)
 
         img_fn = f"{datetime.datetime.now().strftime('%y%m%d%H%M%S')}_{''.join([random.choice(string.ascii_letters) for c in range(6)])}.jpeg"

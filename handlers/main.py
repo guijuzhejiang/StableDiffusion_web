@@ -49,17 +49,18 @@ class ImageProvider(HTTPMethodView):
             user_id = urllib.parse.unquote(request.args.get("uid"))
 
             category = request.args.get("category", 'model')
-            dir_storage_path = CONFIG['storage_dirpath'][f'user_{category}_dir']
+            dir_storage_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage_dir'], category)
 
             if category == 'account_avatar':
-                fp = os.path.join(dir_storage_path, f"{user_id}.jpg")
+                fp = os.path.join(CONFIG['storage_dirpath']['user_account_avatar_dir'], f"{user_id}.jpg")
                 if not os.path.exists(fp):
                     return text('404 - Not Found', status=404)
             else:
                 dir_user_path = os.path.join(dir_storage_path, user_id)
                 fp = os.path.join(dir_user_path, request.args.get("imgpath"))
         else:
-            fp = os.path.join(CONFIG['storage_dirpath']['hires_dir'], request.args.get("imgpath"))
+            dir_storage_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage_dir'], 'hires')
+            fp = os.path.join(dir_storage_path, request.args.get("imgpath"))
 
         return await file_stream(fp)
 
@@ -72,11 +73,12 @@ class FetchUserHistory(HTTPMethodView):
         try:
             user_id = request.form['user_id'][0]
             category = request.args.get("category", 'model')
-            dir_storage_path = CONFIG['storage_dirpath'][f'user_{category}_dir']
+            dir_storage_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage_dir'], category)
+
             dir_user_path = os.path.join(dir_storage_path, user_id)
             os.makedirs(dir_user_path, exist_ok=True)
 
-            result = [f"{'http://192.168.110.8:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={category}" for img_fn in sorted(os.listdir(dir_user_path), reverse=True)]
+            result = [f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={category}" for img_fn in sorted(os.listdir(dir_user_path), reverse=True)]
             if len(result) < 10:
                 for i in range(10-len(result)):
                     result.append('')
@@ -97,12 +99,12 @@ class UserUpload(HTTPMethodView):
             user_id = urllib.parse.unquote(request.args.get("uid"))
             category = request.args.get("category")
             upload_image = request.files['upload_image'][0]
-            image_type = upload_image.type.split('/')[-1]
+            # image_type = upload_image.type.split('/')[-1]
             if category:
                 if category == 'account_avatar':
                     dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_account_avatar_dir'])
                 else:
-                    dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_{category}_upload'])
+                    dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage_dir'], category)
             else:
                 dir_path = os.path.join(CONFIG['storage_dirpath']['user_upload'])
             os.makedirs(dir_path, exist_ok=True)
