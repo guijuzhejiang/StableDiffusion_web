@@ -61,7 +61,7 @@ class FaceIDPredictor:
 
         pipe.to(self.device)
 
-    def __call__(self, image_arr, prompt, negative_prompt, batch_size, *args, **kwargs):
+    def __call__(self, image_arr, prompt, negative_prompt, batch_size, output_w, output_h, *args, **kwargs):
         faces = self.face_analyser.get(image_arr)
         faceid_embed = torch.from_numpy(faces[0].normed_embedding).unsqueeze(0)
         face_image = face_align.norm_crop(image_arr, landmark=faces[0].kps,
@@ -72,8 +72,8 @@ class FaceIDPredictor:
             negative_prompt=negative_prompt,
             face_image=face_image,
             faceid_embeds=faceid_embed,
-            width=512,
-            height=768,
+            width=output_w,
+            height=output_h,
             num_inference_steps=30,
             num_samples=batch_size,
             truncation=False,

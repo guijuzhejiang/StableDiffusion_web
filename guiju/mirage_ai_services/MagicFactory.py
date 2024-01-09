@@ -21,10 +21,10 @@ prompt_gender = [
     {
         'label': '女',
         'prompt': {
-             0: '1girl',
-             1: '1female,young,beautiful',
-             2: '1woman,middle-aged',
-             3: '1woman,old',
+            0: '1girl',
+            1: '1female,young,beautiful',
+            2: '1woman,middle-aged',
+            3: '1woman,old',
         }
     },
     {
@@ -244,7 +244,7 @@ class MagicFactory(object):
                         'ess': True}
 
             # prompt
-            positive_prompt = f'{prompt_gender[_gender]["prompt"][_age]},{prompt_distance[_distance]["prompt"]}{(","+prompt_style[_style]["prompt"]) if _style != 0 else ""},{prompt_character[_character]["prompt"]},{prompt_costume[_costume]["prompt"]},{prompt_scene[_scene]["prompt"]},(Realism),(photorealistic),realistic,(best quality),(high quality),high details,masterpiece,extremely detailed,(sharp focus),(cinematic lighting),high saturation,ultra detailed,detailed background,wide view,sharp and crisp background,epic composition,intricate,solo'
+            positive_prompt = f'{prompt_gender[_gender]["prompt"][_age]},{prompt_distance[_distance]["prompt"]}{("," + prompt_style[_style]["prompt"]) if _style != 0 else ""},{prompt_character[_character]["prompt"]},{prompt_costume[_costume]["prompt"]},{prompt_scene[_scene]["prompt"]},(Realism),(photorealistic),realistic,(best quality),(high quality),high details,masterpiece,extremely detailed,(sharp focus),(cinematic lighting),high saturation,ultra detailed,detailed background,wide view,sharp and crisp background,epic composition,intricate,solo'
             negative_prompt = f'NSFW,(worst quality:2), (low quality:2), (normal quality:2),bad anatomy, DeepNegative,text, error,cropped,mutation,jpeg artifacts,polar lowres, bad proportions, gross proportions,deformed body,cross-eyed,sketches,bad hands,blurry,bad feet,poorly drawn hands,extra fingers, fewer digits, extra limbs, extra arms,extra legs, malformed limbs,(fused fingers:1.5),(too many fingers:1.5), long neck,mutated hands, polar lowres, bad body,(missing fingers:1.5), missing arms, missing legs, extra digit,extra foot,'
 
             print("-------------------factory logger-----------------")
@@ -253,6 +253,8 @@ class MagicFactory(object):
             # self.operator.logging(
             #     f"[_reference_image_path][{_reference_image_path}]:\n",
             #     f"logs/sd_webui.log")
-            res = self.operator.faceid_predictor(np.array(_input_image), positive_prompt, negative_prompt, _batch_size)
+            res = self.operator.faceid_predictor(np.array(_input_image), positive_prompt, negative_prompt, _batch_size,
+                                                 prompt_distance[_distance]['width'],
+                                                 prompt_distance[_distance]['height'])
 
-        return res
+            return res
