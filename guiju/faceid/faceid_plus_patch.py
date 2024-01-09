@@ -4,6 +4,31 @@
 from typing import List
 
 import torch
+from compel import Compel
+from transformers import CLIPImageProcessor, CLIPVisionModelWithProjection
+
+
+def patch_init(self, sd_pipe, image_encoder_path, ip_ckpt, device, lora_rank=128, num_tokens=4, torch_dtype=torch.float16):
+        self.device = device
+        self.image_encoder_path = image_encoder_path
+        self.ip_ckpt = ip_ckpt
+        self.lora_rank = lora_rank
+        self.num_tokens = num_tokens
+        self.torch_dtype = torch_dtype
+
+        self.pipe = sd_pipe.to(self.device)
+        self.set_ip_adapter()
+
+        # load image encoder
+        self.image_encoder = CLIPVisionModelWithProjection.from_pretrained(self.image_encoder_path).to(
+            self.device, dtype=self.torch_dtype
+        )
+        self.clip_image_processor = CLIPImageProcessor()
+        # image proj model
+        self.image_proj_model = self.init_proj()
+
+        self.load_ip_adapter()
+        self.compel = Compel(tokenizer=self.pipe.tokenizer, text_encoder=self.pipe.text_encoder)
 
 
 def patch_generate(
@@ -22,7 +47,6 @@ def patch_generate(
         **kwargs,
 ):
     self.set_scale(scale)
-
     num_prompts = faceid_embeds.size(0)
 
     if prompt is None:

@@ -4,11 +4,12 @@
 import torch
 from diffusers import StableDiffusionPipeline, DDIMScheduler, AutoencoderKL
 from insightface.utils import face_align
-from guiju.faceid.faceid_plus_patch import patch_generate
+from guiju.faceid.faceid_plus_patch import patch_generate, patch_init
 from ip_adapter.ip_adapter_faceid import IPAdapterFaceIDPlus
 
 # patch
 IPAdapterFaceIDPlus.generate = patch_generate
+IPAdapterFaceIDPlus.__init__ = patch_init
 
 
 class FaceIDPredictor:
