@@ -24,10 +24,10 @@ class FaceIDPredictor:
     # base_model_path = "/media/zzg/GJ_disk01/pretrained_model/Lykon/dreamshaper-8"
     # base_model_path = "/media/zzg/GJ_disk01/pretrained_model/emilianJR/chilloutmix_NiPrunedFp32Fix"   #加载模型报错
     # base_model_path = "/media/zzg/GJ_disk01/pretrained_model/jzli/majicMIX-realistic-7"               #还原度高，手挺好
-    base_model_path = "/home/ray/Workspace/model/faceid/epiCRealism"  # 还原度高，手容易崩坏
-    vae_model_path = "/home/ray/Workspace/model/faceid/sd-vae-ft-mse"
-    image_encoder_path = "/home/ray/Workspace/model/faceid/image_encoder"
-    ip_ckpt = "/home/ray/Workspace/model/faceid/ip-adapter-faceid-plus_sd15.bin"
+    base_model_path = "/media/zzg/GJ_disk01/pretrained_model/emilianJR/epiCRealism"  # 还原度高，手容易崩坏
+    vae_model_path = "/media/zzg/GJ_disk01/pretrained_model/magic-animate/pretrained_models/sd-vae-ft-mse"
+    image_encoder_path = "/media/zzg/GJ_disk01/pretrained_model/IP-Adapter/models/image_encoder"
+    ip_ckpt = "/media/zzg/GJ_disk01/pretrained_model/IP-Adapter-FaceID/ip-adapter-faceid-plus_sd15.bin"
 
     def __init__(self, face_analyser):
         self.face_analyser = face_analyser
