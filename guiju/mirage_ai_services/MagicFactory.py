@@ -20,21 +20,11 @@ prompt_distance = [
 prompt_gender = [
     {
         'label': '女',
-        'prompt': {
-            0: '1girl',
-            1: '1female,young,beautiful',
-            2: '1woman,middle-aged',
-            3: '1woman,old',
-        }
+        'prompt': '1female'
     },
     {
         'label': '男',
-        'prompt': {
-            0: '1boy',
-            1: '1male,young,handsome',
-            2: '1man,middle-aged',
-            3: '1man,old',
-        }
+        'prompt': '1male'
     },
 ]
 
@@ -213,7 +203,7 @@ class MagicFactory(object):
         _style = int(params['style'])
         _distance = int(params['distance'])
         _gender = 0 if params['gender'] == 'female' else 1
-        _age = int(params['age'])
+        # _age = int(params['age'])
         _character = int(params['character'])
         _scene = int(params['scene'])
         _costume = int(params['costume'])
@@ -244,7 +234,7 @@ class MagicFactory(object):
                         'ess': True}
 
             # prompt
-            positive_prompt = f'{prompt_gender[_gender]["prompt"][_age]},{prompt_distance[_distance]["prompt"]}{("," + prompt_style[_style]["prompt"]) if _style != 0 else ""},{prompt_character[_character]["prompt"]},{prompt_costume[_costume]["prompt"]},{prompt_scene[_scene]["prompt"]},(Realism),(photorealistic),realistic,(best quality),(high quality),high details,masterpiece,extremely detailed,(sharp focus),(cinematic lighting),high saturation,ultra detailed,detailed background,wide view,sharp and crisp background,epic composition,intricate,solo'
+            positive_prompt = f'{prompt_gender[_gender]},{prompt_distance[_distance]["prompt"]}{("," + prompt_style[_style]["prompt"]) if _style != 0 else ""},{prompt_character[_character]["prompt"]},{prompt_costume[_costume]["prompt"]},{prompt_scene[_scene]["prompt"]},(Realism),(photorealistic),realistic,(best quality),(high quality),high details,masterpiece,extremely detailed,(sharp focus),(cinematic lighting),high saturation,ultra detailed,detailed background,wide view,sharp and crisp background,epic composition,intricate,solo'
             negative_prompt = f'NSFW,(worst quality:2), (low quality:2), (normal quality:2),bad anatomy, DeepNegative,text, error,cropped,mutation,jpeg artifacts,polar lowres, bad proportions, gross proportions,deformed body,cross-eyed,sketches,bad hands,blurry,bad feet,poorly drawn hands,extra fingers, fewer digits, extra limbs, extra arms,extra legs, malformed limbs,(fused fingers:1.5),(too many fingers:1.5), long neck,mutated hands, polar lowres, bad body,(missing fingers:1.5), missing arms, missing legs, extra digit,extra foot,'
 
             print("-------------------factory logger-----------------")
