@@ -934,7 +934,7 @@ class MagicModel(object):
                 # f'(youth:1.3){"" if _gender else ",<lora:shojovibe_v11:0.4> ,<lora:koreanDollLikeness:0.4>"}',
                 f'(youth:1.3),20 years old',
                 # middlescent
-                '(middlescent:1.3)',
+                '(middle-aged:1.3)',
             ],
             'common': [
                 'full body',

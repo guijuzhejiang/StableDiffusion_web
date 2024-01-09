@@ -1,11 +1,14 @@
 # coding=utf-8
 # @Time : 2023/11/3 下午12:55
 # @File : facer_parsing.py
-import cv2
 import torch
 from diffusers import StableDiffusionPipeline, DDIMScheduler, AutoencoderKL
-from ip_adapter.ip_adapter_faceid import IPAdapterFaceIDPlus
 from insightface.utils import face_align
+from guiju.faceid.faceid_plus_patch import patch_generate
+from ip_adapter.ip_adapter_faceid import IPAdapterFaceIDPlus
+
+# patch
+IPAdapterFaceIDPlus.generate = patch_generate
 
 
 class FaceIDPredictor:
