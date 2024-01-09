@@ -2,8 +2,6 @@
 # @Time : 2023/12/15 下午3:14
 # @File : magic_wallpapaper.py
 import copy
-import datetime
-import glob
 import os
 import random
 import string

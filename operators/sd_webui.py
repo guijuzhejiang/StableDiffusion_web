@@ -78,8 +78,10 @@ class OperatorSD(Operator):
 
         self.insightface = importlib.import_module('insightface')
         self.swapper = self.insightface.model_zoo.get_model('models/insightface/models/inswapper_128.onnx')
-        self.face_analysis = self.insightface.app.FaceAnalysis(name='buffalo_l', root='models/insightface')
-        self.face_analysis.prepare(ctx_id=0, det_size=(640, 640))
+        self.face_analysis = self.insightface.app.FaceAnalysis(name='buffalo_l', root='models/insightface', providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])
+        self.face_analysis.prepare(ctx_id=0, det_size=(640, 640), det_thresh=0.5)
+
+        self.faceid_predictor = getattr(importlib.import_module('guiju.faceid.faceid_predictor'), 'FaceIDPredictor')(self.face_analysis)
 
         self.shared.cmd_opts.listen = True
         self.shared.cmd_opts.debug_mode = True
