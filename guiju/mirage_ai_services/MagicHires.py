@@ -31,7 +31,7 @@ class MagicHires(object):
 
         # pattern = re.compile(r"user_(.*?)_history")
         # match = pattern.search(_input_image_path)
-        _input_image_mode = os.path.dirname(os.path.dirname(_input_image_path))
+        _input_image_mode = os.path.basename(os.path.dirname(os.path.dirname(_input_image_path)))
         # if match:
         #     _input_image_mode = match.group(1)
         # else:
