@@ -105,6 +105,7 @@ prompt_costume = {
     58: {'label': '空手道服', 'prompt': '(karate uniform:1.5)'},
     59: {'label': '古希腊服装', 'prompt': '(Greek clothes:1.5)'},
     60: {'label': '印第安服饰', 'prompt': '(pocahontas outfit:1.5)'}
+    61: {'label': '篮球服', 'prompt': '(basketball uniform:1.5)'}
 }
 
 prompt_scene = {
