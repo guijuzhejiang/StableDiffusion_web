@@ -209,14 +209,12 @@ class MagicHires(object):
         if self.operator.update_progress(70):
             return {'success': True}
 
-        gfpgan_weight = 0.5
+        gfpgan_weight = 0.5 if _input_image_mode == 'factory' else 0
         if _input_image_mode == 'model':
             codeformer_visibility = 1
-        elif _input_image_mode == 'factory':
-            codeformer_visibility = 0.45
         else:
             codeformer_visibility = 0
-        codeformer_weight = 0 if _input_image_mode == 'model' or _input_image_mode == 'factory' else 1
+        codeformer_weight = 0 if _input_image_mode == 'model' else 1
         args = (0, scales, None, None, True, 'ESRGAN_4x', 'None', 0, gfpgan_weight, codeformer_visibility,
                 codeformer_weight)
         assert cnet_res_img, 'image not selected'
