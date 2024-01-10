@@ -239,7 +239,7 @@ class MagicFactory(object):
                         'ess': True}
 
             # prompt
-            positive_prompt = f'{prompt_gender[_gender]},{prompt_distance[_distance]["prompt"]}{("," + prompt_style[_style]["prompt"]) if _style != 0 else ""}'
+            positive_prompt = f'{prompt_gender[_gender]["prompt"]},{prompt_distance[_distance]["prompt"]}{("," + prompt_style[_style]["prompt"]) if _style != 0 else ""}'
             if _character_enable:
                 positive_prompt = positive_prompt + f',{prompt_character[_character]["prompt"]}'
             if _costume_enable:
