@@ -44,11 +44,11 @@ prompt_character = {
 }
 
 prompt_costume = {
-    0: {'label': '天使', 'prompt': '(huge angel wings:1.5),(angel:1.5)'},
-    1: {'label': '美人鱼', 'prompt': '(mermaid:1.5)'},
-    2: {'label': '水手服套装', 'prompt': '(sailor collar:1.5)'},
-    3: {'label': '水手连衣裙', 'prompt': '(sailor dress:1.5)'},
-    4: {'label': '校服', 'prompt': '(school uniform:1.5)'},
+    0: {'label': '校服', 'prompt': '(school uniform:1.5)'},
+    1: {'label': '天使', 'prompt': '(huge angel wings:1.5),(angel:1.5)'},
+    2: {'label': '美人鱼', 'prompt': '(mermaid:1.5)'},
+    3: {'label': '水手服套装', 'prompt': '(sailor collar:1.5)'},
+    4: {'label': '水手连衣裙', 'prompt': '(sailor dress:1.5)'},
     5: {'label': '职业装', 'prompt': '(business_suit:1.5)'},
     6: {'label': '军服', 'prompt': '(garreg mach monastery uniform:1.5)'},
     7: {'label': '晚礼服', 'prompt': '(evening gown:1.5)'},
@@ -108,10 +108,10 @@ prompt_costume = {
 }
 
 prompt_scene = {
-    0: {'label': '太空',
+    0: {'label': '赛博朋克',
+        'prompt': '(cyberpunk:1.5),cyber sci-fi,surreal'},
+    1: {'label': '太空',
         'prompt': 'earth,cosmic,celestial,space suit,astronaut,night_sky,starry_sky,universe,space,science fiction,galaxy,floating,stars,nebula'},
-    1: {'label': '赛博朋克',
-        'prompt': '(cyberpunk:1.5),surreal'},
     2: {'label': '蒸汽朋克',
         'prompt': '(steampunk:1.5),mechanical,surreal'},
     3: {'label': '机器改造人',
