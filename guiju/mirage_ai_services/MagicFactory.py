@@ -11,10 +11,10 @@ prompt_style = [
 ]
 
 prompt_distance = [
-    {'label': '面部特写', 'prompt': 'close-up,detailed face,delicate face,true skin texture,portrait', 'width': 512,
+    {'label': '面部特写', 'prompt': '(close-up:1.3),detailed face,delicate face,true skin texture,portrait', 'width': 512,
      'height': 512},
-    {'label': '上半身照', 'prompt': 'upper body,true skin texture,portrait', 'width': 512, 'height': 768},
-    {'label': '全身照', 'prompt': 'full body', 'width': 512, 'height': 1024},
+    {'label': '上半身照', 'prompt': '(upper body:1.3),true skin texture,portrait', 'width': 512, 'height': 768},
+    {'label': '全身照', 'prompt': '(full body:1.3),', 'width': 512, 'height': 1024},
 ]
 
 prompt_gender = [
