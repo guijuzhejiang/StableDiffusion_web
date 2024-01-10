@@ -123,7 +123,7 @@ prompt_scene = {
     6: {'label': '健身房',
         'prompt': '(gym background:1.5)'},
     7: {'label': '满月城堡',
-        'prompt': 'a ruined medieval era fortress,surrounded by an ancient forest,nighttime,moon,stars'},
+        'prompt': 'a ruined medieval era fortress,surrounded by an ancient forest,nighttime,(full moon:1.5),stars'},
     8: {'label': '峡谷风光',
         'prompt': 'canyon,desert,mountains,sunset'},
     9: {'label': '运河桥上',
