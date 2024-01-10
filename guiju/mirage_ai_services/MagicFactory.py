@@ -247,7 +247,7 @@ class MagicFactory(object):
             if _scene_enable:
                 positive_prompt = positive_prompt + f',{prompt_scene[_scene]["prompt"]}'
             positive_prompt = positive_prompt + f',(Realism),(photorealistic),realistic,(best quality),(high quality),high details,masterpiece,extremely detailed,(sharp focus),(cinematic lighting),high saturation,ultra detailed,detailed background,wide view,sharp and crisp background,epic composition,intricate,solo'
-            negative_prompt = f'(NSFW:1.3),(worst quality:2),(low quality:2),(normal quality:2),bad anatomy,DeepNegative,text,error,cropped,mutation,jpeg artifacts,polar lowres,bad proportions,gross proportions,deformed body,cross-eyed,sketches,bad hands,blurry,bad feet,poorly drawn hands,extra fingers,fewer digits,extra limbs,extra arms,extra legs,malformed limbs,(fused fingers:1.5),(too many fingers:1.5),long neck,mutated hands,polar lowres,bad body,(missing fingers:1.5),missing arms,missing legs,extra digit,extra foot,'
+            negative_prompt = f'(NSFW:1.3),(worst quality:2),(low quality:2),(normal quality:2),bad anatomy,DeepNegative,text,error,cropped,mutation,jpeg artifacts,polar lowres,bad proportions,gross proportions,deformed body,cross-eyed,sketches,bad hands,blurry,bad feet,poorly drawn hands,extra fingers,fewer digits,extra limbs,extra arms,extra legs,malformed limbs,(fused fingers:1.5),(too many fingers:1.5),long neck,mutated hands,polar lowres,bad body,(missing fingers:1.5),missing arms,missing legs,extra digit,extra foot'
 
             print("-------------------factory logger-----------------")
             print(f"sd_positive_prompt: {positive_prompt}")
