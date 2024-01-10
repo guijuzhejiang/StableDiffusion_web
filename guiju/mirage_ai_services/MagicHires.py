@@ -210,7 +210,6 @@ class MagicHires(object):
             return {'success': True}
 
         gfpgan_weight = 0.5
-        codeformer_visibility = 1
         if _input_image_mode == 'model':
             codeformer_visibility = 1
         elif _input_image_mode == 'factory':
