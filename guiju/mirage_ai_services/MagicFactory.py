@@ -44,65 +44,67 @@ prompt_character = {
 }
 
 prompt_costume = {
-    0: {'label': '水手服套装', 'prompt': '(sailor collar:1.5)'},
-    1: {'label': '水手连衣裙', 'prompt': '(sailor dress:1.5)'},
-    2: {'label': '校服', 'prompt': '(school uniform:1.5)'},
-    3: {'label': '职业装', 'prompt': '(business_suit:1.5)'},
-    4: {'label': '军服', 'prompt': '(garreg mach monastery uniform:1.5)'},
-    5: {'label': '晚礼服', 'prompt': '(evening gown:1.5)'},
-    6: {'label': '婚纱', 'prompt': '(wedding_dress:1.5)'},
-    7: {'label': '毛衣', 'prompt': '(sweater:1.5)'},
-    8: {'label': '长毛衣连衣裙', 'prompt': '(sweater dress:1.5)'},
-    9: {'label': '短毛衣夹克', 'prompt': '(sweater jacket:1.5)'},
-    10: {'label': '工装服', 'prompt': '(dungarees:1.5)'},
-    11: {'label': '卫衣', 'prompt': '(hoodie:1.5)'},
-    12: {'label': '披风', 'prompt': '(cloak:1.5)'},
-    13: {'label': '斗篷', 'prompt': '(cape:1.5)'},
-    14: {'label': '围裙', 'prompt': '(apron:1.5)'},
-    15: {'label': '哥特风', 'prompt': '(gothic:1.5)'},
-    16: {'label': '公主装', 'prompt': '(lolita_fashion:1.5)'},
-    17: {'label': '洛丽塔', 'prompt': '(gothic_lolita:1.5)'},
-    18: {'label': '长运动服', 'prompt': '(tracksuit:1.5)'},
-    19: {'label': '短运动服', 'prompt': '(exercise clothing:1.5)'},
-    20: {'label': '剪裁牛仔', 'prompt': '(cropped jacket :1.5)'},
-    21: {'label': '睡衣', 'prompt': '(pajamas:1.5)'},
-    22: {'label': '和服', 'prompt': '(japanese_clothes:1.5)'},
-    23: {'label': '迷你裙', 'prompt': '(miniskirt:1.5)'},
-    24: {'label': '比基尼', 'prompt': '(bikini:1.5)'},
-    25: {'label': '连体泳衣', 'prompt': '(swimsuit:1.5)'},
-    26: {'label': '情趣内衣', 'prompt': '(sexy lingerie:1.5)'},
-    27: {'label': '透明内衣', 'prompt': '(transparent underwear:1.5)'},
-    28: {'label': 'T恤', 'prompt': '(t-shirt:1.5)'},
-    29: {'label': '吊带', 'prompt': '(camisole:1.5)'},
-    30: {'label': '圣诞装', 'prompt': '(santa dress:1.5)'},
-    31: {'label': '棒球服', 'prompt': '(letterman jacket:1.5)'},
-    32: {'label': '排球服', 'prompt': '(volleyball uniform:1.5)'},
-    33: {'label': '足球队衣', 'prompt': '(soccer team jersey:1.5)'},
-    34: {'label': '汉服', 'prompt': '(hanfu:1.5)'},
-    35: {'label': '体操服', 'prompt': '(athletic leotard:1.5)'},
-    36: {'label': '兔女郎', 'prompt': '(playboy bunny leotard:1.5)'},
-    37: {'label': '高领毛衣', 'prompt': '(turtleneck sweater:1.5)'},
-    38: {'label': '旗袍', 'prompt': '(cheongsam:1.5)'},
-    39: {'label': '宇航服', 'prompt': '(space suit:1.5)'},
-    40: {'label': '紧身乳胶衣', 'prompt': '(latex_bodysuit:1.5)'},
-    41: {'label': '赛车服', 'prompt': '(racing suit:1.5)'},
-    42: {'label': '医生白大挂', 'prompt': '(lab_coat:1.5)'},
-    43: {'label': '兜帽斗篷', 'prompt': '(cape hood:1.5)'},
-    44: {'label': '风衣', 'prompt': '(overcoat:1.5)'},
-    45: {'label': '大衣', 'prompt': '(wind coat:1.5)'},
-    46: {'label': '战斗服', 'prompt': '(combat suit:1.5)'},
-    47: {'label': '皮夹克', 'prompt': '(leather jacket:1.5)'},
-    48: {'label': '浴袍', 'prompt': '(bathrobe:1.5)'},
-    49: {'label': '盔甲', 'prompt': '(armor:1.5)'},
-    50: {'label': '动力甲', 'prompt': '(power armor:1.5)'},
-    51: {'label': '外骨骼', 'prompt': '(exoskeleton:1.5)'},
-    52: {'label': '外骨骼机甲', 'prompt': '(Exoskeleton Mecha:1.5)'},
-    53: {'label': '道袍', 'prompt': '(Taoist robe:1.5)'},
-    54: {'label': '军官大衣', 'prompt': '(Army overcoat:1.5)'},
-    55: {'label': '盔甲裙', 'prompt': '(armored dress:1.5)'},
-    56: {'label': '空手道服', 'prompt': '(karate uniform:1.5)'},
-    57: {'label': '古希腊服装', 'prompt': '(Greek clothes:1.5)'},
-    58: {'label': '印第安服饰', 'prompt': '(pocahontas outfit:1.5)'}
+    0: {'label': '天使', 'prompt': '(huge angel wings:1.5),(angel:1.5)'},
+    1: {'label': '美人鱼', 'prompt': '(mermaid:1.5)'},
+    2: {'label': '水手服套装', 'prompt': '(sailor collar:1.5)'},
+    3: {'label': '水手连衣裙', 'prompt': '(sailor dress:1.5)'},
+    4: {'label': '校服', 'prompt': '(school uniform:1.5)'},
+    5: {'label': '职业装', 'prompt': '(business_suit:1.5)'},
+    6: {'label': '军服', 'prompt': '(garreg mach monastery uniform:1.5)'},
+    7: {'label': '晚礼服', 'prompt': '(evening gown:1.5)'},
+    8: {'label': '婚纱', 'prompt': '(wedding_dress:1.5)'},
+    9: {'label': '毛衣', 'prompt': '(sweater:1.5)'},
+    10: {'label': '长毛衣连衣裙', 'prompt': '(sweater dress:1.5)'},
+    11: {'label': '短毛衣夹克', 'prompt': '(sweater jacket:1.5)'},
+    12: {'label': '工装服', 'prompt': '(dungarees:1.5)'},
+    13: {'label': '卫衣', 'prompt': '(hoodie:1.5)'},
+    14: {'label': '披风', 'prompt': '(cloak:1.5)'},
+    15: {'label': '斗篷', 'prompt': '(cape:1.5)'},
+    16: {'label': '围裙', 'prompt': '(apron:1.5)'},
+    17: {'label': '哥特风', 'prompt': '(gothic:1.5)'},
+    18: {'label': '公主装', 'prompt': '(lolita_fashion:1.5)'},
+    19: {'label': '洛丽塔', 'prompt': '(gothic_lolita:1.5)'},
+    20: {'label': '长运动服', 'prompt': '(tracksuit:1.5)'},
+    21: {'label': '短运动服', 'prompt': '(exercise clothing:1.5)'},
+    22: {'label': '剪裁牛仔', 'prompt': '(cropped jacket :1.5)'},
+    23: {'label': '睡衣', 'prompt': '(pajamas:1.5)'},
+    24: {'label': '和服', 'prompt': '(japanese_clothes:1.5)'},
+    25: {'label': '迷你裙', 'prompt': '(miniskirt:1.5)'},
+    26: {'label': '比基尼', 'prompt': '(bikini:1.5)'},
+    27: {'label': '连体泳衣', 'prompt': '(swimsuit:1.5)'},
+    28: {'label': '情趣内衣', 'prompt': '(sexy lingerie:1.5)'},
+    29: {'label': '透明内衣', 'prompt': '(transparent underwear:1.5)'},
+    30: {'label': 'T恤', 'prompt': '(t-shirt:1.5)'},
+    31: {'label': '吊带', 'prompt': '(camisole:1.5)'},
+    32: {'label': '圣诞装', 'prompt': '(santa dress:1.5)'},
+    33: {'label': '棒球服', 'prompt': '(letterman jacket:1.5)'},
+    34: {'label': '排球服', 'prompt': '(volleyball uniform:1.5)'},
+    35: {'label': '足球队衣', 'prompt': '(soccer team jersey:1.5)'},
+    36: {'label': '汉服', 'prompt': '(hanfu:1.5)'},
+    37: {'label': '体操服', 'prompt': '(athletic leotard:1.5)'},
+    38: {'label': '兔女郎', 'prompt': '(playboy bunny leotard:1.5)'},
+    39: {'label': '高领毛衣', 'prompt': '(turtleneck sweater:1.5)'},
+    40: {'label': '旗袍', 'prompt': '(cheongsam:1.5)'},
+    41: {'label': '宇航服', 'prompt': '(space suit:1.5)'},
+    42: {'label': '紧身乳胶衣', 'prompt': '(latex_bodysuit:1.5)'},
+    43: {'label': '赛车服', 'prompt': '(racing suit:1.5)'},
+    44: {'label': '医生白大挂', 'prompt': '(lab_coat:1.5)'},
+    45: {'label': '兜帽斗篷', 'prompt': '(cape hood:1.5)'},
+    46: {'label': '风衣', 'prompt': '(overcoat:1.5)'},
+    47: {'label': '大衣', 'prompt': '(wind coat:1.5)'},
+    48: {'label': '战斗服', 'prompt': '(combat suit:1.5)'},
+    49: {'label': '皮夹克', 'prompt': '(leather jacket:1.5)'},
+    50: {'label': '浴袍', 'prompt': '(bathrobe:1.5)'},
+    51: {'label': '盔甲', 'prompt': '(armor:1.5)'},
+    52: {'label': '动力甲', 'prompt': '(power armor:1.5)'},
+    53: {'label': '外骨骼', 'prompt': '(exoskeleton:1.5)'},
+    54: {'label': '外骨骼机甲', 'prompt': '(Exoskeleton Mecha:1.5)'},
+    55: {'label': '道袍', 'prompt': '(Taoist robe:1.5)'},
+    56: {'label': '军官大衣', 'prompt': '(Army overcoat:1.5)'},
+    57: {'label': '盔甲裙', 'prompt': '(armored dress:1.5)'},
+    58: {'label': '空手道服', 'prompt': '(karate uniform:1.5)'},
+    59: {'label': '古希腊服装', 'prompt': '(Greek clothes:1.5)'},
+    60: {'label': '印第安服饰', 'prompt': '(pocahontas outfit:1.5)'}
 }
 
 prompt_scene = {
@@ -204,12 +206,12 @@ class MagicFactory(object):
         _distance = int(params['distance'])
         _gender = 0 if params['gender'] == 'female' else 1
         # _age = int(params['age'])
-        _character = int(params['character'])
+        # _character = int(params['character'])
         _scene = int(params['scene'])
         _costume = int(params['costume'])
         _batch_size = int(params['batch_size'])
 
-        _character_enable = bool(params['character_enable'])
+        # _character_enable = bool(params['character_enable'])
         _costume_enable = bool(params['costume_enable'])
         _scene_enable = bool(params['scene_enable'])
 
@@ -238,13 +240,15 @@ class MagicFactory(object):
                         'ess': True}
 
             # prompt
-            positive_prompt = f'{prompt_gender[_gender]["prompt"]},{prompt_distance[_distance]["prompt"]}{("," + prompt_style[_style]["prompt"]) if _style != 0 else ""}'
-            if _character_enable:
-                positive_prompt = positive_prompt + f',{prompt_character[_character]["prompt"]}'
+            positive_prompt = f'{prompt_gender[_gender]["prompt"]},{prompt_distance[_distance]["prompt"]}'
+            # if _character_enable:
+            #     positive_prompt = positive_prompt + f',{prompt_character[_character]["prompt"]}'
             if _costume_enable:
                 positive_prompt = positive_prompt + f',{prompt_costume[_costume]["prompt"]}'
             if _scene_enable:
                 positive_prompt = positive_prompt + f',{prompt_scene[_scene]["prompt"]}'
+            if _style != 0:
+                positive_prompt = positive_prompt + f',{prompt_style[_style]["prompt"]}'
             positive_prompt = positive_prompt + f',(Realism),(photorealistic),realistic,(best quality),(high quality),high details,masterpiece,extremely detailed,(sharp focus),(cinematic lighting),high saturation,ultra detailed,detailed background,wide view,sharp and crisp background,epic composition,intricate,solo'
             negative_prompt = f'(NSFW:1.3),(worst quality:2),(low quality:2),(normal quality:2),bad anatomy,DeepNegative,text,error,cropped,mutation,jpeg artifacts,polar lowres,bad proportions,gross proportions,deformed body,cross-eyed,sketches,bad hands,blurry,bad feet,poorly drawn hands,extra fingers,fewer digits,extra limbs,extra arms,extra legs,malformed limbs,(fused fingers:1.5),(too many fingers:1.5),long neck,mutated hands,polar lowres,bad body,(missing fingers:1.5),missing arms,missing legs,extra digit,extra foot'
 
