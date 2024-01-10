@@ -210,9 +210,16 @@ class MagicHires(object):
             return {'success': True}
 
         gfpgan_weight = 0.5
-        codeformer_visibility = 1 if _input_image_mode == 'model' else 0
+        codeformer_visibility = 1
+        if _input_image_mode == 'model':
+            codeformer_visibility = 1
+        elif _input_image_mode == 'factory':
+            codeformer_visibility = 0.45
+        else:
+            codeformer_visibility = 0
+        codeformer_weight = 0 if _input_image_mode == 'model' or _input_image_mode == 'factory' else 1
         args = (0, scales, None, None, True, 'ESRGAN_4x', 'None', 0, gfpgan_weight, codeformer_visibility,
-                0 if _input_image_mode == 'model' else 1)
+                codeformer_weight)
         assert cnet_res_img, 'image not selected'
         self.operator.devices.torch_gc()
         pp = self.operator.scripts_postprocessing.PostprocessedImage(cnet_res_img.convert("RGB"))
