@@ -209,9 +209,9 @@ class MagicHires(object):
         if self.operator.update_progress(70):
             return {'success': True}
 
-        gfpgan_weight = 0
+        gfpgan_weight = 0.5
         codeformer_visibility = 1 if _input_image_mode == 'model' else 0
-        args = (0, scales, None, None, True, 'ESRGAN 4x', 'None', 0, gfpgan_weight, codeformer_visibility,
+        args = (0, scales, None, None, True, 'ESRGAN_4x', 'None', 0, gfpgan_weight, codeformer_visibility,
                 0 if _input_image_mode == 'model' else 1)
         assert cnet_res_img, 'image not selected'
         self.operator.devices.torch_gc()
