@@ -5,15 +5,14 @@ import numpy as np
 
 prompt_style = [
     {'label': '无', 'prompt': None},
-    {'label': '电影感',
-     'prompt': 'cinematic photo,cinematic light,film,depth of field,blurry background,bokeh,gloom,(photorealistic:1.2),professional,4k'},
+    {'label': '电影感', 'prompt': 'cinematic photo,cinematic light,film,depth of field,blurry background,bokeh,gloom,(photorealistic:1.2),professional,4k'},
     {'label': '唯美写真', 'prompt': 'soft light,warm color,light leak,filmg,(photorealistic:1.2),professional,4k'},
 ]
 
 prompt_distance = [
-    {'label': '面部特写', 'prompt': '(close-up:1.5),detailed face,delicate face,true skin texture,portrait', 'width': 512,
+    {'label': '面部特写', 'prompt': '(close-up:1.5),portrait', 'width': 512,
      'height': 512},
-    {'label': '上半身照', 'prompt': '(upper body:1.5),true skin texture,portrait', 'width': 512, 'height': 768},
+    {'label': '上半身照', 'prompt': '(upper body:1.5)', 'width': 512, 'height': 768},
     {'label': '全身照', 'prompt': '(full body:1.5),', 'width': 512, 'height': 1024},
 ]
 
