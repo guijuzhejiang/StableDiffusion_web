@@ -171,27 +171,27 @@ class MagicHires(object):
                         ]
 
             cnet_res = self.operator.img2img.img2img(task_id, 0, sd_positive_prompt, sd_negative_prompt,
-                                            prompt_styles, init_img,
-                                            sketch,
-                                            init_img_with_mask, inpaint_color_sketch,
-                                            inpaint_color_sketch_orig,
-                                            init_img_inpaint, init_mask_inpaint,
-                                            steps, sampler_index, mask_blur, mask_alpha, inpainting_fill,
-                                            restore_faces,
-                                            tiling,
-                                            n_iter, batch_size, cfg_scale, image_cfg_scale,
-                                            denoising_strength, seed,
-                                            subseed,
-                                            subseed_strength, seed_resize_from_h, seed_resize_from_w,
-                                            seed_enable_extras,
-                                            selected_scale_tab, padding_height, padding_width, scale_by,
-                                            resize_mode,
-                                            inpaint_full_res,
-                                            inpaint_full_res_padding, inpainting_mask_invert,
-                                            img2img_batch_input_dir,
-                                            img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
-                                            override_settings_texts,
-                                            *sam_args)
+                                                    prompt_styles, init_img,
+                                                    sketch,
+                                                    init_img_with_mask, inpaint_color_sketch,
+                                                    inpaint_color_sketch_orig,
+                                                    init_img_inpaint, init_mask_inpaint,
+                                                    steps, sampler_index, mask_blur, mask_alpha, inpainting_fill,
+                                                    restore_faces,
+                                                    tiling,
+                                                    n_iter, batch_size, cfg_scale, image_cfg_scale,
+                                                    denoising_strength, seed,
+                                                    subseed,
+                                                    subseed_strength, seed_resize_from_h, seed_resize_from_w,
+                                                    seed_enable_extras,
+                                                    selected_scale_tab, padding_height, padding_width, scale_by,
+                                                    resize_mode,
+                                                    inpaint_full_res,
+                                                    inpaint_full_res_padding, inpainting_mask_invert,
+                                                    img2img_batch_input_dir,
+                                                    img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
+                                                    override_settings_texts,
+                                                    *sam_args)
         else:
             padding_height = _input_image_height // 8 * 8
             padding_width = _input_image_width // 8 * 8
@@ -211,7 +211,7 @@ class MagicHires(object):
 
         gfpgan_weight = 0
         codeformer_visibility = 1 if _input_image_mode == 'model' else 0
-        args = (0, scales, None, None, True, 'R-ESRGAN 4x+', 'None', 0, gfpgan_weight, codeformer_visibility,
+        args = (0, scales, None, None, True, 'R-ESRGAN 4x', 'None', 0, gfpgan_weight, codeformer_visibility,
                 0 if _input_image_mode == 'model' else 1)
         assert cnet_res_img, 'image not selected'
         self.operator.devices.torch_gc()
