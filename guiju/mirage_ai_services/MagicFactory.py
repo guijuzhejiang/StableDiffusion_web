@@ -210,7 +210,7 @@ class MagicFactory(object):
         _batch_size = int(params['batch_size'])
 
         # save cache face img
-        _input_image.save(f'tmp/{self.__class__.__name__}_origin_{pic_name}_save.png')
+        # _input_image.save(f'tmp/{self.__class__.__name__}_origin_{pic_name}_save.png')
         # _input_image = _input_image.convert('RGBA')
 
         _input_image_width, _input_image_height = _input_image.size
