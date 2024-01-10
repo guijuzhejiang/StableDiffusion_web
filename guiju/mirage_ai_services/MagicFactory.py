@@ -68,7 +68,7 @@ prompt_costume = {
     21: {'label': '短运动服', 'prompt': '(exercise clothing:1.5)'},
     22: {'label': '剪裁牛仔', 'prompt': '(cropped jacket :1.5)'},
     23: {'label': '睡衣', 'prompt': '(pajamas:1.5)'},
-    24: {'label': '和服', 'prompt': '(japanese_clothes:1.5)'},
+    24: {'label': '和服', 'prompt': '(japanese yukata:1.5)'},
     25: {'label': '迷你裙', 'prompt': '(miniskirt:1.5)'},
     26: {'label': '比基尼', 'prompt': '(bikini:1.5)'},
     27: {'label': '连体泳衣', 'prompt': '(swimsuit:1.5)'},
