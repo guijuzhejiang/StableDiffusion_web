@@ -153,7 +153,7 @@ prompt_scene = {
     21: {'label': '樱花盛开',
          'prompt': 'ray tracing,colorful,glowing light,(detailed background,complex background:1.2),cherry blossoms,park'},
     22: {'label': '巨大月亮',
-         'prompt': 'full moon,sky,planet,space,starry sky'},
+         'prompt': '(full red moon:1.5),sky,planet,space,starry sky'},
     23: {'label': '废弃游乐场',
          'prompt': 'post-apocalypse,decayed amusement park,broken rides,faded colors,absurdress,'},
     24: {'label': '夏威夷灯塔',
