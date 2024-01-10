@@ -29,13 +29,13 @@ class MagicHires(object):
         _input_image_path = kwargs['input_image_paths'][0]
         _input_image_width, _input_image_height = _input_image.size
 
-        pattern = re.compile(r"user_(.*?)_history")
-        match = pattern.search(_input_image_path)
-
-        if match:
-            _input_image_mode = match.group(1)
-        else:
-            _input_image_mode = 'facer'
+        # pattern = re.compile(r"user_(.*?)_history")
+        # match = pattern.search(_input_image_path)
+        _input_image_mode = os.path.dirname(os.path.dirname(_input_image_path))
+        # if match:
+        #     _input_image_mode = match.group(1)
+        # else:
+        #     _input_image_mode = 'facer'
         # hires
         if _input_image_mode == 'avatar' or _input_image_mode == 'mirage':
             if self.operator.shared.sd_model.sd_checkpoint_info.model_name != 'dreamshaper_8':
