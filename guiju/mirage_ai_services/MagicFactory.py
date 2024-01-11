@@ -143,7 +143,7 @@ prompt_scene = {
     16: {'label': '雪地森林',
          'prompt': 'enchanted forest,snow,night,stars,subsurface scattering,walking in the forest,path'},
     17: {'label': '林中小河',
-         'prompt': 'grass,path,river,waterfall,forest'},
+         'prompt': 'path,river,waterfall,forest'},
     18: {'label': '天台',
          'prompt': 'school rooftop,building,chain-link fence,wind lift'},
     19: {'label': '星空',
