@@ -5,8 +5,8 @@ import numpy as np
 
 prompt_style = [
     {'label': '无', 'prompt': None},
-    {'label': '电影感', 'prompt': 'cinematic photo,cinematic light,film,depth of field,blurry background,bokeh,gloom,professional,4k'},
-    {'label': '唯美写真', 'prompt': 'soft light,warm color,light leak,filmg,professional,4k'},
+    {'label': '电影感', 'prompt': 'cinematic photo,cinematic light,film,depth of field,blurry background,bokeh,gloom'},
+    {'label': '唯美写真', 'prompt': 'soft light,warm color,light leak,filmg'},
 ]
 
 prompt_distance = [
@@ -249,7 +249,7 @@ class MagicFactory(object):
                 positive_prompt = positive_prompt + f',{prompt_scene[_scene]["prompt"]}'
             if _style != 0:
                 positive_prompt = positive_prompt + f',{prompt_style[_style]["prompt"]}'
-            positive_prompt = positive_prompt + f',(best quality),(high quality),high details,masterpiece,extremely detailed,(sharp focus),(cinematic lighting),high saturation,ultra detailed,detailed background,wide view,sharp and crisp background,epic composition,intricate,solo'
+            positive_prompt = positive_prompt + f',(best quality),(high quality),high details,masterpiece,extremely detailed,(sharp focus),(cinematic lighting),high saturation,ultra detailed,detailed background,wide view,sharp and crisp background,epic composition,intricate,solo,professional,4k'
             negative_prompt = f'(NSFW:1.3),cartoon,painting,illustration,(worst quality:2),(low quality:2),(normal quality:2),bad anatomy,DeepNegative,text,error,cropped,mutation,jpeg artifacts,polar lowres,bad proportions,gross proportions,deformed body,cross-eyed,sketches,bad hands,blurry,bad feet,poorly drawn hands,extra fingers,fewer digits,extra limbs,extra arms,extra legs,malformed limbs,(fused fingers:1.3),(too many fingers:1.3),long neck,mutated hands,polar lowres,bad body,(missing fingers:1.3),missing arms,missing legs,extra digit,extra foot'
 
             print("-------------------factory logger-----------------")
