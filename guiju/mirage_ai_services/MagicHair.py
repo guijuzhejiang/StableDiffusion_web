@@ -19,7 +19,7 @@ from utils.global_vars import CONFIG
 
 # 头发 fluffy hair,lush hair,
 lora_haircut_common_dict = {
-    'positive_prompt': '(best quality:1.2),(high quality:1.2),(Realism:1.4),masterpiece,raw photo,realistic,character close-up,<lora:more_details:1>,(black shirt:1.3),(simple background:1.3)',
+    'positive_prompt': '(simple background:1.3),(Realism:1.4),masterpiece,raw photo,realistic,(best quality:1.2),(high quality:1.2),<lora:more_details:1>,black shirt',
     'negative_prompt': '(jewelry:1.5),(earrings:1.5),(stud earrings:1.5),cat_ears,(NSFW:1.8),(hands:1.5),(feet:1.3),(shoes:1.3),(mask:1.3),(glove:1.3),(fingers:1.3),(legs),(toes:1.3),(digits:1.3),bad_picturesm,EasyNegative,easynegative,ng_deepnegative_v1_75t,verybadimagenegative_v1.3,(worst quality:2),(low quality:2),(normal quality:2),((monochrome)),((grayscale)),sketches,bad anatomy,DeepNegative,{Multiple people},text,error,cropped,blurry,mutation,deformed,jpeg artifacts,polar lowres,bad proportions,gross proportions,humans'
 }
 
@@ -287,7 +287,7 @@ class MagicHair(object):
                 new_person_box = [0, 0, 0, 0]
 
                 # crop
-                pre_padding = 0.2
+                pre_padding = 0.1
                 if _haircut_enable:
                     new_person_box[0] = person_box[0] - int(person_width * pre_padding)
                     new_person_box[1] = person_box[1] - int(person_height * pre_padding)
@@ -318,39 +318,58 @@ class MagicHair(object):
 
                     _input_image = _input_image.crop(new_person_box)
 
-                _input_image_width, _input_image_height = _input_image.size
-                # limit 512
-                min_edge = min(_input_image_width, _input_image_height)
-                min_index = [_input_image_width, _input_image_height].index(min_edge)
-                if min_index == 0:
-                    _input_image = _input_image.resize(
-                        (512, int(_input_image_height / _input_image_width * 512)))
-                else:
-                    _input_image = _input_image.resize(
-                        (int(_input_image_width / _input_image_height * 512), 512))
-
-                cache_fp = f"tmp/hair_resized_{pic_name}_save.png"
-                _input_image.save(cache_fp)
-
-            _input_image = _input_image.convert('RGBA')
-            _input_image_width, _input_image_height = _input_image.size
 
             if self.operator.update_progress(10):
                 return {'success': True}
 
             hair_result = []
+
+            # limit 512
+            _input_image_width, _input_image_height = _input_image.size
+            min_edge = min(_input_image_width, _input_image_height)
+            min_index = [_input_image_width, _input_image_height].index(min_edge)
+            if min_index == 0:
+                _input_image = _input_image.resize(
+                    (512, int(_input_image_height / _input_image_width * 512)))
+            else:
+                _input_image = _input_image.resize(
+                    (int(_input_image_width / _input_image_height * 512), 512))
+
+            _input_image_width, _input_image_height = _input_image.size
+
             # haircut
             if _haircut_enable:
                 _input_image = self.expand_canvas(_input_image,
                                                   int(_input_image_height*0.4),
                                                   int(_input_image_height*0.5),
-                                                  int(_input_image_width*0.5),
+                                                  int(_input_image_width*0.4),
                                                   int(_input_image_width*0.4))
                 _input_image_width, _input_image_height = _input_image.size
+
+                if _input_image_width != _input_image_height:
+                    if _input_image_width > _input_image_height:
+                        _input_image = self.expand_canvas(_input_image,
+                                                          int((_input_image_width - _input_image_height) / 2),
+                                                          _input_image_width - _input_image_height - int(
+                                                              (_input_image_width - _input_image_height) / 2),
+                                                          0, 0
+                                                          )
+                    else:
+                        _input_image = self.expand_canvas(_input_image,
+                                                          0,0,
+                                                          int((_input_image_height - _input_image_width) / 2),
+                                                          _input_image_height - _input_image_width - int(
+                                                              (_input_image_height - _input_image_width) / 2))
+
+
                 hair_result = self.proceed_hair(_haircut_style, 'haircut', _batch_size, _input_image, pic_name,
                                                 return_list=True, gender=_gender)
                 if isinstance(hair_result, dict):
                     return hair_result
+
+            #
+            cache_fp = f"tmp/hair_resized_{pic_name}_save.png"
+            _input_image.save(cache_fp)
 
             if self.operator.update_progress(50):
                 return {'success': True}
@@ -463,7 +482,7 @@ class MagicHair(object):
         resize_mode = 1  # just resize
         sampler_index = 15 if _task_type == 'haircut' else 16
         inpaint_full_res = 0 if _task_type == 'haircut' else 1  # choices=["Whole picture", "Only masked"]
-        inpainting_fill = 3  # masked content original
+        inpainting_fill = 2  # masked content original
         denoising_strength = 0.85 if _task_type == 'haircut' else 0.8
         steps = 20
 
@@ -481,13 +500,13 @@ class MagicHair(object):
 
         sam_result_tmp_png_fp = []
         if sam_result is not None:
-            sam_image = self.apply_mask(_init_img, sam_result)
+            # sam_image = self.apply_mask(_init_img, sam_result)
             for idx in range(3):
                 cache_fp = f"tmp/hair_{_task_type}_{idx}_{uid_name}_{_pic_name}{'_save' if idx == 1 else ''}.png"
                 if idx == 1:
                     sam_result.save(cache_fp, format='PNG')
                 else:
-                    sam_image.save(cache_fp, format='PNG')
+                    sam_result.save(cache_fp, format='PNG')
                 sam_result_tmp_png_fp.append({'name': cache_fp})
             # else:
             #     sam_result_tmp_png_fp[0] = sam_result_tmp_png_fp[-1]
@@ -503,7 +522,8 @@ class MagicHair(object):
 
         if _task_type == 'haircut':
             sd_positive_prompt = ','.join(
-                [lora_haircut_male_dict[_selected_index]['prompt'] if gender == 'male' else
+                ['hair',
+                 lora_haircut_male_dict[_selected_index]['prompt'] if gender == 'male' else
                  lora_haircut_female_dict[_selected_index]['prompt'],
                  lora_haircut_common_dict['positive_prompt']])
             sd_negative_prompt = lora_haircut_common_dict['negative_prompt']
