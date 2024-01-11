@@ -112,7 +112,7 @@ prompt_scene = {
     0: {'label': '赛博朋克',
         'prompt': '(cyberpunk:1.5),(cyber sci-fi:1.5),(surreal:1.5)'},
     1: {'label': '太空',
-        'prompt': 'earth,cosmic,celestial,space suit,astronaut,night_sky,starry_sky,universe,space,science fiction,galaxy,floating,stars,nebula'},
+        'prompt': 'earth,cosmic,celestial,space suit,astronaut,universe,space,science fiction,galaxy,floating,stars,nebula'},
     2: {'label': '蒸汽朋克',
         'prompt': '(steampunk:1.5),mechanical,surreal'},
     3: {'label': '机器改造人',
