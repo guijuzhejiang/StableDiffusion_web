@@ -208,6 +208,28 @@ class MagicHair(object):
     def __init__(self, operator):
         self.operator = operator
 
+    def apply_mask(self, original_image, mask_image):
+        transparent_im = Image.new('RGBA', original_image.size, (255, 255, 255))
+        transparent_im.paste(original_image, mask=mask_image)
+
+        return transparent_im
+
+    def expand_canvas(self, original_image, top_px, bottom_px, left_px, right_px):
+        # 获取原始图像的尺寸
+        width, height = original_image.size
+
+        # 计算新的画布尺寸
+        new_width = width + left_px + right_px
+        new_height = height + top_px + bottom_px
+
+        # 创建一个新的画布
+        new_canvas = Image.new('RGB', (new_width, new_height), (255, 255, 255))
+
+        # 将原始图像粘贴到新的画布中央
+        new_canvas.paste(original_image, (left_px, top_px))
+
+        return new_canvas
+
     def __call__(self, *args, **kwargs):
         if self.operator.shared.sd_model.sd_checkpoint_info.model_name != self.sd_model_name:
             self.operator.shared.change_sd_model(self.sd_model_name)
@@ -265,11 +287,12 @@ class MagicHair(object):
                 new_person_box = [0, 0, 0, 0]
 
                 # crop
+                pre_padding = 0.2
                 if _haircut_enable:
-                    new_person_box[0] = person_box[0] - int(person_width * 0.7)
-                    new_person_box[1] = person_box[1] - int(person_height * 0.4)
-                    new_person_box[2] = person_box[2] + int(person_width * 0.6)
-                    new_person_box[3] = person_box[3] + int(person_height * 0.6)
+                    new_person_box[0] = person_box[0] - int(person_width * pre_padding)
+                    new_person_box[1] = person_box[1] - int(person_height * pre_padding)
+                    new_person_box[2] = person_box[2] + int(person_width * pre_padding)
+                    new_person_box[3] = person_box[3] + int(person_height * pre_padding)
                     if new_person_box[0] < 0:
                         new_person_box[0] = 0
                     if new_person_box[1] < 0:
@@ -280,10 +303,10 @@ class MagicHair(object):
                         new_person_box[3] = _input_image_height - 1
                     _input_image = _input_image.crop(new_person_box)
                 else:
-                    new_person_box[0] = person_box[0] - int(person_width * 0.7)
-                    new_person_box[1] = person_box[1] - int(person_height * 0.6)
-                    new_person_box[2] = person_box[2] + int(person_width * 0.6)
-                    new_person_box[3] = person_box[3] + int(person_height * 0.8)
+                    new_person_box[0] = person_box[0] - int(person_width * pre_padding)
+                    new_person_box[1] = person_box[1] - int(person_height * pre_padding)
+                    new_person_box[2] = person_box[2] + int(person_width * pre_padding)
+                    new_person_box[3] = person_box[3] + int(person_height * pre_padding)
                     if new_person_box[0] < 0:
                         new_person_box[0] = 0
                     if new_person_box[1] < 0:
@@ -318,6 +341,12 @@ class MagicHair(object):
             hair_result = []
             # haircut
             if _haircut_enable:
+                _input_image = self.expand_canvas(_input_image,
+                                                  int(_input_image_height*0.4),
+                                                  int(_input_image_height*0.5),
+                                                  int(_input_image_width*0.5),
+                                                  int(_input_image_width*0.4))
+                _input_image_width, _input_image_height = _input_image.size
                 hair_result = self.proceed_hair(_haircut_style, 'haircut', _batch_size, _input_image, pic_name,
                                                 return_list=True, gender=_gender)
                 if isinstance(hair_result, dict):
@@ -434,7 +463,7 @@ class MagicHair(object):
         resize_mode = 1  # just resize
         sampler_index = 15 if _task_type == 'haircut' else 16
         inpaint_full_res = 0 if _task_type == 'haircut' else 1  # choices=["Whole picture", "Only masked"]
-        inpainting_fill = 1  # masked content original
+        inpainting_fill = 3  # masked content original
         denoising_strength = 0.85 if _task_type == 'haircut' else 0.8
         steps = 20
 
@@ -452,12 +481,13 @@ class MagicHair(object):
 
         sam_result_tmp_png_fp = []
         if sam_result is not None:
+            sam_image = self.apply_mask(_init_img, sam_result)
             for idx in range(3):
                 cache_fp = f"tmp/hair_{_task_type}_{idx}_{uid_name}_{_pic_name}{'_save' if idx == 1 else ''}.png"
                 if idx == 1:
                     sam_result.save(cache_fp, format='PNG')
                 else:
-                    _init_img.save(cache_fp, format='PNG')
+                    sam_image.save(cache_fp, format='PNG')
                 sam_result_tmp_png_fp.append({'name': cache_fp})
             # else:
             #     sam_result_tmp_png_fp[0] = sam_result_tmp_png_fp[-1]
@@ -498,6 +528,19 @@ class MagicHair(object):
             controlnet_args_unit1.threshold_a = 100
             controlnet_args_unit1.threshold_b = 200
             controlnet_args_unit1.weight = 1
+
+            controlnet_args_unit2.enabled = True
+            controlnet_args_unit2.threshold_a = 0.5
+            controlnet_args_unit2.threshold_b = -1
+            controlnet_args_unit2.model = 'None'
+            controlnet_args_unit2.module = 'reference_adain+attn'
+            controlnet_args_unit2.pixel_perfect = True
+            controlnet_args_unit2.weight = 1
+            controlnet_args_unit2.resize_mode = 'Crop and Resize'
+            controlnet_args_unit2.image = {
+                'image': np.array(_init_img),
+                'mask': np.zeros(shape=np.array(_init_img).shape),
+            }
 
         print(f"-------------------{_task_type} logger-----------------")
         print(f"sd_positive_prompt: {sd_positive_prompt}")
