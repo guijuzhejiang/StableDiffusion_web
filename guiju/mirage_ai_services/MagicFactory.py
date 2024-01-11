@@ -170,7 +170,7 @@ prompt_scene = {
     29: {'label': '未来工厂',
          'prompt': 'cinematic SCI-FI environment,AI-operated factory,robotic ,artificial constellations,floating energy orbs.cyber sci-fi'},
     30: {'label': '篮球馆',
-         'prompt': 'stage,scenery,indoors,aesthetic,stadium,basketball arena'},
+         'prompt': 'stage,scenery,indoors,aesthetic,stadium,basketball court'},
     31: {'label': '排球馆',
          'prompt': 'stage,scenery,indoors,aesthetic,stadium,volleyball court'},
     32: {'label': '国风山中古城',
