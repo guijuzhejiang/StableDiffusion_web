@@ -91,7 +91,7 @@ prompt_costume = {
     44: {'label': '医生白大挂', 'prompt': '(lab_coat:1.3)'},
     45: {'label': '兜帽斗篷', 'prompt': '(cape hood:1.3)'},
     46: {'label': '风衣', 'prompt': '(overcoat:1.3)'},
-    47: {'label': '大衣', 'prompt': '(wind coat:1.3)'},
+    47: {'label': '篮球服', 'prompt': '(basketball uniform:1.3)'},
     48: {'label': '战斗服', 'prompt': '(combat suit:1.3)'},
     49: {'label': '皮夹克', 'prompt': '(leather jacket:1.3)'},
     50: {'label': '浴袍', 'prompt': '(bathrobe:1.3)'},
@@ -105,7 +105,6 @@ prompt_costume = {
     58: {'label': '空手道服', 'prompt': '(karate uniform:1.3)'},
     59: {'label': '古希腊服装', 'prompt': '(Greek clothes:1.3)'},
     60: {'label': '印第安服饰', 'prompt': '(pocahontas outfit:1.3)'},
-    61: {'label': '篮球服', 'prompt': '(basketball uniform:1.3)'}
 }
 
 prompt_scene = {
