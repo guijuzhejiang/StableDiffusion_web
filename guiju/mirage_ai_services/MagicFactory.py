@@ -65,13 +65,12 @@ prompt_character = {
     27: {'label': 'Iron Fist', 'prompt': '(Iron Fist:1.3)'},
     28: {'label': 'Star-Lord ', 'prompt': '(Star-Lord :1.3)'},
     29: {'label': 'Harry Potter', 'prompt': '(Harry Potter:1.3)'},
-    30: {'label': 'Mario', 'prompt': '(Mario:1.3)'},
-    31: {'label': 'Goku', 'prompt': '(Goku:1.3)'},
-    32: {'label': 'Saiyan', 'prompt': '(Saiyan:1.3)'},
-    33: {'label': 'Seiya', 'prompt': '(Seiya:1.3)'},
-    34: {'label': 'Kamen Rider', 'prompt': '(Kamen Rider:1.3)'},
-    35: {'label': 'Sailor Moon', 'prompt': '(Sailor Moon:1.3)'},
-    36: {'label': 'Chun-Li', 'prompt': '(Chun-Li:1.3)'}
+    30: {'label': 'Goku', 'prompt': '(Goku:1.3)'},
+    31: {'label': 'Saiyan', 'prompt': '(Saiyan:1.3)'},
+    32: {'label': 'Seiya', 'prompt': '(Seiya:1.3)'},
+    33: {'label': 'Kamen Rider', 'prompt': '(Kamen Rider:1.3)'},
+    34: {'label': 'Sailor Moon', 'prompt': '(Sailor Moon:1.3)'},
+    35: {'label': 'Chun-Li', 'prompt': '(Chun-Li:1.3)'}
 }
 
 prompt_costume = {
