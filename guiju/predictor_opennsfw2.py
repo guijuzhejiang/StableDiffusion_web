@@ -9,7 +9,7 @@ from keras import Model
 
 PREDICTOR = None
 THREAD_LOCK = threading.Lock()
-MAX_PROBABILITY = 0.9
+MAX_PROBABILITY = 0.95
 
 
 def get_predictor() -> Model:
