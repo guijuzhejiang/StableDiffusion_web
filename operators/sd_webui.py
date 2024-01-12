@@ -273,9 +273,12 @@ class OperatorSD(Operator):
                 return {'success': True}
 
             # nsfw check
-            if self.predict_image(kwargs['input_image']):
-                # return {'success': False, 'result': "抱歉，您上传的图像未通过合规性检查，请重新上传。"}
-                return {'success': False, 'result': 'backend.check.error.nsfw'}
+            if 'preset_index' in params.keys():
+                if self.predict_image(f"guiju/assets/preset/{proceed_mode}/{params['preset_index']}.jpg"):
+                    return {'success': False, 'result': 'backend.check.error.nsfw'}
+            else:
+                if self.predict_image(kwargs['input_image']):
+                    return {'success': False, 'result': 'backend.check.error.nsfw'}
 
             # define task id
             pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
@@ -312,6 +315,8 @@ class OperatorSD(Operator):
                 input_image_paths = [kwargs['input_image']]
             else:
                 input_image_paths = None
+
+
             res = self.magic_conductor(proceed_mode,
                                        params=params,
                                        user_id=user_id,
@@ -327,9 +332,8 @@ class OperatorSD(Operator):
             # dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_{proceed_mode}_dir'], user_id)
             os.makedirs(dir_path, exist_ok=True)
             for res_idx, res_img in enumerate(res):
-                img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"
-                res_img.convert("RGB").save(os.path.join(dir_path, img_fn), format="jpeg", quality=80,
-                                            lossless=True)
+                img_save_path = os.path.join(dir_path, f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png")
+                res_img.convert("RGB").save(img_save_path, format="jpeg", quality=80, lossless=True)
 
                 # 限制缓存10张
                 cache_list = sorted(os.listdir(dir_path))
