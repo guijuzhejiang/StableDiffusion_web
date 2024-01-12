@@ -255,7 +255,7 @@ class MagicFactory(object):
         _costume = int(params['costume'])
         _batch_size = int(params['batch_size'])
 
-        # _character_enable = bool(params['character_enable'])
+        _character_enable = bool(params['character_enable'])
         _costume_enable = bool(params['costume_enable'])
         _scene_enable = bool(params['scene_enable'])
 
@@ -285,8 +285,8 @@ class MagicFactory(object):
 
             # prompt
             positive_prompt = f'{prompt_gender[_gender]["prompt"]},{prompt_distance[_distance]["prompt"]}'
-            # if _character_enable:
-            #     positive_prompt = positive_prompt + f',{prompt_character[_character]["prompt"]}'
+            if _character_enable:
+                positive_prompt = positive_prompt + f',{prompt_character[_character]["prompt"]}'
             if _costume_enable:
                 positive_prompt = positive_prompt + f',{prompt_costume[_costume]["prompt"]}'
             if _scene_enable:
