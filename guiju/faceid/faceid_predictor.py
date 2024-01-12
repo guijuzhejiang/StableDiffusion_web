@@ -1,6 +1,8 @@
 # coding=utf-8
 # @Time : 2023/11/3 下午12:55
 # @File : facer_parsing.py
+import os
+
 import torch
 from diffusers import StableDiffusionPipeline, DDIMScheduler, AutoencoderKL
 from insightface.utils import face_align
@@ -29,6 +31,29 @@ class FaceIDPredictor:
     vae_model_path = "/media/zzg/GJ_disk01/pretrained_model/magic-animate/pretrained_models/sd-vae-ft-mse"
     image_encoder_path = "/media/zzg/GJ_disk01/pretrained_model/IP-Adapter/models/image_encoder"
     ip_ckpt = "/media/zzg/GJ_disk01/pretrained_model/IP-Adapter-FaceID/ip-adapter-faceid-plus_sd15.bin"
+    lora_path = "/media/zzg/GJ_disk01/pretrained_model/stable-diffusion-webui/models/Lora"
+
+    lora_list = [
+        {'name': 'add_detail', 'scale': 1.0, 'trigger': ''},
+        {'name': 'more_details', 'scale': 1.0, 'trigger': ''},
+        # {'name': 'k Hand Mix 101_v1.0', 'scale': 1.0, 'trigger': 'hand101'},
+        # {'name': 'SunsetScenery_v1', 'scale': 0.6, 'trigger': 'sunset_scenery_background'},
+        # {'name': 'slg_v30', 'scale': 0.6, 'trigger': 'slg'},
+        # {'name': 'FuturisticScape-V3', 'scale': 0.6, 'trigger': ''},
+        # {'name': 'Cyber_Esoteric', 'scale': 1, 'trigger': ''},
+        # {'name': 'E235_V5', 'scale': 1, 'trigger': 'e235'},
+    ]
+
+    def add_lora(self, pipe, loras: list):
+        if pipe is not None:
+            pipe.unfuse_lora()
+            if len(loras) > 0:
+                for lora in loras:
+                    lora_ckpt = os.path.join(self.lora_path, lora['name'] + '.safetensors')
+                    pipe.load_lora_weights(lora_ckpt)
+                    pipe.fuse_lora(lora_scale=lora["scale"])
+                    print(f"add {lora['name']} lora over!!!")
+        return pipe
 
     def __init__(self, face_analyser):
         self.face_analyser = face_analyser
@@ -54,6 +79,7 @@ class FaceIDPredictor:
             # custom_pipeline="lpw_stable_diffusion",
             # custom_pipeline="stable_diffusion_mega",
         )
+        pipe = self.add_lora(pipe, self.lora_list)
 
         self.ip_model = IPAdapterFaceIDPlus(pipe, self.image_encoder_path, self.ip_ckpt, self.device)
         # 跟踪输入照片脸部特征的程度,默认1.0,如果不想一模一样可调低
