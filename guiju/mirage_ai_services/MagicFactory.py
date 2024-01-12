@@ -250,7 +250,7 @@ class MagicFactory(object):
         _distance = int(params['distance'])
         _gender = 0 if params['gender'] == 'female' else 1
         # _age = int(params['age'])
-        # _character = int(params['character'])
+        _character = int(params['character'])
         _scene = int(params['scene'])
         _costume = int(params['costume'])
         _batch_size = int(params['batch_size'])
