@@ -46,6 +46,9 @@ wechatlogin:
 googlelogin:
   client_id: '51336041422-d1a9ssmmhauk16n4mc9a21mmbv36h604.apps.googleusercontent.com'
 #  client_id: '714423616983-8l6ttvp7f7nhsqg4t5q4k56onj2m2pf6.apps.googleusercontent.com'
+facebooklogin:
+  app_id: 1135974444063887
+  secret: 5e52a95df62d02accfc40ae40e7cf97f
 linelogin:
   token_url: 'https://api.line.me/oauth2/v2.1/token'
   verify_url: "https://api.line.me/oauth2/v2.1/verify"

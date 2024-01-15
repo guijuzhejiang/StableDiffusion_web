@@ -34,7 +34,7 @@ prompt_gender = [
 #     {'label': '老年', 'prompt': 'elder'},
 # ]
 
-prompt_character = {
+prompt_male_character = {
     0: {'label': '天使', 'prompt': '(huge angel wings:1.5),(angel:1.5)'},
     1: {'label': '美人鱼', 'prompt': '(mermaid:1.5)'},
     2: {'label': 'Dracula', 'prompt': '(Dracula:1.5)'},
@@ -57,6 +57,49 @@ prompt_character = {
     19: {'label': 'Harry Potter', 'prompt': '(Harry Potter:1.5)'},
     20: {'label': 'Seiya', 'prompt': '(Seiya:1.5)'},
     21: {'label': 'Kamen Rider', 'prompt': '(Kamen Rider:1.5)'},
+    22: {'label': '亚马逊女战士', 'prompt': '<lora:ww_v1:0.6>,wonder woman,superhero suit'},
+    23: {'label': '凤凰女(琴·格蕾)', 'prompt': '<lora:jean_grey-10:1>,Jean-grey'},
+    24: {'label': '猫女', 'prompt': '<lora:CARTOON_DC_catwoman_comic_ownwaifu-15:0.7>,DC_catwoman_comic_shorthair,DC_catwoman_comic_bodysuit,DC_catwoman_comic_cleavage'},
+    25: {'label': '妙语Punchline', 'prompt': '<lora:CARTOON_DC_punchline_ownwaifu-15:0.7>,CARTOON_DC_punchline_ownwaifu'},
+    26: {'label': '女巫', 'prompt': '<lora:enchantress-10IJ2v8:0.7>,enchantress'},
+    27: {'label': '女蝙蝠侠Batgirl', 'prompt': '<lora:cassandracain-nvwls-v1:0.8>,cassandra, black hair, short hair, cape, bodysuit, black bodysuit, belt, belt pouch, black gloves, black pants'},
+    28: {'label': '红灯侠（Red Lantern）', 'prompt': '<lora:Red Lantern Costume_v1:1>,red lantern costume'},
+    29: {'label': '蓝灯侠（Blue Lantern）', 'prompt': '<lora:Blue Lantern Costume_v1:1>,blue lantern costume'},
+    30: {'label': '大芭达(Big Barda)', 'prompt': '<lora:bigbarda-11DCG:1>,bigbarda,blue and gold bodysuit,helmet,red cape'},
+    31: {'label': '蓝甲虫（Blue Beetle）', 'prompt': '<lora:Blue_Beetle_DC_v1:0.8>,Blue_Beetle_DC'},
+    32: {'label': '假面騎士BLACK', 'prompt': '<lora:Kamen_Rider_Black_RX:0.8>,Kamen_Rider_Black_RX'},
+    33: {'label': '白戰士(White Power Ranger)', 'prompt': '<lora:White_Ranger:1>,White_Ranger,solo,black breastplate,detailed armor'},
+    34: {'label': '沙赞（Shazam）', 'prompt': '<lora:Shazamsuit_Lora_v1:0.6>,shazamsuit'},
+    35: {'label': '北极星(Polaris)', 'prompt': '<lora:polaris-10:0.6>,Polaris,bodysuit, cape'},
+    36: {'label': '奥特曼(ultraman)', 'prompt': '<lora:ultraman2:0.7>,ultraman,[red|white]'},
+    37: {'label': '惊奇队长(Captain Marvel)', 'prompt': '<lora:cptmarvel-nvwls-v1:1>,cptMarvel'},
+    38: {'label': '女毒液(Venom)', 'prompt': '<lora:CARTOON_MARVEL_she_venom_ownwaifu-15:0.8>,CARTOON_MARVEL_she_venom_ownwaifu'},
+}
+
+prompt_female_character = {
+    0: {'label': '天使', 'prompt': '(huge angel wings:1.5),(angel:1.5)'},
+    1: {'label': '美人鱼', 'prompt': '(mermaid:1.5)'},
+    2: {'label': 'Dracula', 'prompt': '(Dracula:1.5)'},
+    3: {'label': 'Spiderman', 'prompt': '(Spiderman:1.5)'},
+    4: {'label': 'Superman', 'prompt': '(Superman:1.5)'},
+    5: {'label': 'Iron man', 'prompt': '(Iron man:1.5)'},
+    6: {'label': 'Thanos', 'prompt': '(Thanos:1.5)'},
+    7: {'label': 'Deadpool', 'prompt': '(Deadpool:1.5)'},
+    8: {'label': 'Thor', 'prompt': '(Thor:1.5)'},
+    9: {'label': 'Black Panther', 'prompt': '(Black Panther:1.5)'},
+    10: {'label': 'Captain America', 'prompt': '(Captain America:1.5)'},
+    11: {'label': 'Green Arrow', 'prompt': '(Green Arrow:1.5)'},
+    12: {'label': 'Batman', 'prompt': '(Batman:1.5)'},
+    13: {'label': 'Harley Quinn', 'prompt': '(Harley Quinn:1.5)'},
+    14: {'label': 'Black Widow', 'prompt': '(Black Widow:1.5)'},
+    15: {'label': 'War Machine', 'prompt': '(War Machine:1.5)'},
+    16: {'label': 'Scarlet Witch', 'prompt': '(Scarlet Witch:1.5)'},
+    17: {'label': 'Moon Knight', 'prompt': '(Moon Knight:1.5)'},
+    18: {'label': 'Star-Lord ', 'prompt': '(Star-Lord :1.5)'},
+    19: {'label': 'Harry Potter', 'prompt': '(Harry Potter:1.5)'},
+    20: {'label': 'Seiya', 'prompt': '(Seiya:1.5)'},
+    21: {'label': 'Kamen Rider', 'prompt': '(Kamen Rider:1.5)'},
+    22: {'label': '亚马逊女战士', 'prompt': '(Kamen Rider:1.5)'},
 }
 
 prompt_costume = {
@@ -258,7 +301,7 @@ class MagicFactory(object):
             # prompt
             positive_prompt = f'{prompt_gender[_gender]["prompt"]},{prompt_distance[_distance]["prompt"]}'
             if _character_enable:
-                positive_prompt = positive_prompt + f',{prompt_character[_character]["prompt"]}'
+                positive_prompt = positive_prompt + f',{prompt_male_character[_character]["prompt"]}'
             if _costume_enable:
                 positive_prompt = positive_prompt + f',{prompt_costume[_costume]["prompt"]}'
             if _scene_enable:
