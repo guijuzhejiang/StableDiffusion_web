@@ -35,7 +35,7 @@ class FaceIDPredictor:
 
     lora_list = [
         {'name': 'add_detail', 'scale': 1.0, 'trigger': ''},
-        {'name': 'more_details', 'scale': 1.0, 'trigger': ''},
+        # {'name': 'more_details', 'scale': 1.0, 'trigger': ''},
         # {'name': 'k Hand Mix 101_v1.0', 'scale': 1.0, 'trigger': 'hand101'},
         # {'name': 'SunsetScenery_v1', 'scale': 0.6, 'trigger': 'sunset_scenery_background'},
         # {'name': 'slg_v30', 'scale': 0.6, 'trigger': 'slg'},
