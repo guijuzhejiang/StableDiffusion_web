@@ -88,7 +88,7 @@ class FaceIDPredictor:
         self.pipe.to(self.device)
 
     def __call__(self, image_arr, prompt, negative_prompt, batch_size, output_w, output_h, *args, **kwargs):
-        ip_model = IPAdapterFaceIDPlus(self.add_lora(self.pipe, self.lora_list + kwargs['lora'] if 'lora' in kwargs.keys() else self.lora_list), self.image_encoder_path, self.ip_ckpt, self.device)
+        ip_model = IPAdapterFaceIDPlus(self.add_lora(self.pipe, self.lora_list + kwargs['lora'] if kwargs['lora'] else self.lora_list), self.image_encoder_path, self.ip_ckpt, self.device)
 
         faces = self.face_analyser.get(image_arr)
         faceid_embed = torch.from_numpy(faces[0].normed_embedding).unsqueeze(0)
