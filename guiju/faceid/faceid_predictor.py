@@ -46,6 +46,7 @@ class FaceIDPredictor:
 
     def add_lora(self, pipe, loras: list):
         if pipe is not None:
+            pipe.unload_lora_weights()
             pipe.unfuse_lora()
             if len(loras) > 0:
                 for lora in loras:
