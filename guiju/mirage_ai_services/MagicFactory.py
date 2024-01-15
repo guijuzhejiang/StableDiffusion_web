@@ -59,7 +59,7 @@ prompt_male_character = {
     20: {'label': 'Seiya', 'prompt': '(Seiya:1.5)'},
     21: {'label': 'Kamen Rider', 'prompt': '(Kamen Rider:1.5)'},
     22: {'label': '亚马逊女战士', 'prompt': 'wonder woman,superhero suit',
-         'lora': [{'name': 'ww_v1', 'scale': 0.6}]},
+         'lora': [{'name': 'ww_v1', 'scale': 0.4}]},
     23: {'label': '凤凰女(琴·格蕾)', 'prompt': 'Jean-grey',
          'lora': [{'name': 'jean_grey-10', 'scale': 1}]},
     24: {'label': '猫女', 'prompt': 'DC_catwoman_comic_shorthair,DC_catwoman_comic_bodysuit,DC_catwoman_comic_cleavage,superhero suit',
