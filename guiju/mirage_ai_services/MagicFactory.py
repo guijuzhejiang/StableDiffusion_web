@@ -94,6 +94,8 @@ prompt_male_character = {
          'lora': [{'name': 'cptmarvel-nvwls-v1', 'scale': 1}]},
     39: {'label': '女毒液(Venom)', 'prompt': 'CARTOON_MARVEL_she_venom_ownwaifu,bodysuit',
          'lora': [{'name': 'CARTOON_MARVEL_she_venom_ownwaifu-15', 'scale': 0.8}]},
+    40: {'label': '三国武将', 'prompt': 'jim lee,sanguo male warrior,chinese chainmail long armour,cape',
+         'lora': [{'name': 'jim_lee_offset_right_filesize', 'scale': 0.8}]},
 }
 
 prompt_female_character = {
