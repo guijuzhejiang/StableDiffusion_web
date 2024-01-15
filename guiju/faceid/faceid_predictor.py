@@ -47,13 +47,17 @@ class FaceIDPredictor:
     def add_lora(self, pipe, loras: list):
         if pipe is not None:
             pipe.unload_lora_weights()
-            pipe.unfuse_lora()
             if len(loras) > 0:
+                names_list = []
+                scales_list = []
                 for lora in loras:
-                    lora_ckpt = os.path.join(self.lora_path, lora['name'] + '.safetensors')
-                    pipe.load_lora_weights(lora_ckpt)
-                    pipe.fuse_lora(lora_scale=lora["scale"])
-                    print(f"add {lora['name']} lora over!!!")
+                    lora_name = lora['name']
+                    lora_ckpt = os.path.join(self.lora_path, lora_name + '.safetensors')
+                    pipe.load_lora_weights(lora_ckpt, adapter_name=lora_name)
+                    names_list.append(lora_name)
+                    scales_list.append(lora["scale"])
+                pipe.set_adapters(names_list, adapter_weights=scales_list)
+                print(f"add {str(names_list)} lora over!!!")
         return pipe
 
     def __init__(self, face_analyser):
