@@ -43,11 +43,11 @@ bp.add_route(UserEditNickname.as_view(), "/user/edit/nickname")
 bp.add_websocket_route(sd_genreate, "/sd/io")
 
 # CORS settings
-cors = CORS(bp, resources={r"/sd/*": {"origins": "*", "headers": "*"},
-                           r"/wechat/*": {"origins": "*", "headers": "*"},
-                           r"/user/image/*": {"origins": "*", "headers": "*"},
-                           r"/user/image/history": {"origins": "*", "headers": "*"},
-                           })
+# cors = CORS(bp, resources={r"/sd/*": {"origins": "*", "headers": "*"},
+#                            r"/wechat/*": {"origins": "*", "headers": "*"},
+#                            r"/user/image/*": {"origins": "*", "headers": "*"},
+#                            r"/user/image/history": {"origins": "*", "headers": "*"},
+#                            })
 
 # setup sanic app
 app = Sanic(__name__)
