@@ -47,7 +47,12 @@ prompt_male_character = {
     9: {'label': 'Black Panther', 'prompt': '(Black Panther:1.5)'},
     10: {'label': 'Captain America', 'prompt': '(Captain America:1.5)'},
     11: {'label': 'Green Arrow', 'prompt': '(Green Arrow:1.5)'},
-    12: {'label': 'Batman', 'prompt': '(Batman:1.5)'},
+    12: {'label': 'Batman', 'prompt': '(Batman:1.5)',
+         'female': {
+             'label': '女蝙蝠侠Batgirl', 'prompt': 'cassandra,cape,bodysuit,black bodysuit,belt,belt pouch,black gloves,black pants',
+              'lora': [{'name': 'cassandracain-nvwls-v1', 'scale': 0.8}]
+            }
+         },
     13: {'label': 'Harley Quinn', 'prompt': 'pikkyharleyquinn,midriff', 'lora': [{'name': 'HarleyQuinnV2', 'scale': 0.9}]},
     14: {'label': 'Black Widow', 'prompt': 'blkwidow,black bodysuit,cleavage,black belt,superhero suit',
          'lora': [{'name': 'blackwidow-nvwls-v1', 'scale': 0.8}]},
@@ -64,33 +69,33 @@ prompt_male_character = {
          'lora': [{'name': 'CARTOON_DC_catwoman_comic_ownwaifu-15', 'scale': 0.7}]},
     25: {'label': '妙语Punchline', 'prompt': 'CARTOON_DC_punchline_ownwaifu', 'lora': [{'name': 'CARTOON_DC_punchline_ownwaifu-15', 'scale': 0.7}]},
     26: {'label': '女巫', 'prompt': 'enchantress,superhero suit', 'lora': [{'name': 'enchantress-10IJ2v8', 'scale': 0.7}]},
-    27: {'label': '女蝙蝠侠Batgirl', 'prompt': 'cassandra,cape,bodysuit,black bodysuit,belt,belt pouch,black gloves,black pants',
-         'lora': [{'name': 'cassandracain-nvwls-v1', 'scale': 0.8}]},
-    28: {'label': '红灯侠（Red Lantern）', 'prompt': 'red lantern costume,superhero suit',
+    # 27: {'label': '女蝙蝠侠Batgirl', 'prompt': 'cassandra,cape,bodysuit,black bodysuit,belt,belt pouch,black gloves,black pants',
+    #      'lora': [{'name': 'cassandracain-nvwls-v1', 'scale': 0.8}]},
+    27: {'label': '红灯侠（Red Lantern）', 'prompt': 'red lantern costume,superhero suit',
          'lora': [{'name': 'Red Lantern Costume_v1', 'scale': 1}]},
-    29: {'label': '蓝灯侠（Blue Lantern）', 'prompt': 'blue lantern costume,superhero suit',
+    28: {'label': '蓝灯侠（Blue Lantern）', 'prompt': 'blue lantern costume,superhero suit',
          'lora': [{'name': 'Blue Lantern Costume_v1', 'scale': 1}]},
-    30: {'label': '绿灯侠（Green Lantern）', 'prompt': 'green lantern costume,superhero suit',
+    29: {'label': '绿灯侠（Green Lantern）', 'prompt': 'green lantern costume,superhero suit',
          'lora': [{'name': 'Blue Lantern Costume_v1', 'scale': 0.9}]},
-    31: {'label': '大芭达(Big Barda)', 'prompt': 'bigbarda,blue and gold bodysuit,helmet,red cape',
+    30: {'label': '大芭达(Big Barda)', 'prompt': 'bigbarda,blue and gold bodysuit,helmet,red cape',
          'lora': [{'name': 'bigbarda-11DCG', 'scale': 1}]},
-    32: {'label': '蓝甲虫（Blue Beetle）', 'prompt': 'Blue_Beetle_DC,superhero suit',
+    31: {'label': '蓝甲虫（Blue Beetle）', 'prompt': 'Blue_Beetle_DC,superhero suit',
          'lora': [{'name': 'Blue_Beetle_DC_v1', 'scale': 0.8}]},
-    33: {'label': '假面騎士BLACK', 'prompt': 'Kamen_Rider_Black_RX,superhero suit',
+    32: {'label': '假面騎士BLACK', 'prompt': 'Kamen_Rider_Black_RX,superhero suit',
          'lora': [{'name': 'Kamen_Rider_Black_RX', 'scale': 0.8}]},
-    34: {'label': '白戰士(White Power Ranger)', 'prompt': 'White_Ranger,solo,black breastplate,detailed armor,superhero suit',
+    33: {'label': '白戰士(White Power Ranger)', 'prompt': 'White_Ranger,solo,black breastplate,detailed armor,superhero suit',
          'lora': [{'name': 'White_Ranger', 'scale':1}]},
-    35: {'label': '沙赞（Shazam）', 'prompt': 'shazamsuit,superhero suit',
+    34: {'label': '沙赞（Shazam）', 'prompt': 'shazamsuit,superhero suit',
          'lora': [{'name': 'Shazamsuit_Lora_v1', 'scale': 0.6}]},
-    36: {'label': '北极星(Polaris)', 'prompt': 'Polaris,bodysuit,cape,superhero suit',
+    35: {'label': '北极星(Polaris)', 'prompt': 'Polaris,bodysuit,cape,superhero suit',
          'lora': [{'name': 'polaris-10', 'scale': 0.6}]},
-    37: {'label': '奥特曼(ultraman)', 'prompt': 'ultraman,[red|white]',
+    36: {'label': '奥特曼(ultraman)', 'prompt': 'ultraman,[red|white]',
          'lora': [{'name': 'ultraman2', 'scale': 0.7}]},
-    38: {'label': '惊奇队长(Captain Marvel)', 'prompt': 'cptMarvel,bodysuit,superhero suit',
+    37: {'label': '惊奇队长(Captain Marvel)', 'prompt': 'cptMarvel,bodysuit,superhero suit',
          'lora': [{'name': 'cptmarvel-nvwls-v1', 'scale': 1}]},
-    39: {'label': '女毒液(Venom)', 'prompt': 'CARTOON_MARVEL_she_venom_ownwaifu,bodysuit',
+    38: {'label': '女毒液(Venom)', 'prompt': 'CARTOON_MARVEL_she_venom_ownwaifu,bodysuit',
          'lora': [{'name': 'CARTOON_MARVEL_she_venom_ownwaifu-15', 'scale': 0.8}]},
-    40: {'label': '三国武将', 'prompt': 'jim lee,sanguo male warrior,chinese chainmail long armour,cape',
+    39: {'label': '三国武将', 'prompt': 'jim lee,sanguo male warrior,chinese chainmail long armour,cape',
          'lora': [{'name': 'jim_lee_offset_right_filesize', 'scale': 0.8}]},
 }
 
@@ -319,7 +324,9 @@ class MagicFactory(object):
             # prompt
             positive_prompt = f'{prompt_gender[_gender]["prompt"]},{prompt_distance[_distance]["prompt"]}'
             if _character_enable:
-                positive_prompt = positive_prompt + f',{prompt_male_character[_character]["prompt"]}'
+                character_dict = prompt_male_character[_character]['female'] if 'female' in prompt_male_character[_character].keys() and _gender == 0 else prompt_male_character[_character]
+                lora_enable = 'lora' in character_dict.keys()
+                positive_prompt = positive_prompt + f',{character_dict["prompt"]}'
             if _costume_enable:
                 positive_prompt = positive_prompt + f',{prompt_costume[_costume]["prompt"]}'
             if _scene_enable:
@@ -338,6 +345,6 @@ class MagicFactory(object):
             res = self.operator.faceid_predictor(np.array(_input_image), positive_prompt, negative_prompt, _batch_size,
                                                  prompt_distance[_distance]['width'],
                                                  prompt_distance[_distance]['height'],
-                                                 lora=prompt_male_character[_character]['lora'] if 'lora' in prompt_male_character[_character].keys() else None)
+                                                 lora=character_dict['lora'] if lora_enable else None)
 
             return res
