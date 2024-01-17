@@ -320,7 +320,7 @@ class MagicFactory(object):
             if self.operator.update_progress(30):
                 return {'succ'
                         'ess': True}
-
+            lora_enable = False
             # prompt
             positive_prompt = f'{prompt_gender[_gender]["prompt"]},{prompt_distance[_distance]["prompt"]}'
             if _character_enable:
