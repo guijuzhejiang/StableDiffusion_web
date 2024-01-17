@@ -93,6 +93,7 @@ class OperatorSD(Operator):
         self.shared.cmd_opts.lang = 'ch'
         self.shared.cmd_opts.disable_adetailer = False
         self.shared.cmd_opts.sd_checkpoint_cache = 0
+        self.shared.cmd_opts.no_download_sd_model = True
         # self.shared.cmd_opts.ckpt = None
 
         # init
