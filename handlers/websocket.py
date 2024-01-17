@@ -28,7 +28,11 @@ async def sd_genreate(request: Request, ws):
 
             package = ujson.loads(raw_msg)
             params = package['params']
-            format_package = {'mode': [package['mode']], 'user_id': [package['user_id']], 'params': [ujson.dumps(params)], 'input_image': ''}
+            format_package = {'mode': [package['mode']],
+                              'user_id': [package['user_id']],
+                              'params': [ujson.dumps(params)],
+                              'origin': request.headers.origin,
+                              'input_image': ''}
 
             # cal prices
             cost_points = 10
