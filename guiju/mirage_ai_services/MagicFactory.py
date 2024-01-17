@@ -48,7 +48,7 @@ prompt_male_character = {
     10: {'label': 'Captain America', 'prompt': '(Captain America:1.5)'},
     11: {'label': 'Green Arrow', 'prompt': '(Green Arrow:1.5)'},
     12: {'label': 'Batman', 'prompt': '(Batman:1.5)'},
-    13: {'label': 'Harley Quinn', 'prompt': '(Harley Quinn:1.5)'},
+    13: {'label': 'Harley Quinn', 'prompt': 'pikkyharleyquinn,midriff', 'lora': [{'name': 'HarleyQuinnV2', 'scale': 0.9}]},
     14: {'label': 'Black Widow', 'prompt': 'blkwidow,black bodysuit,cleavage,black belt,superhero suit',
          'lora': [{'name': 'blackwidow-nvwls-v1', 'scale': 0.8}]},
     15: {'label': 'War Machine', 'prompt': '(War Machine:1.5)'},

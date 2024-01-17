@@ -7,10 +7,7 @@ import os
 from collections import OrderedDict
 from PIL import Image
 import numpy as np
-import gradio as gr
 import torch
-from scipy.ndimage import label
-from segment_anything import SamPredictor
 
 from guiju.segment_anything_util.dino import show_boxes, dino_predict_internal, dino_install_issue_text
 from guiju.segment_anything_util.sam_hq.build_sam_hq import sam_model_registry
@@ -27,10 +24,6 @@ sd_sam_model_dir = 'extensions/sd-webui-segment-anything/models/sam'
 sam_model_dir = sd_sam_model_dir if os.path.exists(sd_sam_model_dir) else scripts_sam_model_dir
 sam_model_list = [f for f in os.listdir(sam_model_dir) if os.path.isfile(os.path.join(sam_model_dir, f)) and f.split('.')[-1] != 'txt']
 
-txt2img_width: gr.Slider = None
-txt2img_height: gr.Slider = None
-img2img_width: gr.Slider = None
-img2img_height: gr.Slider = None
 sam_model_name='sam_hq_vit_l.pth'
 
 
