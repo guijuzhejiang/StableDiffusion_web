@@ -11,7 +11,7 @@ stderr_logfile=/home/zzg/workspace/pycharm/StableDiffusion_web/app.err.log ;
 stdout_logfile=/home/zzg/workspace/pycharm/StableDiffusion_web/app.info.log ;
 user=zzg ;
 autostart=true ;
-stopsignal=STOP ;
+stopsignal=TERM ;
 
 
 [program:sd_factory]
@@ -23,4 +23,4 @@ stderr_logfile=/home/zzg/workspace/pycharm/StableDiffusion_web/factory.err.log ;
 stdout_logfile=/home/zzg/workspace/pycharm/StableDiffusion_web/factory.info.log ;
 user=zzg ;
 autostart=true ;
-stopsignal=QUIT ;
+stopsignal=TERM ;
