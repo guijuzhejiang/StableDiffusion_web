@@ -233,7 +233,7 @@ class MagicHires(object):
         os.makedirs(dir_path, exist_ok=True)
 
         img_fn = f"{datetime.datetime.now().strftime('%y%m%d%H%M%S')}_{''.join([random.choice(string.ascii_letters) for c in range(6)])}.jpeg"
-        img_fp = f"{'http://192.168.110.8:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}"
+        img_fp = f"{'http://192.168.110.8:' + str(CONFIG['server']['port']) if CONFIG['local'] else '/service'}/user/image/fetch?imgpath={img_fn}"
         # pp.image.save(os.path.join(dir_path, img_fn), format="png", quality=100)
         pp.image.save(os.path.join(dir_path, img_fn), format="jpeg", quality=100, lossless=True)
         # celery_task.update_state(state='PROGRESS', meta={'progress': 90})
