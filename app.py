@@ -9,6 +9,7 @@ from sanic_cors import CORS
 from handlers.login import WeChatLogin, LineLogin, PasswordLogin, GoogleLogin
 from handlers.pay import WechatReqPayQRCode, PayPalCreateOrder, WechatQueryPayment, QueryBalance, QueryDiscount, \
     PayPalCaptureOrder
+from handlers.qinghua import DeviceAuthVerify
 from lib.celery_workshop.wokrshop import WorkShop
 from operators import OperatorSD
 from wechatpayv3 import WeChatPay, WeChatPayType
@@ -16,7 +17,7 @@ from wechatpayv3 import WeChatPay, WeChatPayType
 from handlers.main import ImageProvider, FetchUserHistory, UserUpload, RevokeTask, SendCaptcha, \
     VerifyCaptcha, UserEditNickname
 from redis import asyncio as aioredis
-from handlers.websocket import sd_genreate
+from handlers.websocket import sd_genreate, qinghua_genreate
 from utils.global_vars import CONFIG
 
 # Blueprint
@@ -40,6 +41,10 @@ bp.add_route(ImageProvider.as_view(), "/user/image/fetch")
 bp.add_route(FetchUserHistory.as_view(), "/user/image/history")
 bp.add_route(UserUpload.as_view(), "/user/image/upload")
 bp.add_route(UserEditNickname.as_view(), "/user/edit/nickname")
+
+bp.add_route(DeviceAuthVerify.as_view(), "/qinghua/device/auth")
+
+bp.add_websocket_route(qinghua_genreate, "/qinghua/device/generate")
 bp.add_websocket_route(sd_genreate, "/sd/io")
 
 # CORS settings
