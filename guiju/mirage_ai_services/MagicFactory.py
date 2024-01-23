@@ -132,7 +132,7 @@ prompt_female_character = {
 }
 
 prompt_costume = {
-    {0: {'label': '校服', 'prompt': '(school uniform:1.3)'},
+    0: {'label': '校服', 'prompt': '(school uniform:1.3)'},
      1: {'label': '水手服套装', 'prompt': '(sailor collar:1.3)'},
      2: {'label': '水手连衣裙', 'prompt': '(sailor dress:1.3)'},
      3: {'label': '职业装', 'prompt': '(business_suit:1.3)'},
@@ -190,7 +190,7 @@ prompt_costume = {
      55: {'label': '盔甲裙', 'prompt': '(armored dress:1.3)'},
      56: {'label': '空手道服', 'prompt': '(karate uniform:1.3)'},
      57: {'label': '古希腊服装', 'prompt': '(Greek clothes:1.3)'},
-     58: {'label': '印第安服饰', 'prompt': '(pocahontas outfit:1.3)'}}
+     58: {'label': '印第安服饰', 'prompt': '(pocahontas outfit:1.3)'}
 }
 
 prompt_scene = {
