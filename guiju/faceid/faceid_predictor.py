@@ -86,21 +86,20 @@ class FaceIDPredictor:
         )
         # pipe = self.add_lora(pipe, self.lora_list)
         #
-        # self.ip_model = IPAdapterFaceIDPlus(pipe, self.image_encoder_path, self.ip_ckpt, self.device)
+        self.ip_model = IPAdapterFaceIDPlus(self.pipe, self.image_encoder_path, self.ip_ckpt, self.device)
         # 跟踪输入照片脸部特征的程度,默认1.0,如果不想一模一样可调低
         # self.ip_model.set_scale(1.0)
 
         self.pipe.to(self.device)
 
     def __call__(self, image_arr, prompt, negative_prompt, batch_size, output_w, output_h, *args, **kwargs):
-        ip_model = IPAdapterFaceIDPlus(self.add_lora(self.pipe, self.lora_list + kwargs['lora'] if kwargs['lora'] else self.lora_list), self.image_encoder_path, self.ip_ckpt, self.device)
-
+        # ip_model = IPAdapterFaceIDPlus(self.add_lora(self.pipe, self.lora_list + kwargs['lora'] if kwargs['lora'] else self.lora_list), self.image_encoder_path, self.ip_ckpt, self.device)
+        self.ip_model.pipe = self.add_lora(self.pipe, self.lora_list + kwargs['lora'] if kwargs['lora'] else self.lora_list)
         faces = self.face_analyser.get(image_arr)
         faceid_embed = torch.from_numpy(faces[0].normed_embedding).unsqueeze(0)
-        face_image = face_align.norm_crop(image_arr, landmark=faces[0].kps,
-                                          image_size=224)  # you can also segment the face
+        face_image = face_align.norm_crop(image_arr, landmark=faces[0].kps, image_size=224)  # you can also segment the face
 
-        image = ip_model.generate(
+        image = self.ip_model.generate(
             prompt=prompt,
             negative_prompt=negative_prompt,
             face_image=face_image,
@@ -114,7 +113,6 @@ class FaceIDPredictor:
             # scale=1.0,
             # seed=2023,
         )
-        # print(image)
         return image
 
 

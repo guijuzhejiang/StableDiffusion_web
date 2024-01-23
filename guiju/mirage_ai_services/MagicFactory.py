@@ -350,5 +350,5 @@ class MagicFactory(object):
                                                  prompt_distance[_distance]['width'],
                                                  prompt_distance[_distance]['height'],
                                                  lora=character_dict['lora'] if lora_enable else None)
-
+            self.operator.devices.torch_gc()
             return res
