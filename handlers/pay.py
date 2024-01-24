@@ -5,6 +5,7 @@ import base64
 import os
 import random
 import traceback
+import uuid
 
 import numpy as np
 import pytz
@@ -22,42 +23,44 @@ from lib.sanic_util.sanic_jinja2 import SanicJinja2
 from lib.common.common_util import encrypt
 from utils.global_vars import CONFIG
 
-
 discount_dict = {
-        'first_time': [
-            {
-                'cn': '首次充值享8折优惠',
-                'en': 'Enjoy 20% off on your first recharge',
-            },
-            0.8
-        ],
-        'additional_notes': [
-            {
-                'cn': '多个折扣可叠加',
-                'en': 'Multiple discounts can be stacked',
-            },
-            None
-        ],
-        0: [
-            {
-                'cn': '十二月优惠礼6折',
-                'en': 'December Special Gift 60% off',
-            },
-            0.6
-        ],
-    }
+    'first_time': [
+        {
+            'cn': '首次充值享8折优惠',
+            'en': 'Enjoy 20% off on your first recharge',
+        },
+        0.8
+    ],
+    'additional_notes': [
+        {
+            'cn': '多个折扣可叠加',
+            'en': 'Multiple discounts can be stacked',
+        },
+        None
+    ],
+    0: [
+        {
+            'cn': '十二月优惠礼6折',
+            'en': 'December Special Gift 60% off',
+        },
+        0.6
+    ],
+}
 
 
 class QueryDiscount(HTTPMethodView):
     """
         查询当前可用优惠
     """
+
     async def post(self, request):
         try:
             user_id = request.form['user_id'][0]
             lang = request.args.get("lang", 'cn')
 
-            transaction_data = (await request.app.ctx.supabase_client.atable("transaction").select("*").eq("user_id", user_id).eq("is_plus", True).eq("status", 1).execute())
+            transaction_data = (
+                await request.app.ctx.supabase_client.atable("transaction").select("*").eq("user_id", user_id).eq(
+                    "is_plus", True).eq("status", 1).execute())
             first_charge = len(transaction_data.data) == 0
 
             res = []
@@ -84,9 +87,13 @@ class QueryBalance(HTTPMethodView):
     """
         查余额
     """
+
     async def post(self, request):
         user_id = request.form['user_id'][0]
-        no_confirm_rows = (await request.app.ctx.supabase_client.atable("transaction").select("*").eq("user_id", user_id).eq("status", 0).eq("is_plus", True).execute()).data
+        no_confirm_rows = (
+            await request.app.ctx.supabase_client.atable("transaction").select("*").eq("user_id", user_id).eq("status",
+                                                                                                              0).eq(
+                "is_plus", True).execute()).data
 
         # 计算未确认支付额
         pre_charge_amount = 0
@@ -135,14 +142,15 @@ class QueryBalance(HTTPMethodView):
                             tzinfo=pytz.UTC)) >= timedelta(minutes=15):
                         need_del_transaction.append(row['id'])
 
-
-        account = (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[0]
+        account = \
+        (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[0]
         if pre_charge_amount > 0:
             data = (await request.app.ctx.supabase_client.atable("account").update(
-                        {"balance": account['balance']+pre_charge_amount}).eq("id", account['id']).execute()).data
+                {"balance": account['balance'] + pre_charge_amount}).eq("id", account['id']).execute()).data
         if len(need_del_transaction):
             for del_target in need_del_transaction:
-                data = (await request.app.ctx.supabase_client.atable("transaction").delete().eq("id", del_target).execute()).data
+                data = (await request.app.ctx.supabase_client.atable("transaction").delete().eq("id",
+                                                                                                del_target).execute()).data
 
         if hasattr(request.form, 'out_trade_no'):
             out_trade_no = request.form['out_trade_no'][0]
@@ -150,9 +158,9 @@ class QueryBalance(HTTPMethodView):
                 out_trade_no=out_trade_no
             )
 
-            return sanic_json({'success': code == 200, 'balance': account['balance']+pre_charge_amount})
+            return sanic_json({'success': code == 200, 'balance': account['balance'] + pre_charge_amount})
         else:
-            return sanic_json({'success': True, 'balance': account['balance']+pre_charge_amount})
+            return sanic_json({'success': True, 'balance': account['balance'] + pre_charge_amount})
 
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -236,6 +244,7 @@ class PayPalCreateOrder(HTTPMethodView):
     """
         请求paypal支付,创建订单
     """
+
     async def post(self, request):
         try:
             user_id = request.form['user_id'][0]
@@ -243,7 +252,8 @@ class PayPalCreateOrder(HTTPMethodView):
             charge_points = int(int(amount) / CONFIG['payment']['point_price']['USD'])
 
             account = \
-                (await request.app.ctx.supabase_client.atable("account").select("access_level").eq("id", user_id).execute()).data[
+                (await request.app.ctx.supabase_client.atable("account").select("access_level").eq("id",
+                                                                                                   user_id).execute()).data[
                     0]
 
             # query discount
@@ -285,15 +295,14 @@ class PayPalCreateOrder(HTTPMethodView):
                                              data=ujson.dumps(payload),
                                              headers={"Authorization": f"Bearer {access_token}",
                                                       "Content-Type": "application/json"})
-                
+
                 if 'id' in response.json().keys():
-                    
                     data = await request.app.ctx.supabase_client.atable("transaction").insert({"user_id": user_id,
                                                                                                'amount': charge_points,
                                                                                                'is_plus': True,
                                                                                                'status': 0,
                                                                                                'out_trade_no': f"{response.json()['id']}@paypal"}).execute()
-                
+
                 return sanic_json(response.json(), status=response.status_code)
 
         except Exception:
@@ -305,13 +314,16 @@ class PayPalCaptureOrder(HTTPMethodView):
     """
         请求paypal支付，查询订单
     """
+
     async def post(self, request):
         out_trade_no = request.form['out_trade_no'][0]
 
         access_token = await aspayapl_generate_ccess_token()
         url = f"{CONFIG['paypal']['base_url']}/v2/checkout/orders/{out_trade_no}/capture"
 
-        transaction_data = (await request.app.ctx.supabase_client.atable("transaction").select("*").eq("out_trade_no", f"{out_trade_no}@paypal").eq("is_plus", True).execute()).data[0]
+        transaction_data = (await request.app.ctx.supabase_client.atable("transaction").select("*").eq("out_trade_no",
+                                                                                                       f"{out_trade_no}@paypal").eq(
+            "is_plus", True).execute()).data[0]
 
         async with httpx.AsyncClient(proxies={"http://": CONFIG['http_proxy'],
                                               "https://": CONFIG['http_proxy']}) as client:
@@ -325,10 +337,92 @@ class PayPalCaptureOrder(HTTPMethodView):
                     {"status": 1}).eq("out_trade_no", f"{out_trade_no}@paypal").eq("is_plus", True).execute()).data
 
                 account = \
-                    (await request.app.ctx.supabase_client.atable("account").select("balance").eq("id", transaction_data['user_id']).execute()).data[0]
+                    (await request.app.ctx.supabase_client.atable("account").select("balance").eq("id",
+                                                                                                  transaction_data[
+                                                                                                      'user_id']).execute()).data[
+                        0]
                 data = (await request.app.ctx.supabase_client.atable("account").update(
-                    {"balance": account['balance']+transaction_data['amount']}).eq("id", transaction_data['user_id']).execute()).data
+                    {"balance": account['balance'] + transaction_data['amount']}).eq("id", transaction_data[
+                    'user_id']).execute()).data
 
             return sanic_json(response.json(), status=response.status_code)
 
 
+class PayPalCreateSub(HTTPMethodView):
+    """
+        请求paypal支付,创建訂閱
+    """
+
+    async def post(self, request):
+        try:
+            user_id = request.form['user_id'][0]
+            fee = request.form['fee'][0]
+
+            # get access token
+            access_token = await aspayapl_generate_ccess_token()
+            # Create product
+            url = f"{CONFIG['paypal']['base_url']}/v1/catalogs/products"
+            payload = {
+                "name": "huangjing ai service subscription",
+                "description": "huangjing ai service subscription",
+                "type": "SERVICE",
+                "category": "SOFTWARE",
+                "image_url": "https://guiju-bar.link/favicon.ico",
+                "home_url": "https://guiju-bar.link"
+            }
+            async with httpx.AsyncClient(proxies={"http://": CONFIG['http_proxy'],
+                                                  "https://": CONFIG['http_proxy']}) as client:
+                request_id = str(uuid.uuid4())
+                response = await client.post(url,
+                                             data=ujson.dumps(payload),
+                                             headers={"Authorization": f"Bearer {access_token}",
+                                                      "PayPal-Request-Id": request_id,
+                                                      "Content-Type": "application/json"})
+                product_res = response.json()
+
+                if 'id' in product_res.keys():
+                    # 2. Create subscription plan
+                    url = f"{CONFIG['paypal']['base_url']}/v1/billing/plans"
+                    payload = {
+                        "product_id": product_res["id"],
+                        "name": "Monthly Plan",
+                        "description": "Monthly plan",
+                        "billing_cycles": [
+                            {
+                                "frequency": {
+                                    "interval_unit": "MONTH",
+                                    "interval_count": 1
+                                },
+                                "tenure_type": "REGULAR",
+                                "sequence": 1,
+                                "total_cycles": 0,
+                                "pricing_scheme": {
+                                    "fixed_price": {
+                                        "value": str(fee),
+                                        "currency_code": "USD"
+                                    }
+                                }
+                            }
+                        ],
+                        "payment_preferences": {
+                            "auto_bill_outstanding": 'true',
+                            "payment_failure_threshold": 1
+                        }
+                    }
+                    response = await client.post(url,
+                                                 data=ujson.dumps(payload),
+                                                 headers={"Authorization": f"Bearer {access_token}",
+                                                          "PayPal-Request-Id": request_id,
+                                                          "Content-Type": "application/json"})
+                    plan_res = response.json()
+
+                    if 'id' in plan_res.keys():
+
+                    else:
+
+                else:
+                    return sanic_json(response.json(), status=response.status_code)
+
+        except Exception:
+            print(traceback.format_exc())
+            return sanic_json({'success': False}, status=500)
