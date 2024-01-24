@@ -416,12 +416,11 @@ class PayPalCreateSub(HTTPMethodView):
                                                           "Content-Type": "application/json"})
                     plan_res = response.json()
 
-                    if 'id' in plan_res.keys():
+                    # if 'id' in plan_res.keys():
+                    #
+                    # else:
 
-                    else:
-
-                else:
-                    return sanic_json(response.json(), status=response.status_code)
+                return sanic_json(response.json(), status=response.status_code)
 
         except Exception:
             print(traceback.format_exc())
