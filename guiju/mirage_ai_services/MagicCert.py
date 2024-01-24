@@ -52,7 +52,7 @@ class MagicCert(object):
             # segment person
             sam_person_result, person_boxes = self.operator.sam.sam_predict(self.operator.dino_model_name, 'person', 0.3,
                                                                    _input_image)
-            padding = 4
+            padding = 0
             resize_mask = sam_person_result[1].resize((_input_image_width - padding, _input_image_height - padding))
             padding_mask = Image.new("RGB", _input_image.size, (0, 0, 0, 1))
             padding_mask.paste(resize_mask, (int(padding / 2), int(padding / 2)))
