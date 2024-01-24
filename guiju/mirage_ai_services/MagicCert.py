@@ -1,10 +1,8 @@
 # coding=utf-8
 # @Time : 2023/12/15 下午3:15
 # @File : magic_cert.py
-import glob
 import os
-import urllib.parse
-from datetime import datetime
+import datetime
 
 from PIL import Image
 
