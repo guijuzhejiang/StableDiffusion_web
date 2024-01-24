@@ -25,7 +25,7 @@ class MagicCert(object):
         pic_name = kwargs['pic_name']
 
         _bg_color = str(params['bg_color'])
-        _output_aspect = float(params['aspect'])
+        # _output_aspect = float(params['aspect'])
 
         # save cache face img
         _input_image.save(f'tmp/{self.__class__.__name__}_origin_{pic_name}_save.png')
@@ -65,94 +65,23 @@ class MagicCert(object):
         if self.operator.update_progress(60):
             return {'success': True}
 
-        # get max area face box
-        face_box = face_boxes[0]
-        face_width = face_box[2] - face_box[0]
-        face_height = face_box[3] - face_box[1]
-
-        padding_ratio = 1
-        face_box[0] = face_box[0] - int(face_width * padding_ratio)
-        if face_box[0] < 0:
-            face_box[0] = 0
-        face_box[1] = face_box[1] - int(face_height * padding_ratio)
-        if face_box[1] < 0:
-            face_box[1] = 0
-        face_box[2] = face_box[2] + int(face_width * padding_ratio)
-        if face_box[2] >= _input_image_width:
-            face_box[2] = _input_image_width - 1
-        face_box[3] = face_box[3] + int(face_height * padding_ratio)
-        if face_box[3] >= _input_image_height:
-            face_box[3] = _input_image_height - 1
-
-        _cur_width = face_box[2] - face_box[0]
-        _cur_height = face_box[3] - face_box[1]
-        _cur_aspect = _cur_width / _cur_height
-
-        # 计算应该添加的填充量
-        if _cur_aspect > _output_aspect:
-            # 需要添加垂直box
-            target_height = int(_cur_width / _output_aspect)
-
-            if int((target_height - _cur_height) / 2) + face_box[3] <= _input_image_height:
-                face_box[3] = int((target_height - _cur_height) / 2) + face_box[3]
-                _cur_height = face_box[3] - face_box[1]
-            if face_box[1] - int((target_height - _cur_height) / 2) >= 0:
-                face_box[1] = face_box[1] - int((target_height - _cur_height) / 2)
-                _cur_height = face_box[3] - face_box[1]
-
-            left = face_box[0]
-            if target_height > face_box[3] - face_box[1]:
-                top = int((target_height - _cur_height) / 2)
-
-            else:
-                top = 0
-
-            canvas_wh = (_cur_width, target_height)
-        else:
-            # 需要添加水平box
-            target_width = int(_cur_height * _output_aspect)
-
-            if face_box[0] - int((target_width - _cur_width) / 2) >= 0:
-                face_box[0] = face_box[0] - int((target_width - _cur_width) / 2)
-                _cur_width = face_box[2] - face_box[0]
-            if face_box[2] + int((target_width - _cur_width) / 2) <= _input_image_width:
-                face_box[2] = face_box[2] + int((target_width - _cur_width) / 2)
-                _cur_width = face_box[2] - face_box[0]
-
-            top = face_box[1]
-            if target_width > face_box[2] - face_box[0]:
-                left = int((target_width - _cur_width) / 2)
-
-            else:
-                left = 0
-
-            canvas_wh = (target_width, _cur_height)
-
         # new canvas
-        cert_res = Image.new("RGBA", canvas_wh, _bg_color)
-        foreground = sam_person_result[2].crop(face_box)
-        cert_res.paste(foreground, (left, top), mask=foreground)
+        cert_res = Image.new("RGBA", sam_person_result[2].size, _bg_color)
+        # foreground = sam_person_result[2].crop(face_box)
+        cert_res.paste(sam_person_result[2], (0, 0), mask=sam_person_result[2])
 
         # storage img
         dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], 'cert')
 
         os.makedirs(dir_path, exist_ok=True)
         img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"
-        # cert_res.convert("RGB").save(os.path.join(dir_path, img_fn), format="jpeg", quality=80,
-        #                             lossless=True)
+        output_w, output_h = sam_person_result[2].size
         # face fix
         gfpgan_weight = 0.5
         scales = 1
         codeformer_weight = 0
         codeformer_visibility = 0
-        min_edge = 512
-        if _output_aspect < 1:
-            _resize_w = min_edge
-            _resize_h = int(min_edge / _output_aspect)
-        else:
-            _resize_w = int(min_edge * _output_aspect)
-            _resize_h = min_edge
-        args = (1, scales, _resize_w, _resize_h, True, 'ESRGAN_4x', 'None',
+        args = (1, scales, output_w, output_h, True, 'ESRGAN_4x', 'None',
                 0, gfpgan_weight,
                 codeformer_visibility, codeformer_weight)
         self.operator.devices.torch_gc()
