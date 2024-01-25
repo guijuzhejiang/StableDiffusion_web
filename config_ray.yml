@@ -65,6 +65,9 @@ paypal:
 #  client_id: 'AZDhKqULcx0KLEAdgQWc_OcUx-w-LYkVmBzpERrm5_AsoWhaywYPBMaJ5LsSfAFlVUSvmAqydzw3zsdw'
 #  client_secret: 'EEf6vgyse9IUUYeSaK2k6Phb8CXAdWU9c34HqhlDR_259zs76HUIJ79SMApSrZooJo-kI4exOjf2rQgu'
 #  base_url: 'https://api-m.paypal.com'
+  sub_v1: 'PROD-7FD03536XW314484W'
+  sub_v2: 'PROD-7FD03536XW314484W'
+  sub_v3: 'PROD-7FD03536XW314484W'
 supabase:
   key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogInNlcnZpY2Vfcm9sZSIsCiAgImlzcyI6ICJzdXBhYmFzZSIsCiAgImlhdCI6IDE2OTU4MzA0MDAsCiAgImV4cCI6IDE4NTM2ODMyMDAKfQ.QanqKpEYyjqgvl1ElcWw7JJAvUEzIC0e0w1pFfPOITE"
   url: "https://www.guijutech.com:8888"
