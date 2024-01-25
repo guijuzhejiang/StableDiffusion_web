@@ -162,7 +162,7 @@ prompt_costume = {
      27: {'label': '透明内衣', 'prompt': '(transparent underwear:1.3)'},
      28: {'label': 'T恤', 'prompt': '(t-shirt:1.3)'},
      29: {'label': '吊带', 'prompt': '(camisole:1.3)'},
-     30: {'label': '圣诞装', 'prompt': '(santa dress:1.3)'},
+     30: {'label': '圣诞装', 'prompt': '(santa dress:1.3),(santa hat:1.3)'},
      31: {'label': '棒球服', 'prompt': '(letterman jacket:1.3)'},
      32: {'label': '排球服', 'prompt': '(volleyball uniform:1.3)'},
      33: {'label': '足球队衣', 'prompt': '(soccer team jersey:1.3)'},
