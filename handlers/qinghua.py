@@ -7,7 +7,7 @@ sd_workshop = WorkShop(OperatorSD)
 temp_udb = [f'test_{"%03d" % i}' for i in range(1, 11)]
 
 
-auth_devices = ['866503050126727']
+auth_devices = ['e02a2653979980ac']
 
 
 class DeviceAuthVerify(HTTPMethodView):
