@@ -218,8 +218,8 @@ class MagicHair(object):
         _input_image = kwargs['input_image']
         pic_name = kwargs['pic_name']
 
-        origin_image_path = f'tmp/{self.__class__.__name__}_origin_{pic_name}_save.png'
-        _input_image.save(origin_image_path, format='PNG')
+        # origin_image_path = f'tmp/{self.__class__.__name__}_origin_{pic_name}_save.png'
+        # _input_image.save(origin_image_path, format='PNG')
         _input_image_width, _input_image_height = _input_image.size
 
         _batch_size = int(params['batch_size'])
@@ -253,10 +253,10 @@ class MagicHair(object):
 
             else:
                 # save cache face img
-                cache_image = _input_image.copy()
-                draw = ImageDraw.Draw(cache_image)
-                draw.rectangle(person_boxes[0], outline='red', width=5)
-                cache_image.save(f"tmp/hair_face_{pic_name}_save.png")
+                # cache_image = _input_image.copy()
+                # draw = ImageDraw.Draw(cache_image)
+                # draw.rectangle(person_boxes[0], outline='red', width=5)
+                # cache_image.save(f"tmp/hair_face_{pic_name}_save.png")
 
                 person_box = person_boxes[0]
                 person_width = person_box[2] - person_box[0]
