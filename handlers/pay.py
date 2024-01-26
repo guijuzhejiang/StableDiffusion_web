@@ -107,7 +107,7 @@ class QueryBalance(HTTPMethodView):
                             {"status": 1}).eq("id", row['id']).eq("is_plus", True).execute()).data
                         if len(data) == 0:
                             print(row['id'] + " update transaction false")
-                        pre_charge_amount += int(row['amount'] * CONFIG['payment']['point_price']['USD'])
+                        pre_charge_amount += int(row['amount'] / CONFIG['payment']['point_price']['USD'])
                     else:
                         iso_created_at = row['created_at'].split('.')[0] + '+' + row['created_at'].split('+')[-1]
                         if (datetime.now(pytz.UTC) - datetime.fromisoformat(iso_created_at).replace(
@@ -126,7 +126,7 @@ class QueryBalance(HTTPMethodView):
                         {"status": 1}).eq("id", row['id']).eq("is_plus", True).execute()).data
                     if len(data) == 0:
                         print(row['id'] + " update transaction false")
-                    pre_charge_amount += int(row['amount'] * CONFIG['payment']['point_price']['RMB'])
+                    pre_charge_amount += int(row['amount'] / CONFIG['payment']['point_price']['RMB'])
                 else:
                     iso_created_at = row['created_at'].split('.')[0] + '+' + row['created_at'].split('+')[-1]
                     if (datetime.now(pytz.UTC) - datetime.fromisoformat(iso_created_at).replace(
