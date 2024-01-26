@@ -2,25 +2,16 @@
 # @Time : 2023/12/29 下午4:18
 # @File : pay.py
 import base64
-import os
 import random
 import traceback
-import uuid
-
-import numpy as np
 import pytz
 import string
 from datetime import datetime, timedelta, date
 import httpx
 import ujson
-import aiofile
 from sanic.views import HTTPMethodView
 from wechatpayv3 import WeChatPayType
 from sanic.response import json as sanic_json
-from gotrue import check_response
-
-from lib.sanic_util.sanic_jinja2 import SanicJinja2
-from lib.common.common_util import encrypt
 from utils.global_vars import CONFIG
 
 discount_dict = {
@@ -116,7 +107,7 @@ class QueryBalance(HTTPMethodView):
                             {"status": 1}).eq("id", row['id']).eq("is_plus", True).execute()).data
                         if len(data) == 0:
                             print(row['id'] + " update transaction false")
-                        pre_charge_amount += row['amount']
+                        pre_charge_amount += int(row['amount'] * CONFIG['payment']['point_price']['USD'])
                     else:
                         iso_created_at = row['created_at'].split('.')[0] + '+' + row['created_at'].split('+')[-1]
                         if (datetime.now(pytz.UTC) - datetime.fromisoformat(iso_created_at).replace(
@@ -135,7 +126,7 @@ class QueryBalance(HTTPMethodView):
                         {"status": 1}).eq("id", row['id']).eq("is_plus", True).execute()).data
                     if len(data) == 0:
                         print(row['id'] + " update transaction false")
-                    pre_charge_amount += row['amount']
+                    pre_charge_amount += int(row['amount'] * CONFIG['payment']['point_price']['RMB'])
                 else:
                     iso_created_at = row['created_at'].split('.')[0] + '+' + row['created_at'].split('+')[-1]
                     if (datetime.now(pytz.UTC) - datetime.fromisoformat(iso_created_at).replace(
@@ -356,71 +347,49 @@ class PayPalCreateSub(HTTPMethodView):
     async def post(self, request):
         try:
             user_id = request.form['user_id'][0]
-            fee = request.form['fee'][0]
+            subscription_id = request.form['subscription_id'][0]
+            vip_level = request.form['vip_level'][0]
 
-            # get access token
-            access_token = await aspayapl_generate_ccess_token()
-            # Create product
-            url = f"{CONFIG['paypal']['base_url']}/v1/catalogs/products"
-            payload = {
-                "name": "huangjing ai service subscription",
-                "description": "huangjing ai service subscription",
-                "type": "SERVICE",
-                "category": "SOFTWARE",
-                "image_url": "https://guiju-bar.link/favicon.ico",
-                "home_url": "https://guiju-bar.link"
-            }
-            async with httpx.AsyncClient(proxies={"http://": CONFIG['http_proxy'],
-                                                  "https://": CONFIG['http_proxy']}) as client:
-                request_id = str(uuid.uuid4())
-                response = await client.post(url,
-                                             data=ujson.dumps(payload),
-                                             headers={"Authorization": f"Bearer {access_token}",
-                                                      "PayPal-Request-Id": request_id,
-                                                      "Content-Type": "application/json"})
-                product_res = response.json()
+            if vip_level == 1:
+                add_balance = 88
+            elif vip_level == 2:
+                add_balance = 336
+            else:
+                add_balance = 624
 
-                if 'id' in product_res.keys():
-                    # 2. Create subscription plan
-                    url = f"{CONFIG['paypal']['base_url']}/v1/billing/plans"
-                    payload = {
-                        "product_id": product_res["id"],
-                        "name": "Monthly Plan",
-                        "description": "Monthly plan",
-                        "billing_cycles": [
-                            {
-                                "frequency": {
-                                    "interval_unit": "MONTH",
-                                    "interval_count": 1
-                                },
-                                "tenure_type": "REGULAR",
-                                "sequence": 1,
-                                "total_cycles": 0,
-                                "pricing_scheme": {
-                                    "fixed_price": {
-                                        "value": str(fee),
-                                        "currency_code": "USD"
-                                    }
-                                }
-                            }
-                        ],
-                        "payment_preferences": {
-                            "auto_bill_outstanding": 'true',
-                            "payment_failure_threshold": 1
-                        }
-                    }
-                    response = await client.post(url,
-                                                 data=ujson.dumps(payload),
-                                                 headers={"Authorization": f"Bearer {access_token}",
-                                                          "PayPal-Request-Id": request_id,
-                                                          "Content-Type": "application/json"})
-                    plan_res = response.json()
+            account = (await request.app.ctx.supabase_client.atable("account").select("balance").eq("id", user_id).execute()).data[0]
+            res = (await request.app.ctx.supabase_client.atable("account").update({"balance": account['balance'] + add_balance, 'vip_level': vip_level}).eq("id", user_id).execute()).data
+            subscription = (await request.app.ctx.supabase_client.atable("subscription").select("*").eq("id", user_id).execute()).data
 
-                    # if 'id' in plan_res.keys():
-                    #
-                    # else:
+            if len(subscription) > 0:
+                data = await request.app.ctx.supabase_client.atable("subscription").update({'subscription_id': subscription_id,
+                                                                                            'supplier': 'paypal',
+                                                                                            }).eq("id", user_id).execute()
 
-                return sanic_json(response.json(), status=response.status_code)
+            else:
+                data = await request.app.ctx.supabase_client.atable("subscription").insert({"user_id": user_id,
+                                                                                            'subscription_id': subscription_id,
+                                                                                            'supplier': 'paypal',
+                                                                                            }).execute()
+
+            return sanic_json({'success': True}, status=200)
+
+        except Exception:
+            print(traceback.format_exc())
+            return sanic_json({'success': False}, status=500)
+
+
+class CheckVip(HTTPMethodView):
+    """
+        检查是不是vip
+    """
+
+    async def post(self, request):
+        try:
+            user_id = request.form['user_id'][0]
+            subscription = (await request.app.ctx.supabase_client.atable("subscription").select("*").eq("id", user_id).execute()).data
+
+            return sanic_json({'success': len(subscription) > 0}, status=200)
 
         except Exception:
             print(traceback.format_exc())
