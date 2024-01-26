@@ -243,5 +243,3 @@ class VerifyCaptcha(HTTPMethodView):
         else:
             return sanic_json({'success': True})
 
-
-

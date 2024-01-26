@@ -40,7 +40,7 @@ class GoogleLogin(HTTPMethodView):
             email = f"{google_info['sub']}@google.com".lower()
             password = encrypt(str({google_info['sub']}).lower())
 
-            account_info = (await request.app.ctx.supabase_client.atable("account").select("id,balance,locale,nick_name").eq("google_id", str(
+            account_info = (await request.app.ctx.supabase_client.atable("account").select("id,balance,locale,nick_name,vip_level").eq("google_id", str(
                 google_info['sub']).lower()).execute()).data
 
             # 如果没有查询到则注册
@@ -69,16 +69,16 @@ class GoogleLogin(HTTPMethodView):
                     # res = (await request.app.ctx.supabase_client.atable("account").update(
                     #     {"locale": 'jp'}).eq("id", str(supabase_res.user.id)).execute()).data
                     account_info = (await request.app.ctx.supabase_client.atable("account").select(
-                        "id,balance,locale,nick_name").eq("google_id", str(google_info['sub']).lower()).execute()).data
+                        "id,balance,locale,nick_name,vip_level").eq("google_id", str(google_info['sub']).lower()).execute()).data
             else:
                 account_info = (await request.app.ctx.supabase_client.atable("account").select(
-                    "id,balance,locale,nick_name").eq("google_id", str(google_info['sub']).lower()).execute()).data
+                    "id,balance,locale,nick_name,vip_level").eq("google_id", str(google_info['sub']).lower()).execute()).data
 
             # 成功返回
             return sanic_json({'success': True,
-                               'user': {'name': account_info[0]['nick_name'] if len(
-                                   account_info[0]['nick_name']) > 0 else f'user{account_info[0]["id"][:8]}',
+                               'user': {'name': account_info[0]['nick_name'] if len(account_info[0]['nick_name']) > 0 else f'user{account_info[0]["id"][:8]}',
                                         'id': account_info[0]['id'],
+                                        'vip_level': account_info[0]['vip_level'],
                                         'balance': account_info[0]['balance'],
                                         'locale': account_info[0]['locale'],
                                         },
@@ -175,13 +175,14 @@ class WeChatLogin(HTTPMethodView):
                         user_id = id_res[0]['id']
 
                     account_info = (await request.app.ctx.supabase_client.atable("account").select(
-                        "id,balance,locale,nick_name").eq("wechat_id", str(wechat_data['openid']).lower()).execute()).data
+                        "id,balance,locale,nick_name,vip_level").eq("wechat_id", str(wechat_data['openid']).lower()).execute()).data
 
                     # 成功返回
                     return sanic_json({'success': True,
                                        'user': {'name': account_info[0]['nick_name'] if len(account_info[0]['nick_name']) > 0 else f'user{account_info[0]["id"][:8]}',
                                                 'id': account_info[0]['id'],
                                                 'balance': account_info[0]['balance'],
+                                                'vip_level': account_info[0]['vip_level'],
                                                 'locale': account_info[0]['locale'],
                                                 },
                                        'expires_in': 3600
@@ -205,12 +206,13 @@ class PasswordLogin(HTTPMethodView):
 
             supabase_res = await request.app.ctx.supabase_client.auth.async_sign_in(email=phone, password=password)
             account_info = (await request.app.ctx.supabase_client.atable("account").select(
-                "id,balance,locale,nick_name").eq("id", supabase_res.user.id).execute()).data
+                "id,balance,locale,nick_name,vip_level").eq("id", supabase_res.user.id).execute()).data
             return sanic_json({'success': True,
                                'user': {'name': account_info[0]['nick_name'],
                                         'id': account_info[0]['id'],
                                         'balance': account_info[0]['balance'],
                                         'locale': account_info[0]['locale'],
+                                        'vip_level': account_info[0]['vip_level'],
                                         },
                                'expires_in': 3600
                                })
@@ -311,7 +313,7 @@ class LineLogin(HTTPMethodView):
 
                 # users_email = [u['email'] for u in users]
 
-                account_info = (await request.app.ctx.supabase_client.atable("account").select("id,balance,locale,nick_name").eq("line_id", str(
+                account_info = (await request.app.ctx.supabase_client.atable("account").select("id,balance,locale,nick_name,vip_level").eq("line_id", str(
                     line_info['sub']).lower()).execute()).data
                 # 如果没有查询到则注册
                 if len(account_info) == 0:
@@ -337,13 +339,14 @@ class LineLogin(HTTPMethodView):
                         #     {"locale": 'jp'}).eq("id", str(supabase_res.user.id)).execute()).data
                 else:
                     account_info = (await request.app.ctx.supabase_client.atable("account").select(
-                        "id,balance,locale,nick_name").eq("line_id", str(line_info['sub']).lower()).execute()).data
+                        "id,balance,locale,nick_name,vip_level").eq("line_id", str(line_info['sub']).lower()).execute()).data
 
                 # 成功返回
                 return sanic_json({'success': True,
                                    'user': {'name': account_info[0]['nick_name'] if len(account_info[0]['nick_name']) > 0 else f'user{account_info[0]["id"][:8]}',
                                             'id': account_info[0]['id'],
                                             'balance': account_info[0]['balance'],
+                                            'vip_level': account_info[0]['vip_level'],
                                             'locale': account_info[0]['locale'],
                                             },
                                    'expires_in': 3600

@@ -8,7 +8,7 @@ from sanic_cors import CORS
 
 from handlers.login import WeChatLogin, LineLogin, PasswordLogin, GoogleLogin
 from handlers.pay import WechatReqPayQRCode, PayPalCreateOrder, WechatQueryPayment, QueryBalance, QueryDiscount, \
-    PayPalCaptureOrder, PayPalCreateSub
+    PayPalCaptureOrder, PayPalCreateSub, CheckVip, PayPalCancelSub
 from handlers.qinghua import DeviceAuthVerify
 from lib.celery_workshop.wokrshop import WorkShop
 from operators import OperatorSD
@@ -26,6 +26,8 @@ bp = Blueprint("ai_tasks")
 bp.add_route(PayPalCreateOrder.as_view(), "/paypal/pay")
 bp.add_route(PayPalCaptureOrder.as_view(), "/paypal/query")
 bp.add_route(PayPalCreateSub.as_view(), "/paypal/sub")
+bp.add_route(PayPalCancelSub.as_view(), "/paypal/cancel")
+bp.add_route(CheckVip.as_view(), "/user/check")
 
 bp.add_route(WechatReqPayQRCode.as_view(), "/wechat/pay")
 bp.add_route(QueryBalance.as_view(), "/wechat/query")

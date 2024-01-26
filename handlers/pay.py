@@ -348,7 +348,7 @@ class PayPalCreateSub(HTTPMethodView):
         try:
             user_id = request.form['user_id'][0]
             subscription_id = request.form['subscription_id'][0]
-            vip_level = request.form['vip_level'][0]
+            vip_level = int(request.form['vip_level'][0])
 
             if vip_level == 1:
                 add_balance = 88
@@ -358,19 +358,20 @@ class PayPalCreateSub(HTTPMethodView):
                 add_balance = 624
 
             account = (await request.app.ctx.supabase_client.atable("account").select("balance").eq("id", user_id).execute()).data[0]
-            res = (await request.app.ctx.supabase_client.atable("account").update({"balance": account['balance'] + add_balance, 'vip_level': vip_level}).eq("id", user_id).execute()).data
-            subscription = (await request.app.ctx.supabase_client.atable("subscription").select("*").eq("id", user_id).execute()).data
+            subscription = (await request.app.ctx.supabase_client.atable("subscription").select("*").eq("user_id", user_id).execute()).data
 
             if len(subscription) > 0:
                 data = await request.app.ctx.supabase_client.atable("subscription").update({'subscription_id': subscription_id,
                                                                                             'supplier': 'paypal',
-                                                                                            }).eq("id", user_id).execute()
+                                                                                            }).eq("user_id", user_id).execute()
 
             else:
                 data = await request.app.ctx.supabase_client.atable("subscription").insert({"user_id": user_id,
                                                                                             'subscription_id': subscription_id,
                                                                                             'supplier': 'paypal',
                                                                                             }).execute()
+
+            res = (await request.app.ctx.supabase_client.atable("account").update({"balance": account['balance'] + add_balance, 'vip_level': vip_level}).eq("id", user_id).execute()).data
 
             return sanic_json({'success': True}, status=200)
 
@@ -387,10 +388,50 @@ class CheckVip(HTTPMethodView):
     async def post(self, request):
         try:
             user_id = request.form['user_id'][0]
-            subscription = (await request.app.ctx.supabase_client.atable("subscription").select("*").eq("id", user_id).execute()).data
+            res = (await request.app.ctx.supabase_client.atable("account").select("vip_level").eq("id", user_id).execute()).data
 
-            return sanic_json({'success': len(subscription) > 0}, status=200)
+            return sanic_json({'success': res[0]['vip_level'] > 0}, status=200)
 
         except Exception:
             print(traceback.format_exc())
             return sanic_json({'success': False}, status=500)
+
+
+class PayPalCancelSub(HTTPMethodView):
+    """
+        取消订阅
+    """
+    async def post(self, request):
+        try:
+            user_id = request.form['user_id'][0]
+            subscription = (await request.app.ctx.supabase_client.atable("subscription").select("*").eq("user_id", user_id).execute()).data
+            if len(subscription) > 0:
+
+                # get access token
+                access_token = await aspayapl_generate_ccess_token()
+                # Create product
+                url = f"{CONFIG['paypal']['base_url']}/v1/billing/subscriptions/{subscription[0]['subscription_id']}/cancel"
+                payload = {
+                    "reason": "Not satisfied with the service"
+                }
+                res = (await request.app.ctx.supabase_client.atable("account").update({"vip_level": 0}).eq("id",
+                                                                                                           user_id).execute()).data
+
+                async with httpx.AsyncClient(proxies={"http://": CONFIG['http_proxy'],
+                                                      "https://": CONFIG['http_proxy']}) as client:
+                    response = await client.post(url,
+                                                 data=ujson.dumps(payload),
+                                                 headers={"Authorization": f"Bearer {access_token}",
+                                                          "Content-Type": "application/json"})
+                    print(response)
+                    # response_json = response.json()
+                    # print(response_json)
+
+
+                return sanic_json({'success': True})
+            else:
+                return sanic_json({'success': False, 'result': 'backend.api.error.no-subscription'})
+
+        except Exception:
+            print(traceback.format_exc())
+            return sanic_json({'success': False, 'result': 'backend.api.error.default'})
