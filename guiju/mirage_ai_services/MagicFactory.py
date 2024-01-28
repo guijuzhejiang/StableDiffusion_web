@@ -304,13 +304,16 @@ class MagicFactory(object):
         # save cache face img
         # _input_image.save(f'tmp/{self.__class__.__name__}_origin_{pic_name}_save.png')
         # _input_image = _input_image.convert('RGBA')
-
+        if _input_image.mode == 'L' or _input_image.mode == 'RGBA':
+            #转换为RGB三通道，四通道faceid_predictor出错
+            _input_image = _input_image.convert('RGB')
         _input_image_width, _input_image_height = _input_image.size
 
         if self.operator.update_progress(10):
             return {'success': True}
 
         # parse face
+        # face_boxes = self.operator.face_analysis.get(_input_image)
         face_boxes = self.operator.facer.detect_face(_input_image)
         if len(face_boxes) == 0:
             # return {'success': False, 'result': '未检测到人脸'}
