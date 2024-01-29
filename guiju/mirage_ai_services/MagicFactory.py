@@ -3,6 +3,8 @@
 # @File : magic_wallpapaper.py
 import numpy as np
 
+from lib.common.common_util import pil2cv
+
 prompt_style = [
     {'label': '无', 'prompt': None},
     {'label': '电影感', 'prompt': 'cinematic photo,cinematic light,film,depth of field,blurry background,bokeh,gloom'},
@@ -313,15 +315,15 @@ class MagicFactory(object):
             return {'success': True}
 
         # parse face
-        # face_boxes = self.operator.face_analysis.get(_input_image)
-        face_boxes = self.operator.facer.detect_face(_input_image)
+        face_boxes = self.operator.face_analysis.get(pil2cv(_input_image))
+        # face_boxes = self.operator.facer.detect_face(_input_image)
         if len(face_boxes) == 0:
             # return {'success': False, 'result': '未检测到人脸'}
             return {'success': False, 'result': 'backend.magic-factory.error.no-face'}
 
-        elif len(face_boxes) > 1:
-            # return {'success': False, 'result': '检测到多个人脸，请上传一张单人照'}
-            return {'success': False, 'result': 'backend.magic-factory.error.multi-face'}
+        # elif len(face_boxes) > 1:
+        #     # return {'success': False, 'result': '检测到多个人脸，请上传一张单人照'}
+        #     return {'success': False, 'result': 'backend.magic-factory.error.multi-face'}
 
         else:
             if self.operator.update_progress(30):

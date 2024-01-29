@@ -3,6 +3,9 @@ import hmac
 import os
 import random
 import base64
+
+import cv2
+import numpy as np
 from PIL import Image
 from io import BytesIO
 
@@ -33,8 +36,10 @@ def generate_random(num):
     alphabet = 'abcdefghijklmnopqrstuvwxyz_-ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     return ''.join([random.choice(alphabet) for i in range(num)])
 
+
 def generate_random_digits(num=6):
     return ''.join([str(n) for n in random.sample(range(10), num)])
+
 
 def base64_to_pil(base64_string, from_html=True):
     if from_html:
@@ -46,6 +51,12 @@ def base64_to_pil(base64_string, from_html=True):
     pil_image = Image.open(BytesIO(image_data))
 
     return pil_image
+
+
+def pil2cv(pil_image):
+    numpy_image = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
+
+    return cv2.cvtColor(numpy_image, cv2.COLOR_RGB2BGR)
 
 
 def pil_to_base64(pil_image, to_html=True):
