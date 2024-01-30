@@ -128,11 +128,11 @@ class UserEditNickname(HTTPMethodView):
             user_id = request.form['user_id'][0]
             new_nickname = request.form['nickname'][0]
 
-            nick_taken_res = (await request.app.ctx.supabase_client.atable("account").select('id').eq("nick_name", new_nickname).execute()).data
-            if len(nick_taken_res) > 0:
-                return sanic_json({'success': False, 'message': 'backend.api.error.nickname'})
-            else:
-                res = (await request.app.ctx.supabase_client.atable("account").update({'nick_name': new_nickname}).eq("id", user_id).execute()).data
+            # nick_taken_res = (await request.app.ctx.supabase_client.atable("account").select('id').eq("nick_name", new_nickname).execute()).data
+            # if len(nick_taken_res) > 0:
+            #     return sanic_json({'success': False, 'message': 'backend.api.error.nickname'})
+            # else:
+            res = (await request.app.ctx.supabase_client.atable("account").update({'nick_name': new_nickname}).eq("id", user_id).execute()).data
 
         except Exception:
             print(traceback.format_exc())
