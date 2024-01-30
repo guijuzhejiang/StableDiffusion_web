@@ -8,7 +8,7 @@ from sanic_cors import CORS
 
 from handlers.login import WeChatLogin, LineLogin, PasswordLogin, GoogleLogin
 from handlers.pay import WechatReqPayQRCode, PayPalCreateOrder, WechatQueryPayment, QueryBalance, QueryDiscount, \
-    PayPalCaptureOrder, PayPalCreateSub, CheckVip, PayPalCancelSub
+    PayPalCaptureOrder, PayPalCreateSub, CheckVip, PayPalCancelSub, PayPalWebhook
 from handlers.qinghua import DeviceAuthVerify
 from lib.celery_workshop.wokrshop import WorkShop
 from operators import OperatorSD
@@ -27,6 +27,7 @@ bp.add_route(PayPalCreateOrder.as_view(), "/paypal/pay")
 bp.add_route(PayPalCaptureOrder.as_view(), "/paypal/query")
 bp.add_route(PayPalCreateSub.as_view(), "/paypal/sub")
 bp.add_route(PayPalCancelSub.as_view(), "/paypal/cancel")
+bp.add_route(PayPalWebhook.as_view(), "/paypal/webhook")
 bp.add_route(CheckVip.as_view(), "/user/check")
 
 bp.add_route(WechatReqPayQRCode.as_view(), "/wechat/pay")

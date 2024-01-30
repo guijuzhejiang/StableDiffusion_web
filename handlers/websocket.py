@@ -37,57 +37,50 @@ async def sd_genreate(request: Request, ws):
                               'input_image': ''}
 
             # cal prices
-            cost_points = 10
+            cost_points = 5
             if package['mode'] == 'hires':
                 if params.get('hires_times'):
-                    cost_points = 5 if int(params['hires_times']) == 2 else 10
-                else:
-                    _output_width = int(params['output_width'])
-                    _output_height = int(params['output_height'])
-
-                    cost_points = 5
-                    pixel_sum = _output_width + _output_height
-                    if pixel_sum >= 2561:
+                    if int(params['hires_times']) == 3:
+                        cost_points = 8
+                    elif int(params['hires_times']) == 4:
                         cost_points = 10
-                    if pixel_sum >= 4681:
-                        cost_points = 15
 
-            elif package['mode'] == 'avatar':
-                batch_size = int(params['batch_size'])
-
-                if batch_size == 1:
-                    cost_points = 5
-                elif batch_size == 2:
-                    cost_points = 8
-
-            elif package['mode'] == 'mirror':
-                batch_size = int(params['batch_size'])
-
-                if batch_size == 1:
-                    cost_points = 5
-                elif batch_size == 2:
-                    cost_points = 8
-
-            elif package['mode'] == 'hair':
-                batch_size = int(params['batch_size'])
-
-                if batch_size == 1:
-                    cost_points = 5
-                elif batch_size == 2:
-                    cost_points = 8
-
-            elif package['mode'] == 'cert':
-                cost_points = 3
+                        # elif package['mode'] == 'avatar':
+            #     batch_size = int(params['batch_size'])
+            #
+            #     if batch_size == 1:
+            #         cost_points = 5
+            #     elif batch_size == 2:
+            #         cost_points = 8
+            #
+            # elif package['mode'] == 'mirror':
+            #     batch_size = int(params['batch_size'])
+            #
+            #     if batch_size == 1:
+            #         cost_points = 5
+            #     elif batch_size == 2:
+            #         cost_points = 8
+            #
+            # elif package['mode'] == 'hair':
+            #     batch_size = int(params['batch_size'])
+            #
+            #     if batch_size == 1:
+            #         cost_points = 5
+            #     elif batch_size == 2:
+            #         cost_points = 8
+            #
+            # elif package['mode'] == 'cert':
+            #     cost_points = 3
 
             else:
                 batch_size = int(params['batch_size'])
 
                 if batch_size == 1:
-                    cost_points = 10
+                    cost_points = 5
                 elif batch_size == 2:
-                    cost_points = 15
+                    cost_points = 8
                 else:
-                    cost_points = 18
+                    cost_points = 10
 
             # check balance
             account = (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[0]

@@ -435,3 +435,20 @@ class PayPalCancelSub(HTTPMethodView):
         except Exception:
             print(traceback.format_exc())
             return sanic_json({'success': False, 'result': 'backend.api.error.default'})
+
+
+class PayPalWebhook(HTTPMethodView):
+    """
+        paypal webhook
+    """
+
+    async def post(self, request):
+        try:
+            user_id = request.form['user_id'][0]
+            subscription = (await request.app.ctx.supabase_client.atable("subscription").select("*").eq("user_id",
+                                                                                                        user_id).execute()).data
+            return sanic_json({'success': False, 'result': 'backend.api.error.no-subscription'})
+
+        except Exception:
+            print(traceback.format_exc())
+            return sanic_json({'success': False, 'result': 'backend.api.error.default'})
