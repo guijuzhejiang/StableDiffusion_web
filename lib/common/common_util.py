@@ -1,3 +1,5 @@
+import calendar
+import datetime
 import hashlib
 import hmac
 import os
@@ -75,6 +77,20 @@ def uuid_to_number_string(uuid_str):
 
     # 将整数转换为字符串
     return str(uuid_int)
+
+
+def next_month_date(src_date=None):
+    if src_date is None:
+        src_date = datetime.datetime.now()
+
+    next_m = 1 if src_date.month == 12 else src_date.month + 1
+    next_y = src_date.year + 1 if src_date.month == 12 else src_date.year
+    last_d_next_y = calendar.monthrange(next_y, next_m)[1]
+
+    if src_date.day > last_d_next_y:
+        return datetime.datetime(next_y, next_m, last_d_next_y, 0, 0, 0)
+    else:
+        return datetime.datetime(next_y, next_m, src_date.day, 0, 0, 0)
 
 
 if __name__ == '__main__':

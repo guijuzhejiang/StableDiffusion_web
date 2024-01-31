@@ -12,6 +12,9 @@ import ujson
 from sanic.views import HTTPMethodView
 from wechatpayv3 import WeChatPayType
 from sanic.response import json as sanic_json
+
+from guiju.sub import setup_cron
+from lib.common.common_util import next_month_date
 from utils.global_vars import CONFIG
 
 discount_dict = {
@@ -371,7 +374,18 @@ class PayPalCreateSub(HTTPMethodView):
                                                                                             'supplier': 'paypal',
                                                                                             }).execute()
 
+            data = await request.app.ctx.supabase_client.atable("transaction").insert({"user_id": user_id,
+                                                                                       'out_trade_no': f'@subpaypal_{subscription_id}',
+                                                                                       'amount': add_balance,
+                                                                                       'is_plus': True,
+                                                                                       'status': 1,
+                                                                                       }).execute()
             res = (await request.app.ctx.supabase_client.atable("account").update({"balance": account['balance'] + add_balance, 'vip_level': vip_level}).eq("id", user_id).execute()).data
+
+            # 获取次月结算日
+            current_date = datetime.now()
+            next_checkout_date = next_month_date(src_date=current_date) + timedelta(days=1)
+            setup_cron(subscription_id, next_checkout_date)
 
             return sanic_json({'success': True}, status=200)
 
@@ -414,8 +428,6 @@ class PayPalCancelSub(HTTPMethodView):
                 payload = {
                     "reason": "Not satisfied with the service"
                 }
-                res = (await request.app.ctx.supabase_client.atable("account").update({"vip_level": 0}).eq("id",
-                                                                                                           user_id).execute()).data
 
                 async with httpx.AsyncClient(proxies={"http://": CONFIG['http_proxy'],
                                                       "https://": CONFIG['http_proxy']}) as client:
@@ -423,10 +435,14 @@ class PayPalCancelSub(HTTPMethodView):
                                                  data=ujson.dumps(payload),
                                                  headers={"Authorization": f"Bearer {access_token}",
                                                           "Content-Type": "application/json"})
-                    print(response)
+                    # print(response)
                     # response_json = response.json()
                     # print(response_json)
 
+                res = (await request.app.ctx.supabase_client.atable("account").update({"vip_level": 0}).eq("id",
+                                                                                                           user_id).execute()).data
+                data = (await request.app.ctx.supabase_client.atable("subscription").delete().eq("user_id",
+                                                                                                user_id).execute()).data
 
                 return sanic_json({'success': True})
             else:
@@ -441,14 +457,10 @@ class PayPalWebhook(HTTPMethodView):
     """
         paypal webhook
     """
-
     async def post(self, request):
         try:
-            user_id = request.form['user_id'][0]
-            subscription = (await request.app.ctx.supabase_client.atable("subscription").select("*").eq("user_id",
-                                                                                                        user_id).execute()).data
-            return sanic_json({'success': False, 'result': 'backend.api.error.no-subscription'})
-
+            print(request.json)
+            print(request.json['event_type'])
         except Exception:
             print(traceback.format_exc())
             return sanic_json({'success': False, 'result': 'backend.api.error.default'})
