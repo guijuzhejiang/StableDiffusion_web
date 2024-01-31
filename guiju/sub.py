@@ -1,13 +1,13 @@
 # coding=utf-8
 # @Time : 2024/1/30 下午5:26
 # @File : sub.py
+import asyncio
 import base64
 import datetime
 import os
 import sys
 import traceback
 
-import aiosupabase
 import requests
 import yaml
 from crontab import CronTab
@@ -57,10 +57,12 @@ def setup_cron(sub_id, target_date):
     cron.write()
 
 
-if __name__ == '__main__':
+async def run_main():
     try:
+        from aiosupabase import Supabase
+
         subscription_id = sys.argv[1]
-        supabase_client = aiosupabase.Supabase
+        supabase_client = Supabase
         supabase_client.configure(
             url=CONFIG['supabase']['url'],
             key=CONFIG['supabase']['key'],
@@ -112,3 +114,7 @@ if __name__ == '__main__':
         cron = CronTab(user=True)
         cron.remove_all(comment=f'{subscription_id}')
         logging(f'clean {subscription_id} success')
+
+
+if __name__ == '__main__':
+    asyncio.run(run_main())
