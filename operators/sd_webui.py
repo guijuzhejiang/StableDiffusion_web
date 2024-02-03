@@ -335,7 +335,12 @@ class OperatorSD(Operator):
             os.makedirs(dir_path, exist_ok=True)
             for res_idx, res_img in enumerate(res):
                 img_save_path = os.path.join(dir_path, f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png")
-                res_img.convert("RGB").save(img_save_path, format="jpeg", quality=80, lossless=True)
+                res_img = res_img.convert("RGB")
+                res_img.save(img_save_path, format="jpeg", quality=80, lossless=True)
+
+                # cache output
+                cache_fp = f"tmp/{proceed_mode}_{pic_name}_{res_idx}.jpg"
+                res_img.save(cache_fp)
 
                 # 限制缓存10张
                 cache_list = sorted(os.listdir(dir_path))
