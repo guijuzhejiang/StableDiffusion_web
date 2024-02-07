@@ -356,4 +356,22 @@ class MagicFactory(object):
                                                  prompt_distance[_distance]['height'],
                                                  lora=character_dict['lora'] if lora_enable else None)
             self.operator.devices.torch_gc()
+
+            # hires
+            for res_idx, res_img in enumerate(res):
+                # ori_w, ori_h = res_img.size
+                # hd_w = ori_w * 2
+                # hd_h = ori_h * 2
+                scales = 2
+                gfpgan_weight = 0.5
+                codeformer_visibility = 0
+                codeformer_weight = 1
+                args = (0, scales, None, None, True, 'ESRGAN_4x', 'None', 0, gfpgan_weight, codeformer_visibility,
+                        codeformer_weight)
+                self.operator.devices.torch_gc()
+                pp = self.operator.scripts_postprocessing.PostprocessedImage(res_img.convert("RGB"))
+                self.operator.scripts.scripts_postproc.run(pp, args)
+
+                self.operator.devices.torch_gc()
+                res[res_idx] = pp.image
             return res
