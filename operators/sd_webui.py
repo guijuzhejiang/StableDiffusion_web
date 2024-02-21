@@ -270,11 +270,16 @@ class OperatorSD(Operator):
             user_id = kwargs['user_id'][0]
             params = ujson.loads(kwargs['params'][0])
             origin = kwargs['origin'][0]
-            if 'www.' in origin:
-                client_origin = origin.replace('www', 'api')
+
+            if 'imegaai' in origin:
+                if 'www.' in origin:
+                    client_origin = origin.replace('www', 'api')
+                else:
+                    client_protocol = origin.split('://')[0]
+                    client_origin = origin.replace(f'{client_protocol}://', f'{client_protocol}://api.')
             else:
-                client_protocol = origin.split('://')[0]
-                client_origin = origin.replace(f'{client_protocol}://', f'{client_protocol}://api.')
+                client_origin = ''
+
 
             if self.update_progress(2):
                 return {'success': True}
