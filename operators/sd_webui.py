@@ -269,6 +269,12 @@ class OperatorSD(Operator):
             proceed_mode = kwargs['mode'][0]
             user_id = kwargs['user_id'][0]
             params = ujson.loads(kwargs['params'][0])
+            origin = kwargs['origin'][0]
+            if 'www.' in origin:
+                client_origin = origin.replace('www', 'api')
+            else:
+                client_protocol = origin.split('://')[0]
+                client_origin = origin.replace(f'{client_protocol}://', f'{client_protocol}://api.')
 
             if self.update_progress(2):
                 return {'success': True}
@@ -349,7 +355,7 @@ class OperatorSD(Operator):
             else:
                 for img_fn in sorted(os.listdir(dir_path), reverse=True):
                     # url_fp = f"{'http://192.168.110.8:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={proceed_mode}"
-                    url_fp = f"{'localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else '/service'}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={proceed_mode}"
+                    url_fp = f"{'localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else f'{client_origin}/service'}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={proceed_mode}"
                     img_urls.append(url_fp)
                 if len(img_urls) < 10:
                     for i in range(10 - len(img_urls)):
