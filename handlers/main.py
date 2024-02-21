@@ -73,13 +73,21 @@ class FetchUserHistory(HTTPMethodView):
         try:
             user_id = request.form['user_id'][0]
             category = request.args.get("category", 'model')
+            origin = request.args.get("origin", 'https://www.imegaai.com')
             dir_storage_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], category)
 
             dir_user_path = os.path.join(dir_storage_path, user_id)
             os.makedirs(dir_user_path, exist_ok=True)
 
-            fixed_dn = request.host.replace('www.', '')
-            result = [f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else f'https://api.{fixed_dn}/service'}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={category}" for img_fn in sorted(os.listdir(dir_user_path), reverse=True)]
+            if 'imegaai' in origin:
+                fixed_dn = origin.replace('www.', 'api.')
+                if 'api.' not in fixed_dn:
+                    protocol_txt = origin.split('://')[0]
+                    fixed_dn = fixed_dn.replace(f'{protocol_txt}://', f'{protocol_txt}://api.')
+            else:
+                fixed_dn = origin
+
+            result = [f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else f'{fixed_dn}/service'}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={category}" for img_fn in sorted(os.listdir(dir_user_path), reverse=True)]
             if len(result) < 10:
                 for i in range(10-len(result)):
                     result.append('')
