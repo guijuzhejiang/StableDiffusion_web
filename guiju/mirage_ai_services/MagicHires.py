@@ -239,4 +239,4 @@ class MagicHires(object):
         # celery_task.update_state(state='PROGRESS', meta={'progress': 90})
         if self.operator.update_progress(90):
             return {'success': True}
-        return {'success': True, 'result': [img_fp]}
+        return [pp.image]
