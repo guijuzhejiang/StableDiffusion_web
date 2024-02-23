@@ -278,7 +278,7 @@ class PayPalCreateOrder(HTTPMethodView):
                     {
                         'amount': {
                             'currency_code': "USD",
-                            'value': f"{str(float(fee))}" if account['access_level'] != 0 else '0.01',
+                            'value': f"{str(round(float(fee), 2))}" if account['access_level'] != 0 else '0.01',
                         },
                     },
                 ],
