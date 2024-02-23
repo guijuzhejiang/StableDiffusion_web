@@ -354,11 +354,11 @@ class PayPalCreateSub(HTTPMethodView):
             vip_level = int(request.form['vip_level'][0])
 
             if vip_level == 1:
-                add_balance = 275
+                add_balance = 220
             elif vip_level == 2:
-                add_balance = 900
-            else:
-                add_balance = 1625
+                add_balance = 720
+            # else:
+            #     add_balance = 1625
 
             account = (await request.app.ctx.supabase_client.atable("account").select("balance").eq("id", user_id).execute()).data[0]
             subscription = (await request.app.ctx.supabase_client.atable("subscription").select("*").eq("user_id", user_id).execute()).data

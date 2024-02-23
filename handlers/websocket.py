@@ -85,6 +85,10 @@ async def sd_genreate(request: Request, ws):
             # check balance
             account = (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[0]
             buf_result = {'success': True, 'result': None, 'act': None, 'type': package['mode']}
+
+            if account['vip_level'] == 3:
+                cost_points = 0
+
             if cost_points <= account['balance']:
                 # recv image
                 if package['mode'] == 'hires':

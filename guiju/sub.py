@@ -87,11 +87,11 @@ async def run_main():
             vip_level = account['vip_level'][0]
 
             if vip_level == 1:
-                add_balance = 88
+                add_balance = 220
             elif vip_level == 2:
-                add_balance = 336
-            else:
-                add_balance = 624
+                add_balance = 720
+            # else:
+            #     add_balance = 624
 
             if response.json()['status'] == 'ACTIVE':
                 supabase_client.table("account").update({'balance': account['balance'] + add_balance})
