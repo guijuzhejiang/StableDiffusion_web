@@ -80,5 +80,5 @@ aliyun:
 http_proxy: "http://127.0.0.1:1095"
 payment:
   point_price:
-    USD: 0.02
-    RMB: 0.1
+    USD: 0.025
+    RMB: 0.125
