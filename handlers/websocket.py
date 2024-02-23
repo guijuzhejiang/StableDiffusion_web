@@ -38,6 +38,8 @@ async def sd_genreate(request: Request, ws):
 
             # cal prices
             cost_points = 1
+            if package['mode'] == 'cert':
+                params['batch_size'] = 1
             if package['mode'] == 'hires':
                 if params.get('hires_times'):
                     if int(params['hires_times']) == 3:
@@ -69,8 +71,6 @@ async def sd_genreate(request: Request, ws):
             #     elif batch_size == 2:
             #         cost_points = 8
             #
-            # elif package['mode'] == 'cert':
-            #     cost_points = 3
 
             else:
                 batch_size = int(params['batch_size'])
