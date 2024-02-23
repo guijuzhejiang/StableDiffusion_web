@@ -269,7 +269,7 @@ class OperatorSD(Operator):
             proceed_mode = kwargs['mode'][0]
             user_id = kwargs['user_id'][0]
             params = ujson.loads(kwargs['params'][0])
-            origin = kwargs['origin'][0]
+            origin = kwargs['origin']
 
             if 'imegaai' in origin:
                 if 'www.' in origin:
