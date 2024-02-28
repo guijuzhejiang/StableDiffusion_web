@@ -112,7 +112,7 @@ async def sd_genreate(request: Request, ws):
                     format_package['input_image'] = img_fp
 
                 elif package['mode'] == 'upscaler':
-                    parsed_url = urlparse(package['params']['inputUrl'])
+                    parsed_url = urlparse('?'+package['params']['inputUrl'].split('?')[-1])
                     # 获取查询参数
                     query_params = parse_qs(parsed_url.query)
 
