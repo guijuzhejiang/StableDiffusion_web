@@ -324,7 +324,7 @@ class OperatorSD(Operator):
 
             if proceed_mode == 'facer':
                 input_image_paths = [kwargs['input_image'], kwargs['input_image_tgt']]
-            elif proceed_mode == 'hires':
+            elif proceed_mode == 'hires' or proceed_mode == 'upscaler':
                 input_image_paths = [kwargs['input_image']]
             else:
                 input_image_paths = None
