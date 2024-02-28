@@ -80,8 +80,13 @@ async def run_main():
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
             }
-            response = requests.get(f'https://api-m.sandbox.paypal.com/v1/billing/subscriptions/I-8PNCEAMW1ASL',
-                                    headers=headers)
+
+            if CONFIG['local']:
+                response = requests.get(f'https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}',
+                                        headers=headers)
+            else:
+                response = requests.get(f'https://sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}',
+                                        headers=headers)
 
             account = supabase_client.table("account").select("*").eq("id", user_id).execute().data[0]
             vip_level = account['vip_level'][0]

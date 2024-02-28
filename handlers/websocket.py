@@ -35,7 +35,8 @@ async def sd_genreate(request: Request, ws):
                               'params': [ujson.dumps(params)],
                               'origin': request.headers.origin,
                               'input_image': ''}
-
+            if (CONFIG['local']):
+                print(format_package)
             # cal prices
             cost_points = 1
             if package['mode'] == 'cert':
@@ -219,6 +220,9 @@ async def qinghua_genreate(request: Request, ws):
                                   'params': [ujson.dumps(params)],
                                   'origin': request.headers.origin,
                                   'input_image': ''}
+
+                if(CONFIG['local']):
+                    print(format_package)
 
                 buf_result = {'success': True, 'result': None, 'act': None, 'type': package['mode']}
                 # recv image
