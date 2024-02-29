@@ -297,7 +297,7 @@ class OperatorSD(Operator):
             pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
 
             # read input image
-            if proceed_mode not in ['wallpaper', 'facer']:
+            if proceed_mode not in ['wallpaper', 'facer', 'text2image']:
                 if 'preset_index' in params.keys() and params['preset_index'] is not None and params['preset_index'] >= 0:
                     _input_image = Image.open(f"guiju/assets/preset/{proceed_mode}/{params['preset_index']}.jpg")
                     _input_image_width, _input_image_height = _input_image.size
@@ -385,3 +385,8 @@ class OperatorSD(Operator):
                 f"logs/error.log")
 
         return {'success': False, 'result': 'backend.generate.error.failed'}
+
+
+if __name__ == '__main__':
+    sd = OperatorSD()
+    sd(mode='text2image',user_id='123',params={'batch_size':1, 'width':512, 'height':512}, origin='localhost')
