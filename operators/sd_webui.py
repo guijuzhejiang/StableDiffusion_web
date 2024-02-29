@@ -386,7 +386,133 @@ class OperatorSD(Operator):
 
         return {'success': False, 'result': 'backend.generate.error.failed'}
 
+    def local_run(self, *args, **kwargs):
+        try:
+            # log start
+            print(f"{str(datetime.datetime.now())} operation start !!!!!!!!!!!!!!!!!!!!!!!!!!")
+            clean_args = {k: v for k, v in kwargs.items() if k != 'input_image'}
+            clean_args['params'] = ujson.loads(kwargs['params'][0])
+            print(clean_args)
+            proceed_mode = kwargs['mode'][0]
+            user_id = kwargs['user_id'][0]
+            params = ujson.loads(kwargs['params'][0])
+            origin = kwargs['origin']
+
+            if 'imegaai' in origin:
+                if 'www.' in origin:
+                    client_origin = origin.replace('www', 'api')
+                else:
+                    client_protocol = origin.split('://')[0]
+                    client_origin = origin.replace(f'{client_protocol}://', f'{client_protocol}://api.')
+            else:
+                client_origin = ''
+
+
+            if self.update_progress(2):
+                return {'success': True}
+
+            # nsfw check
+            if proceed_mode != 'wallpaper':
+                if 'preset_index' in params.keys():
+                    if self.predict_image(f"guiju/assets/preset/{proceed_mode}/{params['preset_index']}.jpg"):
+                        return {'success': False, 'result': 'backend.check.error.nsfw'}
+                else:
+                    if self.predict_image(kwargs['input_image']):
+                        return {'success': False, 'result': 'backend.check.error.nsfw'}
+
+            # define task id
+            pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
+
+            # read input image
+            if proceed_mode not in ['wallpaper', 'facer', 'text2image']:
+                if 'preset_index' in params.keys() and params['preset_index'] is not None and params['preset_index'] >= 0:
+                    _input_image = Image.open(f"guiju/assets/preset/{proceed_mode}/{params['preset_index']}.jpg")
+                    _input_image_width, _input_image_height = _input_image.size
+
+                else:
+                    _input_image = Image.open(kwargs['input_image'])
+                    _input_image_width, _input_image_height = _input_image.size
+
+                # cache upload image
+                _input_image.save(f"tmp/{proceed_mode}_origin_{pic_name}_save.png")
+
+            else:
+                _input_image_width, _input_image_height = 0, 0
+
+            if self.update_progress(5):
+                return {'success': True}
+
+            # logging
+            self.logging(
+                f"[__call__][{datetime.datetime.now()}]:\n"
+                f"[{pic_name}]:\n"
+                f"{ujson.dumps(clean_args, indent=4)}",
+                f"logs/sd_webui.log")
+
+            if proceed_mode == 'facer':
+                input_image_paths = [kwargs['input_image'], kwargs['input_image_tgt']]
+            elif proceed_mode == 'hires' or proceed_mode == 'upscaler':
+                input_image_paths = [kwargs['input_image']]
+            else:
+                input_image_paths = None
+
+
+            res = self.magic_conductor(proceed_mode,
+                                       params=params,
+                                       user_id=user_id,
+                                       input_image=_input_image if proceed_mode not in ['wallpaper', 'facer'] else None,
+                                       input_image_paths=input_image_paths,
+                                       pic_name=pic_name)
+            if isinstance(res, dict):
+                return res
+
+            # storage img
+            img_urls = []
+            dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], proceed_mode, user_id)
+            # dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_{proceed_mode}_dir'], user_id)
+            os.makedirs(dir_path, exist_ok=True)
+            for res_idx, res_img in enumerate(res):
+                img_save_path = os.path.join(dir_path, f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png")
+                res_img = res_img.convert("RGB")
+                res_img.save(img_save_path, format="jpeg", quality=80, lossless=True)
+
+                # cache output
+                cache_fp = f"tmp/{proceed_mode}_{pic_name}_{res_idx}.jpg"
+                res_img.save(cache_fp)
+
+                # 限制缓存10张
+                cache_list = sorted(os.listdir(dir_path))
+                if len(cache_list) > 10:
+                    os.remove(os.path.join(dir_path, cache_list[0]))
+            else:
+                for img_fn in sorted(os.listdir(dir_path), reverse=True):
+                    # url_fp = f"{'http://192.168.110.8:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={proceed_mode}"
+                    url_fp = f"{'localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else f'{client_origin}/service'}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={proceed_mode}"
+                    img_urls.append(url_fp)
+                if len(img_urls) < 10:
+                    for i in range(10 - len(img_urls)):
+                        img_urls.append('')
+
+            # celery_task.update_state(state='PROGRESS', meta={'progress': 95})
+            if self.update_progress(90):
+                return {'success': True}
+            else:
+                # clear images
+                for cache_img_fp in glob.glob(f'tmp/*{pic_name}*'):
+                    if '_save' not in cache_img_fp:
+                        os.remove(cache_img_fp)
+                else:
+                    return {'success': True, 'result': img_urls}
+
+        except Exception:
+            print('errrrr!!!!!!!!!!!!!!')
+            self.logging(
+                f"[predict fatal error][{datetime.datetime.now()}]:"
+                f"{traceback.format_exc()}",
+                f"logs/error.log")
+
+        return {'success': False, 'result': 'backend.generate.error.failed'}
 
 if __name__ == '__main__':
     sd = OperatorSD()
-    sd(mode='text2image',user_id='123',params={'batch_size':1, 'width':512, 'height':512}, origin='localhost')
+    sd.local_run(mode='text2image',user_id='123',params={'batch_size':1, 'width':512, 'height':512}, origin='localhost')
