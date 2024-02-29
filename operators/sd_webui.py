@@ -515,4 +515,4 @@ class OperatorSD(Operator):
 
 if __name__ == '__main__':
     sd = OperatorSD()
-    sd.local_run(mode='text2image',user_id='123',params={'batch_size':1, 'width':512, 'height':512}, origin='localhost')
+    sd.local_run(mode=['text2image'],user_id=['123'],params=[{'batch_size': 1, 'width': 512, 'height': 512}], origin='localhost')
