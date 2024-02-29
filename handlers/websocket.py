@@ -110,6 +110,27 @@ async def sd_genreate(request: Request, ws):
                     # dir_storage_path = CONFIG['storage_dirpath'][f'user_{category}_dir']
                     img_fp = os.path.join(dir_storage_path, query_params['uid'][0], query_params['imgpath'][0])
                     format_package['input_image'] = img_fp
+
+                elif package['mode'] == 'upscaler':
+                    parsed_url = urlparse('?'+package['params']['inputUrl'].split('?')[-1])
+                    # 获取查询参数
+                    query_params = parse_qs(parsed_url.query)
+
+                    if 'category' in query_params.keys() and 'imgpath' in query_params.keys():
+                        category = query_params['category'][0]
+                        category = category if category else "model"
+                        dir_storage_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], category)
+                        # dir_storage_path = CONFIG['storage_dirpath'][f'user_{category}_dir']
+                        img_fp = os.path.join(dir_storage_path, query_params['uid'][0], query_params['imgpath'][0])
+                        format_package['input_image'] = img_fp
+                    else:
+                        format_package['input_image'] = os.path.join(CONFIG['storage_dirpath']['user_upload'],
+                                                                     f"{user_id}.png")
+                        if package['mode'] == 'facer':
+                            format_package['input_image_tgt'] = os.path.join(
+                                CONFIG['storage_dirpath']['user_facer_upload'],
+                                f"{user_id}.png")
+
                 else:
                     format_package['input_image'] = os.path.join(CONFIG['storage_dirpath']['user_upload'], f"{user_id}.png")
                     if package['mode'] == 'facer':
