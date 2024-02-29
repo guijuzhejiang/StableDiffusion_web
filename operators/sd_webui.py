@@ -391,11 +391,11 @@ class OperatorSD(Operator):
             # log start
             print(f"{str(datetime.datetime.now())} operation start !!!!!!!!!!!!!!!!!!!!!!!!!!")
             clean_args = {k: v for k, v in kwargs.items() if k != 'input_image'}
-            clean_args['params'] = ujson.loads(kwargs['params'][0])
+            clean_args['params'] = kwargs['params'][0]
             print(clean_args)
             proceed_mode = kwargs['mode'][0]
             user_id = kwargs['user_id'][0]
-            params = ujson.loads(kwargs['params'][0])
+            params = kwargs['params'][0]
             origin = kwargs['origin']
 
             if 'imegaai' in origin:
@@ -443,11 +443,11 @@ class OperatorSD(Operator):
                 return {'success': True}
 
             # logging
-            self.logging(
-                f"[__call__][{datetime.datetime.now()}]:\n"
-                f"[{pic_name}]:\n"
-                f"{ujson.dumps(clean_args, indent=4)}",
-                f"logs/sd_webui.log")
+            # self.logging(
+            #     f"[__call__][{datetime.datetime.now()}]:\n"
+            #     f"[{pic_name}]:\n"
+            #     f"{ujson.dumps(clean_args, indent=4)}",
+            #     f"logs/sd_webui.log")
 
             if proceed_mode == 'facer':
                 input_image_paths = [kwargs['input_image'], kwargs['input_image_tgt']]
