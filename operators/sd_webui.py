@@ -424,7 +424,7 @@ class OperatorSD(Operator):
                 return {'success': True}
 
             # nsfw check
-            if proceed_mode != 'wallpaper':
+            if proceed_mode != 'wallpaper' and 'guijutech' not in origin:
                 if 'preset_index' in params.keys():
                     if self.predict_image(f"guiju/assets/preset/{proceed_mode}/{params['preset_index']}.jpg"):
                         return {'success': False, 'result': 'backend.check.error.nsfw'}
