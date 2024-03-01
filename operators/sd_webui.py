@@ -30,7 +30,6 @@ import numpy as np
 
 from guiju.magic_ai_conductor import MagicAiConductor
 from lib.celery_workshop.operator import Operator
-from modules.sd_samplers_kdiffusion import samplers_k_diffusion
 from utils.global_vars import CONFIG
 
 
@@ -107,7 +106,7 @@ class MagicText2Image(object):
         print("-------------------txt2image logger-----------------")
         print(f"sd_positive_prompt: {sd_positive_prompt}")
         print(f"sd_negative_prompt: {sd_negative_prompt}")
-        print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
+        # print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
         # 生成
         txt2img_res = self.operator.txt2img.txt2img(task_id,
                                                     sd_positive_prompt,
@@ -547,13 +546,13 @@ class OperatorSD(Operator):
                 client_origin = ''
 
             # nsfw check
-            if proceed_mode != 'wallpaper':
-                if 'preset_index' in params.keys():
-                    if self.predict_image(f"guiju/assets/preset/{proceed_mode}/{params['preset_index']}.jpg"):
-                        return {'success': False, 'result': 'backend.check.error.nsfw'}
-                else:
-                    if self.predict_image(kwargs['input_image']):
-                        return {'success': False, 'result': 'backend.check.error.nsfw'}
+            # if proceed_mode != 'wallpaper':
+            #     if 'preset_index' in params.keys():
+            #         if self.predict_image(f"guiju/assets/preset/{proceed_mode}/{params['preset_index']}.jpg"):
+            #             return {'success': False, 'result': 'backend.check.error.nsfw'}
+            #     else:
+            #         if self.predict_image(kwargs['input_image']):
+            #             return {'success': False, 'result': 'backend.check.error.nsfw'}
 
             # define task id
             pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
@@ -591,7 +590,7 @@ class OperatorSD(Operator):
             res = MagicText2Image(op)(
                                        params=params,
                                        user_id=user_id,
-                                       input_image=_input_image if proceed_mode not in ['wallpaper', 'facer'] else None,
+                                       input_image=None,
                                        input_image_paths=input_image_paths,
                                        pic_name=pic_name)
             if isinstance(res, dict):
