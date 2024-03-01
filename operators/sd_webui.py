@@ -471,7 +471,7 @@ class OperatorSD(Operator):
             res = self.magic_conductor(proceed_mode,
                                        params=params,
                                        user_id=user_id,
-                                       input_image=_input_image if proceed_mode not in ['wallpaper', 'facer'] else None,
+                                       input_image=_input_image if proceed_mode not in ['wallpaper', 'facer', 'text2image'] else None,
                                        input_image_paths=input_image_paths,
                                        pic_name=pic_name)
             if isinstance(res, dict):
