@@ -241,7 +241,7 @@ class MagicText2Image(object):
         params = kwargs['params']
         user_id = kwargs['user_id']
 
-        _batch_size = int(params['batch_size'])
+        _batch_size = int(params['batchSize'])
         _output_width = int(params['width'])
         _output_height = int(params['height'])
         _style = int(params['style'])
@@ -297,7 +297,7 @@ class MagicText2Image(object):
                                                     _output_height,
                                                     _output_width,
                                                     False,  # enable_hr
-                                                    0.5,  # denoising_strength
+                                                    0.7,  # denoising_strength
                                                     2.0,  # hr_scale
                                                     'Latent',  # hr_upscaler"
                                                     0,  # hr_second_pass_steps
@@ -306,7 +306,8 @@ class MagicText2Image(object):
                                                     sampler_index,  # hr_sampler_index
                                                     '',  # hr_prompt
                                                     '',  # hr_negative_prompt,
-                                                    override_settings_texts)[0][:_batch_size]
+                                                    override_settings_texts,
+                                                    0)[0][:_batch_size]
 
         # storage img
         # res = []
