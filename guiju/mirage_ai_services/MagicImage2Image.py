@@ -9,7 +9,7 @@ from guiju.mirage_ai_services.MagicText2Image import common_prompts, text2image_
 from modules.sd_samplers_kdiffusion import samplers_k_diffusion
 
 
-class MagicText2Image(object):
+class MagicImage2Image(object):
     operator = None
     sd_model_name = 'juggernautXL_v9Rundiffusionphoto2'
 
