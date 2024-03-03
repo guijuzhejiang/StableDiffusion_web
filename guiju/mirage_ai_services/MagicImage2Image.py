@@ -129,7 +129,7 @@ class MagicImage2Image(object):
                     ]
 
         # 生成
-        i2i_res = self.operator.img2img.img2img(task_id, 4, sd_positive_prompt, sd_negative_prompt,
+        i2i_res = self.operator.img2img.img2img(task_id, 0, sd_positive_prompt, sd_negative_prompt,
                                             prompt_styles,
                                             init_img,
                                             sketch,
@@ -151,6 +151,6 @@ class MagicImage2Image(object):
                                             img2img_batch_input_dir,
                                             img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
                                             override_settings_texts,
-                                            *sam_args)[0][:_batch_size]
+                                            *sam_args)
 
         return [x.convert('RGB') for x in i2i_res[0][:_batch_size]]
