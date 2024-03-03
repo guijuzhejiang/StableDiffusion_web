@@ -346,34 +346,4 @@ class MagicText2Image(object):
                                                     override_settings_texts,
                                                     *sam_args)
 
-        # storage img
-        # res = []
-        # for res_idx, res_img in enumerate(txt2img_res):
-        #     # hires
-        #     # extra upscaler
-        #     scales = _output_width / _buf_width
-        #     gfpgan_weight = 0
-        #     codeformer_visibility = 0
-        #
-        #     upscale_mode = 1  # 0:scale_by 1:scale_to
-        #     upscale_by = None
-        #     upscale_to_width = _output_width
-        #     upscale_to_height = _output_height
-        #     upscale_crop = True
-        #     upscaler_1_name = 'R-ESRGAN 4x+'
-        #     upscaler_2_name = 'None'
-        #     upscaler_2_visibility = 0
-        #     args = (
-        #         upscale_mode, upscale_by, upscale_to_width, upscale_to_height, upscale_crop, upscaler_1_name,
-        #         upscaler_2_name, upscaler_2_visibility,
-        #         gfpgan_weight, codeformer_visibility,
-        #         0)
-        #     self.operator.devices.torch_gc()
-        #     pp = self.operator.scripts_postprocessing.PostprocessedImage(res_img.convert("RGB"))
-        #     self.operator.scripts.scripts_postproc.run(pp, args)
-        #
-        #     self.operator.devices.torch_gc()
-        #
-        #     res.append(pp.image)
         return [x.convert('RGB') for x in txt2img_res[0][:_batch_size]]
-        # return res
