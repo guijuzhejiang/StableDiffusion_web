@@ -240,6 +240,7 @@ class MagicText2Image(object):
         # params, user_id, input_image, pic_name
         params = kwargs['params']
         user_id = kwargs['user_id']
+        pic_name = kwargs['pic_name']
 
         _batch_size = int(params['batchSize'])
         _output_width = int(params['width'])
@@ -279,6 +280,42 @@ class MagicText2Image(object):
         print(f"sd_positive_prompt: {sd_positive_prompt}")
         print(f"sd_negative_prompt: {sd_negative_prompt}")
         print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
+        self.operator.logging(
+            f"[{pic_name}]:\nsd_positive_prompt: {sd_positive_prompt}\nsd_negative_prompt: {sd_negative_prompt}\nSampling method: {samplers_k_diffusion[sampler_index]}",
+            f"logs/sd_webui.log")
+
+        # controlnet args
+        controlnet_args_unit1 = self.operator.scripts.scripts_img2img.alwayson_scripts[
+            self.operator.cnet_idx].get_default_ui_unit()
+        # depth
+        controlnet_args_unit1.enabled = False
+        controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
+        controlnet_args_unit3 = copy.deepcopy(controlnet_args_unit1)
+        sam_args = [0,
+                    False, {}, {},  # adetail args
+                    controlnet_args_unit1, controlnet_args_unit2, controlnet_args_unit3,  # controlnet args
+                    # sam
+                    False,  # inpaint_upload_enable
+                    False, 0, None,
+                    [],
+                    0,  # sam_output_chosen_mask
+                    False, [], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                    '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
+                    True, True, '',
+                    # tiled diffsuion
+                    False, 'MultiDiffusion', False, True,
+                    1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
+                    64, False, False, False, False, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                    False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                    '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                    False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
+                    '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                    False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                    # tiled_vae
+                    False, 256, 48, True, True, True,
+                    False
+                    ]
+
         # 生成
         txt2img_res = self.operator.txt2img.txt2img(task_id,
                                                     sd_positive_prompt,
@@ -307,7 +344,7 @@ class MagicText2Image(object):
                                                     '',  # hr_prompt
                                                     '',  # hr_negative_prompt,
                                                     override_settings_texts,
-                                                    0)[0][:_batch_size]
+                                                    *sam_args)
 
         # storage img
         # res = []
