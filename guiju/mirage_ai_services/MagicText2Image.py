@@ -242,7 +242,7 @@ class MagicText2Image(object):
         user_id = kwargs['user_id']
         pic_name = kwargs['pic_name']
 
-        _batch_size = int(params['batchSize'])
+        _batch_size = int(params['batch_size'])
         _output_width = int(params['width'])
         _output_height = int(params['height'])
         _style = int(params['style'])
