@@ -437,7 +437,7 @@ class OperatorSD(Operator):
             pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
 
             # read input image
-            if (proceed_mode == 'text2image' and params['mode'] == 'image2image'):
+            if proceed_mode != 'text2image' or (proceed_mode == 'text2image' and params['mode'] == 'text2image'):
                 if 'preset_index' in params.keys() and params['preset_index'] is not None and params[
                     'preset_index'] >= 0:
                     _input_image = Image.open(f"guiju/assets/preset/{proceed_mode}/{params['preset_index']}.jpg")
@@ -463,9 +463,7 @@ class OperatorSD(Operator):
                 f"{ujson.dumps(clean_args, indent=4)}",
                 f"logs/sd_webui.log")
 
-            if proceed_mode == 'facer':
-                input_image_paths = [kwargs['input_image'], kwargs['input_image_tgt']]
-            elif proceed_mode == 'hires' or proceed_mode == 'upscaler':
+            if proceed_mode == 'hires' or proceed_mode == 'upscaler':
                 input_image_paths = [kwargs['input_image']]
             else:
                 input_image_paths = None
@@ -473,7 +471,7 @@ class OperatorSD(Operator):
             res = self.magic_conductor(proceed_mode,
                                        params=params,
                                        user_id=user_id,
-                                       input_image=None if (proceed_mode == 'text2image' and params['mode'] == 'text2image') else _input_image,
+                                       input_image=_input_image if proceed_mode != 'text2image' or (proceed_mode == 'text2image' and params['mode'] == 'text2image') else None,
                                        input_image_paths=input_image_paths,
                                        pic_name=pic_name)
             if isinstance(res, dict):
