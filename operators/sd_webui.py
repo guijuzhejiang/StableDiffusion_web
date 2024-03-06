@@ -172,6 +172,7 @@ class MagicText2Image(object):
 class OperatorSD(Operator):
     """ stable diffusion """
     num = len(GPUtil.getGPUs())
+    # num = 1
     cache = True
     cuda = True
     enable = True
@@ -185,6 +186,7 @@ class OperatorSD(Operator):
     def __init__(self, gpu_idx=0):
         os.environ['ACCELERATE'] = 'True'
         os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_idx)
+        # os.environ['CUDA_VISIBLE_DEVICES'] = '1'
         print("use gpu:" + str(gpu_idx))
         super().__init__()
         # import lib
@@ -423,7 +425,7 @@ class OperatorSD(Operator):
                 return {'success': True}
 
             # nsfw check
-            if proceed_mode not in ['wallpaper'] and (proceed_mode == 'text2image' and params['mode'] == 'image2image') and 'guijutech' not in origin:
+            if (proceed_mode == 'text2image' and params['mode'] == 'image2image') and 'guijutech' not in origin:
                 if 'preset_index' in params.keys():
                     if self.predict_image(f"guiju/assets/preset/{proceed_mode}/{params['preset_index']}.jpg"):
                         return {'success': False, 'result': 'backend.check.error.nsfw'}
@@ -435,7 +437,7 @@ class OperatorSD(Operator):
             pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
 
             # read input image
-            if proceed_mode not in ['wallpaper', 'facer'] or (proceed_mode == 'text2image' and params['mode'] == 'image2image'):
+            if (proceed_mode == 'text2image' and params['mode'] == 'image2image'):
                 if 'preset_index' in params.keys() and params['preset_index'] is not None and params[
                     'preset_index'] >= 0:
                     _input_image = Image.open(f"guiju/assets/preset/{proceed_mode}/{params['preset_index']}.jpg")
