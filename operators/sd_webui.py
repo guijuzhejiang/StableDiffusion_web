@@ -437,7 +437,7 @@ class OperatorSD(Operator):
             pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
 
             # read input image
-            if proceed_mode != 'text2image' or (proceed_mode == 'text2image' and params['mode'] == 'text2image'):
+            if proceed_mode != 'text2image' or (proceed_mode == 'text2image' and params['mode'] == 'image2image'):
                 if 'preset_index' in params.keys() and params['preset_index'] is not None and params[
                     'preset_index'] >= 0:
                     _input_image = Image.open(f"guiju/assets/preset/{proceed_mode}/{params['preset_index']}.jpg")
@@ -471,7 +471,7 @@ class OperatorSD(Operator):
             res = self.magic_conductor(proceed_mode,
                                        params=params,
                                        user_id=user_id,
-                                       input_image=_input_image if proceed_mode != 'text2image' or (proceed_mode == 'text2image' and params['mode'] == 'text2image') else None,
+                                       input_image=_input_image if proceed_mode != 'text2image' or (proceed_mode == 'text2image' and params['mode'] == 'image2image') else None,
                                        input_image_paths=input_image_paths,
                                        pic_name=pic_name)
             if isinstance(res, dict):
