@@ -378,6 +378,6 @@ class MagicText2Image(object):
                                                 '',
                                                 '', '',
                                                 override_settings_texts,
-                                                *sam_args)[0][:_batch_size]
+                                                *sam_args)
 
         return [x.convert('RGB') for x in res[0][:_batch_size]]
