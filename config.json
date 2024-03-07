@@ -71,7 +71,7 @@
     "training_enable_tensorboard": false,
     "training_tensorboard_save_images": false,
     "training_tensorboard_flush_every": 120,
-    "sd_model_checkpoint": "chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting.safetensors [5269b1fa59]",
+    "sd_model_checkpoint": "juggernautXL_v9Rundiffusionphoto2.safetensors [c9e3e68f89]",
     "sd_checkpoint_cache": 0,
     "sd_vae_checkpoint_cache": 0,
     "sd_vae": "Automatic",
@@ -175,7 +175,7 @@
     "disabled_extensions": [],
     "disable_all_extensions": "none",
     "restore_config_state_file": "",
-    "sd_checkpoint_hash": "5269b1fa598028f8c2ee1615397fbabc20989c06687df55814db7a62d45a180e",
+    "sd_checkpoint_hash": "c9e3e68f89b8e38689e1097d4be4573cf308de4e3fd044c64ca697bdb4aa8bca",
     "ui_reorder_list": [
         "inpaint",
         "sampler",
