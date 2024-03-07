@@ -20,21 +20,21 @@ from utils.global_vars import CONFIG
 discount_dict = {
     'first_time': [
         {
-            'cn': '首次充值享8折优惠',
+            'zh': '首次充值享8折优惠',
             'en': 'Enjoy 20% off on your first recharge',
         },
         0.8
     ],
     'additional_notes': [
         {
-            'cn': '多个折扣可叠加',
+            'zh': '多个折扣可叠加',
             'en': 'Multiple discounts can be stacked',
         },
         None
     ],
     0: [
         {
-            'cn': '十二月优惠礼6折',
+            'zh': '十二月优惠礼6折',
             'en': 'December Special Gift 60% off',
         },
         0.6
@@ -50,7 +50,7 @@ class QueryDiscount(HTTPMethodView):
     async def post(self, request):
         try:
             user_id = request.form['user_id'][0]
-            lang = request.args.get("lang", 'cn')
+            lang = request.args.get("lang", 'zh')
 
             transaction_data = (
                 await request.app.ctx.supabase_client.atable("transaction").select("*").eq("user_id", user_id).eq(
