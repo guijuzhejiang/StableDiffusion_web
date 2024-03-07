@@ -126,7 +126,7 @@ class UserUpload(HTTPMethodView):
         else:
             return sanic_json({'success': True})
 
-    async def options(self):
+    async def options(self, request):
         return empty(status=204)
 
 
