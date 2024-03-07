@@ -9,6 +9,7 @@ from sanic.views import HTTPMethodView
 from lib.celery_workshop.wokrshop import WorkShop
 from lib.common.common_util import encrypt, generate_random_digits, uuid_to_number_string
 
+from sanic.response import empty
 from alibabacloud_dysmsapi20170525.client import Client as Dysmsapi20170525Client
 from alibabacloud_tea_openapi import models as open_api_models
 from alibabacloud_dysmsapi20170525 import models as dysmsapi_20170525_models
@@ -124,6 +125,9 @@ class UserUpload(HTTPMethodView):
             return sanic_json({'success': False, 'result': 'backend.api.error.upload'})
         else:
             return sanic_json({'success': True})
+
+    async def options(self):
+        return empty(status=204)
 
 
 class UserEditNickname(HTTPMethodView):
