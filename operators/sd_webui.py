@@ -474,6 +474,7 @@ class OperatorSD(Operator):
                                        user_id=user_id,
                                        input_image=_input_image if proceed_mode != 'text2image' or (proceed_mode == 'text2image' and params['mode'] == 'image2image') else None,
                                        input_image_paths=input_image_paths,
+                                       origin=origin,
                                        pic_name=pic_name)
             if isinstance(res, dict):
                 return res
