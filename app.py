@@ -4,7 +4,7 @@ import os
 
 from sanic import Blueprint
 from sanic import Sanic
-from sanic_cors import CORS
+# from sanic_cors import CORS
 
 from handlers.login import WeChatLogin, LineLogin, PasswordLogin, GoogleLogin
 from handlers.pay import WechatReqPayQRCode, PayPalCreateOrder, WechatQueryPayment, QueryBalance, QueryDiscount, \
@@ -15,10 +15,12 @@ from operators import OperatorSD
 from wechatpayv3 import WeChatPay, WeChatPayType
 
 from handlers.main import ImageProvider, FetchUserHistory, UserUpload, RevokeTask, SendCaptcha, \
-    VerifyCaptcha, UserEditNickname
+    VerifyCaptcha, UserEditNickname, FetchGallery
 from redis import asyncio as aioredis
 from handlers.websocket import sd_genreate, qinghua_genreate
 from utils.global_vars import CONFIG
+from supabase._async.client import AsyncClient as Client, create_client
+
 
 # Blueprint
 bp = Blueprint("ai_tasks")
@@ -44,6 +46,7 @@ bp.add_route(GoogleLogin.as_view(), "/google/login")
 bp.add_route(WechatQueryPayment.as_view(), "/wechat/query_payment")
 bp.add_route(ImageProvider.as_view(), "/user/image/fetch")
 bp.add_route(FetchUserHistory.as_view(), "/user/image/history")
+bp.add_route(FetchGallery.as_view(), "/gallery/fetch")
 bp.add_route(UserUpload.as_view(), "/user/image/upload")
 bp.add_route(UserEditNickname.as_view(), "/user/edit/nickname")
 
@@ -99,12 +102,13 @@ async def main_process_start(sanic_app, loop):
     # supabase_opt.postgrest_client_timeout = 20
     # sanic_app.ctx.supabase_client = create_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'],
     #                                               options=supabase_opt)
-    sanic_app.ctx.supabase_client = getattr(importlib.import_module('aiosupabase'), 'Supabase')
-    sanic_app.ctx.supabase_client.configure(
-        url=CONFIG['supabase']['url'],
-        key=CONFIG['supabase']['key'],
-        debug_enabled=True,
-    )
+    # sanic_app.ctx.supabase_client = getattr(importlib.import_module('aiosupabase'), 'Supabase')
+    # sanic_app.ctx.supabase_client.configure(
+    #     url=CONFIG['supabase']['url'],
+    #     key=CONFIG['supabase']['key'],
+    #     debug_enabled=True,
+    # )
+    sanic_app.ctx.supabase_client = await create_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'])
 
     sanic_app.ctx.redis_session = aioredis.from_url(f"redis://localhost:6379/1", decode_responses=True)
     sanic_app.ctx.redis_session_sms = aioredis.from_url(f"redis://localhost:6379/2", decode_responses=True)

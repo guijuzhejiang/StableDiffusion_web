@@ -12,7 +12,6 @@ opencv_python
 supabase
 fastapi
 loguru
-aiosupabase
 jinja2
 aiofile
 alibabacloud_dysmsapi20170525==2.0.24

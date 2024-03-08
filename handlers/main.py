@@ -98,6 +98,21 @@ class FetchUserHistory(HTTPMethodView):
             return sanic_json({'success': True, 'result': result})
 
 
+class FetchGallery(HTTPMethodView):
+    """
+        瀑布流图片
+    """
+    async def post(self, request):
+        try:
+            result = (await request.app.ctx.supabase_client.table("gallery").select("*").is_("user_id", "NULL").execute()).data
+
+        except Exception:
+            print(traceback.format_exc())
+            return sanic_json({'success': False, 'result': 'backend.api.error.history'})
+        else:
+            return sanic_json({'success': True, 'result': result})
+
+
 class UserUpload(HTTPMethodView):
     """
         用户上传图片
@@ -139,11 +154,11 @@ class UserEditNickname(HTTPMethodView):
             user_id = request.form['user_id'][0]
             new_nickname = request.form['nickname'][0]
 
-            # nick_taken_res = (await request.app.ctx.supabase_client.atable("account").select('id').eq("nick_name", new_nickname).execute()).data
+            # nick_taken_res = (await request.app.ctx.supabase_client.table("account").select('id').eq("nick_name", new_nickname).execute()).data
             # if len(nick_taken_res) > 0:
             #     return sanic_json({'success': False, 'message': 'backend.api.error.nickname'})
             # else:
-            res = (await request.app.ctx.supabase_client.atable("account").update({'nick_name': new_nickname}).eq("id", user_id).execute()).data
+            res = (await request.app.ctx.supabase_client.table("account").update({'nick_name': new_nickname}).eq("id", user_id).execute()).data
 
         except Exception:
             print(traceback.format_exc())
@@ -215,23 +230,23 @@ class VerifyCaptcha(HTTPMethodView):
                     #     f"{request.app.ctx.supabase_client.auth.url}/admin/users?per_page=9999", headers=h)
                     # check_response(response)
                     # users = response.json().get("users")
-                    id_res = (await request.app.ctx.supabase_client.atable("account").select("id").eq("phone", str(phone)).execute()).data
+                    id_res = (await request.app.ctx.supabase_client.table("account").select("id").eq("phone", str(phone)).execute()).data
                     alike_email = f"{phone}@sms.com"
                     password = encrypt(phone+'guijutech').lower()
 
                     # 如果没有查询到则注册
                     if len(id_res) == 0:
                         try:
-                            supabase_res = await request.app.ctx.supabase_client.auth.async_sign_up(email=alike_email,
+                            supabase_res = await request.app.ctx.supabase_client.auth.sign_up(email=alike_email,
                                                                                                     password=password)
-                            res = (await request.app.ctx.supabase_client.atable("account").update(
+                            res = (await request.app.ctx.supabase_client.table("account").update(
                                 {"locale": country, 'phone': phone, 'nick_name': f'user{uuid_to_number_string(str(supabase_res.user.id))}'}).eq("id", str(supabase_res.user.id)).execute()).data
 
                         except Exception:
                             print(str(traceback.format_exc()))
                             return sanic_json({'success': False, 'message': "backend.api.error.register"})
 
-                    account_info = (await request.app.ctx.supabase_client.atable("account").select(
+                    account_info = (await request.app.ctx.supabase_client.table("account").select(
                         "id,balance,locale,nick_name").eq("phone", phone).execute()).data
                     # 成功返回
                     return sanic_json({'success': True,

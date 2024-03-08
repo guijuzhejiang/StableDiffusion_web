@@ -59,17 +59,18 @@ def setup_cron(sub_id, target_date):
 
 async def run_main():
     try:
-        from aiosupabase import Supabase
+        from supabase._async.client import AsyncClient as Client, create_client
 
         subscription_id = sys.argv[1]
-        supabase_client = Supabase
-        supabase_client.configure(
-            url=CONFIG['supabase']['url'],
-            key=CONFIG['supabase']['key'],
-            debug_enabled=True,
-        )
-        subscription_data = supabase_client.table("subscription").select("*").eq('subscription_id',
-                                                                                 subscription_id).execute().data
+        # supabase_client = Supabase
+        # supabase_client.configure(
+        #     url=CONFIG['supabase']['url'],
+        #     key=CONFIG['supabase']['key'],
+        #     debug_enabled=True,
+        # )
+        supabase_client = await create_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'])
+        subscription_data = (await supabase_client.table("subscription").select("*").eq('subscription_id',
+                                                                                 subscription_id).execute()).data
         user_id = subscription_data[0]['user_id']
 
         if len(subscription_data) > 0:
@@ -88,7 +89,7 @@ async def run_main():
                 response = requests.get(f'https://sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}',
                                         headers=headers)
 
-            account = supabase_client.table("account").select("*").eq("id", user_id).execute().data[0]
+            account = (await supabase_client.table("account").select("*").eq("id", user_id).execute()).data[0]
             vip_level = account['vip_level'][0]
 
             if vip_level == 1:
@@ -99,17 +100,17 @@ async def run_main():
             #     add_balance = 624
 
             if response.json()['status'] == 'ACTIVE':
-                supabase_client.table("account").update({'balance': account['balance'] + add_balance})
-                data = supabase_client.atable("transaction").insert({"user_id": user_id,
+                await supabase_client.table("account").update({'balance': account['balance'] + add_balance}).execute()
+                data = await supabase_client.table("transaction").insert({"user_id": user_id,
                                                                      'out_trade_no': f'@subpaypal_{subscription_id}',
                                                                      'amount': add_balance,
                                                                      'is_plus': True,
                                                                      'status': 1,
-                                                                     })
+                                                                     }).execute()
 
             else:
-                supabase_client.table("account").update({'vip_level': 0})
-                data = supabase_client.table("subscription").delete().eq("user_id", user_id).execute()
+                await supabase_client.table("account").update({'vip_level': 0}).execute()
+                data = await supabase_client.table("subscription").delete().eq("user_id", user_id).execute()
 
     except Exception:
         logging(traceback.format_exc())
