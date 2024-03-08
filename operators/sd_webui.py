@@ -425,13 +425,14 @@ class OperatorSD(Operator):
                 return {'success': True}
 
             # nsfw check
-            if (proceed_mode == 'text2image' and params['mode'] == 'image2image') and 'guijutech' not in origin:
-                if 'preset_index' in params.keys():
-                    if self.predict_image(f"guiju/assets/preset/{proceed_mode}/{params['preset_index']}.jpg"):
-                        return {'success': False, 'result': 'backend.check.error.nsfw'}
-                else:
-                    if self.predict_image(kwargs['input_image']):
-                        return {'success': False, 'result': 'backend.check.error.nsfw'}
+            if not (proceed_mode == 'text2image' and params['mode'] == 'text2image'):
+                if 'guijutech' in origin or 'ingjp' in origin:
+                    if 'preset_index' in params.keys():
+                        if self.predict_image(f"guiju/assets/preset/{proceed_mode}/{params['preset_index']}.jpg"):
+                            return {'success': False, 'result': 'backend.check.error.nsfw'}
+                    else:
+                        if self.predict_image(kwargs['input_image']):
+                            return {'success': False, 'result': 'backend.check.error.nsfw'}
 
             # define task id
             pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])

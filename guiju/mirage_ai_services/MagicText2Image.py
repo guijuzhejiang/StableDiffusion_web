@@ -241,6 +241,7 @@ class MagicText2Image(object):
         params = kwargs['params']
         user_id = kwargs['user_id']
         pic_name = kwargs['pic_name']
+        origin = kwargs['origin']
 
         _mode = params['mode']
         _batch_size = int(params['batch_size'])
@@ -281,6 +282,8 @@ class MagicText2Image(object):
 
         task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
         _common_prompt = ','.join([x for x in common_prompts if x not in text2image_style_prompts[_style]['disallow']])
+        if 'guijutech' in origin or 'ingjp' in origin:
+            _common_prompt = '(NSFW:1.3),'+_common_prompt
         sd_positive_prompt = ','.join([text2image_style_prompts[_style]['prompt'], _prompt, _common_prompt])
 
         print("-------------------txt2image logger-----------------")
