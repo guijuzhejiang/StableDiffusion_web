@@ -33,7 +33,7 @@ async def sd_genreate(request: Request, ws):
             format_package = {'mode': [package['mode']],
                               'user_id': [package['user_id']],
                               'params': [ujson.dumps(params)],
-                              'origin': package['origin'],
+                              'origin': request.headers.origin,
                               'input_image': ''}
             if (CONFIG['local']):
                 print(format_package)
