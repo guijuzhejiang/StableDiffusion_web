@@ -284,6 +284,8 @@ class MagicText2Image(object):
         _common_prompt = ','.join([x for x in common_prompts if x not in text2image_style_prompts[_style]['disallow']])
         if 'guijutech' in origin or 'ingjp' in origin:
             sd_negative_prompt = '(NSFW:1.3),' + sd_negative_prompt_list[0]
+        else:
+            sd_negative_prompt = sd_negative_prompt_list[0]
         sd_positive_prompt = ','.join([text2image_style_prompts[_style]['prompt'], _prompt, _common_prompt])
 
         print("-------------------txt2image logger-----------------")
