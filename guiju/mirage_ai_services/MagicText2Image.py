@@ -16,7 +16,7 @@ from modules.sd_samplers_kdiffusion import samplers_k_diffusion
 common_prompts = ['masterpiece', 'best quality', 'breathtaking {prompt} . award-winning', 'professional',
                   '<lora:add-detail-xl:1>', '<lora:xl_more_art-full_v1:0.8>', '<lora:WowifierXL-V2:0.6>',
                   'extremely detailed']
-sd_negative_prompt = 'lowres,bad anatomy,bad hands,text,error,missing fingers,extra digit,fewer digits,cropped,worst quality,low quality,normal quality,jpeg artifacts,signature,watermark,username,blurry,artist name'
+sd_negative_prompt_list = ['lowres,bad anatomy,bad hands,text,error,missing fingers,extra digit,fewer digits,cropped,worst quality,low quality,normal quality,jpeg artifacts,signature,watermark,username,blurry,artist name']
 text2image_style_prompts = {
     0: {'label': 'None',
         'prompt': '',
@@ -283,7 +283,7 @@ class MagicText2Image(object):
         task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
         _common_prompt = ','.join([x for x in common_prompts if x not in text2image_style_prompts[_style]['disallow']])
         if 'guijutech' in origin or 'ingjp' in origin:
-            _common_prompt = '(NSFW:1.3),'+_common_prompt
+            sd_negative_prompt = '(NSFW:1.3),' + sd_negative_prompt_list[0]
         sd_positive_prompt = ','.join([text2image_style_prompts[_style]['prompt'], _prompt, _common_prompt])
 
         print("-------------------txt2image logger-----------------")
