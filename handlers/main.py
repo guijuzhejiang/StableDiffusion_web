@@ -104,7 +104,7 @@ class FetchGallery(HTTPMethodView):
     """
     async def post(self, request):
         try:
-            result = (await request.app.ctx.supabase_client.table("gallery").select("*").is_("user_id", "NULL").execute()).data
+            result = (await request.app.ctx.supabase_client.atable("gallery").select("*").is_("user_id", "NULL").execute()).data
 
         except Exception:
             print(traceback.format_exc())
@@ -154,11 +154,11 @@ class UserEditNickname(HTTPMethodView):
             user_id = request.form['user_id'][0]
             new_nickname = request.form['nickname'][0]
 
-            # nick_taken_res = (await request.app.ctx.supabase_client.table("account").select('id').eq("nick_name", new_nickname).execute()).data
+            # nick_taken_res = (await request.app.ctx.supabase_client.atable("account").select('id').eq("nick_name", new_nickname).execute()).data
             # if len(nick_taken_res) > 0:
             #     return sanic_json({'success': False, 'message': 'backend.api.error.nickname'})
             # else:
-            res = (await request.app.ctx.supabase_client.table("account").update({'nick_name': new_nickname}).eq("id", user_id).execute()).data
+            res = (await request.app.ctx.supabase_client.atable("account").update({'nick_name': new_nickname}).eq("id", user_id).execute()).data
 
         except Exception:
             print(traceback.format_exc())
@@ -230,7 +230,7 @@ class VerifyCaptcha(HTTPMethodView):
                     #     f"{request.app.ctx.supabase_client.auth.url}/admin/users?per_page=9999", headers=h)
                     # check_response(response)
                     # users = response.json().get("users")
-                    id_res = (await request.app.ctx.supabase_client.table("account").select("id").eq("phone", str(phone)).execute()).data
+                    id_res = (await request.app.ctx.supabase_client.atable("account").select("id").eq("phone", str(phone)).execute()).data
                     alike_email = f"{phone}@sms.com"
                     password = encrypt(phone+'guijutech').lower()
 
@@ -239,14 +239,14 @@ class VerifyCaptcha(HTTPMethodView):
                         try:
                             supabase_res = await request.app.ctx.supabase_client.auth.sign_up(email=alike_email,
                                                                                                     password=password)
-                            res = (await request.app.ctx.supabase_client.table("account").update(
+                            res = (await request.app.ctx.supabase_client.atable("account").update(
                                 {"locale": country, 'phone': phone, 'nick_name': f'user{uuid_to_number_string(str(supabase_res.user.id))}'}).eq("id", str(supabase_res.user.id)).execute()).data
 
                         except Exception:
                             print(str(traceback.format_exc()))
                             return sanic_json({'success': False, 'message': "backend.api.error.register"})
 
-                    account_info = (await request.app.ctx.supabase_client.table("account").select(
+                    account_info = (await request.app.ctx.supabase_client.atable("account").select(
                         "id,balance,locale,nick_name").eq("phone", phone).execute()).data
                     # 成功返回
                     return sanic_json({'success': True,

@@ -19,7 +19,7 @@ from handlers.main import ImageProvider, FetchUserHistory, UserUpload, RevokeTas
 from redis import asyncio as aioredis
 from handlers.websocket import sd_genreate, qinghua_genreate
 from utils.global_vars import CONFIG
-from supabase._async.client import AsyncClient as Client, create_client
+# from supabase._async.client import AsyncClient as Client, create_client
 
 
 # Blueprint
@@ -102,13 +102,13 @@ async def main_process_start(sanic_app, loop):
     # supabase_opt.postgrest_client_timeout = 20
     # sanic_app.ctx.supabase_client = create_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'],
     #                                               options=supabase_opt)
-    # sanic_app.ctx.supabase_client = getattr(importlib.import_module('aiosupabase'), 'Supabase')
-    # sanic_app.ctx.supabase_client.configure(
-    #     url=CONFIG['supabase']['url'],
-    #     key=CONFIG['supabase']['key'],
-    #     debug_enabled=True,
-    # )
-    sanic_app.ctx.supabase_client = await create_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'])
+    sanic_app.ctx.supabase_client = getattr(importlib.import_module('aiosupabase'), 'Supabase')
+    sanic_app.ctx.supabase_client.configure(
+        url=CONFIG['supabase']['url'],
+        key=CONFIG['supabase']['key'],
+        debug_enabled=True,
+    )
+    # sanic_app.ctx.supabase_client = await create_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'])
 
     sanic_app.ctx.redis_session = aioredis.from_url(f"redis://localhost:6379/1", decode_responses=True)
     sanic_app.ctx.redis_session_sms = aioredis.from_url(f"redis://localhost:6379/2", decode_responses=True)
