@@ -16,7 +16,8 @@ from modules.sd_samplers_kdiffusion import samplers_k_diffusion
 common_prompts = ['masterpiece', 'best quality', 'breathtaking {prompt} . award-winning', 'professional',
                   '<lora:add-detail-xl:1>', '<lora:xl_more_art-full_v1:0.8>', '<lora:WowifierXL-V2:0.6>',
                   '<lora:EnvyBetterHiresFixXL01:1>', 'ffaceDetail-SDXL',
-                  'extremely detailed', '<lora:extremely_detailed:1>']
+                  'extremely detailed', '<lora:extremely_detailed:1>',
+                  'Faetastic', '<lora:SDXLFaeTastic2400:0.8>']
 sd_negative_prompt_list = ['negative_hand-neg-SDXL', 'bwu-SDXL', 'EasyNegativeV2-SDXL', 'FastNegativeV2-SDXL']
 text2image_style_prompts = {
     0: {'label': 'None',
