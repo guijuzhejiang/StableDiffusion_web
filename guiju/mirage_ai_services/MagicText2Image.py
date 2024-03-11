@@ -30,7 +30,7 @@ text2image_style_prompts = {
         'prompt': 'anime artwork {prompt} . anime style,key visual,vibrant,studio anime',
         'disallow': []},
     3: {'label': '电影',
-        'prompt': 'cinematic film still {prompt} . shallow depth of field,vignette,high budget,bokeh,cinemascope,moody,epic,gorgeous,film grain,grainy,<lora:JuggerCineXL2:1>,Cinematic,Cinematic Shot',
+        'prompt': 'cinematic film still {prompt} . shallow depth of field,vignette,high budget,bokeh,cinemascope,moody,epic,gorgeous,film grain,grainy,<lora:JuggerCineXL2:1>,Cinematic,Cinematic Shot,Cinematic Lighting',
         'disallow': []},
     4: {'label': '漫画书',
         'prompt': 'comic {prompt} . graphic illustration,comic art,graphic novel art,vibrant',
