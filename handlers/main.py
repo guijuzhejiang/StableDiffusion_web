@@ -237,7 +237,7 @@ class VerifyCaptcha(HTTPMethodView):
                     # 如果没有查询到则注册
                     if len(id_res) == 0:
                         try:
-                            supabase_res = await request.app.ctx.supabase_client.auth.sign_up(email=alike_email,
+                            supabase_res = await request.app.ctx.supabase_client.auth.async_sign_up(email=alike_email,
                                                                                                     password=password)
                             res = (await request.app.ctx.supabase_client.atable("account").update(
                                 {"locale": country, 'phone': phone, 'nick_name': f'user{uuid_to_number_string(str(supabase_res.user.id))}'}).eq("id", str(supabase_res.user.id)).execute()).data

@@ -50,7 +50,7 @@ text2image_style_prompts = {
         'prompt': 'low-poly style {prompt} . low-poly game art,polygon mesh,jagged,blocky,wireframe edges,centered composition',
         'disallow': []},
     10: {'label': '霓虹朋克',
-         'prompt': 'neonpunk style {prompt} . cyberpunk,vaporwave,neon,vibes,vibrant,stunningly beautiful,crisp,sleek,ultramodern,magenta highlights,purple shadows,high contrast,cinematic,intricate,professional',
+         'prompt': 'neonpunk style {prompt} . cyberpunk,vaporwave,neon,vibes,vibrant,stunningly beautiful,crisp,sleek,ultramodern,magenta highlights,purple shadows,high contrast,cinematic,intricate,professional,glowneon,<lora:glowneon_xl_v1:1>',
          'disallow': []},
     11: {'label': '折纸',
          'prompt': 'origami style {prompt} . paper art,pleated paper,folded,origami art,pleats,cut and fold,centered composition',
