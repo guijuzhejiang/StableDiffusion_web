@@ -266,7 +266,7 @@ for index, row in df.iterrows():
         img = Image.open(row[1])
         w, h = img.size
         config = {'width': w, 'height': h, 'style': int(row[2])}
-        supabase_client.table("gallery").insert({"config": config, 'prompt':row[3], 'instance_id': instance_id, 'public': True}).execute()
+        supabase_client.table("gallery").insert({"config": config, 'prompt':row[3], 'instance_id': instance_id, 'public': True, 'category': 'text2image'}).execute()
     else:
         # instance_id已存在，不插入数据
         print(f'The instance_id:{instance_id} already exists. No data was inserted.')
