@@ -206,6 +206,7 @@ class OperatorSD(Operator):
         self.face_analysis.prepare(ctx_id=0, det_size=(640, 640), det_thresh=0.5)
         self.faceid_predictor = getattr(importlib.import_module('guiju.faceid.faceid_predictor'), 'FaceIDPredictor')(
             self.face_analysis)
+        self.predict_image = getattr(importlib.import_module('guiju.predictor_opennsfw2'), 'predict_image')
 
         # import lib
         self.script_callbacks = importlib.import_module('modules.script_callbacks')
