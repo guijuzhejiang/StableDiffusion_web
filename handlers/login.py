@@ -146,21 +146,21 @@ class WeChatLogin(HTTPMethodView):
 
                             user_id = supabase_res.user.id
                             # save avatar
-                            try:
-                                # 获取微信头像
-                                response_uinfo = await client.get(
-                                    f'https://api.weixin.qq.com/sns/userinfo?access_token={wechat_data["access_token"]}&openid={wechat_data["openid"]}')
-                                if response_uinfo.status_code == 200:
-                                    wechat_uinfo = response_uinfo.json()
-
-                                avatar_response = await client.get(wechat_uinfo['headimgurl'])
-                                async with aiofile.async_open(
-                                        os.path.join(CONFIG['storage_dirpath']['user_account_avatar'],
-                                                     f"{supabase_res.user.id}.jpg"), 'wb') as file:
-                                    await file.write(avatar_response.body)
-
-                            except Exception:
-                                print(str(traceback.format_exc()))
+                            # try:
+                            #     # 获取微信头像
+                            #     response_uinfo = await client.get(
+                            #         f'https://api.weixin.qq.com/sns/userinfo?access_token={wechat_data["access_token"]}&openid={wechat_data["openid"]}')
+                            #     if response_uinfo.status_code == 200:
+                            #         wechat_uinfo = response_uinfo.json()
+                            #
+                            #     avatar_response = await client.get(wechat_uinfo['headimgurl'])
+                            #     async with aiofile.async_open(
+                            #             os.path.join(CONFIG['storage_dirpath']['user_account_avatar'],
+                            #                          f"{supabase_res.user.id}.jpg"), 'wb') as file:
+                            #         await file.write(avatar_response.body)
+                            #
+                            # except Exception:
+                            #     print(str(traceback.format_exc()))
 
                             # result_user['avatar'] = f'service/user/image/fetch?category=account_avatar&uid={str(supabase_res.user.id)}'
                             data = (await request.app.ctx.supabase_client.atable("account").update(

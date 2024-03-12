@@ -18,7 +18,7 @@ common_prompts = ['masterpiece', 'best quality', 'breathtaking {prompt} . award-
                   '<lora:EnvyBetterHiresFixXL01:1>', 'ffaceDetail-SDXL',
                   'extremely detailed', '<lora:extremely_detailed:1>',
                   'Faetastic', '<lora:SDXLFaeTastic2400:0.8>']
-sd_negative_prompt_list = ['negative_hand-neg-SDXL', 'bwu-SDXL', 'EasyNegativeV2-SDXL', 'FastNegativeV2-SDXL', 'unaestheticXL_Alb2']
+sd_negative_prompt_list = ['negative_hand-neg-SDXL', 'bwu-SDXL', 'EasyNegativeV2-SDXL', 'FastNegativeV2-SDXL']
 text2image_style_prompts = {
     0: {'label': 'None',
         'prompt': '',
