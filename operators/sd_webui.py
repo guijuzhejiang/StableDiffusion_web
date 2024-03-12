@@ -171,8 +171,8 @@ class MagicText2Image(object):
 
 class OperatorSD(Operator):
     """ stable diffusion """
-    # num = len(GPUtil.getGPUs())
-    num = 1
+    num = len(GPUtil.getGPUs())
+    # num = 1
     cache = True
     cuda = True
     enable = True
