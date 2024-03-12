@@ -21,7 +21,7 @@ common_prompts = ['masterpiece', 'best quality', 'breathtaking {prompt} . award-
                   'Faetastic', '<lora:SDXLFaeTastic2400:0.8>']
 sd_negative_prompt_list = ['negative_hand-neg-SDXL', 'bwu-SDXL', 'EasyNegativeV2-SDXL', 'FastNegativeV2-SDXL']
 text2image_style_prompts = {
-    0: {'label': 'None',
+    0: {'label': 'none',
         'prompt': '',
         'disallow': []},
     1: {'label': '胶片',
@@ -33,10 +33,10 @@ text2image_style_prompts = {
     3: {'label': '电影',
         'prompt': 'cinematic film still {prompt} . shallow depth of field,vignette,high budget,bokeh,cinemascope,moody,epic,gorgeous,film grain,grainy,<lora:JuggerCineXL2:1>,Cinematic,Cinematic Shot,Cinematic Lighting',
         'disallow': []},
-    4: {'label': '漫画书',
+    4: {'label': '漫画',
         'prompt': 'comic {prompt} . graphic illustration,comic art,graphic novel art,vibrant',
         'disallow': []},
-    5: {'label': '手工粘土',
+    5: {'label': '橡皮泥',
         'prompt': 'play-doh style {prompt} . sculpture,clay art,centered composition,Claymation',
         'disallow': []},
     6: {'label': '梦幻',
@@ -45,7 +45,7 @@ text2image_style_prompts = {
     7: {'label': '等距',
         'prompt': 'isometric style {prompt} . vibrant,beautiful,crisp,intricate',
         'disallow': []},
-    8: {'label': '线条艺术',
+    8: {'label': '线条',
         'prompt': 'line art drawing {prompt} . professional,sleek,modern,minimalist,graphic,line art,vector graphics',
         'disallow': ['<lora:xl_more_art-full_v1:0.8>', '<lora:WowifierXL-V2:0.6>', 'extremely detailed']},
     9: {'label': '多边形',
@@ -84,7 +84,7 @@ text2image_style_prompts = {
     20: {'label': '抽象派',
          'prompt': 'abstract expressionist painting {prompt} . energetic brushwork,bold colors,abstract forms,expressive,emotional',
          'disallow': ['<lora:xl_more_art-full_v1:0.8>', '<lora:WowifierXL-V2:0.6>', 'extremely detailed']},
-    21: {'label': '装饰艺术',
+    21: {'label': '装饰',
          'prompt': 'Art Deco style {prompt} . geometric shapes,bold colors,luxurious,elegant,decorative,symmetrical,ornate,Interior Photography',
          'disallow': []},
     22: {'label': '色块拼图',
@@ -108,7 +108,7 @@ text2image_style_prompts = {
     28: {'label': '蒸汽朋克',
          'prompt': 'steampunk style {prompt} . mechanical,intricate',
          'disallow': []},
-    29: {'label': '水彩',
+    29: {'label': '水彩画',
          'prompt': 'watercolor painting {prompt} . vibrant,beautiful,painterly,textural,artistic',
          'disallow': []},
     30: {'label': '生物赛博',
@@ -141,7 +141,7 @@ text2image_style_prompts = {
     39: {'label': '格斗游戏',
          'prompt': 'fighting game style {prompt} . dynamic,vibrant,action-packed,detailed character design,reminiscent of fighting video games',
          'disallow': []},
-    40: {'label': 'GTA',
+    40: {'label': '侠盗飞车',
          'prompt': 'GTA-style artwork {prompt} . satirical,exaggerated,pop art style,vibrant colors,iconic characters,action-packed',
          'disallow': []},
     41: {'label': '马里奥',
@@ -153,10 +153,10 @@ text2image_style_prompts = {
     43: {'label': '宝可梦',
          'prompt': 'Pokémon style {prompt} . vibrant,cute,anime,fantasy,reminiscent of Pokémon series',
          'disallow': []},
-    44: {'label': 'Street Fighter',
+    44: {'label': '街头霸王',
          'prompt': 'Street Fighter style {prompt} . vibrant,dynamic,arcade,2D fighting game,reminiscent of Street Fighter series',
          'disallow': []},
-    45: {'label': 'disco',
+    45: {'label': '迪斯科',
          'prompt': 'disco-themed {prompt} . vibrant,groovy,retro 70s style,shiny disco balls,neon lights,dance floor',
          'disallow': []},
     46: {'label': '世界末日',
@@ -200,7 +200,7 @@ text2image_style_prompts = {
     59: {'label': '时尚赛博',
          'prompt': 'techwear fashion {prompt} . futuristic,cyberpunk,sleek',
          'disallow': []},
-    60: {'label': '部落',
+    60: {'label': '原始部落',
          'prompt': 'tribal style {prompt} . indigenous,ethnic,traditional patterns,bold,natural colors',
          'disallow': []},
     61: {'label': '复杂单色',
@@ -288,7 +288,7 @@ class MagicText2Image(object):
         sd_negative_prompt = ','.join([x for x in sd_negative_prompt_list])
         if 'guijutech' in origin or 'ingjp' in origin:
             sd_negative_prompt = '(NSFW:1.3),' + sd_negative_prompt
-        sd_positive_prompt = ','.join([text2image_style_prompts[_style]['prompt'], _prompt, _common_prompt])
+        sd_positive_prompt = ','.join([x for x in [text2image_style_prompts[_style]['prompt'], _prompt, _common_prompt] if x != ''])
 
         print("-------------------txt2image logger-----------------")
         print(f"sd_positive_prompt: {sd_positive_prompt}")
