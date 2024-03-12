@@ -346,14 +346,14 @@ class OperatorSD(Operator):
         self.scripts.scripts_img2img.alwayson_scripts[-3].args_to = 0
 
         # refiner 3 args
-        self.scripts.scripts_txt2img.alwayson_scripts[-2].args_from = 139
-        self.scripts.scripts_txt2img.alwayson_scripts[-2].args_to = 142
+        self.scripts.scripts_img2img.alwayson_scripts[-2].args_from = 139
+        self.scripts.scripts_img2img.alwayson_scripts[-2].args_to = 142
         self.scripts.scripts_txt2img.alwayson_scripts[-2].args_from = 139
         self.scripts.scripts_txt2img.alwayson_scripts[-2].args_to = 142
 
         # seed 6 args
-        self.scripts.scripts_txt2img.alwayson_scripts[-1].args_from = 142
-        self.scripts.scripts_txt2img.alwayson_scripts[-1].args_to = 148
+        self.scripts.scripts_img2img.alwayson_scripts[-1].args_from = 142
+        self.scripts.scripts_img2img.alwayson_scripts[-1].args_to = 148
         self.scripts.scripts_txt2img.alwayson_scripts[-1].args_from = 142
         self.scripts.scripts_txt2img.alwayson_scripts[-1].args_to = 148
 
