@@ -11,6 +11,7 @@ from PIL import Image
 
 from lora_config import reference_dir
 from modules.sd_samplers_kdiffusion import samplers_k_diffusion
+from utils.global_vars import CONFIG
 
 lora_mirage_dict = {
     12: {'label': '侏罗纪',
@@ -57,7 +58,7 @@ lora_mirage_dict = {
 
 class MagicMirage(object):
     operator = None
-    sd_model_name = 'dreamshaper_8'
+    sd_model_name = 'v1-5-pruned-emaonly.safetensors' if CONFIG['local'] else 'dreamshaper_8'
 
     denoising_strength_min = 0.5
     denoising_strength_max = 1
@@ -135,7 +136,7 @@ class MagicMirage(object):
         init_img_inpaint = None
         init_mask_inpaint = None
         steps = 20
-        sampler_index = 15  # sampling method modules/sd_samplers_kdiffusion.py
+        sampler_index = 'DPM++ 2S a Karras'  # sampling method modules/sd_samplers_kdiffusion.py
         mask_blur = 0
         mask_alpha = 0
         inpainting_fill = 1
@@ -165,7 +166,7 @@ class MagicMirage(object):
 
         # controlnet args
         controlnet_args_unit1 = self.operator.scripts.scripts_img2img.alwayson_scripts[
-            self.operator.cnet_idx].get_default_ui_unit()
+            self.operator.cnet_idx+1].get_default_ui_unit()
         controlnet_args_unit1.batch_images = ''
         controlnet_args_unit1.control_mode = 'My prompt is more important'
         controlnet_args_unit1.enabled = True
@@ -241,7 +242,15 @@ class MagicMirage(object):
                     False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
                     # tiled_vae
                     False if _selected_place == 12 or _selected_place == 6 else True, 256, 48, True, True, True,
-                    False
+                    False,
+                    # refiner
+                    False, '', 0.8,
+                    # seed
+                    -1, False, -1, 0, 0, 0,
+                    # soft inpainting
+                    False, 1, 0.5, 4, 0, 0.5, 2,
+                    # tiled global
+                    False, 'DemoFusion', True, 128, 64, 4, 2, False, 10, 1, 1, 64, False, True, 3, 1, 1
                     ]
 
         # celery_task.update_state(state='PROGRESS', meta={'progress': 50})
@@ -258,30 +267,38 @@ class MagicMirage(object):
         print(f"sd_negative_prompt: {sd_negative_prompt}")
         print(f"dino_prompt: person")
         print(f"denoising_strength: {denoising_strength}")
-        print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
+        print(f"Sampling method: {sampler_index}")
         # 生成
         res = self.operator.img2img.img2img(task_id, 4, sd_positive_prompt, sd_negative_prompt,
                                             prompt_styles,
                                             init_img,
-                                            sketch,
-                                            init_img_with_mask, inpaint_color_sketch, inpaint_color_sketch_orig,
-                                            init_img_inpaint, init_mask_inpaint,
-                                            steps, sampler_index, mask_blur, mask_alpha, inpainting_fill,
-                                            restore_faces,
-                                            tiling,
-                                            n_iter, batch_size, cfg_scale, image_cfg_scale,
+                                            None,  # sketch, ,
+                                            None,  # init_img_with_mask
+                                            None,  # inpaint_color_sketch
+                                            None,  # inpaint_color_sketch_orig
+                                            None,  # init_img_inpaint
+                                            None,  # init_mask_inpaint
+                                            steps,
+                                            'DPM++ 2M Karras',
+                                            mask_blur,  # mask_blur
+                                            mask_alpha,  # mask_alpha
+                                            inpainting_fill,  # inpainting_fill
+                                            n_iter, _batch_size, cfg_scale, image_cfg_scale,
                                             denoising_strength,
-                                            seed,
-                                            subseed,
-                                            subseed_strength, seed_resize_from_h, seed_resize_from_w,
-                                            seed_enable_extras,
-                                            selected_scale_tab, _output_model_height, _output_model_width, scale_by,
-                                            resize_mode,
-                                            inpaint_full_res,
-                                            inpaint_full_res_padding, inpainting_mask_invert,
-                                            img2img_batch_input_dir,
-                                            img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
-                                            override_settings_texts,
-                                            *sam_args)[0][:_batch_size]
+                                            selected_scale_tab,  # selected_scale_tab
+                                            _output_model_height, _output_model_width,
+                                            scale_by,  # scale_by
+                                            resize_mode,  # resize_mode
+                                            inpaint_full_res,  # inpaint_full_res
+                                            inpaint_full_res_padding,  # inpaint_full_res_padding
+                                            inpainting_mask_invert,  # inpainting_mask_invert
+                                            img2img_batch_input_dir,  # img2img_batch_input_dir
+                                            img2img_batch_output_dir,  # img2img_batch_input_dir
+                                            img2img_batch_inpaint_mask_dir,  # img2img_batch_input_dir
+                                            override_settings_texts,  # override_settings_texts
+                                            False,  # img2img_batch_use_png_info
+                                            [],  # img2img_batch_png_info_props
+                                            '',  # img2img_batch_png_info_dir
+                                            *sam_args)
 
-        return res
+        return res[0][:_batch_size]

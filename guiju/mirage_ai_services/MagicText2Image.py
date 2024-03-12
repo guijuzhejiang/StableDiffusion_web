@@ -12,6 +12,7 @@ from PIL import Image
 from guiju.mirage_ai_services.MagicMirage import lora_mirage_dict
 from lora_config import reference_dir
 from modules.sd_samplers_kdiffusion import samplers_k_diffusion
+from utils.global_vars import CONFIG
 
 common_prompts = ['masterpiece', 'best quality', 'breathtaking {prompt} . award-winning', 'professional',
                   '<lora:add-detail-xl:1>', '<lora:xl_more_art-full_v1:0.8>', '<lora:WowifierXL-V2:0.6>',
@@ -46,7 +47,7 @@ text2image_style_prompts = {
         'disallow': []},
     8: {'label': '线条',
         'prompt': 'line art drawing {prompt} . professional,sleek,modern,minimalist,graphic,line art,vector graphics',
-        'disallow': ['<lora:xl_more_art-full_v1:0.8>','<lora:WowifierXL-V2:0.6>','extremely detailed']},
+        'disallow': ['<lora:xl_more_art-full_v1:0.8>', '<lora:WowifierXL-V2:0.6>', 'extremely detailed']},
     9: {'label': '多边形',
         'prompt': 'low-poly style {prompt} . low-poly game art,polygon mesh,jagged,blocky,wireframe edges,centered composition',
         'disallow': []},
@@ -61,7 +62,7 @@ text2image_style_prompts = {
          'disallow': []},
     13: {'label': '像素风',
          'prompt': 'pixel-art {prompt} . low-res,blocky,pixel art style,8-bit graphics',
-         'disallow': ['<lora:xl_more_art-full_v1:0.8>','<lora:WowifierXL-V2:0.6>','extremely detailed']},
+         'disallow': ['<lora:xl_more_art-full_v1:0.8>', '<lora:WowifierXL-V2:0.6>', 'extremely detailed']},
     14: {'label': '汽车',
          'prompt': 'Automotive advertisement style {prompt} . Sleek,dynamic,professional,commercial,vehicle-focused,high-resolution,Car Photography',
          'disallow': []},
@@ -82,7 +83,7 @@ text2image_style_prompts = {
          'disallow': []},
     20: {'label': '抽象派',
          'prompt': 'abstract expressionist painting {prompt} . energetic brushwork,bold colors,abstract forms,expressive,emotional',
-         'disallow': ['<lora:xl_more_art-full_v1:0.8>','<lora:WowifierXL-V2:0.6>','extremely detailed']},
+         'disallow': ['<lora:xl_more_art-full_v1:0.8>', '<lora:WowifierXL-V2:0.6>', 'extremely detailed']},
     21: {'label': '装饰',
          'prompt': 'Art Deco style {prompt} . geometric shapes,bold colors,luxurious,elegant,decorative,symmetrical,ornate,Interior Photography',
          'disallow': []},
@@ -94,16 +95,16 @@ text2image_style_prompts = {
          'disallow': []},
     24: {'label': '印象派',
          'prompt': 'impressionist painting {prompt} . loose brushwork,vibrant color,light and shadow play,captures feeling over form',
-         'disallow': ['<lora:xl_more_art-full_v1:0.8>','<lora:WowifierXL-V2:0.6>','extremely detailed']},
+         'disallow': ['<lora:xl_more_art-full_v1:0.8>', '<lora:WowifierXL-V2:0.6>', 'extremely detailed']},
     25: {'label': '点彩画',
          'prompt': 'pointillism style {prompt} . composed entirely of small,distinct dots of color,vibrant',
          'disallow': []},
     26: {'label': '流行艺术',
          'prompt': 'Pop Art style {prompt} . bright colors,bold outlines,popular culture themes,ironic or kitsch',
-         'disallow': ['<lora:xl_more_art-full_v1:0.8>','<lora:WowifierXL-V2:0.6>','extremely detailed']},
+         'disallow': ['<lora:xl_more_art-full_v1:0.8>', '<lora:WowifierXL-V2:0.6>', 'extremely detailed']},
     27: {'label': '迷幻',
          'prompt': 'psychedelic style {prompt} . vibrant colors,swirling patterns,abstract forms,surreal,trippy',
-         'disallow': ['<lora:xl_more_art-full_v1:0.8>','<lora:WowifierXL-V2:0.6>','extremely detailed']},
+         'disallow': ['<lora:xl_more_art-full_v1:0.8>', '<lora:WowifierXL-V2:0.6>', 'extremely detailed']},
     28: {'label': '蒸汽朋克',
          'prompt': 'steampunk style {prompt} . mechanical,intricate',
          'disallow': []},
@@ -179,7 +180,7 @@ text2image_style_prompts = {
     52: {'label': '魔幻',
          'prompt': 'lovecraftian horror {prompt} . eldritch,cosmic horror,unknown,mysterious,surreal',
          'disallow': []},
-    53: {'label': '阴森','prompt': 'macabre style {prompt} . dark,gothic,grim,haunting',
+    53: {'label': '阴森', 'prompt': 'macabre style {prompt} . dark,gothic,grim,haunting',
          'disallow': []},
     54: {'label': '摩天高楼',
          'prompt': 'metropolis-themed {prompt} . urban,cityscape,skyscrapers,modern,futuristic',
@@ -207,16 +208,16 @@ text2image_style_prompts = {
          'disallow': []},
     62: {'label': '平面剪纸',
          'prompt': 'flat papercut style {prompt} . silhouette,clean cuts,paper,sharp edges,minimalist,color block',
-         'disallow': ['<lora:xl_more_art-full_v1:0.8>','<lora:WowifierXL-V2:0.6>','extremely detailed']},
+         'disallow': ['<lora:xl_more_art-full_v1:0.8>', '<lora:WowifierXL-V2:0.6>', 'extremely detailed']},
     63: {'label': '立体剪纸',
          'prompt': 'kirigami representation of {prompt} . 3D,paper folding,paper cutting,Japanese,intricate,symmetrical,precision,clean lines',
-         'disallow': ['<lora:xl_more_art-full_v1:0.8>','<lora:WowifierXL-V2:0.6>','extremely detailed']},
+         'disallow': ['<lora:xl_more_art-full_v1:0.8>', '<lora:WowifierXL-V2:0.6>', 'extremely detailed']},
     64: {'label': '纸浆',
          'prompt': 'paper mache representation of {prompt} . 3D,sculptural,textured,handmade,vibrant,fun',
-         'disallow': ['<lora:xl_more_art-full_v1:0.8>','<lora:WowifierXL-V2:0.6>','extremely detailed']},
+         'disallow': ['<lora:xl_more_art-full_v1:0.8>', '<lora:WowifierXL-V2:0.6>', 'extremely detailed']},
     65: {'label': '剪纸拼图',
          'prompt': 'papercut collage of {prompt} . mixed media,textured paper,overlapping,asymmetrical,abstract,vibrant',
-         'disallow': ['<lora:xl_more_art-full_v1:0.8>','<lora:WowifierXL-V2:0.6>','extremely detailed']},
+         'disallow': ['<lora:xl_more_art-full_v1:0.8>', '<lora:WowifierXL-V2:0.6>', 'extremely detailed']},
     66: {'label': '地外文明',
          'prompt': 'alien-themed {prompt} . extraterrestrial,cosmic,otherworldly,mysterious,sci-fi',
          'disallow': []},
@@ -301,7 +302,7 @@ class MagicText2Image(object):
 
         # controlnet args
         controlnet_args_unit1 = self.operator.scripts.scripts_img2img.alwayson_scripts[
-            self.operator.cnet_idx].get_default_ui_unit()
+            self.operator.cnet_idx + 1].get_default_ui_unit()
         # depth
         controlnet_args_unit1.enabled = False
         controlnet_args_unit2 = copy.deepcopy(controlnet_args_unit1)
@@ -328,7 +329,15 @@ class MagicText2Image(object):
                     False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
                     # tiled_vae
                     False, 256, 48, True, True, True,
-                    False
+                    False,
+                    # refiner
+                    False, '', 0.8,
+                    # seed
+                    -1, False, -1, 0, 0, 0,
+                    # soft inpainting
+                    False, 1, 0.5, 4, 0, 0.5, 2,
+                    # tiled global
+                    False, 'DemoFusion', True, 128, 64, 4, 2, False, 10, 1, 1, 64, False, True, 3, 1, 1
                     ]
 
         # 生成
@@ -338,15 +347,10 @@ class MagicText2Image(object):
                                                 sd_negative_prompt,
                                                 prompt_styles,
                                                 steps,
-                                                sampler_index,
-                                                restore_faces,
-                                                tiling,
+                                                'DPM++ 2M Karras',
                                                 n_iter,
-                                                _batch_size,  # batch size
+                                                _batch_size,
                                                 cfg_scale,
-                                                seed, subseed, subseed_strength, seed_resize_from_h,
-                                                seed_resize_from_w,
-                                                seed_enable_extras,
                                                 _output_height,
                                                 _output_width,
                                                 False,  # enable_hr
@@ -356,7 +360,8 @@ class MagicText2Image(object):
                                                 0,  # hr_second_pass_steps
                                                 0,  # hr_resize_x
                                                 0,  # hr_resize_y
-                                                sampler_index,  # hr_sampler_index
+                                                '',  # hr_checkpoint_name
+                                                '',  # hr_sampler_name
                                                 '',  # hr_prompt
                                                 '',  # hr_negative_prompt,
                                                 override_settings_texts,
@@ -365,25 +370,33 @@ class MagicText2Image(object):
             res = self.operator.img2img.img2img(task_id, 0, sd_positive_prompt, sd_negative_prompt,
                                                 prompt_styles,
                                                 _input_image,
-                                                None,
-                                                None, None, None,
-                                                None, None,
-                                                steps, sampler_index, 0, 0, 1,
-                                                restore_faces,
-                                                tiling,
+                                                None,  # sketch, ,
+                                                None,  # init_img_with_mask
+                                                None,  # inpaint_color_sketch
+                                                None,  # inpaint_color_sketch_orig
+                                                None,  # init_img_inpaint
+                                                None,  # init_mask_inpaint
+                                                steps,
+                                                'DPM++ 2M Karras',
+                                                0,  # mask_blur
+                                                0,  # mask_alpha
+                                                1,  # inpainting_fill
                                                 n_iter, _batch_size, cfg_scale, 1.5,
                                                 denoising_strength,
-                                                seed,
-                                                subseed,
-                                                subseed_strength, seed_resize_from_h, seed_resize_from_w,
-                                                seed_enable_extras,
-                                                0, _output_height, _output_width, 1,
-                                                0,
-                                                0,
-                                                32, 1,
-                                                '',
-                                                '', '',
-                                                override_settings_texts,
+                                                0,  # selected_scale_tab
+                                                _output_height, _output_width,
+                                                1,  # scale_by
+                                                0,  # resize_mode
+                                                False,  # inpaint_full_res
+                                                32,  # inpaint_full_res_padding
+                                                0,  # inpainting_mask_invert
+                                                '',  # img2img_batch_input_dir
+                                                '',  # img2img_batch_input_dir
+                                                '',  # img2img_batch_input_dir
+                                                override_settings_texts,  # override_settings_texts
+                                                False,  # img2img_batch_use_png_info
+                                                [],  # img2img_batch_png_info_props
+                                                '',  # img2img_batch_png_info_dir
                                                 *sam_args)
 
         return [x.convert('RGB') for x in res[0][:_batch_size]]

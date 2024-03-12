@@ -12,11 +12,12 @@ from PIL import Image
 from guiju.mirage_ai_services.MagicMirage import lora_mirage_dict
 from lora_config import reference_dir
 from modules.sd_samplers_kdiffusion import samplers_k_diffusion
+from utils.global_vars import CONFIG
 
 
 class MagicWallpaper(object):
     operator = None
-    sd_model_name = 'dreamshaper_8'
+    sd_model_name = 'v1-5-pruned-emaonly.safetensors' if CONFIG['local'] else 'dreamshaper_8'
 
     def __init__(self, operator):
         self.operator = operator

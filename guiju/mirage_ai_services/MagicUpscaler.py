@@ -34,24 +34,21 @@ class MagicUpscaler(object):
         # else:
         #     _input_image_mode = 'facer'
         # hires
-        if _input_image_mode == 'avatar' or _input_image_mode == 'mirage':
-            if self.operator.shared.sd_model.sd_checkpoint_info.model_name != 'dreamshaper_8':
-                self.operator.shared.change_sd_model('dreamshaper_8')
-        elif _input_image_mode == 'facer':
-            pass
-        else:
-            if self.operator.shared.sd_model.sd_checkpoint_info.model_name != 'chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting':
-                self.operator.shared.change_sd_model('chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting')
+        # if _input_image_mode == 'avatar' or _input_image_mode == 'mirage':
+        #     if self.operator.shared.sd_model.sd_checkpoint_info.model_name != 'dreamshaper_8':
+        #         self.operator.shared.change_sd_model('dreamshaper_8')
+        # elif _input_image_mode == 'facer':
+        #     pass
+        # else:
+        #     if self.operator.shared.sd_model.sd_checkpoint_info.model_name != 'chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting':
+        #         self.operator.shared.change_sd_model('chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting')
 
         if self.operator.update_progress(50):
             return {'success': True}
 
-        gfpgan_weight = 0.5 if _input_image_mode == 'factory' else 0
-        if _input_image_mode == 'model':
-            codeformer_visibility = 1
-        else:
-            codeformer_visibility = 0
-        codeformer_weight = 0 if _input_image_mode == 'model' else 1
+        gfpgan_weight = 0.5
+        codeformer_visibility = 0.5
+        codeformer_weight = 1
 
         scales = int(params['times'])
 
