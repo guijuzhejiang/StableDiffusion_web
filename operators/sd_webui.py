@@ -199,6 +199,13 @@ class OperatorSD(Operator):
         self.dino.dino_model_cache[dino_name] = dino_model
         self.sam.sam = self.sam.init_sam_model()
         self.facer = getattr(importlib.import_module('guiju.facer_parsing.facer_parsing'), 'FaceParsing')()
+        self.insightface = importlib.import_module('insightface')
+        self.face_analysis = self.insightface.app.FaceAnalysis(name='buffalo_l', root='models/insightface',
+                                                               providers=['CUDAExecutionProvider',
+                                                                          'CPUExecutionProvider'])
+        self.face_analysis.prepare(ctx_id=0, det_size=(640, 640), det_thresh=0.5)
+        self.faceid_predictor = getattr(importlib.import_module('guiju.faceid.faceid_predictor'), 'FaceIDPredictor')(
+            self.face_analysis)
 
         # import lib
         self.script_callbacks = importlib.import_module('modules.script_callbacks')
@@ -212,13 +219,6 @@ class OperatorSD(Operator):
         self.scripts = getattr(importlib.import_module('modules'), 'scripts')
         self.scripts_postprocessing = getattr(importlib.import_module('modules'), 'scripts_postprocessing')
         self.devices = getattr(importlib.import_module('modules'), 'devices')
-        self.insightface = importlib.import_module('insightface')
-        self.face_analysis = self.insightface.app.FaceAnalysis(name='buffalo_l', root='models/insightface',
-                                                               providers=['CUDAExecutionProvider',
-                                                                          'CPUExecutionProvider'])
-        self.face_analysis.prepare(ctx_id=0, det_size=(640, 640), det_thresh=0.5)
-        self.faceid_predictor = getattr(importlib.import_module('guiju.faceid.faceid_predictor'), 'FaceIDPredictor')(
-            self.face_analysis)
 
         self.img2img = importlib.import_module('modules.img2img')
         self.txt2img = importlib.import_module('modules.txt2img')
