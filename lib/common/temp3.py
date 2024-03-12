@@ -7,7 +7,7 @@ import aiosupabase
 from PIL import Image
 import os
 
-
+import pandas as pd
 from PIL import Image
 import os
 
@@ -44,22 +44,22 @@ convert_png_to_webp('/home/ray/Workspace/file/素材/text_to_image/效果图/')
 # ddd = OrderedDict()
 # count = 0
 #
-# user_id = 'd8f5d02e-5e36-4040-be84-15a0a2cf90e8'
-# url = "https://www.guijutech.com:8888/"
-# key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogInNlcnZpY2Vfcm9sZSIsCiAgImlzcyI6ICJzdXBhYmFzZSIsCiAgImlhdCI6IDE2OTU4MzA0MDAsCiAgImV4cCI6IDE4NTM2ODMyMDAKfQ.QanqKpEYyjqgvl1ElcWw7JJAvUEzIC0e0w1pFfPOITE"
-# # supabase_client = create_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'])
-# supabase_client = aiosupabase.Supabase
-# supabase_client.configure(
-#     url=url,
-#     key=key,
-#     debug_enabled=True,
-# )
-#
-# for index, row in df.iterrows():
-#     img = Image.open(row[1])
-#     w, h = img.size
-#     config = {'width': w, 'height': h, 'style': int(row[2])}
-#     supabase_client.table("gallery").insert({"config": config, 'prompt':row[3],'instance_id': os.path.basename(row[1].replace('png', 'webp'))}).execute()
+user_id = 'd8f5d02e-5e36-4040-be84-15a0a2cf90e8'
+url = "https://www.guijutech.com:8888/"
+key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogInNlcnZpY2Vfcm9sZSIsCiAgImlzcyI6ICJzdXBhYmFzZSIsCiAgImlhdCI6IDE2OTU4MzA0MDAsCiAgImV4cCI6IDE4NTM2ODMyMDAKfQ.QanqKpEYyjqgvl1ElcWw7JJAvUEzIC0e0w1pFfPOITE"
+# supabase_client = create_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'])
+supabase_client = aiosupabase.Supabase
+supabase_client.configure(
+    url=url,
+    key=key,
+    debug_enabled=True,
+)
+
+for index, row in df.iterrows():
+    img = Image.open(row[1])
+    w, h = img.size
+    config = {'width': w, 'height': h, 'style': int(row[2])}
+    supabase_client.table("gallery").insert({"config": config, 'prompt':row[3],'instance_id': os.path.basename(row[1].replace('png', 'webp'))}).execute()
 # print(dict(ddd))
 # image = Image.open('/home/ray/Workspace/project/demo_web_sys/guiju_dashboard/public/assets/magic_text2image/Pokémon.png')
 # image.save(os.path.join('/home/ray/Workspace/project/demo_web_sys/guiju_dashboard/public/assets/magic_text2image/Pokémon.webp'))
