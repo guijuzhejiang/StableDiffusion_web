@@ -290,7 +290,7 @@ class MagicAvatar(object):
         cfg_scale = 5
         # mask_blur = 20
         resize_mode = 0  # just resize
-        sampler_index = 15
+        sampler_index = 'DPM++ 2S a Karras'
         inpaint_full_res = 0  # choices=["Whole picture", "Only masked"]
         inpainting_fill = 1  # masked content original
         denoising_strength = _denoising
@@ -304,7 +304,7 @@ class MagicAvatar(object):
         if _txt2img:
             # controlnet args
             controlnet_args_unit1 = self.operator.scripts.scripts_img2img.alwayson_scripts[
-                self.operator.cnet_idx].get_default_ui_unit()
+                self.operator.cnet_idx+1].get_default_ui_unit()
             # depth
             controlnet_args_unit1.enabled = reference_enbale
             if reference_enbale:
@@ -362,7 +362,7 @@ class MagicAvatar(object):
             print(f"sd_positive_prompt: {sd_positive_prompt}")
             print(f"sd_negative_prompt: {sd_negative_prompt}")
             print(f"denoising_strength: {str(1)}")
-            print(f"Sampling method: {samplers_k_diffusion[15]}")
+            print(f"Sampling method: {sampler_index}")
             res = self.operator.txt2img.txt2img(task_id,
                                                 sd_positive_prompt,
                                                 sd_negative_prompt,
@@ -399,7 +399,7 @@ class MagicAvatar(object):
             _mask_img_ndarray = np.zeros(shape=_init_img_rgb_ndarray.shape)
 
             controlnet_args_unit1 = self.operator.scripts.scripts_img2img.alwayson_scripts[
-                self.operator.cnet_idx].get_default_ui_unit()
+                self.operator.cnet_idx+1].get_default_ui_unit()
             controlnet_args_unit1.batch_images = ''
             controlnet_args_unit1.guidance_end = 1
             controlnet_args_unit1.guidance_start = 0  # ending control step
@@ -476,42 +476,49 @@ class MagicAvatar(object):
                         False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
                         # tiled_vae
                         False, 256, 48, True, True, True,
-                        False
+                        False,
+                        # refiner
+                        False, '', 0.8,
+                        # seed
+                        -1, False, -1, 0, 0, 0,
+                        # soft inpainting
+                        False, 1, 0.5, 4, 0, 0.5, 2,
+                        # tiled global
+                        False, 'DemoFusion', True, 128, 64, 4, 2, False, 10, 1, 1, 64, False, True, 3, 1, 1
                         ]
 
             _input_image_width, _input_image_height = _init_img.size
 
-            res = self.operator.img2img.img2img(task_id,
-                                                0,
-                                                sd_positive_prompt,
-                                                sd_negative_prompt,
-                                                prompt_styles, _init_img.convert('RGBA'),
-                                                sketch,
-                                                init_img_with_mask, inpaint_color_sketch,
-                                                inpaint_color_sketch_orig,
-                                                init_img_inpaint, init_mask_inpaint,
-                                                steps, sampler_index, mask_blur, mask_alpha,
-                                                inpainting_fill,
-                                                restore_faces,
-                                                tiling,
-                                                n_iter,
-                                                _batch_size,  # batch_size
-                                                cfg_scale, image_cfg_scale,
-                                                denoising_strength, seed,
-                                                subseed,
-                                                subseed_strength, seed_resize_from_h,
-                                                seed_resize_from_w,
-                                                seed_enable_extras,
-                                                selected_scale_tab, _input_image_height,
-                                                _input_image_width,
-                                                scale_by,
-                                                resize_mode,
-                                                inpaint_full_res,
-                                                inpaint_full_res_padding, inpainting_mask_invert,
-                                                img2img_batch_input_dir,
-                                                img2img_batch_output_dir,
-                                                img2img_batch_inpaint_mask_dir,
-                                                override_settings_texts,
+            res = self.operator.img2img.img2img(task_id, 0, sd_positive_prompt, sd_negative_prompt,
+                                                prompt_styles,
+                                                _init_img.convert('RGBA'),
+                                                None,  # sketch, ,
+                                                None,  # init_img_with_mask
+                                                None,  # inpaint_color_sketch
+                                                None,  # inpaint_color_sketch_orig
+                                                None,  # init_img_inpaint
+                                                None,  # init_mask_inpaint
+                                                steps,
+                                                sampler_index,
+                                                0,  # mask_blur
+                                                0,  # mask_alpha
+                                                1,  # inpainting_fill
+                                                n_iter, _batch_size, cfg_scale, 1.5,
+                                                denoising_strength,
+                                                0,  # selected_scale_tab
+                                                _input_image_height, _input_image_width,
+                                                1,  # scale_by
+                                                0,  # resize_mode
+                                                False,  # inpaint_full_res
+                                                32,  # inpaint_full_res_padding
+                                                0,  # inpainting_mask_invert
+                                                '',  # img2img_batch_input_dir
+                                                '',  # img2img_batch_input_dir
+                                                '',  # img2img_batch_input_dir
+                                                override_settings_texts,  # override_settings_texts
+                                                False,  # img2img_batch_use_png_info
+                                                [],  # img2img_batch_png_info_props
+                                                '',  # img2img_batch_png_info_dir
                                                 *sam_args)
 
         self.operator.devices.torch_gc()

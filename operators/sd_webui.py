@@ -190,10 +190,15 @@ class OperatorSD(Operator):
         print("use gpu:" + str(gpu_idx))
         super().__init__()
 
+        # init
+        self.sam = importlib.import_module('guiju.segment_anything_util.sam')
+        self.sam_h = importlib.import_module('guiju.segment_anything_util.sam_h')
         self.dino = importlib.import_module('guiju.segment_anything_util.dino')
         self.dino_model_name = "GroundingDINO_SwinB (938MB)"
         dino_model, dino_name = self.dino.load_dino_model2("GroundingDINO_SwinB (938MB)")
         self.dino.dino_model_cache[dino_name] = dino_model
+        self.sam.sam = self.sam.init_sam_model()
+        self.facer = getattr(importlib.import_module('guiju.facer_parsing.facer_parsing'), 'FaceParsing')()
 
         # import lib
         self.script_callbacks = importlib.import_module('modules.script_callbacks')
@@ -203,9 +208,8 @@ class OperatorSD(Operator):
         self.script_callbacks.before_ui_callback()
 
         self.scripts = importlib.import_module('modules.scripts')
-        self.sam = importlib.import_module('guiju.segment_anything_util.sam')
-
         self.shared = getattr(importlib.import_module('modules'), 'shared')
+        self.scripts = getattr(importlib.import_module('modules'), 'scripts')
         self.scripts_postprocessing = getattr(importlib.import_module('modules'), 'scripts_postprocessing')
         self.devices = getattr(importlib.import_module('modules'), 'devices')
         self.insightface = importlib.import_module('insightface')
@@ -240,8 +244,6 @@ class OperatorSD(Operator):
         self.shared.opts.hypertile_swap_size_unet = 3
         self.shared.opts.hypertile_max_depth_unet = 3
 
-
-
         # init sam
         self.scripts.scripts_current = self.scripts.scripts_img2img
         self.scripts.scripts_img2img.initialize_scripts(is_img2img=True)
@@ -251,17 +253,21 @@ class OperatorSD(Operator):
         sam_idx = 7
         adetail_idx = 2
         tiled_diffusion_idx = 3
+        tiled_global_idx = 4
         tiled_vae_idx = 5
 
-
+        # self.scripts.reload_scripts()
+        # print("load scripts")
 
         self.scripts.scripts_img2img.alwayson_scripts[3], \
         self.scripts.scripts_img2img.alwayson_scripts[4], \
+        self.scripts.scripts_img2img.alwayson_scripts[5], \
         self.scripts.scripts_img2img.alwayson_scripts[6], \
         self.scripts.scripts_img2img.alwayson_scripts[7], \
         self.scripts.scripts_img2img.alwayson_scripts[8], \
             = self.scripts.scripts_img2img.alwayson_scripts[sam_idx+1], \
               self.scripts.scripts_img2img.alwayson_scripts[tiled_diffusion_idx+1], \
+              self.scripts.scripts_img2img.alwayson_scripts[tiled_global_idx+1], \
               self.scripts.scripts_img2img.alwayson_scripts[tiled_vae_idx+1], \
               self.scripts.scripts_img2img.alwayson_scripts[self.cnet_idx+1], \
               self.scripts.scripts_img2img.alwayson_scripts[adetail_idx+1]

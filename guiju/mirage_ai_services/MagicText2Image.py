@@ -370,25 +370,33 @@ class MagicText2Image(object):
             res = self.operator.img2img.img2img(task_id, 0, sd_positive_prompt, sd_negative_prompt,
                                                 prompt_styles,
                                                 _input_image,
-                                                None,
-                                                None, None, None,
-                                                None, None,
-                                                steps, sampler_index, 0, 0, 1,
-                                                restore_faces,
-                                                tiling,
+                                                None,  # sketch, ,
+                                                None,  # init_img_with_mask
+                                                None,  # inpaint_color_sketch
+                                                None,  # inpaint_color_sketch_orig
+                                                None,  # init_img_inpaint
+                                                None,  # init_mask_inpaint
+                                                steps,
+                                                'DPM++ 2M Karras',
+                                                0,  # mask_blur
+                                                0,  # mask_alpha
+                                                1,  # inpainting_fill
                                                 n_iter, _batch_size, cfg_scale, 1.5,
                                                 denoising_strength,
-                                                seed,
-                                                subseed,
-                                                subseed_strength, seed_resize_from_h, seed_resize_from_w,
-                                                seed_enable_extras,
-                                                0, _output_height, _output_width, 1,
-                                                0,
-                                                0,
-                                                32, 1,
-                                                '',
-                                                '', '',
-                                                override_settings_texts,
+                                                0,  # selected_scale_tab
+                                                _output_height, _output_width,
+                                                1,  # scale_by
+                                                0,  # resize_mode
+                                                False,  # inpaint_full_res
+                                                32,  # inpaint_full_res_padding
+                                                0,  # inpainting_mask_invert
+                                                '',  # img2img_batch_input_dir
+                                                '',  # img2img_batch_input_dir
+                                                '',  # img2img_batch_input_dir
+                                                override_settings_texts,  # override_settings_texts
+                                                False,  # img2img_batch_use_png_info
+                                                [],  # img2img_batch_png_info_props
+                                                '',  # img2img_batch_png_info_dir
                                                 *sam_args)
 
         return [x.convert('RGB') for x in res[0][:_batch_size]]
