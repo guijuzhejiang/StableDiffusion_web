@@ -35,7 +35,7 @@ from utils.global_vars import CONFIG
 
 class MagicText2Image(object):
     operator = None
-    sd_model_name = 'juggernautXL_v9Rundiffusionphoto2'
+    sd_model_name = 'v1-5-pruned-emaonly.safetensors' if CONFIG['local'] else 'juggernautXL_v9Rundiffusionphoto2'
 
     def __init__(self, operator):
         self.operator = operator
@@ -190,39 +190,29 @@ class OperatorSD(Operator):
         print("use gpu:" + str(gpu_idx))
         super().__init__()
         # import lib
-        self.extra_networks = importlib.import_module('modules.extra_networks')
-        self.script_callbacks = importlib.import_module('modules.script_callbacks')
+        from modules import initialize
+        initialize = importlib.import_module('modules.initialize')
+        initialize.imports()
+        initialize.initialize()
+
+        self.scripts = importlib.import_module('modules.scripts')
+        self.sam = importlib.import_module('guiju.segment_anything_util.sam')
         self.dino = importlib.import_module('guiju.segment_anything_util.dino')
         self.dino_model_name = "GroundingDINO_SwinB (938MB)"
-        self.initialize = getattr(importlib.import_module('lib.stable_diffusion.util'), 'initialize')
         self.shared = getattr(importlib.import_module('modules'), 'shared')
-        self.ui_tempdir = getattr(importlib.import_module('modules'), 'ui_tempdir')
-        self.sd_samplers = getattr(importlib.import_module('modules'), 'sd_samplers')
-        self.config_states = getattr(importlib.import_module('modules'), 'config_states')
-        self.modelloader = getattr(importlib.import_module('modules'), 'modelloader')
-        self.extensions = getattr(importlib.import_module('modules'), 'extensions')
-        self.extra_networks_hypernet = getattr(importlib.import_module('modules'), 'extra_networks_hypernet')
-        self.scripts = getattr(importlib.import_module('modules'), 'scripts')
-        self.sd_models = getattr(importlib.import_module('modules'), 'sd_models')
-        self.sam = importlib.import_module('guiju.segment_anything_util.sam')
-        self.sam_h = importlib.import_module('guiju.segment_anything_util.sam_h')
-        self.predict_image = getattr(importlib.import_module('guiju.predictor_opennsfw2'), 'predict_image')
-        self.logging = getattr(importlib.import_module('lib.common.common_util'), 'logging')
-        self.logging = getattr(importlib.import_module('lib.common.common_util'), 'logging')
-        self.img2img = getattr(importlib.import_module('modules'), 'img2img')
-        self.txt2img = getattr(importlib.import_module('modules'), 'txt2img')
-        self.devices = getattr(importlib.import_module('modules'), 'devices')
         self.scripts_postprocessing = getattr(importlib.import_module('modules'), 'scripts_postprocessing')
-
+        self.devices = getattr(importlib.import_module('modules'), 'devices')
         self.insightface = importlib.import_module('insightface')
-        self.swapper = self.insightface.model_zoo.get_model('models/insightface/models/inswapper_128.onnx')
         self.face_analysis = self.insightface.app.FaceAnalysis(name='buffalo_l', root='models/insightface',
                                                                providers=['CUDAExecutionProvider',
                                                                           'CPUExecutionProvider'])
         self.face_analysis.prepare(ctx_id=0, det_size=(640, 640), det_thresh=0.5)
-
         self.faceid_predictor = getattr(importlib.import_module('guiju.faceid.faceid_predictor'), 'FaceIDPredictor')(
             self.face_analysis)
+
+        self.img2img = importlib.import_module('modules.img2img')
+        self.txt2img = importlib.import_module('modules.txt2img')
+        self.logging = getattr(importlib.import_module('lib.common.common_util'), 'logging')
 
         self.shared.cmd_opts.listen = True
         self.shared.cmd_opts.debug_mode = True
@@ -235,127 +225,133 @@ class OperatorSD(Operator):
         self.shared.cmd_opts.disable_adetailer = False
         self.shared.cmd_opts.sd_checkpoint_cache = 0
         self.shared.cmd_opts.no_download_sd_model = True
-        # self.shared.cmd_opts.ckpt = None
+        self.shared.opts.hypertile_enable_unet = False
+        self.shared.opts.hypertile_enable_vae = False
+        self.shared.opts.hypertile_swap_size_vae = 3
+        self.shared.opts.hypertile_max_depth_vae = 3
+        self.shared.opts.hypertile_max_tile_unet = 256
+        self.shared.opts.hypertile_max_tile_vae = 128
+        self.shared.opts.hypertile_swap_size_unet = 3
+        self.shared.opts.hypertile_max_depth_unet = 3
 
-        # init
-        self.initialize()
-        self.sam.sam = self.sam.init_sam_model()
-        # self.sam_h.sam = self.sam_h.init_sam_model()
-        self.facer = getattr(importlib.import_module('guiju.facer_parsing.facer_parsing'), 'FaceParsing')()
         dino_model, dino_name = self.dino.load_dino_model2("GroundingDINO_SwinB (938MB)")
         self.dino.dino_model_cache[dino_name] = dino_model
-
-        if self.shared.opts.clean_temp_dir_at_start:
-            self.ui_tempdir.cleanup_tmpdr()
-            print("cleanup temp dir")
-
-        self.sd_samplers.set_samplers()
-
-        self.extensions.list_extensions()
-
-        config_state_file = self.shared.opts.restore_config_state_file
-        self.shared.opts.restore_config_state_file = ""
-        self.shared.opts.save(self.shared.config_filename)
-
-        if os.path.isfile(config_state_file):
-            print(f"*** About to restore extension state from file: {config_state_file}")
-            with open(config_state_file, "r", encoding="utf-8") as f:
-                config_state = json.load(f)
-                self.config_states.restore_extension_config(config_state)
-        elif config_state_file:
-            print(f"!!! Config state backup not found: {config_state_file}")
-
-        self.scripts.reload_scripts()
-        print("load scripts")
-
-        self.script_callbacks.model_loaded_callback(self.shared.sd_model)
-        print("model loaded callback")
-
-        self.modelloader.load_upscalers()
-
-        for module in [module for name, module in sys.modules.items() if name.startswith("modules.ui")]:
-            importlib.reload(module)
-        print("reload script modules")
-
-        self.sd_models.list_models()
-        print("list SD models")
-
-        self.shared.reload_hypernetworks()
-        print("reload hypernetworks")
-
-        self.extra_networks.initialize()
-        self.extra_networks.register_extra_network(self.extra_networks_hypernet.ExtraNetworkHypernet())
-        print("initialize extra networks")
 
         # init sam
         self.scripts.scripts_current = self.scripts.scripts_img2img
         self.scripts.scripts_img2img.initialize_scripts(is_img2img=True)
         self.scripts.scripts_txt2img.initialize_scripts(is_img2img=False)
 
-        self.cnet_idx = 3
-        sam_idx = 4
-        adetail_idx = 0
-        tiled_diffusion_idx = 1
-        tiled_vae_idx = 2
-        self.scripts.scripts_img2img.alwayson_scripts[0], \
-        self.scripts.scripts_img2img.alwayson_scripts[1], \
-        self.scripts.scripts_img2img.alwayson_scripts[2], \
+        self.cnet_idx = 6
+        sam_idx = 7
+        adetail_idx = 2
+        tiled_diffusion_idx = 3
+        tiled_vae_idx = 5
+
+
+
         self.scripts.scripts_img2img.alwayson_scripts[3], \
         self.scripts.scripts_img2img.alwayson_scripts[4], \
-            = self.scripts.scripts_img2img.alwayson_scripts[sam_idx], \
-              self.scripts.scripts_img2img.alwayson_scripts[tiled_diffusion_idx], \
-              self.scripts.scripts_img2img.alwayson_scripts[tiled_vae_idx], \
-              self.scripts.scripts_img2img.alwayson_scripts[self.cnet_idx], \
-              self.scripts.scripts_img2img.alwayson_scripts[adetail_idx]
-
-        self.scripts.scripts_txt2img.alwayson_scripts[0], \
-        self.scripts.scripts_txt2img.alwayson_scripts[1], \
+        self.scripts.scripts_img2img.alwayson_scripts[6], \
+        self.scripts.scripts_img2img.alwayson_scripts[7], \
+        self.scripts.scripts_img2img.alwayson_scripts[8], \
+            = self.scripts.scripts_img2img.alwayson_scripts[sam_idx+1], \
+              self.scripts.scripts_img2img.alwayson_scripts[tiled_diffusion_idx+1], \
+              self.scripts.scripts_img2img.alwayson_scripts[tiled_vae_idx+1], \
+              self.scripts.scripts_img2img.alwayson_scripts[self.cnet_idx+1], \
+              self.scripts.scripts_img2img.alwayson_scripts[adetail_idx+1]
+        #
+        # t2i
+        # ExtraOptionsSection
+        # ScriptHypertile
+        # sam
+        # tiled_diffusion
+        # tiled_global
+        # tiled_vae
+        # controlnet
+        # adetailer
         self.scripts.scripts_txt2img.alwayson_scripts[2], \
         self.scripts.scripts_txt2img.alwayson_scripts[3], \
-        self.scripts.scripts_txt2img.alwayson_scripts[4], \
+        self.scripts.scripts_txt2img.alwayson_scripts[5], \
+        self.scripts.scripts_txt2img.alwayson_scripts[6], \
+        self.scripts.scripts_txt2img.alwayson_scripts[7] \
             = self.scripts.scripts_txt2img.alwayson_scripts[sam_idx], \
               self.scripts.scripts_txt2img.alwayson_scripts[tiled_diffusion_idx], \
               self.scripts.scripts_txt2img.alwayson_scripts[tiled_vae_idx], \
               self.scripts.scripts_txt2img.alwayson_scripts[self.cnet_idx], \
               self.scripts.scripts_txt2img.alwayson_scripts[adetail_idx]
 
+        # ScriptHypertile
+        self.scripts.scripts_txt2img.alwayson_scripts[0].args_from = 0
+        self.scripts.scripts_txt2img.alwayson_scripts[0].args_to = 0
+        self.scripts.scripts_txt2img.alwayson_scripts[1].args_from = 0
+        self.scripts.scripts_txt2img.alwayson_scripts[1].args_to = 0
+
+        self.scripts.scripts_img2img.alwayson_scripts[0].args_from = 0
+        self.scripts.scripts_img2img.alwayson_scripts[0].args_to = 0
+        self.scripts.scripts_img2img.alwayson_scripts[1].args_from = 0
+        self.scripts.scripts_img2img.alwayson_scripts[1].args_to = 0
+
         # sam 24 args
-        self.scripts.scripts_img2img.alwayson_scripts[0].args_from = 7
-        self.scripts.scripts_img2img.alwayson_scripts[0].args_to = 31
-        self.scripts.scripts_txt2img.alwayson_scripts[0].args_from = 7
-        self.scripts.scripts_txt2img.alwayson_scripts[0].args_to = 31
+        self.scripts.scripts_img2img.alwayson_scripts[3].args_from = 7
+        self.scripts.scripts_img2img.alwayson_scripts[3].args_to = 31
+        self.scripts.scripts_txt2img.alwayson_scripts[2].args_from = 7
+        self.scripts.scripts_txt2img.alwayson_scripts[2].args_to = 31
 
         # tiled_diffusion 101 args
-        self.scripts.scripts_img2img.alwayson_scripts[1].args_from = 31
-        self.scripts.scripts_img2img.alwayson_scripts[1].args_to = 132
-        self.scripts.scripts_txt2img.alwayson_scripts[1].args_from = 31
-        self.scripts.scripts_txt2img.alwayson_scripts[1].args_to = 132
+        self.scripts.scripts_img2img.alwayson_scripts[4].args_from = 31
+        self.scripts.scripts_img2img.alwayson_scripts[4].args_to = 132
+        self.scripts.scripts_txt2img.alwayson_scripts[3].args_from = 31
+        self.scripts.scripts_txt2img.alwayson_scripts[3].args_to = 132
+
+        # tiled_global 17 args
+        self.scripts.scripts_img2img.alwayson_scripts[5].args_from = 155
+        self.scripts.scripts_img2img.alwayson_scripts[5].args_to = 172
+        self.scripts.scripts_txt2img.alwayson_scripts[4].args_from = 155
+        self.scripts.scripts_txt2img.alwayson_scripts[4].args_to = 172
 
         # tiled_vae 7 args
-        self.scripts.scripts_img2img.alwayson_scripts[2].args_from = 132
-        self.scripts.scripts_img2img.alwayson_scripts[2].args_to = 139
-        self.scripts.scripts_txt2img.alwayson_scripts[2].args_from = 132
-        self.scripts.scripts_txt2img.alwayson_scripts[2].args_to = 139
+        self.scripts.scripts_img2img.alwayson_scripts[6].args_from = 132
+        self.scripts.scripts_img2img.alwayson_scripts[6].args_to = 139
+        self.scripts.scripts_txt2img.alwayson_scripts[5].args_from = 132
+        self.scripts.scripts_txt2img.alwayson_scripts[5].args_to = 139
 
         # controlnet 3 args
-        self.scripts.scripts_img2img.alwayson_scripts[3].args_from = 4
-        self.scripts.scripts_img2img.alwayson_scripts[3].args_to = 7
-        self.scripts.scripts_txt2img.alwayson_scripts[3].args_from = 4
-        self.scripts.scripts_txt2img.alwayson_scripts[3].args_to = 7
+        self.scripts.scripts_img2img.alwayson_scripts[self.cnet_idx+1].args_from = 4
+        self.scripts.scripts_img2img.alwayson_scripts[self.cnet_idx+1].args_to = 7
+        self.scripts.scripts_txt2img.alwayson_scripts[self.cnet_idx].args_from = 4
+        self.scripts.scripts_txt2img.alwayson_scripts[self.cnet_idx].args_to = 7
 
         # adetail 3 args
-        self.scripts.scripts_img2img.alwayson_scripts[4].args_from = 1
-        self.scripts.scripts_img2img.alwayson_scripts[4].args_to = 4
-        self.scripts.scripts_txt2img.alwayson_scripts[4].args_from = 1
-        self.scripts.scripts_txt2img.alwayson_scripts[4].args_to = 4
+        self.scripts.scripts_img2img.alwayson_scripts[8].args_from = 1
+        self.scripts.scripts_img2img.alwayson_scripts[8].args_to = 4
+        self.scripts.scripts_txt2img.alwayson_scripts[7].args_from = 1
+        self.scripts.scripts_txt2img.alwayson_scripts[7].args_to = 4
+
+        # strip component
+        self.scripts.scripts_txt2img.alwayson_scripts[-3].args_from = 0
+        self.scripts.scripts_txt2img.alwayson_scripts[-3].args_to = 0
+        self.scripts.scripts_img2img.alwayson_scripts[-3].args_from = 0
+        self.scripts.scripts_img2img.alwayson_scripts[-3].args_to = 0
+
+        # refiner 3 args
+        self.scripts.scripts_txt2img.alwayson_scripts[-2].args_from = 139
+        self.scripts.scripts_txt2img.alwayson_scripts[-2].args_to = 142
+        self.scripts.scripts_txt2img.alwayson_scripts[-2].args_from = 139
+        self.scripts.scripts_txt2img.alwayson_scripts[-2].args_to = 142
+
+        # seed 6 args
+        self.scripts.scripts_txt2img.alwayson_scripts[-1].args_from = 142
+        self.scripts.scripts_txt2img.alwayson_scripts[-1].args_to = 148
+        self.scripts.scripts_txt2img.alwayson_scripts[-1].args_from = 142
+        self.scripts.scripts_txt2img.alwayson_scripts[-1].args_to = 148
+
+        # img2img soft inpainting 7 args
+        self.scripts.scripts_img2img.alwayson_scripts[2].args_from = 148
+        self.scripts.scripts_img2img.alwayson_scripts[2].args_to = 155
 
         # invisible detectmap
-        self.shared.opts.control_net_no_detectmap = True
-
-        # init lora
-        self.extra_networks.initialize()
-        self.extra_networks.register_default_extra_networks()
-        self.script_callbacks.before_ui_callback()
+        # self.shared.opts.control_net_no_detectmap = True
 
         self.magic_conductor = MagicAiConductor(self)
         print('init done')
@@ -476,6 +472,8 @@ class OperatorSD(Operator):
                                        input_image_paths=input_image_paths,
                                        origin=origin,
                                        pic_name=pic_name)
+
+            self.devices.torch_gc()
             if isinstance(res, dict):
                 return res
 

@@ -11,6 +11,7 @@ from PIL import Image
 
 from lora_config import reference_dir
 from modules.sd_samplers_kdiffusion import samplers_k_diffusion
+from utils.global_vars import CONFIG
 
 lora_mirage_dict = {
     12: {'label': '侏罗纪',
@@ -57,7 +58,7 @@ lora_mirage_dict = {
 
 class MagicMirage(object):
     operator = None
-    sd_model_name = 'dreamshaper_8'
+    sd_model_name = 'v1-5-pruned-emaonly.safetensors' if CONFIG['local'] else 'dreamshaper_8'
 
     denoising_strength_min = 0.5
     denoising_strength_max = 1

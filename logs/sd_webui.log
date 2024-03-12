@@ -1,0 +1,360 @@
+[__call__][2024-03-11 17:34:04.695098]:
+[wwasnR]:
+{
+    "mode": [
+        "text2image"
+    ],
+    "user_id": [
+        "d8f5d02e-5e36-4040-be84-15a0a2cf90e8"
+    ],
+    "params": {
+        "batch_size": 1,
+        "style": 0,
+        "width": 768,
+        "height": 768,
+        "prompt": "",
+        "sim": 0.3,
+        "mode": "text2image"
+    },
+    "origin": "http:\/\/localhost"
+}
+[wwasnR]:
+sd_positive_prompt: ,,masterpiece,best quality,breathtaking {prompt} . award-winning,professional,<lora:add-detail-xl:1>,<lora:xl_more_art-full_v1:0.8>,<lora:WowifierXL-V2:0.6>,<lora:EnvyBetterHiresFixXL01:1>,ffaceDetail-SDXL,extremely detailed,<lora:extremely_detailed:1>,Faetastic,<lora:SDXLFaeTastic2400:0.8>
+sd_negative_prompt: negative_hand-neg-SDXL,bwu-SDXL,EasyNegativeV2-SDXL,FastNegativeV2-SDXL,unaestheticXL_Alb2
+Sampling method: ('DPM++ 2M SDE Heun Exponential', 'sample_dpmpp_2m_sde', ['k_dpmpp_2m_sde_heun_exp'], {'scheduler': 'exponential', 'brownian_noise': True, 'solver_type': 'heun'})
+[__call__][2024-03-11 17:37:10.369890]:
+[EoSTJO]:
+{
+    "mode": [
+        "text2image"
+    ],
+    "user_id": [
+        "d8f5d02e-5e36-4040-be84-15a0a2cf90e8"
+    ],
+    "params": {
+        "batch_size": 1,
+        "style": 0,
+        "width": 768,
+        "height": 768,
+        "prompt": "",
+        "sim": 0.3,
+        "mode": "text2image"
+    },
+    "origin": "http:\/\/localhost"
+}
+[EoSTJO]:
+sd_positive_prompt: ,,masterpiece,best quality,breathtaking {prompt} . award-winning,professional,<lora:add-detail-xl:1>,<lora:xl_more_art-full_v1:0.8>,<lora:WowifierXL-V2:0.6>,<lora:EnvyBetterHiresFixXL01:1>,ffaceDetail-SDXL,extremely detailed,<lora:extremely_detailed:1>,Faetastic,<lora:SDXLFaeTastic2400:0.8>
+sd_negative_prompt: negative_hand-neg-SDXL,bwu-SDXL,EasyNegativeV2-SDXL,FastNegativeV2-SDXL,unaestheticXL_Alb2
+Sampling method: ('DPM++ 2M SDE Heun Exponential', 'sample_dpmpp_2m_sde', ['k_dpmpp_2m_sde_heun_exp'], {'scheduler': 'exponential', 'brownian_noise': True, 'solver_type': 'heun'})
+[__call__][2024-03-11 19:14:35.089614]:
+[bVDKYe]:
+{
+    "mode": [
+        "text2image"
+    ],
+    "user_id": [
+        "d8f5d02e-5e36-4040-be84-15a0a2cf90e8"
+    ],
+    "params": {
+        "batch_size": 1,
+        "style": 0,
+        "width": 768,
+        "height": 768,
+        "prompt": "",
+        "sim": 0.3,
+        "mode": "text2image"
+    },
+    "origin": "http:\/\/localhost"
+}
+[bVDKYe]:
+sd_positive_prompt: ,,masterpiece,best quality,breathtaking {prompt} . award-winning,professional,<lora:add-detail-xl:1>,<lora:xl_more_art-full_v1:0.8>,<lora:WowifierXL-V2:0.6>,<lora:EnvyBetterHiresFixXL01:1>,ffaceDetail-SDXL,extremely detailed,<lora:extremely_detailed:1>,Faetastic,<lora:SDXLFaeTastic2400:0.8>
+sd_negative_prompt: negative_hand-neg-SDXL,bwu-SDXL,EasyNegativeV2-SDXL,FastNegativeV2-SDXL,unaestheticXL_Alb2
+Sampling method: ('DPM++ 2M SDE Heun Exponential', 'sample_dpmpp_2m_sde', ['k_dpmpp_2m_sde_heun_exp'], {'scheduler': 'exponential', 'brownian_noise': True, 'solver_type': 'heun'})
+[__call__][2024-03-11 19:15:54.213518]:
+[eZtJcv]:
+{
+    "mode": [
+        "text2image"
+    ],
+    "user_id": [
+        "d8f5d02e-5e36-4040-be84-15a0a2cf90e8"
+    ],
+    "params": {
+        "batch_size": 1,
+        "style": 0,
+        "width": 768,
+        "height": 768,
+        "prompt": "",
+        "sim": 0.3,
+        "mode": "text2image"
+    },
+    "origin": "http:\/\/localhost"
+}
+[eZtJcv]:
+sd_positive_prompt: ,,masterpiece,best quality,breathtaking {prompt} . award-winning,professional,<lora:add-detail-xl:1>,<lora:xl_more_art-full_v1:0.8>,<lora:WowifierXL-V2:0.6>,<lora:EnvyBetterHiresFixXL01:1>,ffaceDetail-SDXL,extremely detailed,<lora:extremely_detailed:1>,Faetastic,<lora:SDXLFaeTastic2400:0.8>
+sd_negative_prompt: negative_hand-neg-SDXL,bwu-SDXL,EasyNegativeV2-SDXL,FastNegativeV2-SDXL,unaestheticXL_Alb2
+Sampling method: ('DPM++ 2M SDE Heun Exponential', 'sample_dpmpp_2m_sde', ['k_dpmpp_2m_sde_heun_exp'], {'scheduler': 'exponential', 'brownian_noise': True, 'solver_type': 'heun'})
+[__call__][2024-03-11 19:19:04.389282]:
+[HqugzU]:
+{
+    "mode": [
+        "text2image"
+    ],
+    "user_id": [
+        "d8f5d02e-5e36-4040-be84-15a0a2cf90e8"
+    ],
+    "params": {
+        "batch_size": 1,
+        "style": 0,
+        "width": 768,
+        "height": 768,
+        "prompt": "",
+        "sim": 0.3,
+        "mode": "text2image"
+    },
+    "origin": "http:\/\/localhost"
+}
+[HqugzU]:
+sd_positive_prompt: ,,masterpiece,best quality,breathtaking {prompt} . award-winning,professional,<lora:add-detail-xl:1>,<lora:xl_more_art-full_v1:0.8>,<lora:WowifierXL-V2:0.6>,<lora:EnvyBetterHiresFixXL01:1>,ffaceDetail-SDXL,extremely detailed,<lora:extremely_detailed:1>,Faetastic,<lora:SDXLFaeTastic2400:0.8>
+sd_negative_prompt: negative_hand-neg-SDXL,bwu-SDXL,EasyNegativeV2-SDXL,FastNegativeV2-SDXL,unaestheticXL_Alb2
+Sampling method: ('DPM++ 2M SDE Heun Exponential', 'sample_dpmpp_2m_sde', ['k_dpmpp_2m_sde_heun_exp'], {'scheduler': 'exponential', 'brownian_noise': True, 'solver_type': 'heun'})
+[__call__][2024-03-11 19:19:43.021306]:
+[uRCEEt]:
+{
+    "mode": [
+        "text2image"
+    ],
+    "user_id": [
+        "d8f5d02e-5e36-4040-be84-15a0a2cf90e8"
+    ],
+    "params": {
+        "batch_size": 1,
+        "style": 0,
+        "width": 768,
+        "height": 768,
+        "prompt": "",
+        "sim": 0.3,
+        "mode": "text2image"
+    },
+    "origin": "http:\/\/localhost"
+}
+[uRCEEt]:
+sd_positive_prompt: ,,masterpiece,best quality,breathtaking {prompt} . award-winning,professional,<lora:add-detail-xl:1>,<lora:xl_more_art-full_v1:0.8>,<lora:WowifierXL-V2:0.6>,<lora:EnvyBetterHiresFixXL01:1>,ffaceDetail-SDXL,extremely detailed,<lora:extremely_detailed:1>,Faetastic,<lora:SDXLFaeTastic2400:0.8>
+sd_negative_prompt: negative_hand-neg-SDXL,bwu-SDXL,EasyNegativeV2-SDXL,FastNegativeV2-SDXL,unaestheticXL_Alb2
+Sampling method: ('DPM++ 2M SDE Heun Exponential', 'sample_dpmpp_2m_sde', ['k_dpmpp_2m_sde_heun_exp'], {'scheduler': 'exponential', 'brownian_noise': True, 'solver_type': 'heun'})
+[__call__][2024-03-11 19:28:16.697448]:
+[Kmhydc]:
+{
+    "mode": [
+        "text2image"
+    ],
+    "user_id": [
+        "d8f5d02e-5e36-4040-be84-15a0a2cf90e8"
+    ],
+    "params": {
+        "batch_size": 1,
+        "style": 0,
+        "width": 768,
+        "height": 768,
+        "prompt": "",
+        "sim": 0.3,
+        "mode": "text2image"
+    },
+    "origin": "http:\/\/localhost"
+}
+[Kmhydc]:
+sd_positive_prompt: ,,masterpiece,best quality,breathtaking {prompt} . award-winning,professional,<lora:add-detail-xl:1>,<lora:xl_more_art-full_v1:0.8>,<lora:WowifierXL-V2:0.6>,<lora:EnvyBetterHiresFixXL01:1>,ffaceDetail-SDXL,extremely detailed,<lora:extremely_detailed:1>,Faetastic,<lora:SDXLFaeTastic2400:0.8>
+sd_negative_prompt: negative_hand-neg-SDXL,bwu-SDXL,EasyNegativeV2-SDXL,FastNegativeV2-SDXL,unaestheticXL_Alb2
+Sampling method: ('DPM++ 2M SDE Heun Exponential', 'sample_dpmpp_2m_sde', ['k_dpmpp_2m_sde_heun_exp'], {'scheduler': 'exponential', 'brownian_noise': True, 'solver_type': 'heun'})
+[__call__][2024-03-11 19:31:00.741897]:
+[pAqMOs]:
+{
+    "mode": [
+        "text2image"
+    ],
+    "user_id": [
+        "d8f5d02e-5e36-4040-be84-15a0a2cf90e8"
+    ],
+    "params": {
+        "batch_size": 1,
+        "style": 0,
+        "width": 768,
+        "height": 768,
+        "prompt": "",
+        "sim": 0.3,
+        "mode": "text2image"
+    },
+    "origin": "http:\/\/localhost"
+}
+[pAqMOs]:
+sd_positive_prompt: ,,masterpiece,best quality,breathtaking {prompt} . award-winning,professional,<lora:add-detail-xl:1>,<lora:xl_more_art-full_v1:0.8>,<lora:WowifierXL-V2:0.6>,<lora:EnvyBetterHiresFixXL01:1>,ffaceDetail-SDXL,extremely detailed,<lora:extremely_detailed:1>,Faetastic,<lora:SDXLFaeTastic2400:0.8>
+sd_negative_prompt: negative_hand-neg-SDXL,bwu-SDXL,EasyNegativeV2-SDXL,FastNegativeV2-SDXL,unaestheticXL_Alb2
+Sampling method: ('DPM++ 2M SDE Heun Exponential', 'sample_dpmpp_2m_sde', ['k_dpmpp_2m_sde_heun_exp'], {'scheduler': 'exponential', 'brownian_noise': True, 'solver_type': 'heun'})
+[__call__][2024-03-11 19:34:02.667312]:
+[XTmPoF]:
+{
+    "mode": [
+        "text2image"
+    ],
+    "user_id": [
+        "d8f5d02e-5e36-4040-be84-15a0a2cf90e8"
+    ],
+    "params": {
+        "batch_size": 1,
+        "style": 0,
+        "width": 768,
+        "height": 768,
+        "prompt": "",
+        "sim": 0.3,
+        "mode": "text2image"
+    },
+    "origin": "http:\/\/localhost"
+}
+[XTmPoF]:
+sd_positive_prompt: ,,masterpiece,best quality,breathtaking {prompt} . award-winning,professional,<lora:add-detail-xl:1>,<lora:xl_more_art-full_v1:0.8>,<lora:WowifierXL-V2:0.6>,<lora:EnvyBetterHiresFixXL01:1>,ffaceDetail-SDXL,extremely detailed,<lora:extremely_detailed:1>,Faetastic,<lora:SDXLFaeTastic2400:0.8>
+sd_negative_prompt: negative_hand-neg-SDXL,bwu-SDXL,EasyNegativeV2-SDXL,FastNegativeV2-SDXL,unaestheticXL_Alb2
+Sampling method: ('DPM++ 2M SDE Heun Exponential', 'sample_dpmpp_2m_sde', ['k_dpmpp_2m_sde_heun_exp'], {'scheduler': 'exponential', 'brownian_noise': True, 'solver_type': 'heun'})
+[__call__][2024-03-11 19:36:19.208236]:
+[ZVYPND]:
+{
+    "mode": [
+        "text2image"
+    ],
+    "user_id": [
+        "d8f5d02e-5e36-4040-be84-15a0a2cf90e8"
+    ],
+    "params": {
+        "batch_size": 1,
+        "style": 0,
+        "width": 768,
+        "height": 768,
+        "prompt": "",
+        "sim": 0.3,
+        "mode": "text2image"
+    },
+    "origin": "http:\/\/localhost"
+}
+[ZVYPND]:
+sd_positive_prompt: ,,masterpiece,best quality,breathtaking {prompt} . award-winning,professional,<lora:add-detail-xl:1>,<lora:xl_more_art-full_v1:0.8>,<lora:WowifierXL-V2:0.6>,<lora:EnvyBetterHiresFixXL01:1>,ffaceDetail-SDXL,extremely detailed,<lora:extremely_detailed:1>,Faetastic,<lora:SDXLFaeTastic2400:0.8>
+sd_negative_prompt: negative_hand-neg-SDXL,bwu-SDXL,EasyNegativeV2-SDXL,FastNegativeV2-SDXL,unaestheticXL_Alb2
+Sampling method: ('DPM++ 2M SDE Heun Exponential', 'sample_dpmpp_2m_sde', ['k_dpmpp_2m_sde_heun_exp'], {'scheduler': 'exponential', 'brownian_noise': True, 'solver_type': 'heun'})
+[__call__][2024-03-12 09:35:54.838635]:
+[qFjFoE]:
+{
+    "mode": [
+        "text2image"
+    ],
+    "user_id": [
+        "d8f5d02e-5e36-4040-be84-15a0a2cf90e8"
+    ],
+    "params": {
+        "batch_size": 1,
+        "style": 0,
+        "width": 768,
+        "height": 768,
+        "prompt": "",
+        "sim": 0.3,
+        "mode": "text2image"
+    },
+    "origin": "http:\/\/localhost"
+}
+[qFjFoE]:
+sd_positive_prompt: ,,masterpiece,best quality,breathtaking {prompt} . award-winning,professional,<lora:add-detail-xl:1>,<lora:xl_more_art-full_v1:0.8>,<lora:WowifierXL-V2:0.6>,<lora:EnvyBetterHiresFixXL01:1>,ffaceDetail-SDXL,extremely detailed,<lora:extremely_detailed:1>,Faetastic,<lora:SDXLFaeTastic2400:0.8>
+sd_negative_prompt: negative_hand-neg-SDXL,bwu-SDXL,EasyNegativeV2-SDXL,FastNegativeV2-SDXL,unaestheticXL_Alb2
+Sampling method: ('DPM++ 2M SDE Heun Exponential', 'sample_dpmpp_2m_sde', ['k_dpmpp_2m_sde_heun_exp'], {'scheduler': 'exponential', 'brownian_noise': True, 'solver_type': 'heun'})
+[__call__][2024-03-12 09:57:45.474083]:
+[dcoTSZ]:
+{
+    "mode": [
+        "text2image"
+    ],
+    "user_id": [
+        "d8f5d02e-5e36-4040-be84-15a0a2cf90e8"
+    ],
+    "params": {
+        "batch_size": 1,
+        "style": 0,
+        "width": 768,
+        "height": 768,
+        "prompt": "",
+        "sim": 0.3,
+        "mode": "text2image"
+    },
+    "origin": "http:\/\/localhost"
+}
+[dcoTSZ]:
+sd_positive_prompt: ,,masterpiece,best quality,breathtaking {prompt} . award-winning,professional,<lora:add-detail-xl:1>,<lora:xl_more_art-full_v1:0.8>,<lora:WowifierXL-V2:0.6>,<lora:EnvyBetterHiresFixXL01:1>,ffaceDetail-SDXL,extremely detailed,<lora:extremely_detailed:1>,Faetastic,<lora:SDXLFaeTastic2400:0.8>
+sd_negative_prompt: negative_hand-neg-SDXL,bwu-SDXL,EasyNegativeV2-SDXL,FastNegativeV2-SDXL
+Sampling method: ('DPM++ 2M SDE Heun Exponential', 'sample_dpmpp_2m_sde', ['k_dpmpp_2m_sde_heun_exp'], {'scheduler': 'exponential', 'brownian_noise': True, 'solver_type': 'heun'})
+[__call__][2024-03-12 10:12:30.097813]:
+[nJBxBs]:
+{
+    "mode": [
+        "text2image"
+    ],
+    "user_id": [
+        "d8f5d02e-5e36-4040-be84-15a0a2cf90e8"
+    ],
+    "params": {
+        "batch_size": 1,
+        "style": 0,
+        "width": 768,
+        "height": 768,
+        "prompt": "",
+        "sim": 0.3,
+        "mode": "text2image"
+    },
+    "origin": "http:\/\/localhost"
+}
+[nJBxBs]:
+sd_positive_prompt: ,,masterpiece,best quality,breathtaking {prompt} . award-winning,professional,<lora:add-detail-xl:1>,<lora:xl_more_art-full_v1:0.8>,<lora:WowifierXL-V2:0.6>,<lora:EnvyBetterHiresFixXL01:1>,ffaceDetail-SDXL,extremely detailed,<lora:extremely_detailed:1>,Faetastic,<lora:SDXLFaeTastic2400:0.8>
+sd_negative_prompt: negative_hand-neg-SDXL,bwu-SDXL,EasyNegativeV2-SDXL,FastNegativeV2-SDXL
+Sampling method: ('DPM++ 2M SDE Heun Exponential', 'sample_dpmpp_2m_sde', ['k_dpmpp_2m_sde_heun_exp'], {'scheduler': 'exponential', 'brownian_noise': True, 'solver_type': 'heun'})
+[__call__][2024-03-12 10:14:39.758569]:
+[NziDAu]:
+{
+    "mode": [
+        "text2image"
+    ],
+    "user_id": [
+        "d8f5d02e-5e36-4040-be84-15a0a2cf90e8"
+    ],
+    "params": {
+        "batch_size": 1,
+        "style": 0,
+        "width": 768,
+        "height": 768,
+        "prompt": "",
+        "sim": 0.3,
+        "mode": "text2image"
+    },
+    "origin": "http:\/\/localhost"
+}
+[NziDAu]:
+sd_positive_prompt: ,,masterpiece,best quality,breathtaking {prompt} . award-winning,professional,<lora:add-detail-xl:1>,<lora:xl_more_art-full_v1:0.8>,<lora:WowifierXL-V2:0.6>,<lora:EnvyBetterHiresFixXL01:1>,ffaceDetail-SDXL,extremely detailed,<lora:extremely_detailed:1>,Faetastic,<lora:SDXLFaeTastic2400:0.8>
+sd_negative_prompt: negative_hand-neg-SDXL,bwu-SDXL,EasyNegativeV2-SDXL,FastNegativeV2-SDXL
+Sampling method: ('DPM++ 2M SDE Heun Exponential', 'sample_dpmpp_2m_sde', ['k_dpmpp_2m_sde_heun_exp'], {'scheduler': 'exponential', 'brownian_noise': True, 'solver_type': 'heun'})
+[__call__][2024-03-12 10:32:41.957342]:
+[IfPKQD]:
+{
+    "mode": [
+        "text2image"
+    ],
+    "user_id": [
+        "d8f5d02e-5e36-4040-be84-15a0a2cf90e8"
+    ],
+    "params": {
+        "batch_size": 1,
+        "style": 0,
+        "width": 768,
+        "height": 768,
+        "prompt": "",
+        "sim": 0.3,
+        "mode": "text2image"
+    },
+    "origin": "http:\/\/localhost"
+}
+[IfPKQD]:
+sd_positive_prompt: ,,masterpiece,best quality,breathtaking {prompt} . award-winning,professional,<lora:add-detail-xl:1>,<lora:xl_more_art-full_v1:0.8>,<lora:WowifierXL-V2:0.6>,<lora:EnvyBetterHiresFixXL01:1>,ffaceDetail-SDXL,extremely detailed,<lora:extremely_detailed:1>,Faetastic,<lora:SDXLFaeTastic2400:0.8>
+sd_negative_prompt: negative_hand-neg-SDXL,bwu-SDXL,EasyNegativeV2-SDXL,FastNegativeV2-SDXL
+Sampling method: ('DPM++ 2M SDE Heun Exponential', 'sample_dpmpp_2m_sde', ['k_dpmpp_2m_sde_heun_exp'], {'scheduler': 'exponential', 'brownian_noise': True, 'solver_type': 'heun'})

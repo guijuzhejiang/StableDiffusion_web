@@ -20,7 +20,7 @@ from utils.global_vars import CONFIG
 
 class MagicMirror(object):
     operator = None
-    sd_model_name = 'chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting'
+    sd_model_name = 'v1-5-pruned-emaonly.safetensors' if CONFIG['local'] else 'chilloutmix_NiPrunedFp32Fix-inpainting_zzg.inpainting'
 
     def __init__(self, operator):
         self.operator = operator
