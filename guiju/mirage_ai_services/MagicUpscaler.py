@@ -47,7 +47,7 @@ class MagicUpscaler(object):
             return {'success': True}
 
         gfpgan_weight = 0.5
-        codeformer_visibility = 0.5
+        codeformer_visibility = 0
         codeformer_weight = 1
 
         scales = int(params['times'])
