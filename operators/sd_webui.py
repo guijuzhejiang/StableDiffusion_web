@@ -171,8 +171,8 @@ class MagicText2Image(object):
 
 class OperatorSD(Operator):
     """ stable diffusion """
-    num = len(GPUtil.getGPUs())
-    # num = 1
+    # num = len(GPUtil.getGPUs())
+    num = 1
     cache = True
     cuda = True
     enable = True
@@ -189,16 +189,22 @@ class OperatorSD(Operator):
         # os.environ['CUDA_VISIBLE_DEVICES'] = '1'
         print("use gpu:" + str(gpu_idx))
         super().__init__()
+
+        self.dino = importlib.import_module('guiju.segment_anything_util.dino')
+        self.dino_model_name = "GroundingDINO_SwinB (938MB)"
+        dino_model, dino_name = self.dino.load_dino_model2("GroundingDINO_SwinB (938MB)")
+        self.dino.dino_model_cache[dino_name] = dino_model
+
         # import lib
-        from modules import initialize
+        self.script_callbacks = importlib.import_module('modules.script_callbacks')
         initialize = importlib.import_module('modules.initialize')
         initialize.imports()
         initialize.initialize()
+        self.script_callbacks.before_ui_callback()
 
         self.scripts = importlib.import_module('modules.scripts')
         self.sam = importlib.import_module('guiju.segment_anything_util.sam')
-        self.dino = importlib.import_module('guiju.segment_anything_util.dino')
-        self.dino_model_name = "GroundingDINO_SwinB (938MB)"
+
         self.shared = getattr(importlib.import_module('modules'), 'shared')
         self.scripts_postprocessing = getattr(importlib.import_module('modules'), 'scripts_postprocessing')
         self.devices = getattr(importlib.import_module('modules'), 'devices')
@@ -234,8 +240,7 @@ class OperatorSD(Operator):
         self.shared.opts.hypertile_swap_size_unet = 3
         self.shared.opts.hypertile_max_depth_unet = 3
 
-        dino_model, dino_name = self.dino.load_dino_model2("GroundingDINO_SwinB (938MB)")
-        self.dino.dino_model_cache[dino_name] = dino_model
+
 
         # init sam
         self.scripts.scripts_current = self.scripts.scripts_img2img

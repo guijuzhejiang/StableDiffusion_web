@@ -231,7 +231,7 @@ text2image_style_prompts = {
 
 class MagicText2Image(object):
     operator = None
-    sd_model_name = 'v1-5-pruned-emaonly.safetensors' if CONFIG['local'] else 'juggernautXL_v9Rundiffusionphoto2'
+    sd_model_name = 'juggernautXL_v9Rundiffusionphoto2'
 
     def __init__(self, operator):
         self.operator = operator
