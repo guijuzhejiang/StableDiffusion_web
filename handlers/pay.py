@@ -291,7 +291,7 @@ class PayPalCreateOrder(HTTPMethodView):
                                                       "Content-Type": "application/json"})
 
                 if 'id' in response.json().keys():
-                    data = await request.app.ctx.supabase_client.table("transaction").insert({"user_id": user_id,
+                    data = await request.app.ctx.supabase_client.atable("transaction").insert({"user_id": user_id,
                                                                                                'amount': charge_points,
                                                                                                'is_plus': True,
                                                                                                'status': 0,
@@ -315,7 +315,7 @@ class PayPalCaptureOrder(HTTPMethodView):
         access_token = await aspayapl_generate_ccess_token()
         url = f"{CONFIG['paypal']['base_url']}/v2/checkout/orders/{out_trade_no}/capture"
 
-        transaction_data = (await request.app.ctx.supabase_client.table("transaction").select("*").eq("out_trade_no",
+        transaction_data = (await request.app.ctx.supabase_client.atable("transaction").select("*").eq("out_trade_no",
                                                                                                        f"{out_trade_no}@paypal").eq(
             "is_plus", True).execute()).data[0]
 
@@ -327,15 +327,15 @@ class PayPalCaptureOrder(HTTPMethodView):
 
             result = response.json()
             if result['status'] == 'COMPLETED':
-                data = (await request.app.ctx.supabase_client.table("transaction").update(
+                data = (await request.app.ctx.supabase_client.atable("transaction").update(
                     {"status": 1}).eq("out_trade_no", f"{out_trade_no}@paypal").eq("is_plus", True).execute()).data
 
                 account = \
-                    (await request.app.ctx.supabase_client.table("account").select("balance").eq("id",
+                    (await request.app.ctx.supabase_client.atable("account").select("balance").eq("id",
                                                                                                   transaction_data[
                                                                                                       'user_id']).execute()).data[
                         0]
-                data = (await request.app.ctx.supabase_client.table("account").update(
+                data = (await request.app.ctx.supabase_client.atable("account").update(
                     {"balance": account['balance'] + transaction_data['amount']}).eq("id", transaction_data[
                     'user_id']).execute()).data
 
@@ -360,27 +360,27 @@ class PayPalCreateSub(HTTPMethodView):
             # else:
             #     add_balance = 1625
 
-            account = (await request.app.ctx.supabase_client.table("account").select("balance").eq("id", user_id).execute()).data[0]
-            subscription = (await request.app.ctx.supabase_client.table("subscription").select("*").eq("user_id", user_id).execute()).data
+            account = (await request.app.ctx.supabase_client.atable("account").select("balance").eq("id", user_id).execute()).data[0]
+            subscription = (await request.app.ctx.supabase_client.atable("subscription").select("*").eq("user_id", user_id).execute()).data
 
             if len(subscription) > 0:
-                data = await request.app.ctx.supabase_client.table("subscription").update({'subscription_id': subscription_id,
+                data = await request.app.ctx.supabase_client.atable("subscription").update({'subscription_id': subscription_id,
                                                                                             'supplier': 'paypal',
                                                                                             }).eq("user_id", user_id).execute()
 
             else:
-                data = await request.app.ctx.supabase_client.table("subscription").insert({"user_id": user_id,
+                data = await request.app.ctx.supabase_client.atable("subscription").insert({"user_id": user_id,
                                                                                             'subscription_id': subscription_id,
                                                                                             'supplier': 'paypal',
                                                                                             }).execute()
 
-            data = await request.app.ctx.supabase_client.table("transaction").insert({"user_id": user_id,
+            data = await request.app.ctx.supabase_client.atable("transaction").insert({"user_id": user_id,
                                                                                        'out_trade_no': f'@subpaypal_{subscription_id}',
                                                                                        'amount': add_balance,
                                                                                        'is_plus': True,
                                                                                        'status': 1,
                                                                                        }).execute()
-            res = (await request.app.ctx.supabase_client.table("account").update({"balance": account['balance'] + add_balance, 'vip_level': vip_level}).eq("id", user_id).execute()).data
+            res = (await request.app.ctx.supabase_client.atable("account").update({"balance": account['balance'] + add_balance, 'vip_level': vip_level}).eq("id", user_id).execute()).data
 
             # 获取次月结算日
             current_date = datetime.now()
@@ -402,7 +402,7 @@ class CheckVip(HTTPMethodView):
     async def post(self, request):
         try:
             user_id = request.form['user_id'][0]
-            res = (await request.app.ctx.supabase_client.table("account").select("vip_level").eq("id", user_id).execute()).data
+            res = (await request.app.ctx.supabase_client.atable("account").select("vip_level").eq("id", user_id).execute()).data
 
             return sanic_json({'success': res[0]['vip_level'] > 0}, status=200)
 
@@ -418,7 +418,7 @@ class PayPalCancelSub(HTTPMethodView):
     async def post(self, request):
         try:
             user_id = request.form['user_id'][0]
-            subscription = (await request.app.ctx.supabase_client.table("subscription").select("*").eq("user_id", user_id).execute()).data
+            subscription = (await request.app.ctx.supabase_client.atable("subscription").select("*").eq("user_id", user_id).execute()).data
             if len(subscription) > 0:
 
                 # get access token
@@ -439,9 +439,9 @@ class PayPalCancelSub(HTTPMethodView):
                     # response_json = response.json()
                     # print(response_json)
 
-                res = (await request.app.ctx.supabase_client.table("account").update({"vip_level": 0}).eq("id",
+                res = (await request.app.ctx.supabase_client.atable("account").update({"vip_level": 0}).eq("id",
                                                                                                            user_id).execute()).data
-                data = (await request.app.ctx.supabase_client.table("subscription").delete().eq("user_id",
+                data = (await request.app.ctx.supabase_client.atable("subscription").delete().eq("user_id",
                                                                                                 user_id).execute()).data
 
                 return sanic_json({'success': True})
