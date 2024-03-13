@@ -233,6 +233,13 @@ def match_style_to_key(style):
             sys.exit(1)  # 非零退出代码通常表示程序由于某些错误而退出
         return label_to_key[style]
 
+#在字符串的前面添加前导零
+# string: 需要添加前导零的原始字符串。
+# desired_length: 期望的最终字符串长度。
+# fill_char (可选): 用于填充的字符,默认为'0'。
+def add_leading_zeros(string, desired_length, fill_char='0'):
+    return (fill_char * (desired_length - len(string))) + string
+
 # 使用 pandas 读取 Excel 文件的特定行和列
 # header=None 表示原始数据没有列名，sheet_name 参数根据你的实际情况调整
 # usecols='A:E' 表示只读取 A 到 E 列，skiprows 跳过前 5 行（因为行索引从 0 开始，且不包括结束行），nrows 读取 102 行（因为不包括起始行）
@@ -259,6 +266,7 @@ supabase_client.configure(
 # 在这里，列的索引是从 0 开始的，所以 A 列是 0，E 列是 4
 for index, row in df.iterrows():
     instance_id = os.path.basename(row[1].replace('png', 'webp'))
+    instance_id = add_leading_zeros(instance_id, 11, '0')
     # 首先检查相同的instance_id是否已存在
     existing = supabase_client.table("gallery").select("instance_id").eq('instance_id', instance_id).execute()
     # 如果existing为空，说明没有相同的instance_id存在，可以插入数据
