@@ -236,7 +236,7 @@ def match_style_to_key(style):
 # 使用 pandas 读取 Excel 文件的特定行和列
 # header=None 表示原始数据没有列名，sheet_name 参数根据你的实际情况调整
 # usecols='A:E' 表示只读取 A 到 E 列，skiprows 跳过前 5 行（因为行索引从 0 开始，且不包括结束行），nrows 读取 102 行（因为不包括起始行）
-df = pd.read_excel(excel_file_path, usecols='B:D', skiprows=range(1), nrows=68, header=None, sheet_name='文生图sample')
+df = pd.read_excel(excel_file_path, usecols='B:D', skiprows=range(1), header=None, sheet_name='文生图sample')
 df = df.dropna(subset=[2])
 # 使用apply函数应用自定义函数
 try:
@@ -267,6 +267,7 @@ for index, row in df.iterrows():
         w, h = img.size
         config = {'width': w, 'height': h, 'style': int(row[2])}
         supabase_client.table("gallery").insert({"config": config, 'prompt':row[3], 'instance_id': instance_id, 'public': True, 'category': 'text2image'}).execute()
+        print(f'The instance_id:{instance_id} is inserted.')
     else:
         # instance_id已存在，不插入数据
         print(f'The instance_id:{instance_id} already exists. No data was inserted.')
