@@ -518,7 +518,7 @@ class OperatorSD(Operator):
                         .table("gallery") \
                         .insert({"user_id": user_id,
                                  'instance_id': img_fn,
-                                 'prompt': params['prompt'] if 'prompt' in params.keys else None,
+                                 'prompt': params['prompt'] if 'prompt' in params.keys() else None,
                                  'category': proceed_mode,
                                  'config': params,
                                  }) \
