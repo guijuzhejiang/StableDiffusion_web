@@ -518,6 +518,7 @@ class OperatorSD(Operator):
                         .table("gallery") \
                         .insert({"user_id": user_id,
                                  'instance_id': img_fn,
+                                 'prompt': params['prompt'] if 'prompt' in params.keys else None,
                                  'category': proceed_mode,
                                  'config': params,
                                  }) \
@@ -543,7 +544,7 @@ class OperatorSD(Operator):
                             print(traceback.format_exc())
 
                 res = []
-                user_gallery = self.supabase_client.table("gallery").select("*").eq("id", user_id).order('instance_id',
+                user_gallery = self.supabase_client.table("gallery").select("*").eq("user_id", user_id).order('instance_id',
                                                                                                  desc=True).execute().data
                 for img_fn in sorted(os.listdir(dir_path), reverse=True):
                     # url_fp = f"{'http://192.168.110.8:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={proceed_mode}"
