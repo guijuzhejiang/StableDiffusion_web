@@ -266,12 +266,12 @@ class OperatorSD(Operator):
         self.scripts.scripts_img2img.alwayson_scripts[6], \
         self.scripts.scripts_img2img.alwayson_scripts[7], \
         self.scripts.scripts_img2img.alwayson_scripts[8], \
-            = self.scripts.scripts_img2img.alwayson_scripts[sam_idx+1], \
-              self.scripts.scripts_img2img.alwayson_scripts[tiled_diffusion_idx+1], \
-              self.scripts.scripts_img2img.alwayson_scripts[tiled_global_idx+1], \
-              self.scripts.scripts_img2img.alwayson_scripts[tiled_vae_idx+1], \
-              self.scripts.scripts_img2img.alwayson_scripts[self.cnet_idx+1], \
-              self.scripts.scripts_img2img.alwayson_scripts[adetail_idx+1]
+            = self.scripts.scripts_img2img.alwayson_scripts[sam_idx + 1], \
+              self.scripts.scripts_img2img.alwayson_scripts[tiled_diffusion_idx + 1], \
+              self.scripts.scripts_img2img.alwayson_scripts[tiled_global_idx + 1], \
+              self.scripts.scripts_img2img.alwayson_scripts[tiled_vae_idx + 1], \
+              self.scripts.scripts_img2img.alwayson_scripts[self.cnet_idx + 1], \
+              self.scripts.scripts_img2img.alwayson_scripts[adetail_idx + 1]
         #
         # t2i
         # ExtraOptionsSection
@@ -329,8 +329,8 @@ class OperatorSD(Operator):
         self.scripts.scripts_txt2img.alwayson_scripts[5].args_to = 139
 
         # controlnet 3 args
-        self.scripts.scripts_img2img.alwayson_scripts[self.cnet_idx+1].args_from = 4
-        self.scripts.scripts_img2img.alwayson_scripts[self.cnet_idx+1].args_to = 7
+        self.scripts.scripts_img2img.alwayson_scripts[self.cnet_idx + 1].args_from = 4
+        self.scripts.scripts_img2img.alwayson_scripts[self.cnet_idx + 1].args_to = 7
         self.scripts.scripts_txt2img.alwayson_scripts[self.cnet_idx].args_from = 4
         self.scripts.scripts_txt2img.alwayson_scripts[self.cnet_idx].args_to = 7
 
@@ -366,6 +366,13 @@ class OperatorSD(Operator):
         # self.shared.opts.control_net_no_detectmap = True
 
         self.magic_conductor = MagicAiConductor(self)
+        self.supabase_client = getattr(importlib.import_module('aiosupabase'), 'Supabase')
+        self.supabase_client.configure(
+            url=CONFIG['supabase']['url'],
+            key=CONFIG['supabase']['key'],
+            debug_enabled=True,
+        )
+
         print('init done')
 
     def limit_and_compress_image(self, __cv_image, __output_height, quality=80):
@@ -480,7 +487,9 @@ class OperatorSD(Operator):
             res = self.magic_conductor(proceed_mode,
                                        params=params,
                                        user_id=user_id,
-                                       input_image=_input_image if proceed_mode != 'text2image' or (proceed_mode == 'text2image' and params['mode'] == 'image2image') else None,
+                                       input_image=_input_image if proceed_mode != 'text2image' or (
+                                               proceed_mode == 'text2image' and params[
+                                           'mode'] == 'image2image') else None,
                                        input_image_paths=input_image_paths,
                                        origin=origin,
                                        pic_name=pic_name)
@@ -495,7 +504,8 @@ class OperatorSD(Operator):
             # dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_{proceed_mode}_dir'], user_id)
             os.makedirs(dir_path, exist_ok=True)
             for res_idx, res_img in enumerate(res):
-                img_save_path = os.path.join(dir_path, f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png")
+                img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"
+                img_save_path = os.path.join(dir_path, img_fn)
                 res_img = res_img.convert("RGB")
                 res_img.save(img_save_path, format="jpeg", quality=80, lossless=True)
 
@@ -503,18 +513,56 @@ class OperatorSD(Operator):
                 cache_fp = f"tmp/{proceed_mode}_{pic_name}_{res_idx}.jpg"
                 res_img.save(cache_fp)
 
+                try:
+                    self.supabase_client \
+                        .table("gallery") \
+                        .insert({"user_id": user_id,
+                                 'instance_id': img_fn,
+                                 'category': proceed_mode,
+                                 'config': params,
+                                 }) \
+                        .execute()
+                except Exception:
+                    print(traceback.format_exc())
+
+            else:
                 # 限制缓存10张
                 cache_list = sorted(os.listdir(dir_path))
-                if len(cache_list) > 10:
-                    os.remove(os.path.join(dir_path, cache_list[0]))
-            else:
+                cache_len = len(cache_list)
+                if cache_len > 10:
+                    for i in range(cache_len-10):
+                        os.remove(os.path.join(dir_path, cache_list[0]))
+                        try:
+                            self.supabase_client \
+                                .table("gallery") \
+                                .delete() \
+                                .eq("user_id", user_id) \
+                                .eq("instance_id", cache_list[0]) \
+                                .execute()
+                        except Exception:
+                            print(traceback.format_exc())
+
+                res = []
+                user_gallery = self.supabase_client.table("gallery").select("*").eq("id", user_id).order('instance_id',
+                                                                                                 desc=True).execute().data
                 for img_fn in sorted(os.listdir(dir_path), reverse=True):
                     # url_fp = f"{'http://192.168.110.8:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={proceed_mode}"
                     url_fp = f"{'localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else f'{client_origin}/service'}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={proceed_mode}"
                     img_urls.append(url_fp)
-                if len(img_urls) < 10:
-                    for i in range(10 - len(img_urls)):
-                        img_urls.append('')
+
+                    user_item = {}
+                    for r in user_gallery:
+                        if r['instance_id'] == img_fn:
+                            user_item = r
+
+                    user_item['src'] = url_fp
+                    if 'category' not in user_item.keys():
+                        user_item['category'] = proceed_mode
+                    res.append(user_item)
+
+                # if len(img_urls) < 10:
+                #     for i in range(10 - len(img_urls)):
+                #         img_urls.append('')
 
             # celery_task.update_state(state='PROGRESS', meta={'progress': 95})
             if self.update_progress(90):
@@ -525,7 +573,7 @@ class OperatorSD(Operator):
                     if '_save' not in cache_img_fp:
                         os.remove(cache_img_fp)
                 else:
-                    return {'success': True, 'result': img_urls}
+                    return {'success': True, 'result': res}
 
         except Exception:
             print('errrrr!!!!!!!!!!!!!!')
@@ -600,11 +648,11 @@ class OperatorSD(Operator):
             else:
                 input_image_paths = None
             res = MagicText2Image(op)(
-                                       params=params,
-                                       user_id=user_id,
-                                       input_image=None,
-                                       input_image_paths=input_image_paths,
-                                       pic_name=pic_name)
+                params=params,
+                user_id=user_id,
+                input_image=None,
+                input_image_paths=input_image_paths,
+                pic_name=pic_name)
             if isinstance(res, dict):
                 return res
 

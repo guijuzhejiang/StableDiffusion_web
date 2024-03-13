@@ -86,10 +86,20 @@ class FetchUserHistory(HTTPMethodView):
             else:
                 fixed_dn = origin
 
-            result = [f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else f'{fixed_dn}/service'}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={category}" for img_fn in sorted(os.listdir(dir_user_path), reverse=True)]
-            if len(result) < 10:
-                for i in range(10-len(result)):
-                    result.append('')
+            # result = [ for img_fn in sorted(os.listdir(dir_user_path), reverse=True)]
+            result = []
+            user_gallery = (await request.app.ctx.supabase_client.atable("gallery").select("*").eq("user_id", user_id).order('instance_id', desc=True).execute()).data
+            for img_fn in sorted(os.listdir(dir_user_path), reverse=True):
+                url_fp = f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else f'{fixed_dn}/service'}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={category}"
+                user_item = {}
+                for r in user_gallery:
+                    if r['instance_id'] == img_fn:
+                        user_item = r
+
+                user_item['src'] = url_fp
+                if 'category' not in user_item.keys():
+                    user_item['category'] = category
+                result.append(user_item)
 
         except Exception:
             print(traceback.format_exc())
