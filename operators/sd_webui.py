@@ -532,7 +532,8 @@ class OperatorSD(Operator):
                 cache_len = len(cache_list)
                 if cache_len > 10:
                     for i in range(cache_len-10):
-                        os.remove(os.path.join(dir_path, cache_list[0]))
+                        if os.path.exists(os.path.join(dir_path, cache_list[i])):
+                            os.remove(os.path.join(dir_path, cache_list[i]))
                         try:
                             self.supabase_client \
                                 .table("gallery") \
