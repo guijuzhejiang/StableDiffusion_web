@@ -4,7 +4,7 @@
 import glob
 import os
 
-dir_path = '/home/ray/Workspace/project/demo_web_sys/guiju_dashboard/public/assets/gallery/*.webp'
+dir_path = '/home/zzg/workspace/webstorm/guiju_dashboard/public/assets/gallery/*.webp'
 
 for i in glob.glob(dir_path):
     os.rename(i, os.path.join(dir_path, f'{str(int(os.path.basename(i).replace(".webp", ""))).zfill(6)}.webp'))
