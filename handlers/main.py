@@ -104,7 +104,7 @@ class FetchGallery(HTTPMethodView):
     """
     async def post(self, request):
         try:
-            result = (await request.app.ctx.supabase_client.atable("gallery").select("*").is_("user_id", "NULL").execute()).data
+            result = (await request.app.ctx.supabase_client.atable("gallery").select("*").is_("user_id", "NULL").order('instance_id', desc=True).execute()).data
 
         except Exception:
             print(traceback.format_exc())
