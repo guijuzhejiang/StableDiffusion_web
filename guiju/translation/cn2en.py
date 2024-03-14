@@ -23,6 +23,7 @@ class Translator:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print("Loading model")
         self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name).to(self.device)
+        # self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name, torch_dtype=torch.float16).to(self.device)
         # self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name, torch_dtype=torch.bfloat16).to(self.device)
         print("Loading tokenizer")
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -39,8 +40,9 @@ class Translator:
         # 将中文句子编码成token ids
         input_ids = self.tokenizer.encode(chinese_sentence, return_tensors="pt").to(self.device)
         # 使用autocast上下文管理器来执行前向传播，在这期间自动使用float16
-        with autocast():
-            outputs = self.model.generate(input_ids)
+        with torch.no_grad():
+            with autocast():
+                outputs = self.model.generate(input_ids)
         # 将预测的token ids解码成英文句子
         translated_sentence = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
         return translated_sentence
