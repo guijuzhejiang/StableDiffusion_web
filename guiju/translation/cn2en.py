@@ -42,9 +42,11 @@ class Translator:
         return translated_sentence
 
 if __name__ == "__main__":
-    translator = Translator()
-    sentence_cn = '一只猫和一只狗在战斗，旁边的女孩在拍手叫好'
-    sentence_en = translator.translate(sentence_cn)
-    print(f'sentence_cn:{sentence_cn}')
+    # translator_cn = Translator("/media/zzg/GJ_disk01/pretrained_model/Helsinki-NLP/opus-mt-zh-en")
+    translator_jp = Translator('/media/zzg/GJ_disk01/pretrained_model/Helsinki-NLP/opus-mt-ja-en')
+    # sentence_cn = '一只猫和一只狗在战斗，旁边的女孩在拍手叫好'
+    sentence_jp = '猫と犬がケンカをしていて、隣の女の子が手を叩いている。'
+    sentence_en = translator_jp.translate(sentence_jp)
+    print(f'sentence_cn:{sentence_jp}')
     print(f'sentence_en:{sentence_en}')
 
