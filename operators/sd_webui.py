@@ -207,6 +207,7 @@ class OperatorSD(Operator):
         self.faceid_predictor = getattr(importlib.import_module('guiju.faceid.faceid_predictor'), 'FaceIDPredictor')(
             self.face_analysis)
         self.predict_image = getattr(importlib.import_module('guiju.predictor_opennsfw2'), 'predict_image')
+        self.en_translator = getattr(importlib.import_module('guiju.translation.cn2en'), 'Translator')()
 
         # import lib
         self.script_callbacks = importlib.import_module('modules.script_callbacks')

@@ -252,6 +252,12 @@ class MagicText2Image(object):
         _output_height = int(params['height'])
         _style = int(params['style'])
         _prompt = params['prompt']
+        _translate = bool(params['translate'])
+        if _translate:
+            if 'guijutech' in origin:
+                _prompt = self.operator.en_translator(_prompt, 'cn')
+            elif 'ingjp' in origin:
+                _prompt = self.operator.en_translator(_prompt, 'jp')
 
         if _mode == 'image2image':
             _input_image = kwargs['input_image']

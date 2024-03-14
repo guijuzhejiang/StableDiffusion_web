@@ -8,6 +8,7 @@ import torch
 from torch.cuda.amp import autocast
 from datetime import datetime
 
+
 class Translator:
     """MBartTranslator class provides a simple interface for translating text using the MBart language model.
 
@@ -19,17 +20,24 @@ class Translator:
         tokenizer (MBart50TokenizerFast): The MBart tokenizer.
     """
 
-    def __init__(self, model_name="/media/zzg/GJ_disk01/pretrained_model/Helsinki-NLP/opus-mt-zh-en"):
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        print("Loading model")
-        self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name).to(self.device)
-        # self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name, torch_dtype=torch.float16).to(self.device)
-        # self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name, torch_dtype=torch.bfloat16).to(self.device)
-        print("Loading tokenizer")
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        print("Translator is ready")
+    def __init__(self):
+        cn_model_name = "/media/zzg/GJ_disk01/pretrained_model/Helsinki-NLP/opus-mt-zh-en"
+        jp_model_name = "/media/zzg/GJ_disk01/pretrained_model/Helsinki-NLP/opus-mt-ja-en"
 
-    def translate(self, chinese_sentence: str) -> str:
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print("Loading cn model")
+        self.cn_model = AutoModelForSeq2SeqLM.from_pretrained(cn_model_name).to(self.device)
+        print("Loading cn tokenizer")
+        self.cn_tokenizer = AutoTokenizer.from_pretrained(cn_model_name)
+        print("cn Translator is ready")
+
+        print("Loading jp model")
+        self.jp_model = AutoModelForSeq2SeqLM.from_pretrained(jp_model_name).to(self.device)
+        print("Loading jp tokenizer")
+        self.jp_tokenizer = AutoTokenizer.from_pretrained(jp_model_name)
+        print("cn Translator is ready")
+
+    def translate(self, chinese_sentence: str, lang='cn') -> str:
         """Translate the given text from the input language to the output language.
 
         Args:
@@ -37,15 +45,30 @@ class Translator:
         Returns:
             str: The translated text.
         """
-        # 将中文句子编码成token ids
-        input_ids = self.tokenizer.encode(chinese_sentence, return_tensors="pt").to(self.device)
-        # 使用autocast上下文管理器来执行前向传播，在这期间自动使用float16
-        with torch.no_grad():
-            with autocast():
-                outputs = self.model.generate(input_ids)
-        # 将预测的token ids解码成英文句子
-        translated_sentence = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+        print(f'{lang} sentence: {chinese_sentence}')
+        if lang == 'cn':
+            # 将中文句子编码成token ids
+            input_ids = self.cn_tokenizer.encode(chinese_sentence, return_tensors="pt").to(self.device)
+            # 使用autocast上下文管理器来执行前向传播，在这期间自动使用float16
+            with torch.no_grad():
+                with autocast():
+                    outputs = self.cn_model.generate(input_ids)
+            # 将预测的token ids解码成英文句子
+            translated_sentence = self.cn_tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+        else:
+            # 将中文句子编码成token ids
+            input_ids = self.jp_tokenizer.encode(chinese_sentence, return_tensors="pt").to(self.device)
+            # 使用autocast上下文管理器来执行前向传播，在这期间自动使用float16
+            with torch.no_grad():
+                with autocast():
+                    outputs = self.jp_model.generate(input_ids)
+            # 将预测的token ids解码成英文句子
+            translated_sentence = self.jp_tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+        print(f'translated sentence: {translated_sentence}')
         return translated_sentence
+
 
 if __name__ == "__main__":
     init_start = datetime.now()
