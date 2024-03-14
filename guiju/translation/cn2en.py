@@ -43,8 +43,8 @@ class Translator:
 
 if __name__ == "__main__":
     translator = Translator()
-    sentence_cn = '一只猫和一只狗'
-    sentence_en = translator.translate('一只猫和一只狗')
+    sentence_cn = '一只猫和一只狗在战斗，旁边的女孩在拍手叫好'
+    sentence_en = translator.translate(sentence_cn)
     print(f'sentence_cn:{sentence_cn}')
     print(f'sentence_en:{sentence_en}')
 
