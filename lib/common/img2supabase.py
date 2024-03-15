@@ -273,7 +273,7 @@ for index, row in df.iterrows():
     if len(existing.data)==0:
         img = Image.open(row[1])
         w, h = img.size
-        config = {'width': w, 'height': h, 'style': int(row[2])}
+        config = {'width': w, 'height': h, 'style': int(row[2]), 'translate': False}
         supabase_client.table("gallery").insert({"config": config, 'prompt':row[3], 'instance_id': instance_id, 'public': True, 'category': 'text2image'}).execute()
         print(f'The instance_id:{instance_id} is inserted.')
     else:
