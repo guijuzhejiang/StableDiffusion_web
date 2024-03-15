@@ -124,7 +124,7 @@ class FetchGallery(HTTPMethodView):
 
                 result = []
                 for query_item in query_str.split(','):
-                    data = (await request.app.ctx.supabase_client.atable("gallery").select("*").is_("user_id", "NULL").like("prompt", f"%{query_item.strip()}%").execute()).data
+                    data = (await request.app.ctx.supabase_client.atable("gallery").select("*").is_("user_id", "NULL").like("prompt", f"%{query_item.strip()}%").order('instance_id', desc=True).execute()).data
                     result.extend(data)
                 else:
                     result = self.unique_by_key(result, 'instance_id')
