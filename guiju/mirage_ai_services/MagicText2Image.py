@@ -252,7 +252,10 @@ class MagicText2Image(object):
         _output_height = int(params['height'])
         _style = int(params['style'])
         _prompt = params['prompt']
-        _translate = bool(params['translate'])
+        if 'translate' in params:
+            _translate = bool(params['translate'])
+        else:
+            _translate = False
         if _translate:
             if 'guijutech' in origin:
                 _prompt = self.operator.en_translator.translate(_prompt, 'cn')
