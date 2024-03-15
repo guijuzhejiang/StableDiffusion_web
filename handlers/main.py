@@ -112,9 +112,25 @@ class FetchGallery(HTTPMethodView):
     """
         瀑布流图片
     """
+
+    def unique_by_key(self, dicts, unique_key):
+        seen = set()
+        return [d for d in dicts if d[unique_key] not in seen and not seen.add(d[unique_key])]
+
     async def post(self, request):
         try:
-            result = (await request.app.ctx.supabase_client.atable("gallery").select("*").is_("user_id", "NULL").order('instance_id', desc=True).execute()).data
+            if 'query' in request.form:
+                query_str = request.form['query'][0]
+
+                result = []
+                for query_item in query_str.split(','):
+                    data = (await request.app.ctx.supabase_client.atable("gallery").select("*").is_("user_id", "NULL").like("prompt", f"%{query_item.strip()}%").execute()).data
+                    result.extend(data)
+                else:
+                    result = self.unique_by_key(result, 'instance_id')
+
+            else:
+                result = (await request.app.ctx.supabase_client.atable("gallery").select("*").is_("user_id", "NULL").order('instance_id', desc=True).execute()).data
 
         except Exception:
             print(traceback.format_exc())
