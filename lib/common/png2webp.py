@@ -5,7 +5,7 @@ def convert_png_to_webp(folder_path):
     # 遍历指定文件夹内的所有文件
     for filename in os.listdir(folder_path):
         if filename.endswith(".png"):  # 检查文件扩展名是否为 .png
-            # 构造 WebP 的文件名
+            # 构造 WebP 的文件名,保存格式为：000001.webp
             webp_filename = filename[:-4].zfill(6) + '.webp'
             webp_dir = os.path.join(folder_path, 'webp')
             os.makedirs(webp_dir, exist_ok=True)
