@@ -152,20 +152,21 @@ class WeChatLogin(HTTPMethodView):
                                     f'https://api.weixin.qq.com/sns/userinfo?access_token={wechat_data["access_token"]}&openid={wechat_data["openid"]}')
                                 if response_uinfo.status_code == 200:
                                     wechat_uinfo = response_uinfo.json()
+                                    data = (await request.app.ctx.supabase_client.atable("account").update(
+                                        {"wechat_id": str(wechat_data['openid']).lower(),
+                                         'nick_name': wechat_uinfo['nickname']}).eq(
+                                        "id", user_id).execute()).data
+                                    if wechat_uinfo['headimgurl']:
+                                        avatar_response = await client.get(wechat_uinfo['headimgurl'])
+                                        async with aiofile.async_open(
+                                                os.path.join(CONFIG['storage_dirpath']['user_account_avatar'],
+                                                             f"{supabase_res.user.id}.jpg"), 'wb') as file:
+                                            await file.write(avatar_response.content)
 
-                                avatar_response = await client.get(wechat_uinfo['headimgurl'])
-                                async with aiofile.async_open(
-                                        os.path.join(CONFIG['storage_dirpath']['user_account_avatar'],
-                                                     f"{supabase_res.user.id}.jpg"), 'wb') as file:
-                                    await file.write(avatar_response.body)
-
+                                else:
+                                    return sanic_json({'success': False, 'message': "backend.api.error.register"})
                             except Exception:
                                 print(str(traceback.format_exc()))
-
-                            # result_user['avatar'] = f'service/user/image/fetch?category=account_avatar&uid={str(supabase_res.user.id)}'
-                            data = (await request.app.ctx.supabase_client.atable("account").update(
-                                {"wechat_id": str(wechat_data['openid']).lower(), 'nick_name': wechat_uinfo['nickname']}).eq(
-                                "id", user_id).execute()).data
 
                         except Exception:
                             print(str(traceback.format_exc()))
