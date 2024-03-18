@@ -6,7 +6,7 @@ def convert_png_to_webp(folder_path):
     for filename in os.listdir(folder_path):
         if filename.endswith(".png"):  # 检查文件扩展名是否为 .png
             # 构造 WebP 的文件名
-            webp_filename = filename[:-4] + '.webp'
+            webp_filename = filename[:-4].zfill(6) + '.webp'
             webp_dir = os.path.join(folder_path, 'webp')
             os.makedirs(webp_dir, exist_ok=True)
             webp_path = os.path.join(webp_dir, webp_filename)
@@ -17,6 +17,7 @@ def convert_png_to_webp(folder_path):
                 image = Image.open(file_path)
                 # 保存为 WebP 格式
                 image.save(webp_path, 'WEBP')
+                print(f'{webp_path} is saved')
 
 # 调用函数，替换下面的 'your_folder_path' 为你的 PNG 文件所在的文件夹路径
 convert_png_to_webp('/home/zzg/data/CV/text_to_image/效果图/')
