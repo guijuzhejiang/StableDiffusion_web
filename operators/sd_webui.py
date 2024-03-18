@@ -495,6 +495,7 @@ class OperatorSD(Operator):
                                        origin=origin,
                                        pic_name=pic_name)
 
+
             self.devices.torch_gc()
             if isinstance(res, dict):
                 return res
@@ -504,11 +505,19 @@ class OperatorSD(Operator):
             dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], proceed_mode, user_id)
             # dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_{proceed_mode}_dir'], user_id)
             os.makedirs(dir_path, exist_ok=True)
+            saved_img = []
             for res_idx, res_img in enumerate(res):
                 img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"
                 img_save_path = os.path.join(dir_path, img_fn)
                 res_img = res_img.convert("RGB")
                 res_img.save(img_save_path, format="jpeg", quality=80, lossless=True)
+                saved_img.append(img_save_path)
+                if 'guijutech' in origin or 'ingjp' in origin:
+                    if self.predict_image(img_save_path):
+                        for i in saved_img:
+                            if os.path.exists:
+                                os.remove(i)
+                        return {'success': False, 'result': 'backend.check.error.nsfw'}
 
                 # cache output
                 cache_fp = f"tmp/{proceed_mode}_{pic_name}_{res_idx}.jpg"
