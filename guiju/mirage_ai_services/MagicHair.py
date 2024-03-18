@@ -564,7 +564,7 @@ class MagicHair(object):
                                             0,  # resize_mode
                                             False,  # inpaint_full_res
                                             32,  # inpaint_full_res_padding
-                                            0,  # inpainting_mask_invert
+                                            inpainting_mask_invert,  # inpainting_mask_invert
                                             '',  # img2img_batch_input_dir
                                             '',  # img2img_batch_input_dir
                                             '',  # img2img_batch_input_dir
