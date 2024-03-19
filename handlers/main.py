@@ -129,6 +129,10 @@ class FetchGallery(HTTPMethodView):
                 else:
                     result = self.unique_by_key(result, 'instance_id')
 
+            elif 'id' in request.form:
+                data_id = request.form['id'][0]
+                result = (await request.app.ctx.supabase_client.atable("gallery").select("*").eq('id',data_id).order('instance_id', desc=True).execute()).data
+
             else:
                 result = (await request.app.ctx.supabase_client.atable("gallery").select("*").is_("user_id", "NULL").order('instance_id', desc=True).execute()).data
 
