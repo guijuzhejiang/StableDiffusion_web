@@ -226,8 +226,11 @@ text2image_style_prompts = {
          'disallow': []},
     68: {'label': '高清',
          'prompt': 'HDR photo of {prompt} . High dynamic range,vivid,rich details,clear shadows and highlights,realistic,intense,enhanced contrast,Hyperdetailed Photography',
-         'disallow': []}}
-
+         'disallow': []},
+    69: {'label': '宏大场景',
+        'prompt': 'highly impressive & realistic, Hyper-detailed, Insane Details, Intricate Details,great massive grand,huge geometric,megastructure,grand scene',
+        'disallow': ['<lora:xl_more_art-full_v1:0.8>', '<lora:WowifierXL-V2:0.6>', '<lora:EnvyBetterHiresFixXL01:1>', 'ffaceDetail-SDXL', 'Faetastic', '<lora:SDXLFaeTastic2400:0.8>']},
+    }
 
 class MagicText2Image(object):
     operator = None
