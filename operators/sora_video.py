@@ -38,8 +38,8 @@ class OperatorSora(Operator):
         print('start init OperatorSora')
         super().__init__()
 
-        self.devices = getattr(importlib.import_module('modules'), 'devices')
-        sys.path.append('/home/zzg/workspace/pycharm/DynamiCrafter')
+        self.devices = importlib.import_module('modules.devices')
+        sys.path.insert(0, '/home/zzg/workspace/pycharm/DynamiCrafter')
         self.Image2Video = getattr(importlib.import_module('scripts.gradio.i2v_test_zzg'), 'Image2Video')()
 
     def __call__(self, *args, **kwargs):
