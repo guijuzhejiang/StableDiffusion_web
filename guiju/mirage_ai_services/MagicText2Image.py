@@ -151,7 +151,7 @@ text2image_style_prompts = {
          'prompt': 'Minecraft style {prompt} . blocky,pixelated,vibrant colors,recognizable characters and objects,game assets',
          'disallow': []},
     43: {'label': '宝可梦',
-         'prompt': 'Pokemon style {prompt} . vibrant,cute,anime,fantasy,reminiscent of Pokémon series',
+         'prompt': 'Pokemon style {prompt} . vibrant,cute,anime,fantasy,reminiscent of Pokemon series',
          'disallow': []},
     44: {'label': '街头霸王',
          'prompt': 'Street Fighter style {prompt} . vibrant,dynamic,arcade,2D fighting game,reminiscent of Street Fighter series',
