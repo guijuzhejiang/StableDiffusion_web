@@ -171,8 +171,8 @@ class MagicText2Image(object):
 
 class OperatorSD(Operator):
     """ stable diffusion """
-    num = len(GPUtil.getGPUs())
-    # num = 1
+    # num = len(GPUtil.getGPUs())
+    num = 1
     cache = True
     cuda = True
     enable = True
@@ -185,8 +185,8 @@ class OperatorSD(Operator):
 
     def __init__(self, gpu_idx=0):
         os.environ['ACCELERATE'] = 'True'
-        os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_idx)
-        # os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+        # os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_idx)
+        os.environ['CUDA_VISIBLE_DEVICES'] = '1'
         print("use gpu:" + str(gpu_idx))
         super().__init__()
 
