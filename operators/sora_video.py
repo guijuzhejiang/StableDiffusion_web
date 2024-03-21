@@ -13,14 +13,12 @@
 import datetime
 import importlib
 import os
-import sys
 import traceback
 
 import ujson
 
 from lib.common.common_util import logging
 from lib.celery_workshop.operator import Operator
-from utils.global_vars import CONFIG
 
 
 class OperatorSora(Operator):
@@ -38,8 +36,6 @@ class OperatorSora(Operator):
         print('start init OperatorSora')
         super().__init__()
 
-        self.devices = importlib.import_module('modules.devices')
-        sys.path.insert(0, '/home/zzg/workspace/pycharm/DynamiCrafter')
         self.Image2Video = getattr(importlib.import_module('scripts.gradio.i2v_test_zzg'), 'Image2Video')()
 
     def __call__(self, *args, **kwargs):
