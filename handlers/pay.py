@@ -22,6 +22,7 @@ discount_dict = {
         {
             'zh': '首次充值享8折优惠',
             'en': 'Enjoy 20% off on your first recharge',
+            'ja': '初回購入時に20%オフをお楽しみください',
         },
         0.8
     ],
@@ -29,6 +30,7 @@ discount_dict = {
         {
             'zh': '多个折扣可叠加',
             'en': 'Multiple discounts can be stacked',
+            'ja': '複数の割引を重ねて適用できる',
         },
         None
     ],
@@ -36,6 +38,7 @@ discount_dict = {
         {
             'zh': '十二月优惠礼6折',
             'en': 'December Special Gift 60% off',
+            'ja': '12月のスペシャルギフト 60%オフ',
         },
         0.6
     ],
