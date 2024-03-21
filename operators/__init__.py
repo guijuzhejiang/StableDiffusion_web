@@ -8,4 +8,6 @@
 
 # import lib
 from operators.sd_webui import OperatorSD
+from operators.sora_video import OperatorSora
+
 
