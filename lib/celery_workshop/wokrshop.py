@@ -18,7 +18,7 @@ class WorkShop(object):
     def __init__(self, op):
         print(f"run {self.__class__.__name__}:{sys._getframe().f_code.co_name}")
         self.op = op
-        celery_prefix_name = WorkShop.get_celery_prefix_name(op.__class__.__name__, op.cuda)
+        celery_prefix_name = WorkShop.get_celery_prefix_name(op.celery_task_name, op.cuda)
         # , broker_heartbeat = 0
         self.celery_app = Celery(f"{celery_prefix_name}_app", broker='pyamqp://localhost:5672', backend='redis://localhost:6379/0', broker_heartbeat=0)
 
