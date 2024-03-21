@@ -151,7 +151,7 @@ text2image_style_prompts = {
          'prompt': 'Minecraft style {prompt} . blocky,pixelated,vibrant colors,recognizable characters and objects,game assets',
          'disallow': []},
     43: {'label': '宝可梦',
-         'prompt': 'Pokémon style {prompt} . vibrant,cute,anime,fantasy,reminiscent of Pokémon series',
+         'prompt': 'Pokemon style {prompt} . vibrant,cute,anime,fantasy,reminiscent of Pokémon series',
          'disallow': []},
     44: {'label': '街头霸王',
          'prompt': 'Street Fighter style {prompt} . vibrant,dynamic,arcade,2D fighting game,reminiscent of Street Fighter series',
@@ -307,11 +307,12 @@ class MagicText2Image(object):
         print(f"sd_negative_prompt: {sd_negative_prompt}")
         print(f"Sampling method: {samplers_k_diffusion[sampler_index]}")
         # 因为Pokémon不是unicode8，打印时会报错
-        if _style != 43:
+        try:
             self.operator.logging(
                 f"[{pic_name}]:\nsd_positive_prompt: {sd_positive_prompt}\nsd_negative_prompt: {sd_negative_prompt}\nSampling method: {samplers_k_diffusion[sampler_index]}",
                 f"logs/sd_webui.log")
-
+        except Exception:
+            print(f'ascii codec can\'t encode character')
         # controlnet args
         controlnet_args_unit1 = self.operator.scripts.scripts_img2img.alwayson_scripts[
             self.operator.cnet_idx + 1].get_default_ui_unit()
