@@ -11,14 +11,13 @@ from handlers.pay import WechatReqPayQRCode, PayPalCreateOrder, WechatQueryPayme
     PayPalCaptureOrder, PayPalCreateSub, CheckVip, PayPalCancelSub, PayPalWebhook
 from handlers.qinghua import DeviceAuthVerify
 from lib.celery_workshop.wokrshop import WorkShop
-from operators import OperatorSD
+from operators import OperatorSD, OperatorSora
 from wechatpayv3 import WeChatPay, WeChatPayType
 
 from handlers.main import ImageProvider, FetchUserHistory, UserUpload, RevokeTask, SendCaptcha, \
     VerifyCaptcha, UserEditNickname, FetchGallery, FetchVideo
 from redis import asyncio as aioredis
 from handlers.websocket import sd_genreate, qinghua_genreate
-from operators.sora_video import OperatorSora
 from utils.global_vars import CONFIG
 # from supabase._async.client import AsyncClient as Client, create_client
 
@@ -139,7 +138,7 @@ if __name__ == "__main__":
 
     app.run(host=CONFIG['server']['host'],
             port=CONFIG['server']['port'],
-            workers=1 if CONFIG['debug_mode'] else CONFIG['server']['workers'],
+            workers=1,
             access_log=CONFIG['server']['access_log'],
             debug=CONFIG['debug_mode'],
             ssl=ssl_config)
