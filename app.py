@@ -15,9 +15,10 @@ from operators import OperatorSD
 from wechatpayv3 import WeChatPay, WeChatPayType
 
 from handlers.main import ImageProvider, FetchUserHistory, UserUpload, RevokeTask, SendCaptcha, \
-    VerifyCaptcha, UserEditNickname, FetchGallery
+    VerifyCaptcha, UserEditNickname, FetchGallery, FetchVideo
 from redis import asyncio as aioredis
 from handlers.websocket import sd_genreate, qinghua_genreate
+from operators.sora_video import OperatorSora
 from utils.global_vars import CONFIG
 # from supabase._async.client import AsyncClient as Client, create_client
 
@@ -49,6 +50,7 @@ bp.add_route(FetchUserHistory.as_view(), "/user/image/history")
 bp.add_route(FetchGallery.as_view(), "/gallery/fetch")
 bp.add_route(UserUpload.as_view(), "/user/image/upload")
 bp.add_route(UserEditNickname.as_view(), "/user/edit/nickname")
+bp.add_route(FetchVideo.as_view(), "/user/video/fetch")
 
 bp.add_route(DeviceAuthVerify.as_view(), "/qinghua/device/auth")
 
@@ -115,6 +117,7 @@ async def main_process_start(sanic_app, loop):
     await sanic_app.ctx.redis_session_sms.flushdb()
 
     sanic_app.ctx.sd_workshop = WorkShop(OperatorSD)
+    sanic_app.ctx.sora_workshop = WorkShop(OperatorSora)
 
     os.environ['ALIBABA_CLOUD_ACCESS_KEY_ID'] = CONFIG['aliyun']['sms']['access_key_id']
     os.environ['ALIBABA_CLOUD_ACCESS_KEY_SECRET'] = CONFIG['aliyun']['sms']['access_key_secret']

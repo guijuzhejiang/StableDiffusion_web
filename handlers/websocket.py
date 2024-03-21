@@ -39,55 +39,19 @@ async def sd_genreate(request: Request, ws):
                 print(format_package)
             # cal prices
             cost_points = 1
-            # if package['mode'] == 'cert':
-            #     params['batch_size'] = 1
-            # if package['mode'] == 'hires':
-            #     if params.get('hires_times'):
-            #         if int(params['hires_times']) == 3:
-            #             cost_points = 2
-            #         elif int(params['hires_times']) == 4:
-            #             cost_points = 3
-
-                        # elif package['mode'] == 'avatar':
-            #     batch_size = int(params['batch_size'])
-            #
-            #     if batch_size == 1:
-            #         cost_points = 5
-            #     elif batch_size == 2:
-            #         cost_points = 8
-            #
-            # elif package['mode'] == 'mirror':
-            #     batch_size = int(params['batch_size'])
-            #
-            #     if batch_size == 1:
-            #         cost_points = 5
-            #     elif batch_size == 2:
-            #         cost_points = 8
-            #
-            # elif package['mode'] == 'hair':
-            #     batch_size = int(params['batch_size'])
-            #
-            #     if batch_size == 1:
-            #         cost_points = 5
-            #     elif batch_size == 2:
-            #         cost_points = 8
-            #
-
-            # else:
-            #     batch_size = int(params['batch_size'])
-            #     cost_points = batch_size
-                # if batch_size == 1:
-                #     cost_points = 5
-                # elif batch_size == 2:
-                #     cost_points = 8
-                # else:
-                #     cost_points = 10
 
             # check balance
             account = (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[0]
             buf_result = {'success': True, 'result': None, 'act': None, 'type': package['mode']}
 
-            if account['vip_level'] == 3:
+            if package['mode'] == 'sora':
+                cost_points = 10
+                if params['video_len'] == 4:
+                    cost_points = 15
+                elif params['video_len'] == 5:
+                    cost_points = 18
+
+            elif account['vip_level'] == 3:
                 cost_points = 0
 
             if cost_points <= account['balance']:
@@ -138,7 +102,11 @@ async def sd_genreate(request: Request, ws):
                                                                      f"{user_id}.png")
 
                 # send task
-                task_result = request.app.ctx.sd_workshop(**format_package)
+                if package['mode'] == 'sora':
+                    task_result = request.app.ctx.sora_workshop(**format_package)
+                else:
+                    task_result = request.app.ctx.sd_workshop(**format_package)
+
                 await ws.send(ujson.dumps({'success': True, 'result': str(task_result), 'act': 'save_task_id', 'type': package['mode']}))
                 await request.app.ctx.redis_session.rpush('celery_task_queue', str(task_result))
 

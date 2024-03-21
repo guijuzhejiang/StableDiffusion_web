@@ -2,9 +2,12 @@ import os.path
 
 import traceback
 import urllib.parse
+from mimetypes import guess_type
+
 import aiofile
 import ujson
-from sanic.response import json as sanic_json, file_stream, text
+from sanic.compat import open_async
+from sanic.response import json as sanic_json, file_stream, text, ResponseStream
 from sanic.views import HTTPMethodView
 from lib.celery_workshop.wokrshop import WorkShop
 from lib.common.common_util import encrypt, generate_random_digits, uuid_to_number_string
@@ -61,7 +64,7 @@ class ImageProvider(HTTPMethodView):
             dir_storage_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], 'hires')
             fp = os.path.join(dir_storage_path, request.args.get("imgpath"))
 
-        return await file_stream(fp)
+        return await file_stream(fp, chunk_size=1024)
 
 
 class FetchUserHistory(HTTPMethodView):
@@ -195,6 +198,76 @@ class UserEditNickname(HTTPMethodView):
             return sanic_json({'success': False, 'message': 'backend.api.error.default'})
         else:
             return sanic_json({'success': True})
+
+
+class FetchVideo(HTTPMethodView):
+    """
+        用户上传图片
+    """
+
+    def parse_range_header(self, range_header, file_size):
+        # 解析Range参数
+        start, end = range_header.split('=')[1].split('-')
+        start = int(start)
+        end = int(end) if end else file_size - 1
+
+        # 确保范围在文件大小范围内
+        start = min(max(start, 0), file_size - 1)
+        end = min(end, file_size - 1)
+
+        return start, end
+
+    async def get(self, request):
+        try:
+            file_path = "/home/ray/Videos/simplescreenrecorder-2023-12-20_15.47.07.mp4"
+            # 获取文件大小
+            file_size = os.path.getsize(file_path)
+            # 获取请求头Range参数
+            range_header = request.headers.get("Range")
+            headers = {}
+
+            if range_header:
+                # 解析Range参数
+                start, end = self.parse_range_header(range_header, file_size)
+                status = 206
+                headers["Content-Range"] = f"bytes {start}-{end}/{file_size}"
+                headers['Content-Length'] = str(end - start + 1)
+                chunk_size: int = 4096
+                mime_type = None
+                mime_type = mime_type or guess_type(file_path)[0] or "text/plain"
+
+                # 这段代码就是拿 file_stream 里的源码改的，直接使用file_stream总是报错，有大佬帮忙解释并实现下吗
+                async def _streaming_fn(response):
+                    async with await open_async(file_path, mode="rb") as f:
+                        await f.seek(start)
+                        to_send = end - start + 1
+                        while to_send > 0:
+                            content = await f.read(min((to_send, chunk_size)))
+                            if len(content) < 1:
+                                break
+                            to_send -= len(content)
+                            await response.write(content)
+
+                return ResponseStream(
+                    streaming_fn=_streaming_fn,
+                    status=status,
+                    headers=headers,
+                    content_type=mime_type,
+                )
+            else:
+                return await file_stream(file_path, headers=headers)
+            # return await file_stream(
+            #     "/home/ray/Videos/simplescreenrecorder-2023-12-20_15.47.07.mp4",
+            #     chunk_size=1024,
+            #     mime_type="application/metalink4+xml",
+            #     headers={
+            #         "Content-Disposition": 'Attachment; filename="nicer_name.meta4"',
+            #         "Content-Type": "application/metalink4+xml",
+            #     },
+            # )
+        except Exception:
+            print(traceback.format_exc())
+            return sanic_json({'success': False, 'message': 'backend.api.error.default'})
 
 
 class SendCaptcha(HTTPMethodView):
