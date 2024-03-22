@@ -20,7 +20,7 @@ class Image2Video():
         ckpt_path='/media/zzg/GJ_disk01/pretrained_model/Doubiiu/DynamiCrafter_'+resolution.split('_')[1]+'/model.ckpt'
         # ckpt_path='/media/zzg/GJ_disk01/pretrained_model/Kijai/DynamiCrafter_pruned/dynamicrafter_1024_v1_bf16.safetensors'
         print(f'ckpt_path:{ckpt_path}')
-        config_file='configs/inference_'+resolution.split('_')[1]+'_v1.0_zzg.yaml'
+        config_file='/home/zzg/workspace/pycharm/DynamiCrafter/configs/inference_'+resolution.split('_')[1]+'_v1.0_zzg.yaml'
         config = OmegaConf.load(config_file)
         model_config = config.pop("model", OmegaConf.create())
         model_config['params']['unet_config']['params']['use_checkpoint']=False   

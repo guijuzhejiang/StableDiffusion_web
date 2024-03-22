@@ -15,7 +15,9 @@ import importlib
 import os
 import traceback
 
+import numpy as np
 import ujson
+from PIL import Image
 
 from lib.common.common_util import logging
 from lib.celery_workshop.operator import Operator
@@ -48,7 +50,7 @@ class OperatorSora(Operator):
             params = ujson.loads(kwargs['params'][0])
             origin = kwargs['origin']
 
-            res = self.Image2Video.get_image(kwargs['input_image'], 'man fishing in a boat at sunset')
+            res = self.Image2Video.get_image(np.array(Image.open(kwargs['input_image'])), 'man fishing in a boat at sunset')
 
             return {'success': True, 'result': res}
 
