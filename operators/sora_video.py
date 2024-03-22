@@ -71,8 +71,9 @@ class OperatorSora(Operator):
                 if 'preset_index' not in params.keys():
                     if self.predict_image(kwargs['input_image']):
                         return {'success': False, 'result': 'backend.check.error.nsfw'}
-                else:
-                    kwargs['input_image'] = f"guiju/assets/preset/{proceed_mode}/{params['preset_index']}.jpg"
+
+            if 'preset_index' in params.keys():
+                kwargs['input_image'] = f"guiju/assets/preset/{proceed_mode}/{params['preset_index']}.jpg"
 
             self.Image2Video.model_list[0].temporal_length = int(params['video_len']) * 8
             self.Image2Video.get_image(np.array(Image.open(kwargs['input_image'])), params['prompt'], os.path.join(dir_path, video_fn), seed=secrets.randbelow(10000) + 1)
