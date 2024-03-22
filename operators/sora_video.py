@@ -13,7 +13,9 @@
 import datetime
 import importlib
 import os
+import secrets
 import traceback
+import urllib.parse
 
 import numpy as np
 import ujson
@@ -21,6 +23,7 @@ from PIL import Image
 
 from lib.common.common_util import logging
 from lib.celery_workshop.operator import Operator
+from utils.global_vars import CONFIG
 
 
 class OperatorSora(Operator):
@@ -48,11 +51,17 @@ class OperatorSora(Operator):
             print(f"{str(datetime.datetime.now())} sora operation start {kwargs['input_image']} !!!!!!!!!!!!!!!!!!!!!!!!!!")
             user_id = kwargs['user_id'][0]
             params = ujson.loads(kwargs['params'][0])
+            proceed_mode = kwargs['mode'][0]
             origin = kwargs['origin']
 
-            res = self.Image2Video.get_image(np.array(Image.open(kwargs['input_image'])), 'man fishing in a boat at sunset')
+            dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], proceed_mode, user_id)
+            os.makedirs(dir_path, exist_ok=True)
+            video_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.mp4"
 
-            return {'success': True, 'result': res}
+            res = self.Image2Video.get_image(np.array(Image.open(kwargs['input_image'])), params['prompt'], os.path.join(dir_path, video_fn), fs=int(params['video_len']), seed=secrets.randbelow(10000) + 1)
+            url_fp = f"{'localhost/service' + str(CONFIG['server']['port']) if CONFIG['local'] else f'{origin}/service'}/user/video/fetch?path={video_fn}&uid={urllib.parse.quote(user_id)}&category={proceed_mode}"
+
+            return {'success': True, 'result': url_fp}
 
         except Exception:
             logging(
