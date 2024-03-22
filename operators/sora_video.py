@@ -42,7 +42,7 @@ class OperatorSora(Operator):
 
         print('start init OperatorSora')
         super().__init__()
-
+        self.predict_image = getattr(importlib.import_module('guiju.predictor_opennsfw2'), 'predict_image')
         self.Image2Video = getattr(importlib.import_module('scripts.gradio.i2v_test_zzg'), 'Image2Video')(resolution='576_1024')
         self.supabase_client = getattr(importlib.import_module('aiosupabase'), 'Supabase')
         self.supabase_client.configure(
@@ -55,16 +55,6 @@ class OperatorSora(Operator):
         try:
             super().__call__(*args, **kwargs)
             self.update_progress(1)
-            # def worker(stop_flag, self, count=300, update_interval=5):
-            #     elapsed_secs = 0
-            #     while not stop_flag.is_set():
-            #         self.update_progress(int(elapsed_secs/count*100))
-            #         time.sleep(update_interval)
-            #     print('Thread stopped')
-            #
-            # stop_flag = threading.Event()
-            # fake_progress = threading.Thread(target=worker, args=(stop_flag, self,))
-            # fake_progress.start()
 
             # log start
             print(f"{str(datetime.datetime.now())} sora operation start {kwargs['input_image']} !!!!!!!!!!!!!!!!!!!!!!!!!!")
@@ -77,8 +67,14 @@ class OperatorSora(Operator):
             os.makedirs(dir_path, exist_ok=True)
             video_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}"
 
-            self.Image2Video.model_list[0].temporal_length = int(params['video_len']) * 8
+            if 'guijutech' in origin or 'ingjp' in origin:
+                if 'preset_index' not in params.keys():
+                    if self.predict_image(kwargs['input_image']):
+                        return {'success': False, 'result': 'backend.check.error.nsfw'}
+                else:
+                    kwargs['input_image'] = f"guiju/assets/preset/{proceed_mode}/{params['preset_index']}.jpg"
 
+            self.Image2Video.model_list[0].temporal_length = int(params['video_len']) * 8
             self.Image2Video.get_image(np.array(Image.open(kwargs['input_image'])), params['prompt'], os.path.join(dir_path, video_fn), seed=secrets.randbelow(10000) + 1)
             url_fp = f"{'localhost/service' + str(CONFIG['server']['port']) if CONFIG['local'] else f'{origin}/service'}/user/video/fetch?path={video_fn}&uid={urllib.parse.quote(user_id)}&category={proceed_mode}"
 

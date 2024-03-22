@@ -443,10 +443,7 @@ class OperatorSD(Operator):
             # nsfw check
             if not (proceed_mode == 'text2image' and params['mode'] == 'text2image'):
                 if 'guijutech' in origin or 'ingjp' in origin:
-                    if 'preset_index' in params.keys():
-                        if self.predict_image(f"guiju/assets/preset/{proceed_mode}/{params['preset_index']}.jpg"):
-                            return {'success': False, 'result': 'backend.check.error.nsfw'}
-                    else:
+                    if 'preset_index' not in params.keys():
                         if self.predict_image(kwargs['input_image']):
                             return {'success': False, 'result': 'backend.check.error.nsfw'}
 
