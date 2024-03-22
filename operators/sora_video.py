@@ -65,7 +65,7 @@ class OperatorSora(Operator):
 
             dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], proceed_mode, user_id)
             os.makedirs(dir_path, exist_ok=True)
-            video_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}"
+            video_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.mp4"
 
             if 'guijutech' in origin or 'ingjp' in origin:
                 if 'preset_index' not in params.keys():

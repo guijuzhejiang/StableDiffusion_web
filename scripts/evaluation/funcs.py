@@ -214,7 +214,7 @@ def save_videos(batch_tensors, savedir, filenames, fps=10):
         grid = torch.stack(frame_grids, dim=0) # stack in temporal dim [t, 3, n*h, w]
         grid = (grid + 1.0) / 2.0
         grid = (grid * 255).to(torch.uint8).permute(0, 2, 3, 1)
-        savepath = os.path.join(savedir, f"{filenames[idx]}.mp4")
+        savepath = os.path.join(savedir, f"{filenames[idx]}")
         torchvision.io.write_video(savepath, grid, fps=fps, video_codec='h264', options={'crf': '10'})
 
 
