@@ -20,7 +20,7 @@ class WorkShop(object):
         self.op = op
         celery_prefix_name = WorkShop.get_celery_prefix_name(op.celery_task_name, op.cuda)
         # , broker_heartbeat = 0
-        self.celery_app = Celery(f"{celery_prefix_name}_app", broker='pyamqp://localhost:5672', backend='redis://localhost:6379/0', broker_heartbeat=0)
+        self.celery_app = Celery(f"{celery_prefix_name}_app", broker=f'pyamqp://localhost:5672{"/video" if op.__name__=="OperatorSora" else "/"}', backend='redis://localhost:6379/0', broker_heartbeat=0)
 
     def clear_queue(self):
         self.celery_app.control.purge()
@@ -46,7 +46,7 @@ class WorkShop(object):
         print(celery_prefix_name)
         while True:
             try:
-                app = Celery(f"{celery_prefix_name}_app", broker='pyamqp://localhost:5672', backend='redis://localhost:6379/0', broker_heartbeat=0)
+                app = Celery(f"{celery_prefix_name}_app", broker=f'pyamqp://localhost:5672{"/video" if op_name=="OperatorSora" else "/"}', backend='redis://localhost:6379/0', broker_heartbeat=0)
                 module = getattr(import_module(f'operators'), op_name)
                 redis_client = redis.StrictRedis(host='localhost', port=6379, db=1)
 

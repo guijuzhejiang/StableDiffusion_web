@@ -12,7 +12,7 @@ import torchvision.transforms as transforms
 from pytorch_lightning import seed_everything
 
 
-class Image2Video():
+class Image2Video(object):
     def __init__(self, result_dir='./tmp/', gpu_num=1, resolution='256_256', save_fps=16) -> None:
         self.resolution = (int(resolution.split('_')[0]), int(resolution.split('_')[1]))  # hw
 

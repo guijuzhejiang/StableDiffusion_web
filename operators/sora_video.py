@@ -43,7 +43,7 @@ class OperatorSora(Operator):
             super().__call__(*args, **kwargs)
 
             # log start
-            print(f"{str(datetime.datetime.now())} sora operation start !!!!!!!!!!!!!!!!!!!!!!!!!!")
+            print(f"{str(datetime.datetime.now())} sora operation start {kwargs['input_image']} !!!!!!!!!!!!!!!!!!!!!!!!!!")
             user_id = kwargs['user_id'][0]
             params = ujson.loads(kwargs['params'][0])
             origin = kwargs['origin']
