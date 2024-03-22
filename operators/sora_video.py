@@ -36,7 +36,7 @@ class OperatorSora(Operator):
         print('start init OperatorSora')
         super().__init__()
 
-        self.Image2Video = getattr(importlib.import_module('scripts.gradio.i2v_test_zzg'), 'Image2Video')()
+        self.Image2Video = getattr(importlib.import_module('scripts.gradio.i2v_test_zzg'), 'Image2Video')(resolution='576_1024')
 
     def __call__(self, *args, **kwargs):
         try:
@@ -48,7 +48,7 @@ class OperatorSora(Operator):
             params = ujson.loads(kwargs['params'][0])
             origin = kwargs['origin']
 
-            res = self.Image2Video(kwargs['input_image'], 'man fishing in a boat at sunset')
+            res = self.Image2Video.get_image(kwargs['input_image'], 'man fishing in a boat at sunset')
 
             return {'success': True, 'result': res}
 
