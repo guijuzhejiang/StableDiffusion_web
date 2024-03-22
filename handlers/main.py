@@ -221,7 +221,7 @@ class FetchVideo(HTTPMethodView):
         try:
             user_id = urllib.parse.unquote(request.args.get("uid"))
             category = request.args.get("category", 'sora')
-            video_fn = request.args.get("category", 'path')
+            video_fn = request.args.get("path")
             dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], category, user_id)
 
             file_path = os.path.join(dir_path, video_fn)
