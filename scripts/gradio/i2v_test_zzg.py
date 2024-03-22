@@ -10,7 +10,7 @@ from pytorch_lightning import seed_everything
 
 
 class Image2Video():
-    def __init__(self, gpu_num=1, resolution='256_256', save_fps=16) -> None:
+    def __init__(self, gpu_num=1, resolution='256_256', save_fps=8) -> None:
         self.resolution = (int(resolution.split('_')[0]), int(resolution.split('_')[1])) #hw
 
         # self.result_dir = result_dir
