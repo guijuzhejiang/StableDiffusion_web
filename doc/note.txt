@@ -4,3 +4,20 @@ jp_char_lack:
 
 
 [\u4e00-\u9fa5]
+
+
+# 开启rabbitmq web界面
+Host]# rabbitmq-plugins enable rabbitmq_management
+    The following plugins have been enabled:
+        rabbitmq_web_dispatch
+        rabbitmq_management_agent
+        rabbitmq_management
+
+
+rabbitmq:
+rabbitmqctl list_users
+rabbitmqctl add_vhost video
+rabbitmqctl delete_vhost video
+
+rabbitmqctl add_user me me123 # 设置用户和密码
+rabbitmqctl set_permissions -p /myhost me ".*" ".*" ".*"  # vhost 设置权限
