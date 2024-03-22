@@ -77,7 +77,7 @@ class OperatorSora(Operator):
             os.makedirs(dir_path, exist_ok=True)
             video_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}"
 
-            self.Image2Video.model_list[0].temporal_length = int(params['video_len'])
+            self.Image2Video.model_list[0].temporal_length = int(params['video_len']) * 8
 
             self.Image2Video.get_image(np.array(Image.open(kwargs['input_image'])), params['prompt'], os.path.join(dir_path, video_fn), seed=secrets.randbelow(10000) + 1)
             url_fp = f"{'localhost/service' + str(CONFIG['server']['port']) if CONFIG['local'] else f'{origin}/service'}/user/video/fetch?path={video_fn}&uid={urllib.parse.quote(user_id)}&category={proceed_mode}"
