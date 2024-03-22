@@ -14,6 +14,8 @@ import datetime
 import importlib
 import os
 import secrets
+import threading
+import time
 import traceback
 import urllib.parse
 
@@ -42,9 +44,26 @@ class OperatorSora(Operator):
         super().__init__()
 
         self.Image2Video = getattr(importlib.import_module('scripts.gradio.i2v_test_zzg'), 'Image2Video')(resolution='576_1024')
+        self.supabase_client = getattr(importlib.import_module('aiosupabase'), 'Supabase')
+        self.supabase_client.configure(
+            url=CONFIG['supabase']['url'],
+            key=CONFIG['supabase']['key'],
+            debug_enabled=True,
+        )
 
     def __call__(self, *args, **kwargs):
         try:
+            def worker(stop_flag, self, count=300, update_interval=5):
+                elapsed_secs = 0
+                while not stop_flag.is_set():
+                    self.update_progress(int(elapsed_secs/count*100))
+                    time.sleep(update_interval)
+                print('Thread stopped')
+
+            stop_flag = threading.Event()
+            fake_progress = threading.Thread(target=worker, args=(stop_flag, self,))
+            fake_progress.start()
+
             super().__call__(*args, **kwargs)
 
             # log start
@@ -58,8 +77,21 @@ class OperatorSora(Operator):
             os.makedirs(dir_path, exist_ok=True)
             video_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.mp4"
 
-            res = self.Image2Video.get_image(np.array(Image.open(kwargs['input_image'])), params['prompt'], os.path.join(dir_path, video_fn), fs=int(params['video_len']), seed=secrets.randbelow(10000) + 1)
+            self.Image2Video.get_image(np.array(Image.open(kwargs['input_image'])), params['prompt'], os.path.join(dir_path, video_fn), fs=int(params['video_len']), seed=secrets.randbelow(10000) + 1)
             url_fp = f"{'localhost/service' + str(CONFIG['server']['port']) if CONFIG['local'] else f'{origin}/service'}/user/video/fetch?path={video_fn}&uid={urllib.parse.quote(user_id)}&category={proceed_mode}"
+
+            try:
+                self.supabase_client \
+                    .table("gallery") \
+                    .insert({"user_id": user_id,
+                             'instance_id': video_fn,
+                             'prompt': params['prompt'] if 'prompt' in params.keys() else None,
+                             'category': proceed_mode,
+                             'config': params,
+                             }) \
+                    .execute()
+            except Exception:
+                print(traceback.format_exc())
 
             return {'success': True, 'result': url_fp}
 
@@ -68,5 +100,9 @@ class OperatorSora(Operator):
                 f"[ocr predict fatal error][{datetime.datetime.now()}]:"
                 f"{traceback.format_exc()}",
                 f"logs/error.log")
+
+        finally:
+            stop_flag.set()
+            fake_progress.join()
 
         return {'success': False, 'result': 'backend.generate.error.failed'}

@@ -4,19 +4,17 @@ from omegaconf import OmegaConf
 import torch
 from scripts.evaluation.funcs import load_model_checkpoint, save_videos, batch_ddim_sampling, get_latent_z
 from utils.utils import instantiate_from_config
-from huggingface_hub import hf_hub_download
 from einops import repeat
 import torchvision.transforms as transforms
 from pytorch_lightning import seed_everything
 
 
 class Image2Video():
-    def __init__(self, result_dir='./tmp/', gpu_num=1, resolution='256_256', save_fps=16) -> None:
+    def __init__(self, gpu_num=1, resolution='256_256', save_fps=16) -> None:
         self.resolution = (int(resolution.split('_')[0]), int(resolution.split('_')[1])) #hw
 
-        self.result_dir = result_dir
-        if not os.path.exists(self.result_dir):
-            os.mkdir(self.result_dir)
+        # self.result_dir = result_dir
+        # os.makedirs(self.result_dir, exist_ok=True)
         ckpt_path='/media/zzg/GJ_disk01/pretrained_model/Doubiiu/DynamiCrafter_'+resolution.split('_')[1]+'/model.ckpt'
         # ckpt_path='/media/zzg/GJ_disk01/pretrained_model/Kijai/DynamiCrafter_pruned/dynamicrafter_1024_v1_bf16.safetensors'
         print(f'ckpt_path:{ckpt_path}')
@@ -35,7 +33,7 @@ class Image2Video():
         self.model_list = model_list
         self.save_fps = save_fps
 
-    def get_image(self, image, prompt, steps=50, cfg_scale=7.5, eta=1.0, fs=3, seed=123):
+    def get_image(self, image, prompt, save_path, steps=50, cfg_scale=7.5, eta=1.0, fs=3, seed=123):
         seed_everything(seed)
         transform = transforms.Compose([
             transforms.Resize(min(self.resolution)),
@@ -87,10 +85,12 @@ class Image2Video():
             if len(prompt_str) == 0:
                 prompt_str = 'empty_prompt'
 
-        save_videos(batch_samples, self.result_dir, filenames=[prompt_str], fps=self.save_fps)
+        filename = os.path.basename(save_path)
+        dirname = os.path.dirname(save_path)
+        save_videos(batch_samples, dirname, filenames=[filename], fps=self.save_fps)
         print(f"Saved in {prompt_str}. Time used: {(time.time() - start):.2f} seconds")
         model = model.cpu()
-        return os.path.join(self.result_dir, f"{prompt_str}.mp4")
+        return save_path
 
 
 if __name__ == '__main__':

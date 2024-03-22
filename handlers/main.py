@@ -219,7 +219,12 @@ class FetchVideo(HTTPMethodView):
 
     async def get(self, request):
         try:
-            file_path = "/home/ray/Videos/simplescreenrecorder-2023-12-20_15.47.07.mp4"
+            user_id = urllib.parse.unquote(request.args.get("uid"))
+            category = request.args.get("category", 'sora')
+            video_fn = request.args.get("category", 'path')
+            dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], category, user_id)
+
+            file_path = os.path.join(dir_path, video_fn)
             # 获取文件大小
             file_size = os.path.getsize(file_path)
             # 获取请求头Range参数
