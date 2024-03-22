@@ -75,7 +75,7 @@ class OperatorSora(Operator):
 
             dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], proceed_mode, user_id)
             os.makedirs(dir_path, exist_ok=True)
-            video_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.mp4"
+            video_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}"
 
             self.Image2Video.model_list[0].temporal_length = int(params['video_len'])
 
