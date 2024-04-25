@@ -583,7 +583,7 @@ class MagicModel(object):
 
         # controlnet args
         controlnet_args_unit1 = self.operator.scripts.scripts_img2img.alwayson_scripts[
-            self.operator.cnet_idx].get_default_ui_unit()
+            self.operator.cnet_idx+1].get_default_ui_unit()
         controlnet_args_unit1.batch_images = ''
         # controlnet_args_unit1.control_mode = 'Balanced' if _model_mode == 0 else 'My prompt is more important'
         controlnet_args_unit1.control_mode = 'ControlNet is more important' if _model_mode == 0 else 'My prompt is more important'
@@ -766,7 +766,7 @@ class MagicModel(object):
 
             # controlnet args
             controlnet_args_unit1 = self.operator.scripts.scripts_img2img.alwayson_scripts[
-                self.operator.cnet_idx].get_default_ui_unit()
+                self.operator.cnet_idx+1].get_default_ui_unit()
 
             controlnet_args_unit1.batch_images = ''
             controlnet_args_unit1.control_mode = 'My prompt is more important'
