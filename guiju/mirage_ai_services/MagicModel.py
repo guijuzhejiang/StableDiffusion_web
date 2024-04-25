@@ -703,7 +703,7 @@ class MagicModel(object):
                                             _output_model_width,
                                             scale_by,
                                             resize_mode,
-                                            inpaint_full_res,
+                                            False,
                                             inpaint_full_res_padding,
                                             inpainting_mask_invert,
                                             '',
