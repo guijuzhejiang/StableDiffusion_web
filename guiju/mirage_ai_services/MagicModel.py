@@ -650,7 +650,8 @@ class MagicModel(object):
                     sam_result_tmp_png_fp,
                     0,  # sam_output_chosen_mask
                     False, sam_result_tmp_png_fp, [], False, 0, 1, False, False, 0, None, [], -2, False, [],
-                    False, 0, None, None,
+                    '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
+                    True, True, '',
                     # tiled diffsuion
                     False, 'MultiDiffusion', False, True,
                     1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
@@ -662,7 +663,15 @@ class MagicModel(object):
                     False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
                     # tiled_vae
                     False, 256, 48, True, True, True,
-                    False
+                    False,
+                    # refiner
+                    False, '', 0.8,
+                    # seed
+                    -1, False, -1, 0, 0, 0,
+                    # soft inpainting
+                    False, 1, 0.5, 4, 0, 0.5, 2,
+                    # tiled global
+                    False, 'DemoFusion', True, 128, 64, 4, 2, False, 10, 1, 1, 64, False, True, 3, 1, 1
                     ]
 
         # celery_task.update_state(state='PROGRESS', meta={'progress': 50})
@@ -804,24 +813,29 @@ class MagicModel(object):
                         True, False, 0, ok_model_res,
                         sam_bg_tmp_png_fp_list[ok_idx],
                         0,  # sam_output_chosen_mask
-                        False, sam_bg_tmp_png_fp_list[ok_idx], [], False, 0, 1, False, False, 0, None, [], -2,
-                        False, [],
-                        False, 0, None, None,
+                        False, sam_bg_tmp_png_fp_list[ok_idx], [], False, 0, 1, False, False, 0, None, [], -2, False, [],
+                        '<ul>\n<li><code>CFG Scale</code>should be 2 or lower.</li>\n</ul>\n',
+                        True, True, '',
                         # tiled diffsuion
                         False, 'MultiDiffusion', False, True,
                         1024, 1024, 64, 64, 32, 8, 'None', 2, False, 10, 1, 1,
-                        64, False, False, False, False, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2,
-                        -1.0,
-                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2,
-                        '',
+                        64, False, False, False, False, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
                         '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
-                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2,
-                        '',
+                        False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '',
                         '', 'Background', 0.2, -1.0, False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
                         False, 0.4, 0.4, 0.2, 0.2, '', '', 'Background', 0.2, -1.0,
                         # tiled_vae
                         False, 256, 48, True, True, True,
-                        False
+                        False,
+                        # refiner
+                        False, '', 0.8,
+                        # seed
+                        -1, False, -1, 0, 0, 0,
+                        # soft inpainting
+                        False, 1, 0.5, 4, 0, 0.5, 2,
+                        # tiled global
+                        False, 'DemoFusion', True, 128, 64, 4, 2, False, 10, 1, 1, 64, False, True, 3, 1, 1
                         ]
             ok_res[ok_idx] = \
                 self.operator.img2img.img2img(task_id, 4, sd_bg_positive_prompt, sd_bg_negative_prompt,
