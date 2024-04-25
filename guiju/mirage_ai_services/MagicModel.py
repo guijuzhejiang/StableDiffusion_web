@@ -553,7 +553,7 @@ class MagicModel(object):
         init_img_inpaint = None
         init_mask_inpaint = None
         steps = 30
-        sampler_index = 18  # sampling method modules/sd_samplers_kdiffusion.py
+        sampler_index = 'DPM++ 2S a Karras'  # sampling method modules/sd_samplers_kdiffusion.py
         mask_blur = 0
         mask_alpha = 0
         inpainting_fill = 1
@@ -712,7 +712,6 @@ class MagicModel(object):
                                             override_settings_texts,
                                             False,
                                             [],
-                                            [],
                                             '',
                                             *sam_args)
 
@@ -769,7 +768,7 @@ class MagicModel(object):
 
             task_id = f"task({''.join([random.choice(string.ascii_letters) for c in range(15)])})"
             steps = 20
-            sampler_index = 18  # sampling method modules/sd_samplers_kdiffusion.py
+            sampler_index = 'DPM++ 2S a Karras'  # sampling method modules/sd_samplers_kdiffusion.py
             inpainting_fill = 1
             restore_faces = False
             batch_size = 1
@@ -863,7 +862,6 @@ class MagicModel(object):
                                               '',
                                               override_settings_texts,
                                               False,
-                                              [],
                                               [],
                                               '',
                                               *sam_args)[0][0]
