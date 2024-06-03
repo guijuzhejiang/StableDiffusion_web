@@ -24,3 +24,9 @@ stdout_logfile=/home/zzg/workspace/pycharm/StableDiffusion_web/factory.info.log 
 user=zzg ;
 autostart=true ;
 stopsignal=TERM ;
+
+
+
+
+test pub: pk_test_18fa45e4801d15ac25abd
+pri: sk_test_38677e6ab39d8f589894f

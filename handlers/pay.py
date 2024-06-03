@@ -4,6 +4,8 @@
 import base64
 import random
 import traceback
+import uuid
+
 import pytz
 import string
 from datetime import datetime, timedelta, date
@@ -120,6 +122,30 @@ class QueryBalance(HTTPMethodView):
                                 tzinfo=pytz.UTC)) >= timedelta(minutes=15):
                             need_del_transaction.append(row['id'])
 
+            elif '@elepay' in row['out_trade_no']:
+                code = row['out_trade_no'].replace('@elepay', '')
+                url = f"https://api.elepay.io/codes/{code}"
+
+                headers = {
+                    "accept": "application/json;charset=utf-8",
+                    "authorization": "Bearer sk_test_38677e6ab39d8f589894f"
+                }
+
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(url, headers=headers)
+
+                    result = response.json()
+                    if 'status' in result.keys() and result['status'] == 'captured':
+                        data = (await request.app.ctx.supabase_client.atable("transaction").update(
+                            {"status": 1}).eq("id", row['id']).eq("is_plus", True).execute()).data
+                        if len(data) == 0:
+                            print(row['id'] + " update transaction false")
+                        pre_charge_amount += int(row['amount'] / CONFIG['payment']['point_price']['USD'])
+                    else:
+                        iso_created_at = row['created_at'].split('.')[0] + '+' + row['created_at'].split('+')[-1]
+                        if (datetime.now(pytz.UTC) - datetime.fromisoformat(iso_created_at).replace(
+                                tzinfo=pytz.UTC)) >= timedelta(minutes=15):
+                            need_del_transaction.append(row['id'])
             else:
                 code, message = request.app.ctx.wxpay.query(
                     # transaction_id='demo-transation-id'
@@ -140,7 +166,7 @@ class QueryBalance(HTTPMethodView):
                         need_del_transaction.append(row['id'])
 
         account = \
-        (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[0]
+            (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[0]
         if pre_charge_amount > 0:
             data = (await request.app.ctx.supabase_client.atable("account").update(
                 {"balance": account['balance'] + pre_charge_amount}).eq("id", account['id']).execute()).data
@@ -363,13 +389,17 @@ class PayPalCreateSub(HTTPMethodView):
             # else:
             #     add_balance = 1625
 
-            account = (await request.app.ctx.supabase_client.atable("account").select("balance").eq("id", user_id).execute()).data[0]
-            subscription = (await request.app.ctx.supabase_client.atable("subscription").select("*").eq("user_id", user_id).execute()).data
+            account = (await request.app.ctx.supabase_client.atable("account").select("balance").eq("id",
+                                                                                                    user_id).execute()).data[
+                0]
+            subscription = (await request.app.ctx.supabase_client.atable("subscription").select("*").eq("user_id",
+                                                                                                        user_id).execute()).data
 
             if len(subscription) > 0:
-                data = await request.app.ctx.supabase_client.atable("subscription").update({'subscription_id': subscription_id,
-                                                                                            'supplier': 'paypal',
-                                                                                            }).eq("user_id", user_id).execute()
+                data = await request.app.ctx.supabase_client.atable("subscription").update(
+                    {'subscription_id': subscription_id,
+                     'supplier': 'paypal',
+                     }).eq("user_id", user_id).execute()
 
             else:
                 data = await request.app.ctx.supabase_client.atable("subscription").insert({"user_id": user_id,
@@ -383,7 +413,8 @@ class PayPalCreateSub(HTTPMethodView):
                                                                                        'is_plus': True,
                                                                                        'status': 1,
                                                                                        }).execute()
-            res = (await request.app.ctx.supabase_client.atable("account").update({"balance": account['balance'] + add_balance, 'vip_level': vip_level}).eq("id", user_id).execute()).data
+            res = (await request.app.ctx.supabase_client.atable("account").update(
+                {"balance": account['balance'] + add_balance, 'vip_level': vip_level}).eq("id", user_id).execute()).data
 
             # 获取次月结算日
             current_date = datetime.now()
@@ -405,7 +436,8 @@ class CheckVip(HTTPMethodView):
     async def post(self, request):
         try:
             user_id = request.form['user_id'][0]
-            res = (await request.app.ctx.supabase_client.atable("account").select("vip_level").eq("id", user_id).execute()).data
+            res = (await request.app.ctx.supabase_client.atable("account").select("vip_level").eq("id",
+                                                                                                  user_id).execute()).data
 
             return sanic_json({'success': res[0]['vip_level'] > 0}, status=200)
 
@@ -418,10 +450,12 @@ class PayPalCancelSub(HTTPMethodView):
     """
         取消订阅
     """
+
     async def post(self, request):
         try:
             user_id = request.form['user_id'][0]
-            subscription = (await request.app.ctx.supabase_client.atable("subscription").select("*").eq("user_id", user_id).execute()).data
+            subscription = (await request.app.ctx.supabase_client.atable("subscription").select("*").eq("user_id",
+                                                                                                        user_id).execute()).data
             if len(subscription) > 0:
 
                 # get access token
@@ -445,7 +479,7 @@ class PayPalCancelSub(HTTPMethodView):
                 res = (await request.app.ctx.supabase_client.atable("account").update({"vip_level": 0}).eq("id",
                                                                                                            user_id).execute()).data
                 data = (await request.app.ctx.supabase_client.atable("subscription").delete().eq("user_id",
-                                                                                                user_id).execute()).data
+                                                                                                 user_id).execute()).data
 
                 return sanic_json({'success': True})
             else:
@@ -460,6 +494,7 @@ class PayPalWebhook(HTTPMethodView):
     """
         paypal webhook
     """
+
     async def post(self, request):
         try:
             print(request.json)
@@ -467,3 +502,97 @@ class PayPalWebhook(HTTPMethodView):
         except Exception:
             print(traceback.format_exc())
             return sanic_json({'success': False, 'result': 'backend.api.error.default'})
+
+
+class ElepayCreateEasyQR(HTTPMethodView):
+    """
+        創建EasyQR
+    """
+
+    async def post(self, request):
+        try:
+            user_id = request.form['user_id'][0]
+            amount = request.form['amount'][0]
+            charge_points = int(int(amount) / CONFIG['payment']['point_price']['USD'])
+
+            account = \
+                (await request.app.ctx.supabase_client.atable("account").select("access_level").eq("id",
+                                                                                                   user_id).execute()).data[
+                    0]
+
+            # query discount
+            transaction_data = (
+                await request.app.ctx.supabase_client.atable("transaction").select("*").eq("user_id", user_id).eq(
+                    "is_plus", True).eq("status", 1).execute())
+            first_charge = len(transaction_data.data) == 0
+
+            available_discount = []
+            if first_charge:
+                available_discount.append(discount_dict['first_time'][1])
+
+            start_date = date(2023, 12, 1)
+            end_date = date(2023, 12, 29)
+            if start_date <= date.today() <= end_date:
+                available_discount.append(discount_dict[0][1])
+
+            fee = int(amount)
+            for x in available_discount:
+                fee = fee * x
+
+            access_token = "sk_test_38677e6ab39d8f589894f"
+
+            url = "https://api.elepay.io/codes"
+
+            headers = {
+                "accept": "application/json;charset=utf-8",
+                "content-type": "application/json;charset=utf-8",
+                "authorization": f"Bearer {access_token}"
+            }
+            payload = {
+                "currency": "JPY",
+                # 'value': f"{str(round(float(fee), 2))}" if account['access_level'] != 0 else '0.01',
+                "amount": int(fee*157.05) if account['access_level'] != 0 else 1,
+                "orderNo": str(uuid.uuid4()),
+                "frontUrl": "http://localhost/elepay/done" if CONFIG['debug_mode'] else CONFIG['server']['client_access_url'].replace('service', 'elepay/done'),
+            }
+            async with httpx.AsyncClient() as client:
+                response = await client.post(url,
+                                             data=ujson.dumps(payload),
+                                             headers=headers)
+
+                if response.status_code == 201:
+
+                    if 'id' in response.json().keys():
+                        data = await request.app.ctx.supabase_client.atable("transaction").insert({"user_id": user_id,
+                                                                                               'amount': charge_points,
+                                                                                               'is_plus': True,
+                                                                                               'status': 0,
+                                                                                               'out_trade_no': f"{response.json()['id']}@elepay"}).execute()
+
+                    return sanic_json({'success': True, 'result': response.json()}, status=response.status_code)
+
+        except Exception:
+            print(traceback.format_exc())
+            return sanic_json({'success': False}, status=500)
+
+
+class ElepayQueryPayment(HTTPMethodView):
+    """
+        查询微信支付是否成功
+    """
+
+    async def post(self, request):
+        code = request.form['out_trade_no'][0].replace('@elepay', '')
+        url = f"https://api.elepay.io/codes/{code}"
+
+        headers = {
+            "accept": "application/json;charset=utf-8",
+            "authorization": "Bearer sk_test_38677e6ab39d8f589894f"
+        }
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url,
+                                         headers=headers)
+
+        return sanic_json({'success': response.status_code == 200 and response.json()["status"] == "captured", 'result': response.json()})
+

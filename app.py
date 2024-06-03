@@ -8,7 +8,8 @@ from sanic import Sanic
 
 from handlers.login import WeChatLogin, LineLogin, PasswordLogin, GoogleLogin
 from handlers.pay import WechatReqPayQRCode, PayPalCreateOrder, WechatQueryPayment, QueryBalance, QueryDiscount, \
-    PayPalCaptureOrder, PayPalCreateSub, CheckVip, PayPalCancelSub, PayPalWebhook
+    PayPalCaptureOrder, PayPalCreateSub, CheckVip, PayPalCancelSub, PayPalWebhook, ElepayCreateEasyQR, \
+    ElepayQueryPayment
 from handlers.qinghua import DeviceAuthVerify
 from lib.celery_workshop.wokrshop import WorkShop
 from operators import OperatorSD, OperatorSora
@@ -30,6 +31,9 @@ bp.add_route(PayPalCaptureOrder.as_view(), "/paypal/query")
 bp.add_route(PayPalCreateSub.as_view(), "/paypal/sub")
 bp.add_route(PayPalCancelSub.as_view(), "/paypal/cancel")
 bp.add_route(PayPalWebhook.as_view(), "/paypal/webhook")
+
+bp.add_route(ElepayCreateEasyQR.as_view(), "/elepay/createqr")
+bp.add_route(ElepayQueryPayment.as_view(), "/elepay/query_payment")
 bp.add_route(CheckVip.as_view(), "/user/check")
 
 bp.add_route(WechatReqPayQRCode.as_view(), "/wechat/pay")
@@ -107,7 +111,7 @@ async def main_process_start(sanic_app, loop):
     sanic_app.ctx.supabase_client.configure(
         url=CONFIG['supabase']['url'],
         key=CONFIG['supabase']['key'],
-        debug_enabled=True,
+        debug_enabled=False,
     )
     # sanic_app.ctx.supabase_client = await create_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'])
 
@@ -126,9 +130,11 @@ class Config:
     RESPONSE_TIMEOUT = 600
     SECRET = "xxxGUIJU_TeCH&^%$"
     WEBSOCKET_MAX_SIZE = 2097152
+    USE_UVLOOP = False if CONFIG['server']['access_log'] else True
 
 app.update_config(Config)
 app.blueprint(bp)
+
 
 if __name__ == "__main__":
     if CONFIG['server']['ssl']:
