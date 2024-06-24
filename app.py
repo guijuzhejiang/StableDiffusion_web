@@ -130,7 +130,7 @@ class Config:
     RESPONSE_TIMEOUT = 600
     SECRET = "xxxGUIJU_TeCH&^%$"
     WEBSOCKET_MAX_SIZE = 2097152
-    USE_UVLOOP = False if CONFIG['server']['access_log'] else True
+    USE_UVLOOP = False if CONFIG['debug_mode'] else True
 
 app.update_config(Config)
 app.blueprint(bp)
