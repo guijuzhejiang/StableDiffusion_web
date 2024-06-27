@@ -69,7 +69,7 @@ class SDGen(HTTPMethodView):
 
                 await asyncio.sleep(0.5)
             # 成功返回
-            return sanic_json(task_result)
+            return sanic_json(task_result.result)
 
         except Exception:
             print(str(traceback.format_exc()))

@@ -186,7 +186,7 @@ class OperatorSD(Operator):
     def __init__(self, gpu_idx=0):
         os.environ['ACCELERATE'] = 'True'
         # os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_idx)
-        os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+        os.environ['CUDA_VISIBLE_DEVICES'] = '0'
         print("use gpu:" + str(gpu_idx))
         super().__init__()
 
@@ -521,53 +521,58 @@ class OperatorSD(Operator):
                 res_img.save(cache_fp)
 
                 try:
-                    self.supabase_client \
-                        .table("gallery") \
-                        .insert({"user_id": user_id,
-                                 'instance_id': img_fn,
-                                 'prompt': params['prompt'] if 'prompt' in params.keys() else None,
-                                 'category': proceed_mode,
-                                 'config': params,
-                                 }) \
-                        .execute()
+                    if 'zs.guijutech' not in origin:
+                        self.supabase_client \
+                            .table("gallery") \
+                            .insert({"user_id": user_id,
+                                     'instance_id': img_fn,
+                                     'prompt': params['prompt'] if 'prompt' in params.keys() else None,
+                                     'category': proceed_mode,
+                                     'config': params,
+                                     }) \
+                            .execute()
                 except Exception:
                     print(traceback.format_exc())
 
             else:
-                # 限制缓存10张
-                cache_list = sorted(os.listdir(dir_path))
-                cache_len = len(cache_list)
-                if cache_len > 10:
-                    for i in range(cache_len-10):
-                        if os.path.exists(os.path.join(dir_path, cache_list[i])):
-                            os.remove(os.path.join(dir_path, cache_list[i]))
-                        try:
-                            self.supabase_client \
-                                .table("gallery") \
-                                .delete() \
-                                .eq("user_id", user_id) \
-                                .eq("instance_id", cache_list[0]) \
-                                .execute()
-                        except Exception:
-                            print(traceback.format_exc())
+                if 'zs.guijutech' not in origin:
+                    # 限制缓存10张
+                    cache_list = sorted(os.listdir(dir_path))
+                    cache_len = len(cache_list)
+                    if cache_len > 10:
+                        for i in range(cache_len-10):
+                            if os.path.exists(os.path.join(dir_path, cache_list[i])):
+                                os.remove(os.path.join(dir_path, cache_list[i]))
+                            try:
+                                self.supabase_client \
+                                    .table("gallery") \
+                                    .delete() \
+                                    .eq("user_id", user_id) \
+                                    .eq("instance_id", cache_list[0]) \
+                                    .execute()
+                            except Exception:
+                                print(traceback.format_exc())
 
                 res = []
-                user_gallery = self.supabase_client.table("gallery").select("*").eq("user_id", user_id).order('instance_id',
-                                                                                                 desc=True).execute().data
+                if 'zs.guijutech' not in origin:
+                    user_gallery = self.supabase_client.table("gallery").select("*").eq("user_id", user_id).order('instance_id',
+                                                                                                     desc=True).execute().data
                 for img_fn in sorted(os.listdir(dir_path), reverse=True):
                     # url_fp = f"{'http://192.168.110.8:' + str(CONFIG['server']['port']) if CONFIG['local'] else CONFIG['server']['client_access_url']}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={proceed_mode}"
                     url_fp = f"{'localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else f'{client_origin}/service'}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={proceed_mode}"
                     img_urls.append(url_fp)
+                    if 'zs.guijutech' not in origin:
+                        user_item = {}
+                        for r in user_gallery:
+                            if r['instance_id'] == img_fn:
+                                user_item = r
 
-                    user_item = {}
-                    for r in user_gallery:
-                        if r['instance_id'] == img_fn:
-                            user_item = r
-
-                    user_item['src'] = url_fp
-                    if 'category' not in user_item.keys():
-                        user_item['category'] = proceed_mode
-                    res.append(user_item)
+                        user_item['src'] = url_fp
+                        if 'category' not in user_item.keys():
+                            user_item['category'] = proceed_mode
+                        res.append(user_item)
+                    else:
+                        res.append(url_fp)
 
                 # if len(img_urls) < 10:
                 #     for i in range(10 - len(img_urls)):
