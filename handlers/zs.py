@@ -30,7 +30,7 @@ class SDGen(HTTPMethodView):
             prompt = request.form['prompt'][0]
             user_id = request.form['user_id'][0]
             dp = f'zs/bg_buffer'
-            os.makedirs(dp)
+            os.makedirs(dp, exist_ok=True)
             format_package = {'mode': 'text2image',
                               'user_id': user_id,
                               'params': [ujson.dumps(
