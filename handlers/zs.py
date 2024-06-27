@@ -28,6 +28,10 @@ class SDGen(HTTPMethodView):
     async def post(self, request):
         try:
             prompt = request.form['prompt'][0]
+            if prompt[0] == '"':
+                prompt = prompt[1:]
+            if prompt[-1] == '"':
+                prompt = prompt[:-1]
             user_id = request.form['user_id'][0]
             dp = f'zs/bg_buffer'
             os.makedirs(dp, exist_ok=True)
@@ -65,7 +69,7 @@ class SDGen(HTTPMethodView):
 
                 await asyncio.sleep(0.5)
             # 成功返回
-            return sanic_json(task_result.result)
+            return sanic_json(task_result)
 
         except Exception:
             print(str(traceback.format_exc()))
