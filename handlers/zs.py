@@ -89,13 +89,17 @@ class SDBgProvider(HTTPMethodView):
             user_id = request.args.get("uid")
             chat_id = request.args.get("cid")
             msgs_len = request.args.get("mlen")
+            check = request.args.get("check", False)
 
             dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], 'learninglanggptbg', user_id, chat_id)
 
             bg_fp = os.path.join(dir_path, f"{msgs_len}.png")
             if os.path.exists(bg_fp):
-                # 成功返回
-                return await file_stream(bg_fp, chunk_size=1024)
+                if check:
+                    return empty(status=200)
+                else:
+                    # 成功返回
+                    return await file_stream(bg_fp, chunk_size=1024)
             else:
                 return empty(status=404)
 
