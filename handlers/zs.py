@@ -33,6 +33,8 @@ class SDGen(HTTPMethodView):
             if prompt[-1] == '"':
                 prompt = prompt[:-1]
             user_id = request.form['user_id'][0]
+            msgs_length = request.form['mlen'][0]
+            chat_id = request.form['chat_id'][0]
             dp = f'zs/bg_buffer'
             os.makedirs(dp, exist_ok=True)
             format_package = {'mode': ['text2image'],
@@ -47,6 +49,8 @@ class SDGen(HTTPMethodView):
                                       "sim": 0.7,
                                       "mode": 'text2image',
                                       "translate": False,
+                                      "mlen": msgs_length,
+                                      "chat_id": chat_id,
                                   }
                               )],
                               'origin': 'zs.guijutech.com',

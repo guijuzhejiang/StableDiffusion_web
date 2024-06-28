@@ -448,7 +448,10 @@ class OperatorSD(Operator):
                             return {'success': False, 'result': 'backend.check.error.nsfw'}
 
             # define task id
-            pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
+            if 'zs.guijutech' not in origin:
+                pic_name = ''.join([random.choice(string.ascii_letters) for c in range(6)])
+            else:
+                pic_name = f'{params["chat_id"]}_{params["mlen"]}'
 
             # read input image
             if proceed_mode != 'text2image' or (proceed_mode == 'text2image' and params['mode'] == 'image2image'):
@@ -499,7 +502,10 @@ class OperatorSD(Operator):
 
             # storage img
             img_urls = []
-            dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], proceed_mode, user_id)
+            if 'zs.guijutech' not in origin:
+                dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], proceed_mode, user_id)
+            else:
+                dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], 'learninglanggptbg', user_id)
             # dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_{proceed_mode}_dir'], user_id)
             os.makedirs(dir_path, exist_ok=True)
             saved_img = []
@@ -512,7 +518,7 @@ class OperatorSD(Operator):
                 if 'guijutech' in origin or 'ingjp' in origin:
                     if self.predict_image(img_save_path):
                         for i in saved_img:
-                            if os.path.exists:
+                            if os.path.exists(i):
                                 os.remove(i)
                         return {'success': False, 'result': 'backend.check.error.nsfw'}
 
@@ -552,7 +558,12 @@ class OperatorSD(Operator):
                                     .execute()
                             except Exception:
                                 print(traceback.format_exc())
-
+                else:
+                    # 限制缓存1张
+                    cache_list = sorted(os.listdir(dir_path))[:-1]
+                    for i in range(cache_list):
+                        if os.path.exists(os.path.join(dir_path, i)):
+                            os.remove(os.path.join(dir_path, i))
                 res = []
                 if 'zs.guijutech' not in origin:
                     user_gallery = self.supabase_client.table("gallery").select("*").eq("user_id", user_id).order('instance_id',
@@ -572,6 +583,7 @@ class OperatorSD(Operator):
                             user_item['category'] = proceed_mode
                         res.append(user_item)
                     else:
+                        url_fp = f"{'localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else f'{client_origin}/service'}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category=learninglanggptbg"
                         res.append(url_fp)
 
                 # if len(img_urls) < 10:
