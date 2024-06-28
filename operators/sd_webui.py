@@ -505,12 +505,15 @@ class OperatorSD(Operator):
             if 'zs.guijutech' not in origin:
                 dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], proceed_mode, user_id)
             else:
-                dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], 'learninglanggptbg', user_id)
+                dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], 'learninglanggptbg', user_id, params['chat_id'])
             # dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_{proceed_mode}_dir'], user_id)
             os.makedirs(dir_path, exist_ok=True)
             saved_img = []
             for res_idx, res_img in enumerate(res):
-                img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"
+                if 'zs.guijutech' not in origin:
+                    img_fn = f"{datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')}.png"
+                else:
+                    img_fn = f"{params['mlen']}.png"
                 img_save_path = os.path.join(dir_path, img_fn)
                 res_img = res_img.convert("RGB")
                 res_img.save(img_save_path, format="jpeg", quality=80, lossless=True)
@@ -583,7 +586,7 @@ class OperatorSD(Operator):
                             user_item['category'] = proceed_mode
                         res.append(user_item)
                     else:
-                        url_fp = f"{'localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else f'{client_origin}/service'}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category=learninglanggptbg"
+                        url_fp = f"{f'{client_origin}/service'}/learninglang/image/fetch?&uid={urllib.parse.quote(user_id)}&cid={params['chat_id']}"
                         res.append(url_fp)
 
                 # if len(img_urls) < 10:

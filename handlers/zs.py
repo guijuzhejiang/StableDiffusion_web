@@ -9,7 +9,7 @@ import aiofile
 import os
 
 import ujson
-from sanic.response import json as sanic_json, file_stream
+from sanic.response import json as sanic_json, file_stream, empty
 from sanic.views import HTTPMethodView
 
 from lib.common.common_util import encrypt
@@ -88,12 +88,17 @@ class SDBgProvider(HTTPMethodView):
         try:
             user_id = request.args.get("uid")
             chat_id = request.args.get("cid")
+            msgs_len = request.args.get("mlen")
 
-            dp = f'zs/bg_buffer'
-            os.makedirs(dp)
-            # 成功返回
-            return await file_stream(os.path.join(dp, f'{user_id}.png'), chunk_size=1024)
+            dir_path = os.path.join(CONFIG['storage_dirpath'][f'user_storage'], 'learninglanggptbg', user_id, chat_id)
+
+            bg_fp = os.path.join(dir_path, f"{msgs_len}.png")
+            if os.path.exists(bg_fp):
+                # 成功返回
+                return await file_stream(bg_fp, chunk_size=1024)
+            else:
+                return empty(status=404)
 
         except Exception:
             print(str(traceback.format_exc()))
-            return sanic_json({'success': False})
+            return empty(status=404)

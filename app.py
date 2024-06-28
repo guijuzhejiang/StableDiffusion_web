@@ -11,7 +11,7 @@ from handlers.pay import WechatReqPayQRCode, PayPalCreateOrder, WechatQueryPayme
     PayPalCaptureOrder, PayPalCreateSub, CheckVip, PayPalCancelSub, PayPalWebhook, ElepayCreateEasyQR, \
     ElepayQueryPayment
 from handlers.qinghua import DeviceAuthVerify
-from handlers.zs import SDGen
+from handlers.zs import SDGen, SDBgProvider
 from lib.celery_workshop.wokrshop import WorkShop
 from operators import OperatorSD, OperatorSora
 from wechatpayv3 import WeChatPay, WeChatPayType
@@ -60,6 +60,7 @@ bp.add_route(DeviceAuthVerify.as_view(), "/qinghua/device/auth")
 bp.add_websocket_route(qinghua_genreate, "/qinghua/device/generate")
 
 bp.add_route(SDGen.as_view(), "/zs/bg/generate")
+bp.add_route(SDBgProvider.as_view(), "/learninglang/image/fetch")
 bp.add_websocket_route(sd_genreate, "/sd/io")
 
 # CORS settings
