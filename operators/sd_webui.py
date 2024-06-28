@@ -564,7 +564,7 @@ class OperatorSD(Operator):
                 else:
                     # 限制缓存1张
                     cache_list = sorted(os.listdir(dir_path))[:-1]
-                    for i in range(cache_list):
+                    for i in cache_list:
                         if os.path.exists(os.path.join(dir_path, i)):
                             os.remove(os.path.join(dir_path, i))
                 res = []
