@@ -9,7 +9,7 @@ import aiofile
 import os
 
 import ujson
-from sanic.response import json as sanic_json, file_stream, empty
+from sanic.response import json as sanic_json, file_stream, empty, text
 from sanic.views import HTTPMethodView
 
 from lib.common.common_util import encrypt
@@ -96,7 +96,9 @@ class SDBgProvider(HTTPMethodView):
             bg_fp = os.path.join(dir_path, f"{msgs_len}.png")
             if os.path.exists(bg_fp):
                 if check:
-                    return empty(status=200)
+                    url_fp = f"/service/learninglang/image/fetch?&uid={user_id}&cid={chat_id}"
+
+                    return text(url_fp, status=200)
                 else:
                     # 成功返回
                     return await file_stream(bg_fp, chunk_size=1024)
