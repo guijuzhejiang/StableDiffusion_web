@@ -96,7 +96,7 @@ class SDBgProvider(HTTPMethodView):
             bg_fp = os.path.join(dir_path, f"{msgs_len}.png")
             if os.path.exists(bg_fp):
                 if check:
-                    url_fp = f"/service/learninglang/image/fetch?&uid={user_id}&cid={chat_id}"
+                    url_fp = f"/service/learninglang/image/fetch?&uid={user_id}&cid={chat_id}&mlen={msgs_len}"
 
                     return text(url_fp, status=200)
                 else:

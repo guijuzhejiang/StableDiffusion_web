@@ -586,7 +586,7 @@ class OperatorSD(Operator):
                             user_item['category'] = proceed_mode
                         res.append(user_item)
                     else:
-                        url_fp = f"{f'{client_origin}/service'}/learninglang/image/fetch?&uid={urllib.parse.quote(user_id)}&cid={params['chat_id']}"
+                        url_fp = f"{f'{client_origin}/service'}/learninglang/image/fetch?&uid={urllib.parse.quote(user_id)}&cid={params['chat_id']}&mlen={params['mlen']}"
                         res.append(url_fp)
 
                 # if len(img_urls) < 10:
