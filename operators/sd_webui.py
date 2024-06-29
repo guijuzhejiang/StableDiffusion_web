@@ -561,12 +561,12 @@ class OperatorSD(Operator):
                                     .execute()
                             except Exception:
                                 print(traceback.format_exc())
-                else:
-                    # 限制缓存1张
-                    cache_list = sorted(os.listdir(dir_path))[:-1]
-                    for i in cache_list:
-                        if os.path.exists(os.path.join(dir_path, i)):
-                            os.remove(os.path.join(dir_path, i))
+                # else:
+                #     # 限制缓存1张
+                #     cache_list = sorted(os.listdir(dir_path))[:-1]
+                #     for i in cache_list:
+                #         if os.path.exists(os.path.join(dir_path, i)):
+                #             os.remove(os.path.join(dir_path, i))
                 res = []
                 if 'zs.guijutech' not in origin:
                     user_gallery = self.supabase_client.table("gallery").select("*").eq("user_id", user_id).order('instance_id',
