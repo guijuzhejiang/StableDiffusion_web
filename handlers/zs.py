@@ -56,6 +56,8 @@ class SDGen(HTTPMethodView):
                               )],
                               'origin': 'zs.guijutech.com',
                               'input_image': ''}
+            print(format_package)
+
             task_result = request.app.ctx.sd_workshop(**format_package)
             task_id = str(task_result)
             pending_task_id = await request.app.ctx.redis_session.get(user_id)
