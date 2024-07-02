@@ -35,6 +35,7 @@ class SDGen(HTTPMethodView):
             user_id = request.form['user_id'][0]
             msgs_length = request.form['mlen'][0]
             chat_id = request.form['chat_id'][0]
+            style = request.form['style'][0]
             dp = f'zs/bg_buffer'
             os.makedirs(dp, exist_ok=True)
             format_package = {'mode': ['text2image'],
@@ -42,7 +43,7 @@ class SDGen(HTTPMethodView):
                               'params': [ujson.dumps(
                                   {
                                       "batch_size": 1,
-                                      "style": 0,
+                                      "style": style,
                                       "width": 1024,
                                       "height": 1024,
                                       "prompt": prompt,
