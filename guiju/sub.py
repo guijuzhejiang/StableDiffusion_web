@@ -59,15 +59,15 @@ def setup_cron(sub_id, target_date):
 
 async def run_main():
     try:
-        from aiosupabase import Supabase
+        from supabase import acreate_client
 
         subscription_id = sys.argv[1]
-        supabase_client = Supabase
-        supabase_client.configure(
-            url=CONFIG['supabase']['url'],
-            key=CONFIG['supabase']['key'],
-            debug_enabled=True,
-        )
+        supabase_client = await acreate_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'])
+        # supabase_client.configure(
+        #     url=CONFIG['supabase']['url'],
+        #     key=CONFIG['supabase']['key'],
+        #     debug_enabled=True,
+        # )
         # supabase_client = await create_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'])
         subscription_data = (await supabase_client.table("subscription").select("*").eq('subscription_id',
                                                                                  subscription_id).execute()).data
