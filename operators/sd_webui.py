@@ -367,12 +367,12 @@ class OperatorSD(Operator):
         # self.shared.opts.control_net_no_detectmap = True
 
         self.magic_conductor = MagicAiConductor(self)
-        self.supabase_client = getattr(importlib.import_module('aiosupabase'), 'Supabase')
-        self.supabase_client.configure(
-            url=CONFIG['supabase']['url'],
-            key=CONFIG['supabase']['key'],
-            debug_enabled=True,
-        )
+        self.supabase_client = getattr(importlib.import_module('supabase'), 'create_client')(CONFIG['supabase']['url'], CONFIG['supabase']['key'])
+        # self.supabase_client.configure(
+        #     url=CONFIG['supabase']['url'],
+        #     key=CONFIG['supabase']['key'],
+        #     debug_enabled=True,
+        # )
 
         print('init done')
 
