@@ -20,7 +20,7 @@ async def sd_genreate(request: Request, ws):
         user_id = request.args['user_id'][0]
         # check account
         account = \
-        (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data
+        (await request.app.ctx.supabase_client.table("account").select("*").eq("id", user_id).execute()).data
         if len(account) <= 0:
             raise Exception
 
@@ -41,7 +41,7 @@ async def sd_genreate(request: Request, ws):
             cost_points = 1
 
             # check balance
-            account = (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[0]
+            account = (await request.app.ctx.supabase_client.table("account").select("*").eq("id", user_id).execute()).data[0]
             buf_result = {'success': True, 'result': None, 'act': None, 'type': package['mode']}
 
             if package['mode'] == 'sora':
@@ -161,12 +161,12 @@ async def sd_genreate(request: Request, ws):
                 task_result['act'] = f"show_result"
                 task_result['type'] = package['mode']
                 if task_result['success']:
-                    data = await request.app.ctx.supabase_client.atable("transaction").insert({"user_id": user_id,
+                    data = await request.app.ctx.supabase_client.table("transaction").insert({"user_id": user_id,
                                                                                                'amount': cost_points,
                                                                                                'is_plus': False,
                                                                                                'status': 1,
                                                                                                }).execute()
-                    res = (await request.app.ctx.supabase_client.atable("account").update(
+                    res = (await request.app.ctx.supabase_client.table("account").update(
                         {"balance": account['balance'] - cost_points}).eq("id", user_id).execute()).data
 
             else:

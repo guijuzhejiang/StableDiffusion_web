@@ -91,7 +91,7 @@ class FetchUserHistory(HTTPMethodView):
 
             # result = [ for img_fn in sorted(os.listdir(dir_user_path), reverse=True)]
             result = []
-            user_gallery = (await request.app.ctx.supabase_client.atable("gallery").select("*").eq("user_id", user_id).order('instance_id', desc=True).execute()).data
+            user_gallery = (await request.app.ctx.supabase_client.table("gallery").select("*").eq("user_id", user_id).order('instance_id', desc=True).execute()).data
             for img_fn in sorted(os.listdir(dir_user_path), reverse=True):
                 url_fp = f"{'http://localhost:' + str(CONFIG['server']['port']) if CONFIG['local'] else f'{fixed_dn}/service'}/user/image/fetch?imgpath={img_fn}&uid={urllib.parse.quote(user_id)}&category={category}"
                 user_item = {}
@@ -127,17 +127,17 @@ class FetchGallery(HTTPMethodView):
 
                 result = []
                 for query_item in query_str.split(','):
-                    data = (await request.app.ctx.supabase_client.atable("gallery").select("*").is_("user_id", "NULL").like("prompt", f"%{query_item.strip()}%").order('instance_id', desc=True).execute()).data
+                    data = (await request.app.ctx.supabase_client.table("gallery").select("*").is_("user_id", "NULL").like("prompt", f"%{query_item.strip()}%").order('instance_id', desc=True).execute()).data
                     result.extend(data)
                 else:
                     result = self.unique_by_key(result, 'instance_id')
 
             elif 'id' in request.form:
                 data_id = request.form['id'][0]
-                result = (await request.app.ctx.supabase_client.atable("gallery").select("*").eq('id',data_id).order('instance_id', desc=True).execute()).data
+                result = (await request.app.ctx.supabase_client.table("gallery").select("*").eq('id',data_id).order('instance_id', desc=True).execute()).data
 
             else:
-                result = (await request.app.ctx.supabase_client.atable("gallery").select("*").is_("user_id", "NULL").order('instance_id', desc=True).execute()).data
+                result = (await request.app.ctx.supabase_client.table("gallery").select("*").is_("user_id", "NULL").order('instance_id', desc=True).execute()).data
 
         except Exception:
             print(traceback.format_exc())
@@ -187,11 +187,11 @@ class UserEditNickname(HTTPMethodView):
             user_id = request.form['user_id'][0]
             new_nickname = request.form['nickname'][0]
 
-            # nick_taken_res = (await request.app.ctx.supabase_client.atable("account").select('id').eq("nick_name", new_nickname).execute()).data
+            # nick_taken_res = (await request.app.ctx.supabase_client.table("account").select('id').eq("nick_name", new_nickname).execute()).data
             # if len(nick_taken_res) > 0:
             #     return sanic_json({'success': False, 'message': 'backend.api.error.nickname'})
             # else:
-            res = (await request.app.ctx.supabase_client.atable("account").update({'nick_name': new_nickname}).eq("id", user_id).execute()).data
+            res = (await request.app.ctx.supabase_client.table("account").update({'nick_name': new_nickname}).eq("id", user_id).execute()).data
 
         except Exception:
             print(traceback.format_exc())
@@ -338,7 +338,7 @@ class VerifyCaptcha(HTTPMethodView):
                     #     f"{request.app.ctx.supabase_client.auth.url}/admin/users?per_page=9999", headers=h)
                     # check_response(response)
                     # users = response.json().get("users")
-                    id_res = (await request.app.ctx.supabase_client.atable("account").select("id").eq("phone", str(phone)).execute()).data
+                    id_res = (await request.app.ctx.supabase_client.table("account").select("id").eq("phone", str(phone)).execute()).data
                     alike_email = f"{phone}@sms.com"
                     password = encrypt(phone+'guijutech').lower()
 
@@ -347,14 +347,14 @@ class VerifyCaptcha(HTTPMethodView):
                         try:
                             supabase_res = await request.app.ctx.supabase_client.auth.async_sign_up(email=alike_email,
                                                                                                     password=password)
-                            res = (await request.app.ctx.supabase_client.atable("account").update(
+                            res = (await request.app.ctx.supabase_client.table("account").update(
                                 {"locale": country, 'phone': phone, 'nick_name': f'user{uuid_to_number_string(str(supabase_res.user.id))}'}).eq("id", str(supabase_res.user.id)).execute()).data
 
                         except Exception:
                             print(str(traceback.format_exc()))
                             return sanic_json({'success': False, 'message': "backend.api.error.register"})
 
-                    account_info = (await request.app.ctx.supabase_client.atable("account").select(
+                    account_info = (await request.app.ctx.supabase_client.table("account").select(
                         "id,balance,locale,nick_name").eq("phone", phone).execute()).data
                     # 成功返回
                     return sanic_json({'success': True,

@@ -2,6 +2,7 @@ import importlib
 import logging
 import os
 
+from gotrue import AsyncMemoryStorage
 from sanic import Blueprint
 from sanic import Sanic
 # from sanic_cors import CORS
@@ -21,8 +22,7 @@ from handlers.main import ImageProvider, FetchUserHistory, UserUpload, RevokeTas
 from redis import asyncio as aioredis
 from handlers.websocket import sd_genreate, qinghua_genreate
 from utils.global_vars import CONFIG
-# from supabase._async.client import AsyncClient as Client, create_client
-
+from supabase import acreate_client, ClientOptions
 
 # Blueprint
 bp = Blueprint("ai_tasks")
@@ -106,16 +106,16 @@ async def main_process_start(sanic_app, loop):
             partner_mode=CONFIG['wechatpay']['PARTNER_MODE'],
             proxy=None)
         # sanic_app.ctx.wxpay.query()
-    # supabase_opt = ClientOptions()
+    supabase_opt = ClientOptions(storage=AsyncMemoryStorage(), postgrest_client_timeout=20)
     # supabase_opt.postgrest_client_timeout = 20
-    # sanic_app.ctx.supabase_client = create_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'],
-    #                                               options=supabase_opt)
-    sanic_app.ctx.supabase_client = getattr(importlib.import_module('aiosupabase'), 'Supabase')
-    sanic_app.ctx.supabase_client.configure(
-        url=CONFIG['supabase']['url'],
-        key=CONFIG['supabase']['key'],
-        debug_enabled=False,
-    )
+    sanic_app.ctx.supabase_client = await acreate_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'],
+                                                         options=supabase_opt)
+    # sanic_app.ctx.supabase_client = getattr(importlib.import_module('aiosupabase'), 'Supabase')
+    # sanic_app.ctx.supabase_client.configure(
+    #     url=CONFIG['supabase']['url'],
+    #     key=CONFIG['supabase']['key'],
+    #     debug_enabled=False,
+    # )
     # sanic_app.ctx.supabase_client = await create_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'])
 
     sanic_app.ctx.redis_session = aioredis.from_url(f"redis://localhost:6379/1", decode_responses=True)

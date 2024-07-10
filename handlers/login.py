@@ -40,7 +40,7 @@ class GoogleLogin(HTTPMethodView):
             email = f"{google_info['sub']}@google.com".lower()
             password = encrypt(str({google_info['sub']}).lower())
 
-            account_info = (await request.app.ctx.supabase_client.atable("account").select("id,balance,locale,nick_name,vip_level").eq("google_id", str(
+            account_info = (await request.app.ctx.supabase_client.table("account").select("id,balance,locale,nick_name,vip_level").eq("google_id", str(
                 google_info['sub']).lower()).execute()).data
 
             # 如果没有查询到则注册
@@ -62,15 +62,15 @@ class GoogleLogin(HTTPMethodView):
                     print(str(traceback.format_exc()))
                     return sanic_json({'success': False, 'message': "backend.api.error.register"})
                 else:
-                    res = (await request.app.ctx.supabase_client.atable("account").update(
+                    res = (await request.app.ctx.supabase_client.table("account").update(
                         {"google_id": str(google_info['sub']).lower(), 'nick_name': f'user{user_id[:8]}', "locale": ''}).eq(
                         "id", user_id).execute()).data
-                    # res = (await request.app.ctx.supabase_client.atable("account").update(
+                    # res = (await request.app.ctx.supabase_client.table("account").update(
                     #     {"locale": 'jp'}).eq("id", str(supabase_res.user.id)).execute()).data
-                    account_info = (await request.app.ctx.supabase_client.atable("account").select(
+                    account_info = (await request.app.ctx.supabase_client.table("account").select(
                         "id,balance,locale,nick_name,vip_level").eq("google_id", str(google_info['sub']).lower()).execute()).data
             else:
-                account_info = (await request.app.ctx.supabase_client.atable("account").select(
+                account_info = (await request.app.ctx.supabase_client.table("account").select(
                     "id,balance,locale,nick_name,vip_level").eq("google_id", str(google_info['sub']).lower()).execute()).data
 
             # 成功返回
@@ -119,7 +119,7 @@ class WeChatLogin(HTTPMethodView):
                     print(wechat_data)
                     email = f"{wechat_data['openid']}@wechat.com".lower()
                     # result_user = {'username': email, 'password': password}
-                    id_res = (await request.app.ctx.supabase_client.atable("account").select("id").eq("wechat_id", str(
+                    id_res = (await request.app.ctx.supabase_client.table("account").select("id").eq("wechat_id", str(
                         wechat_data['openid'].lower())).execute()).data
 
                     # supabase 检查有没有改用户，没有就注册
@@ -152,7 +152,7 @@ class WeChatLogin(HTTPMethodView):
                                     f'https://api.weixin.qq.com/sns/userinfo?access_token={wechat_data["access_token"]}&openid={wechat_data["openid"]}')
                                 if response_uinfo.status_code == 200:
                                     wechat_uinfo = response_uinfo.json()
-                                    data = (await request.app.ctx.supabase_client.atable("account").update(
+                                    data = (await request.app.ctx.supabase_client.table("account").update(
                                         {"wechat_id": str(wechat_data['openid']).lower(),
                                          'nick_name': wechat_uinfo['nickname']}).eq(
                                         "id", user_id).execute()).data
@@ -174,7 +174,7 @@ class WeChatLogin(HTTPMethodView):
                     else:
                         user_id = id_res[0]['id']
 
-                    account_info = (await request.app.ctx.supabase_client.atable("account").select(
+                    account_info = (await request.app.ctx.supabase_client.table("account").select(
                         "id,balance,locale,nick_name,vip_level").eq("wechat_id", str(wechat_data['openid']).lower()).execute()).data
 
                     # 成功返回
@@ -204,9 +204,9 @@ class PasswordLogin(HTTPMethodView):
             phone = request.form['phone'][0]
             password = request.form['password'][0]
 
-            supabase_res = await request.app.ctx.supabase_client.auth.async_sign_in(email=phone, password=password)
-            # supabase_res = await request.app.ctx.supabase_client.auth.sign_in_with_password({'email': phone, 'password': password})
-            account_info = (await request.app.ctx.supabase_client.atable("account").select(
+            # supabase_res = await request.app.ctx.supabase_client.auth.async_sign_in(email=phone, password=password)
+            supabase_res = await request.app.ctx.supabase_client.auth.sign_in_with_password({'email': phone, 'password': password})
+            account_info = (await request.app.ctx.supabase_client.table("account").select(
                 "id,balance,locale,nick_name,vip_level").eq("id", supabase_res.user.id).execute()).data
             return sanic_json({'success': True,
                                'user': {'name': account_info[0]['nick_name'],
@@ -314,7 +314,7 @@ class LineLogin(HTTPMethodView):
 
                 # users_email = [u['email'] for u in users]
 
-                account_info = (await request.app.ctx.supabase_client.atable("account").select("id,balance,locale,nick_name,vip_level").eq("line_id", str(
+                account_info = (await request.app.ctx.supabase_client.table("account").select("id,balance,locale,nick_name,vip_level").eq("line_id", str(
                     line_info['sub']).lower()).execute()).data
                 # 如果没有查询到则注册
                 if len(account_info) == 0:
@@ -333,13 +333,13 @@ class LineLogin(HTTPMethodView):
                         print(str(traceback.format_exc()))
                         return sanic_json({'success': False, 'message': "backend.api.error.register"})
                     else:
-                        res = (await request.app.ctx.supabase_client.atable("account").update(
+                        res = (await request.app.ctx.supabase_client.table("account").update(
                             {"line_id": str(line_info['sub']).lower(), 'nick_name': f'user{user_id[:8]}', "locale": 'jp'}).eq(
                             "id", user_id).execute()).data
-                        # res = (await request.app.ctx.supabase_client.atable("account").update(
+                        # res = (await request.app.ctx.supabase_client.table("account").update(
                         #     {"locale": 'jp'}).eq("id", str(supabase_res.user.id)).execute()).data
                 else:
-                    account_info = (await request.app.ctx.supabase_client.atable("account").select(
+                    account_info = (await request.app.ctx.supabase_client.table("account").select(
                         "id,balance,locale,nick_name,vip_level").eq("line_id", str(line_info['sub']).lower()).execute()).data
 
                 # 成功返回

@@ -58,7 +58,7 @@ class QueryDiscount(HTTPMethodView):
             lang = request.args.get("lang", 'zh')
 
             transaction_data = (
-                await request.app.ctx.supabase_client.atable("transaction").select("*").eq("user_id", user_id).eq(
+                await request.app.ctx.supabase_client.table("transaction").select("*").eq("user_id", user_id).eq(
                     "is_plus", True).eq("status", 1).execute())
             first_charge = len(transaction_data.data) == 0
 
@@ -90,7 +90,7 @@ class QueryBalance(HTTPMethodView):
     async def post(self, request):
         user_id = request.form['user_id'][0]
         no_confirm_rows = (
-            await request.app.ctx.supabase_client.atable("transaction").select("*").eq("user_id", user_id).eq("status",
+            await request.app.ctx.supabase_client.table("transaction").select("*").eq("user_id", user_id).eq("status",
                                                                                                               0).eq(
                 "is_plus", True).execute()).data
 
@@ -111,7 +111,7 @@ class QueryBalance(HTTPMethodView):
 
                     result = response.json()
                     if 'status' in result.keys() and result['status'] == 'COMPLETED':
-                        data = (await request.app.ctx.supabase_client.atable("transaction").update(
+                        data = (await request.app.ctx.supabase_client.table("transaction").update(
                             {"status": 1}).eq("id", row['id']).eq("is_plus", True).execute()).data
                         if len(data) == 0:
                             print(row['id'] + " update transaction false")
@@ -136,7 +136,7 @@ class QueryBalance(HTTPMethodView):
 
                     result = response.json()
                     if 'status' in result.keys() and result['status'] == 'captured':
-                        data = (await request.app.ctx.supabase_client.atable("transaction").update(
+                        data = (await request.app.ctx.supabase_client.table("transaction").update(
                             {"status": 1}).eq("id", row['id']).eq("is_plus", True).execute()).data
                         if len(data) == 0:
                             print(row['id'] + " update transaction false")
@@ -154,7 +154,7 @@ class QueryBalance(HTTPMethodView):
                 trade_message = ujson.loads(message)
 
                 if code == 200 and trade_message['trade_state'] == 'SUCCESS':
-                    data = (await request.app.ctx.supabase_client.atable("transaction").update(
+                    data = (await request.app.ctx.supabase_client.table("transaction").update(
                         {"status": 1}).eq("id", row['id']).eq("is_plus", True).execute()).data
                     if len(data) == 0:
                         print(row['id'] + " update transaction false")
@@ -166,13 +166,13 @@ class QueryBalance(HTTPMethodView):
                         need_del_transaction.append(row['id'])
 
         account = \
-            (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[0]
+            (await request.app.ctx.supabase_client.table("account").select("*").eq("id", user_id).execute()).data[0]
         if pre_charge_amount > 0:
-            data = (await request.app.ctx.supabase_client.atable("account").update(
+            data = (await request.app.ctx.supabase_client.table("account").update(
                 {"balance": account['balance'] + pre_charge_amount}).eq("id", account['id']).execute()).data
         if len(need_del_transaction):
             for del_target in need_del_transaction:
-                data = (await request.app.ctx.supabase_client.atable("transaction").delete().eq("id",
+                data = (await request.app.ctx.supabase_client.table("transaction").delete().eq("id",
                                                                                                 del_target).execute()).data
 
         if hasattr(request.form, 'out_trade_no'):
@@ -215,7 +215,7 @@ class WechatReqPayQRCode(HTTPMethodView):
     async def post(self, request):
         user_id = request.form['user_id'][0]
         account = \
-            (await request.app.ctx.supabase_client.atable("account").select("*").eq("id", user_id).execute()).data[0]
+            (await request.app.ctx.supabase_client.table("account").select("*").eq("id", user_id).execute()).data[0]
         # 以native下单为例，下单成功后即可获取到'code_url'，将'code_url'转换为二维码，并用微信扫码即可进行支付测试。
         out_trade_no = datetime.now().strftime('%Y%m%d%H%M%S%f') + '_' + ''.join(
             [random.choice(string.ascii_letters) for c in range(8)])
@@ -232,7 +232,7 @@ class WechatReqPayQRCode(HTTPMethodView):
         )
         qrcode_url = ''
         if code == 200:
-            data = await request.app.ctx.supabase_client.atable("transaction").insert({"user_id": user_id,
+            data = await request.app.ctx.supabase_client.table("transaction").insert({"user_id": user_id,
                                                                                        'amount': charge_points,
                                                                                        'is_plus': True,
                                                                                        'status': 0,
@@ -275,13 +275,13 @@ class PayPalCreateOrder(HTTPMethodView):
             charge_points = int(int(amount) / CONFIG['payment']['point_price']['USD'])
 
             account = \
-                (await request.app.ctx.supabase_client.atable("account").select("access_level").eq("id",
+                (await request.app.ctx.supabase_client.table("account").select("access_level").eq("id",
                                                                                                    user_id).execute()).data[
                     0]
 
             # query discount
             transaction_data = (
-                await request.app.ctx.supabase_client.atable("transaction").select("*").eq("user_id", user_id).eq(
+                await request.app.ctx.supabase_client.table("transaction").select("*").eq("user_id", user_id).eq(
                     "is_plus", True).eq("status", 1).execute())
             first_charge = len(transaction_data.data) == 0
 
@@ -320,7 +320,7 @@ class PayPalCreateOrder(HTTPMethodView):
                                                       "Content-Type": "application/json"})
 
                 if 'id' in response.json().keys():
-                    data = await request.app.ctx.supabase_client.atable("transaction").insert({"user_id": user_id,
+                    data = await request.app.ctx.supabase_client.table("transaction").insert({"user_id": user_id,
                                                                                                'amount': charge_points,
                                                                                                'is_plus': True,
                                                                                                'status': 0,
@@ -344,7 +344,7 @@ class PayPalCaptureOrder(HTTPMethodView):
         access_token = await aspayapl_generate_ccess_token()
         url = f"{CONFIG['paypal']['base_url']}/v2/checkout/orders/{out_trade_no}/capture"
 
-        transaction_data = (await request.app.ctx.supabase_client.atable("transaction").select("*").eq("out_trade_no",
+        transaction_data = (await request.app.ctx.supabase_client.table("transaction").select("*").eq("out_trade_no",
                                                                                                        f"{out_trade_no}@paypal").eq(
             "is_plus", True).execute()).data[0]
 
@@ -356,15 +356,15 @@ class PayPalCaptureOrder(HTTPMethodView):
 
             result = response.json()
             if result['status'] == 'COMPLETED':
-                data = (await request.app.ctx.supabase_client.atable("transaction").update(
+                data = (await request.app.ctx.supabase_client.table("transaction").update(
                     {"status": 1}).eq("out_trade_no", f"{out_trade_no}@paypal").eq("is_plus", True).execute()).data
 
                 account = \
-                    (await request.app.ctx.supabase_client.atable("account").select("balance").eq("id",
+                    (await request.app.ctx.supabase_client.table("account").select("balance").eq("id",
                                                                                                   transaction_data[
                                                                                                       'user_id']).execute()).data[
                         0]
-                data = (await request.app.ctx.supabase_client.atable("account").update(
+                data = (await request.app.ctx.supabase_client.table("account").update(
                     {"balance": account['balance'] + transaction_data['amount']}).eq("id", transaction_data[
                     'user_id']).execute()).data
 
@@ -389,31 +389,31 @@ class PayPalCreateSub(HTTPMethodView):
             # else:
             #     add_balance = 1625
 
-            account = (await request.app.ctx.supabase_client.atable("account").select("balance").eq("id",
+            account = (await request.app.ctx.supabase_client.table("account").select("balance").eq("id",
                                                                                                     user_id).execute()).data[
                 0]
-            subscription = (await request.app.ctx.supabase_client.atable("subscription").select("*").eq("user_id",
+            subscription = (await request.app.ctx.supabase_client.table("subscription").select("*").eq("user_id",
                                                                                                         user_id).execute()).data
 
             if len(subscription) > 0:
-                data = await request.app.ctx.supabase_client.atable("subscription").update(
+                data = await request.app.ctx.supabase_client.table("subscription").update(
                     {'subscription_id': subscription_id,
                      'supplier': 'paypal',
                      }).eq("user_id", user_id).execute()
 
             else:
-                data = await request.app.ctx.supabase_client.atable("subscription").insert({"user_id": user_id,
+                data = await request.app.ctx.supabase_client.table("subscription").insert({"user_id": user_id,
                                                                                             'subscription_id': subscription_id,
                                                                                             'supplier': 'paypal',
                                                                                             }).execute()
 
-            data = await request.app.ctx.supabase_client.atable("transaction").insert({"user_id": user_id,
+            data = await request.app.ctx.supabase_client.table("transaction").insert({"user_id": user_id,
                                                                                        'out_trade_no': f'@subpaypal_{subscription_id}',
                                                                                        'amount': add_balance,
                                                                                        'is_plus': True,
                                                                                        'status': 1,
                                                                                        }).execute()
-            res = (await request.app.ctx.supabase_client.atable("account").update(
+            res = (await request.app.ctx.supabase_client.table("account").update(
                 {"balance": account['balance'] + add_balance, 'vip_level': vip_level}).eq("id", user_id).execute()).data
 
             # 获取次月结算日
@@ -436,7 +436,7 @@ class CheckVip(HTTPMethodView):
     async def post(self, request):
         try:
             user_id = request.form['user_id'][0]
-            res = (await request.app.ctx.supabase_client.atable("account").select("vip_level").eq("id",
+            res = (await request.app.ctx.supabase_client.table("account").select("vip_level").eq("id",
                                                                                                   user_id).execute()).data
 
             return sanic_json({'success': res[0]['vip_level'] > 0}, status=200)
@@ -454,7 +454,7 @@ class PayPalCancelSub(HTTPMethodView):
     async def post(self, request):
         try:
             user_id = request.form['user_id'][0]
-            subscription = (await request.app.ctx.supabase_client.atable("subscription").select("*").eq("user_id",
+            subscription = (await request.app.ctx.supabase_client.table("subscription").select("*").eq("user_id",
                                                                                                         user_id).execute()).data
             if len(subscription) > 0:
 
@@ -476,9 +476,9 @@ class PayPalCancelSub(HTTPMethodView):
                     # response_json = response.json()
                     # print(response_json)
 
-                res = (await request.app.ctx.supabase_client.atable("account").update({"vip_level": 0}).eq("id",
+                res = (await request.app.ctx.supabase_client.table("account").update({"vip_level": 0}).eq("id",
                                                                                                            user_id).execute()).data
-                data = (await request.app.ctx.supabase_client.atable("subscription").delete().eq("user_id",
+                data = (await request.app.ctx.supabase_client.table("subscription").delete().eq("user_id",
                                                                                                  user_id).execute()).data
 
                 return sanic_json({'success': True})
@@ -516,13 +516,13 @@ class ElepayCreateEasyQR(HTTPMethodView):
             charge_points = int(int(amount) / CONFIG['payment']['point_price']['USD'])
 
             account = \
-                (await request.app.ctx.supabase_client.atable("account").select("access_level").eq("id",
+                (await request.app.ctx.supabase_client.table("account").select("access_level").eq("id",
                                                                                                    user_id).execute()).data[
                     0]
 
             # query discount
             transaction_data = (
-                await request.app.ctx.supabase_client.atable("transaction").select("*").eq("user_id", user_id).eq(
+                await request.app.ctx.supabase_client.table("transaction").select("*").eq("user_id", user_id).eq(
                     "is_plus", True).eq("status", 1).execute())
             first_charge = len(transaction_data.data) == 0
 
@@ -563,7 +563,7 @@ class ElepayCreateEasyQR(HTTPMethodView):
                 if response.status_code == 201:
 
                     if 'id' in response.json().keys():
-                        data = await request.app.ctx.supabase_client.atable("transaction").insert({"user_id": user_id,
+                        data = await request.app.ctx.supabase_client.table("transaction").insert({"user_id": user_id,
                                                                                                'amount': charge_points,
                                                                                                'is_plus': True,
                                                                                                'status': 0,
