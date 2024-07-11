@@ -46,7 +46,7 @@ class GoogleLogin(HTTPMethodView):
             # 如果没有查询到则注册
             if len(account_info) == 0:
                 try:
-                    supabase_res = await request.app.ctx.supabase_client.auth.async_sign_up(email=email, password=password)
+                    supabase_res = await request.app.ctx.supabase_client.auth.sign_up(email=email, password=password)
                     user_id = str(supabase_res.user.id)
 
                     if 'picture' in google_info.keys() and len(google_info['picture']) > 0:
