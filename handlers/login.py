@@ -141,7 +141,7 @@ class WeChatLogin(HTTPMethodView):
                         password = encrypt(str({wechat_data['openid']}).lower())
 
                         try:
-                            supabase_res = await request.app.ctx.supabase_client.auth.async_sign_up(email=email,
+                            supabase_res = await request.app.ctx.supabase_client.auth.sign_up(email=email,
                                                                                                     password=password)
 
                             user_id = supabase_res.user.id
@@ -319,7 +319,7 @@ class LineLogin(HTTPMethodView):
                 # 如果没有查询到则注册
                 if len(account_info) == 0:
                     try:
-                        supabase_res = await request.app.ctx.supabase_client.auth.async_sign_up(email=email,
+                        supabase_res = await request.app.ctx.supabase_client.auth.sign_up(email=email,
                                                                                                 password=password)
                         user_id = str(supabase_res.user.id)
 
