@@ -3,6 +3,8 @@ import logging
 import os
 
 from gotrue import AsyncMemoryStorage
+from gotrue.errors import AuthInvalidCredentialsError
+from gotrue.helpers import parse_auth_response
 from sanic import Blueprint
 from sanic import Sanic
 # from sanic_cors import CORS
@@ -23,6 +25,70 @@ from redis import asyncio as aioredis
 from handlers.websocket import sd_genreate, qinghua_genreate
 from utils.global_vars import CONFIG
 from supabase import acreate_client, ClientOptions
+
+# patch
+from gotrue._async import gotrue_client
+
+
+async def new_sign_in_with_password(
+        self,
+        credentials,
+):
+    """
+    Log in an existing user with an email or phone and password.
+    """
+    await self._remove_session()
+    email = credentials.get("email")
+    phone = credentials.get("phone")
+    password = credentials.get("password")
+    options = credentials.get("options", {})
+    data = options.get("data") or {}
+    captcha_token = options.get("captcha_token")
+    if email:
+        response = await self._request(
+            "POST",
+            "token",
+            body={
+                "email": email,
+                "password": password,
+                "data": data,
+                "gotrue_meta_security": {
+                    "captcha_token": captcha_token,
+                },
+            },
+            query={
+                "grant_type": "password",
+            },
+            xform=parse_auth_response,
+        )
+    elif phone:
+        response = await self._request(
+            "POST",
+            "token",
+            body={
+                "phone": phone,
+                "password": password,
+                "data": data,
+                "gotrue_meta_security": {
+                    "captcha_token": captcha_token,
+                },
+            },
+            query={
+                "grant_type": "password",
+            },
+            xform=parse_auth_response,
+        )
+    else:
+        raise AuthInvalidCredentialsError(
+            "You must provide either an email or phone number and a password"
+        )
+    # if response.session:
+    #     await self._save_session(response.session)
+    #     self._notify_all_subscribers("SIGNED_IN", response.session)
+    return response
+
+
+gotrue_client.AsyncGoTrueClient.sign_in_with_password = new_sign_in_with_password
 
 # Blueprint
 bp = Blueprint("ai_tasks")
