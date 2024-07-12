@@ -106,10 +106,17 @@ async def main_process_start(sanic_app, loop):
             partner_mode=CONFIG['wechatpay']['PARTNER_MODE'],
             proxy=None)
         # sanic_app.ctx.wxpay.query()
-    supabase_opt = ClientOptions(storage=AsyncMemoryStorage(), postgrest_client_timeout=20)
+    supabase_opt = ClientOptions(
+        storage=AsyncMemoryStorage(),
+        auto_refresh_token=False,
+        persist_session=False,
+        postgrest_client_timeout=20)
     # supabase_opt.postgrest_client_timeout = 20
     sanic_app.ctx.supabase_client = await acreate_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'],
                                                          options=supabase_opt)
+
+    # sanic_app.ctx.supabase_client = await create_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'],
+    #                                                      options=supabase_opt)
     # sanic_app.ctx.supabase_client = getattr(importlib.import_module('aiosupabase'), 'Supabase')
     # sanic_app.ctx.supabase_client.configure(
     #     url=CONFIG['supabase']['url'],

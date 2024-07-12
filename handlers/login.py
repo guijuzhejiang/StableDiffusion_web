@@ -204,7 +204,9 @@ class PasswordLogin(HTTPMethodView):
             password = request.form['password'][0]
 
             # supabase_res = await request.app.ctx.supabase_client.auth.async_sign_in(email=phone, password=password)
-            supabase_res = await request.app.ctx.supabase_client.auth.sign_in_with_password({'email': phone, 'password': password})
+            supabase_res = await request.app.ctx.supabase_client.auth.sign_in_with_password(credentials={'email': phone, 'password': password})
+            # await request.app.ctx.supabase_client.auth.sign_out()
+            # supabase_res = request.app.ctx.supabase_client_sync.auth.sign_in_with_password(credentials={'email': phone, 'password': password})
             account_info = (await request.app.ctx.supabase_client.table("account").select(
                 "id,balance,locale,nick_name,vip_level").eq("id", supabase_res.user.id).execute()).data
             return sanic_json({'success': True,

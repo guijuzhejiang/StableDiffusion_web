@@ -11,6 +11,8 @@ import traceback
 import requests
 import yaml
 from crontab import CronTab
+from gotrue import AsyncMemoryStorage
+from supabase import ClientOptions
 
 proj_dir_path = os.path.dirname(os.path.dirname(__file__))
 CONFIG = yaml.safe_load(open(os.path.join(proj_dir_path, "config.yml"), 'r'))
@@ -62,7 +64,12 @@ async def run_main():
         from supabase import acreate_client
 
         subscription_id = sys.argv[1]
-        supabase_client = await acreate_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'])
+        supabase_opt = ClientOptions(
+            storage=AsyncMemoryStorage(),
+            auto_refresh_token=False,
+            persist_session=False,
+            postgrest_client_timeout=20)
+        supabase_client = await acreate_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'], options=supabase_opt)
         # supabase_client.configure(
         #     url=CONFIG['supabase']['url'],
         #     key=CONFIG['supabase']['key'],
