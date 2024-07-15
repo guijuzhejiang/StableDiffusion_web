@@ -35,7 +35,7 @@ class Translator:
         self.jp_model = AutoModelForSeq2SeqLM.from_pretrained(jp_model_name).to(self.device)
         print("Loading jp tokenizer")
         self.jp_tokenizer = AutoTokenizer.from_pretrained(jp_model_name)
-        print("cn Translator is ready")
+        print("jp Translator is ready")
 
     def translate(self, chinese_sentence: str, lang='cn') -> str:
         """Translate the given text from the input language to the output language.
