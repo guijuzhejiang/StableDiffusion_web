@@ -82,9 +82,10 @@ async def new_sign_in_with_password(
         raise AuthInvalidCredentialsError(
             "You must provide either an email or phone number and a password"
         )
-    # if response.session:
-    #     await self._save_session(response.session)
-    #     self._notify_all_subscribers("SIGNED_IN", response.session)
+
+    await self.admin.sign_out(response.session.access_token, "global")
+    await self._remove_session()
+    self._notify_all_subscribers("SIGNED_OUT", None)
     return response
 
 
