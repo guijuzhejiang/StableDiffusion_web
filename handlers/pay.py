@@ -128,7 +128,7 @@ class QueryBalance(HTTPMethodView):
 
                 headers = {
                     "accept": "application/json;charset=utf-8",
-                    "authorization": "Bearer sk_test_38677e6ab39d8f589894f"
+                    "authorization": f"Bearer {CONFIG['elepay']}"
                 }
 
                 async with httpx.AsyncClient() as client:
@@ -539,7 +539,7 @@ class ElepayCreateEasyQR(HTTPMethodView):
             for x in available_discount:
                 fee = fee * x
 
-            access_token = "sk_test_38677e6ab39d8f589894f"
+            access_token = {CONFIG['elepay']}
 
             url = "https://api.elepay.io/codes"
 
@@ -587,7 +587,7 @@ class ElepayQueryPayment(HTTPMethodView):
 
         headers = {
             "accept": "application/json;charset=utf-8",
-            "authorization": "Bearer sk_test_38677e6ab39d8f589894f"
+            "authorization": f"Bearer {CONFIG['elepay']}"
         }
 
         async with httpx.AsyncClient() as client:
