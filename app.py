@@ -175,7 +175,7 @@ async def main_process_start(sanic_app, loop):
         # sanic_app.ctx.wxpay.query()
     supabase_opt = ClientOptions(
         storage=AsyncMemoryStorage(),
-        auto_refresh_token=False,
+        auto_refresh_token=True,
         persist_session=False,
         postgrest_client_timeout=20)
     # supabase_opt.postgrest_client_timeout = 20
