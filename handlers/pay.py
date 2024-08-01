@@ -13,7 +13,7 @@ import httpx
 import ujson
 from sanic.views import HTTPMethodView
 from wechatpayv3 import WeChatPayType
-from sanic.response import json as sanic_json
+from sanic.response import json as sanic_json, empty
 
 from guiju.sub import setup_cron
 from lib.common.common_util import next_month_date
@@ -501,8 +501,9 @@ class PayPalWebhook(HTTPMethodView):
             print(request.json['event_type'])
         except Exception:
             print(traceback.format_exc())
-            return sanic_json({'success': False, 'result': 'backend.api.error.default'})
-
+            return empty()
+        else:
+            return empty()
 
 class ElepayCreateEasyQR(HTTPMethodView):
     """
@@ -539,7 +540,7 @@ class ElepayCreateEasyQR(HTTPMethodView):
             for x in available_discount:
                 fee = fee * x
 
-            access_token = {CONFIG['elepay']}
+            access_token = CONFIG['elepay']
 
             url = "https://api.elepay.io/codes"
 
@@ -553,7 +554,7 @@ class ElepayCreateEasyQR(HTTPMethodView):
                 # 'value': f"{str(round(float(fee), 2))}" if account['access_level'] != 0 else '0.01',
                 "amount": int(fee*157.05) if account['access_level'] != 0 else 1,
                 "orderNo": str(uuid.uuid4()),
-                "frontUrl": "http://localhost/elepay/done" if CONFIG['debug_mode'] else CONFIG['server']['client_access_url'].replace('service', 'elepay/done'),
+                "frontUrl": CONFIG['server']['client_access_url'].replace('service', 'elepay/done'),
             }
             async with httpx.AsyncClient() as client:
                 response = await client.post(url,

@@ -89,7 +89,7 @@ async def new_sign_in_with_password(
     return response
 
 
-gotrue_client.AsyncGoTrueClient.sign_in_with_password = new_sign_in_with_password
+# gotrue_client.AsyncGoTrueClient.sign_in_with_password = new_sign_in_with_password
 
 # Blueprint
 bp = Blueprint("ai_tasks")
@@ -149,6 +149,17 @@ async def close_redis(sanic_app, loop):
     #     await sanic_app.ctx.redis_mq.close()
 
 
+def my_process(foo):
+    try:
+        while True:
+            sleep(1)
+    except KeyboardInterrupt:
+        print("done")
+# @app.listener("main_process_ready")
+# async def ready(app: Sanic, _):
+# #   app.manager.manage(<name>, <callable>, <kwargs>)
+#     app.manager.manage("MyProcess", my_process, {"foo": "bar"})
+
 @app.listener("before_server_start")
 async def main_process_start(sanic_app, loop):
     print(f"before_server_start {os.path.abspath('.')}")
@@ -176,7 +187,7 @@ async def main_process_start(sanic_app, loop):
     supabase_opt = ClientOptions(
         storage=AsyncMemoryStorage(),
         auto_refresh_token=True,
-        persist_session=False,
+        persist_session=True,
         postgrest_client_timeout=20)
     # supabase_opt.postgrest_client_timeout = 20
     sanic_app.ctx.supabase_client = await acreate_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'],
