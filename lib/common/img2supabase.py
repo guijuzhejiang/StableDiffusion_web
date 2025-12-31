@@ -254,7 +254,7 @@ except SystemExit as e:
 
 user_id = 'd8f5d02e-5e36-4040-be84-15a0a2cf90e8'
 url = "https://www.guijutech.com:8888/"
-key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogInNlcnZpY2Vfcm9sZSIsCiAgImlzcyI6ICJzdXBhYmFzZSIsCiAgImlhdCI6IDE2OTU4MzA0MDAsCiAgImV4cCI6IDE4NTM2ODMyMDAKfQ.QanqKpEYyjqgvl1ElcWw7JJAvUEzIC0e0w1pFfPOITE"
+key = "xxx"
 # supabase_client = create_client(CONFIG['supabase']['url'], CONFIG['supabase']['key'])
 supabase_client = aiosupabase.Supabase
 supabase_client.configure(
